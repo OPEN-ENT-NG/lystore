@@ -65,6 +65,7 @@
                     <table class="twelve">
                         <thead>
                         <td class="two"><i18n>label</i18n></td>
+                        <td class="two"><i18n>lystore.instruction.date_operation</i18n></td>
                         <td class="two"><i18n>lystore.number.orders</i18n></td>
                         <td class="two"><i18n>lystore.number.sub</i18n></td>
                         <td class="two"><i18n>amount</i18n></td>
@@ -74,6 +75,7 @@
                         <tbody>
                         <tr ng-repeat="operationAdd in instruction.operations">
                             <td>[[operationAdd.label.label]]</td>
+                            <td>[[formatDate(operationAdd.date_operation)]]</td>
                             <td ng-show="operationAdd.nb_orders">[[operationAdd.nb_orders]]</td>
                             <td ng-show="!operationAdd.nb_orders">0</td>
                             <td>[[operationAdd.nbOrberSub]]</td>
