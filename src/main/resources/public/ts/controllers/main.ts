@@ -263,6 +263,8 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                 Utils.safeApply($scope);
             },
             orderWaiting: async () => {
+                $scope.loadingArray = true;
+                Utils.safeApply($scope);
                 await $scope.syncCampaignInputSelected();
                 $scope.preferences = await $scope.ub.getPreferences();
                 if ($scope.preferences && $scope.preferences.preference){
@@ -271,20 +273,24 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                     let preferences = JSON.parse($scope.preferences.preference);
                     if (preferences.ordersWaitingCampaign) {
                         let campaignPref;
-                        $scope.campaignsForSelectInput.forEach(c => {
-                            if (c.id === preferences.ordersWaitingCampaign)
-                                campaignPref = c;
-                        });
-                        if (campaignPref) {
-                            await $scope.initOrders('WAITING');
-                            $scope.selectCampaignShow(campaignPref);
-                        } else
-                            await $scope.openLightSelectCampaign();
-                    } else
-                        await $scope.openLightSelectCampaign();
-                }else
-                    await $scope.openLightSelectCampaign();
+                                $scope.campaignsForSelectInput.forEach(c => {
+                                    if (c.id === preferences.ordersWaitingCampaign)
+                                        campaignPref = c;
+                                });
+                                if (campaignPref) {
+                                    await $scope.initOrders('WAITING');
+                                    $scope.selectCampaignShow(campaignPref);
+                                    $scope.loadingArray = false;
 
+                    }
+                            else
+                                await $scope.openLightSelectCampaign();
+                        }
+                        else
+                            await $scope.openLightSelectCampaign();
+                }
+                else
+                    await $scope.openLightSelectCampaign();
                 Utils.safeApply($scope);
             },
             orderSent: async () => {
@@ -524,7 +530,7 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
             $scope.structures = new Structures();
             await $scope.structures.sync();
             await $scope.structures.getStructureType();
-            $scope.loadingArray = false;
+            // $scope.loadingArray = false;
             Utils.safeApply($scope);
         };
 
