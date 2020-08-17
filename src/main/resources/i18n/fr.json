@@ -251,6 +251,7 @@
   "city": "Commune",
   "structures": "établissement(s)",
   "Structure": "Établissement",
+  "Structure.denomination": "Dénomination",
   "amount": "Montant",
   "name": "Nom",
   "reference": "Référence",
