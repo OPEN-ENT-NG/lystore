@@ -894,7 +894,7 @@ public class OrderController extends ControllerHelper {
                                                                 .put("nbr_bc", nbrBc)
                                                                 .put("nbr_engagement", nbrEngagement)
                                                                 .put("date_generation", dateGeneration);
-                                                        if(nbrBc.equals("")){
+                                                        if( nbrBc == null || nbrBc.equals("")){
                                                             data.put("nbr_bc",  event.getString("order_number"))
                                                                     .put("nbr_engagement", event.getString("engagement_number"));
 
