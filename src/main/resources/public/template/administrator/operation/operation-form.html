@@ -10,19 +10,18 @@
                     class="four cell"
                     options="labelOperation.all"
                     param1="label"
-                    ng-model="operation.id_label"
+                    ng-model="operation.label"
                     search-on="label"
                     order-by="label"
                     class="cell horizontal-margin"
             >
             </search-and-select>
-            <br/>
 <!--            <select  ng-model="operation.id_label" class="twelve"-->
 <!--                     ng-init="operation.id_label = operation.id_label || (labelOperation.all.length > 0 ? labelOperation.all[0].id : null)"-->
 <!--                     ng-options="LabelOperation.id as LabelOperation.label for LabelOperation in labelOperation.all" required>-->
 <!--            </select>-->
         </label>
-        <date-picker class = "twelve" i18n-placeholder="lystore.instruction.date.place_holder" ng-model="operation.date_operation" ng-disaled>
+        <date-picker class = "twelve vertical-spacing" i18n-placeholder="lystore.instruction.date.place_holder" ng-model="operation.date_operation" ng-disaled>
         </date-picker>
     </div>
     <label class="row vertical-spacing twelve-mobile row-mobile">
@@ -37,17 +36,7 @@
     </div>
     <div class="right-magnet vertical-spacing">
         <input type="button" class="cancel" ng-click="cancelOperationForm()" i18n-value="cancel"/>
-        <input type="submit" class="button" ng-disabled="!validOperationForm(operation)"/>
+        <input type="button" class="button" ng-disabled="!validOperationForm(operation)" ng-click="validOperation(operation)" i18n-value="confirm"/>
     </div>
-<!--    <search-and-select-->
-<!--            class="four cell"-->
-<!--            options="labelOperation.all"-->
-<!--            param1="label"-->
-<!--            ng-model="operation.id_label"-->
-<!--            search-on="label"-->
-<!--            order-by="label"-->
-<!--            class="cell horizontal-margin"-->
-<!--            style="{z-index: 9999999999999;}"-->
-<!--    >-->
-<!--    </search-and-select>-->
+
 </form>

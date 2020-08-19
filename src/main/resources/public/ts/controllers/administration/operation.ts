@@ -86,7 +86,8 @@ export const operationController = ng.controller('operationController',
             return isValid
         };
         $scope.validOperationForm = (operation:Operation) =>{
-            return  operation.id_label && $scope.isValidOperationDate(operation);
+            operation.id_label = operation.label.id;
+            return  operation.label && $scope.isValidOperationDate(operation);
         };
 
         $scope.cancelOperationForm = async (id_label?) =>{
