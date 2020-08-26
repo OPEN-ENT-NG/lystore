@@ -470,6 +470,19 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
             return (!isNaN(price_TTC)) ? (roundNumber ? price_TTC.toFixed(roundNumber) : price_TTC) : '';
         };
 
+        $scope.calculatePriceOfEquipmentHT =
+            (equipment: any, selectedOptions: boolean, roundNumber: number = 2) => {
+                let price = parseFloat((equipment.price_proposal)? equipment.price_proposal :equipment.price);
+                if(!equipment.price_proposal){
+                    equipment.options.map((option) => {
+                        (option.required === true || (selectedOptions ? option.selected === true : false))
+                            ? price += parseFloat(option.price)
+                            : null;
+                    });
+                }
+
+                return (!isNaN(price)) ? (roundNumber ? price.toFixed(roundNumber) : price) : price;
+            };
         /**
          * Calculate the price of an equipment
          * @param {Equipment} equipment

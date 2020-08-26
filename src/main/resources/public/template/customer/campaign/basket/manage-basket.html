@@ -1,7 +1,7 @@
 <div  ng-controller="basketController">
     <div ng-show="baskets.all.length > 0">
         <div class="vertical-spacing-twice right-magnet twelve-mobile">
-            <h3 class="cell horizontal-margin horizontal-spacing ng-binding"><i18n>total</i18n> :
+            <h3 class="cell horizontal-margin horizontal-spacing ng-binding"><i18n>lystore.amountTTC</i18n> :
                 <span class="color-orange" ng-bind="calculatePriceOfEquipmentsProposal(baskets, 2)| currency"></span>
             </h3>
             <input type="button" ng-click="takeClientProject(baskets)" i18n-value="lystore.take.order"
@@ -52,7 +52,7 @@
                             <div class="three cell text-right">
                                 <div class="vertical-spacing-twice price-field">
                                     <span ng-if="isProposed(basket) || basket.display_price_editable"> <i18n>lystore.priceProposal</i18n> :</span>
-                                    <span ng-if="!isProposed(basket) && !basket.display_price_editable"><i18n>price</i18n> :</span>
+                                    <span ng-if="!isProposed(basket) && !basket.display_price_editable"><i18n>lystore.unit.price.ht</i18n> :</span>
                                     <input type="number"
                                            class="number-input"
                                            ng-keypress="avoidDecimals($event)"
@@ -108,7 +108,8 @@
                                 <tr ng-repeat="option in basket.options">
                                     <td>[[option.name]]</td>
                                     <td>[[option.amount]]</td>
-                                    <td><span
+                                    <td>
+                                        <span
                                             ng-bind="calculatePriceTTC(option.price, option.tax_amount, 2) | currency"></span>
                                     </td>
                                 </tr>
@@ -176,7 +177,7 @@
                                        class="right-magnet cancel vertical-spacing" i18n-value="delete"/>
                             </div>
                             <h1 class="right-magnet vertical-spacing">
-                                <span ng-bind="calculatePriceOfBasketProposal(basket , 2, true) | currency"></span>
+                                <span ng-bind="(calculatePriceOfBasketProposal(basket , 2, true) | currency) + 'TTC'"></span>
                             </h1>
                         </div>
                     </div>

@@ -11,7 +11,7 @@
             </div>
             <article class="add-basket centered row twelve vertical-spacing twelve-mobile">
                 <div class="six cell twelve-mobile">
-                    <h1 class="centered-text" ng-bind="calculatePriceOfEquipment(basket.equipment, true, 2) | currency"></h1>
+                    <h1 class="centered-text" ng-bind="(calculatePriceOfEquipmentHT(basket.equipment, true, 2) | currency) + 'HT'"></h1>
                 </div>
                 <div class="six cell twelve-mobile">
                     <div class="centered-text quantity">

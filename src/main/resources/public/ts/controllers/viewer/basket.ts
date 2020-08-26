@@ -90,13 +90,14 @@ export const basketController = ng.controller('basketController',
 
 
         $scope.calculatePriceOfBasketUnity = (basket: Basket, roundNumber?: number, toDisplay?: boolean) => {
-            let equipmentPrice = $scope.calculatePriceOfEquipment(basket.equipment, true, roundNumber);
+            let equipmentPrice = $scope.calculatePriceOfEquipmentHT(basket.equipment, true, roundNumber);
             equipmentPrice = basket.amount === 0 && toDisplay ? equipmentPrice : equipmentPrice * 1;
             return (!isNaN(equipmentPrice)) ? (roundNumber ? equipmentPrice.toFixed(roundNumber) : equipmentPrice ) : '';
         };
 
         $scope.priceDisplay = (basket: Basket) => {
             if (basket.price_proposal === false || basket.price_proposal ===  null || basket.price_proposal === undefined) {
+                console.log(basket)
                 return $scope.calculatePriceOfBasketUnity(basket, 2, true);
             } else {
                 return basket.price_proposal;
