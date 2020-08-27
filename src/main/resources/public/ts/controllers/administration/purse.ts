@@ -24,6 +24,7 @@ export const purseController = ng.controller('PurseController',
         $scope.openEditPurseForm = (purse: Purse = new Purse()) => {
             $scope.purse = new Purse();
             Mix.extend($scope.purse, purse);
+            $scope.purse.initial_amount = parseFloat($scope.purse.initial_amount)
             template.open('purse.lightbox', 'administrator/campaign/purse/edit-purse-form');
             $scope.lightbox.open = true;
             Utils.safeApply($scope);
@@ -33,6 +34,7 @@ export const purseController = ng.controller('PurseController',
             $scope.lightbox.open = false;
             delete $scope.purse;
         };
+
 
         $scope.validPurse = async (purse: Purse) => {
             let status = await purse.save();

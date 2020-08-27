@@ -11,17 +11,18 @@ export class Purse implements Selectable {
     selected: boolean;
     substraction?: any;
     bigDifference: boolean;
-
-    constructor (id_structure?: string, amount?: number, id_campaign?: number) {
+    initial_amount: any;
+    constructor (id_structure?: string, amount?: number, id_campaign?: number,initial_amount?:number) {
         if (id_structure) this.id_structure = id_structure;
         if (amount) this.amount = amount;
+        if (initial_amount) this.initial_amount = initial_amount;
         if (id_campaign) this.id_campaign = id_campaign;
-
         this.selected = false;
     }
 
     async save (): Promise<number> {
         try {
+            this.amount = parseFloat(this.initial_amount);
             let {status, data} = await http.put(`/lystore/purse/${this.id}`, this.toJson());
             if(status===200) {
                 let {amount} = data.amount;
