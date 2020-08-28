@@ -89,6 +89,7 @@ export const instructionController = ng.controller('instructionController',
             $scope.operation.label = $scope.operationAdd.label;
             $scope.operation.nbOrberSub = $scope.operationAdd.nbOrberSub;
             $scope.operation.nb_orders = $scope.operationAdd.nb_orders;
+            $scope.operation.date_operation = $scope.operationAdd.date_operation;
             $scope.operation.id_label = $scope.operationAdd.id_label;
             $scope.operation.amount = $scope.operationAdd.amount;
             $scope.operation.status = $scope.operationAdd.status;
