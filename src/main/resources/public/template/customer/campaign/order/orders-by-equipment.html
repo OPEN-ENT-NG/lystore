@@ -63,7 +63,7 @@
                     [[orderClient.amount]]
                     <!--p ng-bind="calculatePriceOfBasket(basket , 2, true) | currency"></p-->
                 </div>
-                <div class="right-magnet flexbox">
+                <div class="right-magnet flexbox vertical-spacing-twice">
                     <div tooltip="[[orderClient.status]]"
                          class="[[orderClient.status]] status-circle  cell row">
 
@@ -75,6 +75,10 @@
                         <i>
                         </i>
                     </div><span ng-bind=" lang.translate(orderClient.status)"></span>
+
+                </div>
+                <div class="right-magnet cell twelve vertical-spacing-twice">
+                    <i18n> lystore.orderClient.date.creation </i18n>[[formatDate(orderClient.creation_date)]]
                 </div>
             </div>
         </div>
