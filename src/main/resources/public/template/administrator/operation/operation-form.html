@@ -1,46 +1,48 @@
-<h2><i18n ng-show="operation.id === undefined">lystore.operation.add</i18n><i18n ng-show="operation.id !== undefined">lystore.operation.modify</i18n></h2>
+<div style="height: 300px;">
+    <h2><i18n ng-show="operation.id === undefined">lystore.operation.add</i18n><i18n ng-show="operation.id !== undefined">lystore.operation.modify</i18n></h2>
 
-<form >
-    <div class="row">
-        <label class="twelve">
+    <form >
+        <div class="row">
+            <label class="twelve">
             <span class="twelve cell twelve-mobile">
                 <i18n>label :</i18n>
             </span>
-            <search-and-select
-                    class="four cell"
-                    options="labelOperation.all"
-                    param1="label"
-                    ng-model="operation.label"
-                    search-on="label"
-                    order-by="label"
-                    class="cell horizontal-margin"
-            >
-            </search-and-select>
-            <br/>
-<!--            <select  ng-model="operation.id_label" class="twelve"-->
-<!--                     ng-init="operation.id_label = operation.id_label || (labelOperation.all.length > 0 ? labelOperation.all[0].id : null)"-->
-<!--                     ng-options="LabelOperation.id as LabelOperation.label for LabelOperation in labelOperation.all" required>-->
-<!--            </select>-->
-        </label>
-        <div class="twelve cell" style="margin-top: 10px;">
-            <date-picker i18n-placeholder="lystore.instruction.date.place_holder"   ng-model="operation.date_operation" ng-disaled>
-            </date-picker>
-        </div>
+                <search-and-select
+                        class="four cell"
+                        options="labelOperation.all"
+                        param1="label"
+                        ng-model="operation.label"
+                        search-on="label"
+                        order-by="label"
+                        class="cell horizontal-margin"
+                >
+                </search-and-select>
+                <br/>
+                <!--            <select  ng-model="operation.id_label" class="twelve"-->
+                <!--                     ng-init="operation.id_label = operation.id_label || (labelOperation.all.length > 0 ? labelOperation.all[0].id : null)"-->
+                <!--                     ng-options="LabelOperation.id as LabelOperation.label for LabelOperation in labelOperation.all" required>-->
+                <!--            </select>-->
+            </label>
+            <div class="twelve cell" style="margin-top: 10px;">
+                <date-picker i18n-placeholder="lystore.instruction.date.place_holder"   ng-model="operation.date_operation" ng-disaled>
+                </date-picker>
+            </div>
 
-    </div>
-    <label class="row vertical-spacing twelve-mobile row-mobile">
+        </div>
+        <label class="row vertical-spacing twelve-mobile row-mobile">
                                 <span class="cell ">
                                     <i18n>lystore.operation.status</i18n>
                                 </span>
-        <switch-toggle ng-model="operation.status" class="cell">
-        </switch-toggle>
-    </label>
-    <div class="warning" ng-show="!validOperationForm(operation)">
-        <i18n>operation.form.warning</i18n>
-    </div>
-    <div class="right-magnet vertical-spacing">
-        <input type="button" class="cancel" ng-click="cancelOperationForm()" i18n-value="cancel"/>
-        <input type="button" class="button" ng-disabled="!validOperationForm(operation)" ng-click="validOperation(operation)" i18n-value="confirm"/>
-    </div>
+            <switch-toggle ng-model="operation.status" class="cell">
+            </switch-toggle>
+        </label>
+        <div class="warning" ng-show="!validOperationForm(operation)">
+            <i18n>operation.form.warning</i18n>
+        </div>
+        <div class="right-magnet vertical-spacing">
+            <input type="button" class="cancel" ng-click="cancelOperationForm()" i18n-value="cancel"/>
+            <input type="button" class="button" ng-disabled="!validOperationForm(operation)" ng-click="validOperation(operation)" i18n-value="confirm"/>
+        </div>
 
-</form>
+    </form>
+</div>
