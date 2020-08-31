@@ -435,10 +435,18 @@ export const orderController = ng.controller('orderController',
             for (let _i = 0; _i < $scope.tableFields.length; _i++) {
                 if(_i < amount_field && $scope.tableFields[_i].display){
                     totaux++;
-                }else if(_i> amount_field && $scope.tableFields[_i].display)  {
-                    price++;
                 }
             }
+            if($scope.tableFields[14].display){
+                price = 3;
+                if(!$scope.tableFields[13].display){
+                    totaux++;
+                }
+            }else{
+                price = 1;
+
+            }
+
             return field == 'totaux' ? totaux : price;
         };
         $scope.isOperationsIsEmpty = false;
