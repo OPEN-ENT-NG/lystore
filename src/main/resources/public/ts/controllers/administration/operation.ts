@@ -86,9 +86,12 @@ export const operationController = ng.controller('operationController',
             return isValid
         };
         $scope.validOperationForm = (operation:Operation) =>{
-            if(operation.label !== undefined)
+            if(operation.label !== undefined) {
                 operation.id_label = operation.label.id;
-            return  operation.label && $scope.isValidOperationDate(operation);
+                return operation.label && $scope.isValidOperationDate(operation);
+            }else{
+                return true;
+            }
         };
 
 
