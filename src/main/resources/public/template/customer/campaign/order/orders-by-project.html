@@ -27,7 +27,7 @@
                  ng-click="switchProjectClient($index, 'down')">
             </div>
         </div>
-        <div ng-class="{'order-item-list': campaign.priority_enabled}" class="cell">
+        <div ng-class="{'order-item-list': campaign.priority_enabled , 'twelve':!campaign.priority_enabled}" class="cell">
             <article class="basket-item twelve cell" ng-repeat="orderClient in ordersClient.all track by $index"
                      ng-if="project.id == orderClient.project.id">
                 <div class="cell width-40">
