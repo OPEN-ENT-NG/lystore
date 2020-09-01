@@ -377,7 +377,6 @@ body.lystore {
       .top {
         padding-left: 5%;
         padding-right: 5%;
-        height: 250px!important;
 
         &.item {
           padding-left: 5% !important;
@@ -410,6 +409,8 @@ body.lystore {
     }
     .dominos .top{
       background-color: #ffffff;
+      height: 250px!important;
+
     }
 
   }
