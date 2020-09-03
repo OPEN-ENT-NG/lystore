@@ -46,6 +46,7 @@ public interface BasketService {
      */
     void updateComment(Integer idBasket, String comment, Handler<Either<String, JsonObject>> handler );
 
+
     /**
      * transform basket to an order
      * @param request the request
@@ -103,4 +104,13 @@ public interface BasketService {
      * @param handler  Function handler returning data
      */
     void getFile(Integer basketId, String fileId, Handler<Either<String, JsonObject>> handler);
+
+    /**
+     * check if all the equipment are available
+     * @param idCampaign
+     * @param idStructure
+     * @param baskets
+     * @return
+     */
+     void checkAvailabilityEquipment(Integer idCampaign, String idStructure, JsonArray baskets, Handler<Either<JsonArray, Boolean>> handler);
 }

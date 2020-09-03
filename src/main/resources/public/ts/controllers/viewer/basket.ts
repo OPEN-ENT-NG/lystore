@@ -97,7 +97,6 @@ export const basketController = ng.controller('basketController',
 
         $scope.priceDisplay = (basket: Basket) => {
             if (basket.price_proposal === false || basket.price_proposal ===  null || basket.price_proposal === undefined) {
-                console.log(basket)
                 return $scope.calculatePriceOfBasketUnity(basket, 2, true);
             } else {
                 return basket.price_proposal;
@@ -173,6 +172,14 @@ export const basketController = ng.controller('basketController',
 
             //   $scope.totalPriceProposal = $scope.calculatePriceOfEquipmentsProposal(baskets, 2)
             await baskets.sync(parseInt($routeParams.idCampaign), $scope.current.structure.id);
+            console.log(status)
+            if(status === 201){
+                let message = "Les produits suivants ne sont pas disponibles : ";
+                data["data"].map( name=>{
+                    message += "\""+name +"\", ";
+                })
+                toasts.warning(message)
+            }
             status === 200 ?  $scope.confirmOrder(data) :  null ;
         };
         $scope.confirmOrder = (data) => {

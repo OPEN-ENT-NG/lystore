@@ -11,6 +11,7 @@ import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -162,29 +163,48 @@ public class BasketController extends ControllerHelper {
                 final String nameStructure = object.getString("structure_name");
                 final Integer idProject = object.getInteger("id_project");
                 JsonArray baskets = object.containsKey("baskets") ? object.getJsonArray("baskets") : new JsonArray();
-                basketService.listebasketItemForOrder(idCampaign, idStructure, baskets,
-                        listBasket -> {
-                            if(listBasket.isRight() && listBasket.right().getValue().size() > 0){
-                                basketService.takeOrder(request , listBasket.right().getValue(),
-                                        idCampaign, idStructure, nameStructure, idProject, baskets,
-                                        Logging.defaultCreateResponsesHandler(eb,
-                                                request,
-                                                Contexts.ORDER.toString(),
-                                                Actions.CREATE.toString(),
-                                                "id_order",
-                                                listBasket.right().getValue()));
-
+                Handler<Either<JsonArray, Boolean>> checkAvailabilityEquipmentHandler = new Handler<Either<JsonArray, Boolean>>() {
+                    @Override
+                    public void handle(Either<JsonArray, Boolean> event) {
+                            if(event.isRight()){
+                            getListbasketItemForOrder(idCampaign, idStructure, baskets, request, nameStructure, idProject);
                             }else{
-                                log.error("An error occurred when listing Baskets");
-                                badRequest(request);
+                                JsonObject jo = new JsonObject().put("data",event.left().getValue());
+                                Renders.renderJson(request,jo,201);
                             }
-                        });
+                    }
 
+
+                };
+                basketService.checkAvailabilityEquipment(idCampaign,idStructure,baskets,checkAvailabilityEquipmentHandler);
             } catch (ClassCastException e) {
-                log.error("An error occurred when casting Basket information", e);
+                log.info(e.getLocalizedMessage());
+                log.error("An error occurred when casting Basket inform dsqdsqdskqldksmlqkdsmqlkdmslqkdlmskqmlation", e);
                 renderError(request);
+            }catch (Exception e){
+                log.info(e.getLocalizedMessage());
             }
         });
+    }
+
+    private void getListbasketItemForOrder(Integer idCampaign, String idStructure, JsonArray baskets, HttpServerRequest request, String nameStructure, Integer idProject) {
+        basketService.listebasketItemForOrder(idCampaign, idStructure, baskets,
+                listBasket -> {
+                    if (listBasket.isRight() && listBasket.right().getValue().size() > 0) {
+                        basketService.takeOrder(request, listBasket.right().getValue(),
+                                idCampaign, idStructure, nameStructure, idProject, baskets,
+                                Logging.defaultCreateResponsesHandler(eb,
+                                        request,
+                                        Contexts.ORDER.toString(),
+                                        Actions.CREATE.toString(),
+                                        "id_order",
+                                        listBasket.right().getValue()));
+
+                    } else {
+                        log.error("An error occurred when listing Baskets");
+                        badRequest(request);
+                    }
+                });
     }
 
     @Post("/basket/:id/file")

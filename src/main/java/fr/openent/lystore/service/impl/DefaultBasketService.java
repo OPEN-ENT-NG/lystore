@@ -27,7 +27,7 @@ import static fr.wseduc.webutils.http.Renders.getHost;
 
 public class DefaultBasketService extends SqlCrudService implements BasketService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultBasketService.class);
+    private static final Logger log = LoggerFactory.getLogger(DefaultBasketService.class);
 
     private static NotificationService notificationService;
     private PurseService purseService;
@@ -99,11 +99,11 @@ public class DefaultBasketService extends SqlCrudService implements BasketServic
                             }
                         });
                     } catch (ClassCastException e) {
-                        LOGGER.error("An error occurred when casting tags ids", e);
+                        log.error("An error occurred when casting tags ids", e);
                         handler.handle(new Either.Left<String, JsonObject>(""));
                     }
                 } else {
-                    LOGGER.error("An error occurred when selecting next val");
+                    log.error("An error occurred when selecting next val");
                     handler.handle(new Either.Left<String, JsonObject>(""));
                 }
             }
@@ -239,6 +239,53 @@ public class DefaultBasketService extends SqlCrudService implements BasketServic
         }));
     }
 
+    @Override
+    public void checkAvailabilityEquipment(Integer idCampaign, String idStructure, JsonArray baskets, Handler<Either<JsonArray, Boolean>> handler) {
+        String basketFilter = baskets.size() > 0 ? "AND basket.id IN " + Sql.listPrepared(baskets.getList()) : "";
+        String query= "SELECT    DISTINCT e.name as name  " +
+                "FROM      " + Lystore.lystoreSchema + ".basket_equipment basket  " +
+                "INNER JOIN  " +
+                "           (  " +
+                "                      SELECT     equipment.*,  " +
+                "                                 tax.value tax_amount  " +
+                "                      FROM       " + Lystore.lystoreSchema + ".equipment  " +
+                "                      INNER JOIN " + Lystore.lystoreSchema + ".tax  " +
+                "                      ON         tax.id = equipment.id_tax  " +
+                "                      WHERE      equipment.status != 'AVAILABLE' ) AS e  " +
+                "ON         e.id = basket.id_equipment  " +
+                "WHERE      basket.id_campaign = ?  " +
+                "AND        basket.id_structure = ? " +
+                basketFilter +
+                "; ";
+        JsonArray params = new JsonArray();
+        params.add(idCampaign).add(idStructure);
+        if (baskets.size() > 0) {
+            for (int i = 0; i < baskets.size(); i++) {
+                params.add(baskets.getInteger(i));
+            }
+        }
+        Sql.getInstance().prepared(query, params, checkAvailabilityEquipmentHandler(handler));
+    }
+
+    private Handler<Message<JsonObject>> checkAvailabilityEquipmentHandler(Handler<Either<JsonArray, Boolean>> handler) {
+        return new Handler<Message<JsonObject>>() {
+            @Override
+            public void handle(Message<JsonObject> event) {
+                if(event.body().getInteger("rows")==0){
+                    handler.handle(new Either.Right<>(true));
+                }else{
+                    JsonArray arrayToFlat =  event.body().getJsonArray("results");
+                    JsonArray arrayFlatted = new JsonArray();
+                    for(int i = 0;i < arrayToFlat.size();i++){
+                        arrayFlatted.add(arrayToFlat.getJsonArray(i).getString(0));
+                    }
+                    handler.handle(new Either.Left<>(arrayFlatted));
+                }
+//                handler.handle(event.body().getInteger("rows")==0);
+            }
+        };
+    }
+
     public void takeOrder(final HttpServerRequest request, final JsonArray baskets, Integer idCampaign,
                           String idStructure, final String nameStructure,
                           Integer idProject, JsonArray baskets_objects, final Handler<Either<String, JsonObject>> handler) {
@@ -273,7 +320,7 @@ public class DefaultBasketService extends SqlCrudService implements BasketServic
                         event, new JsonObject(jsonValue), handler);
             });
         }catch (ClassCastException e) {
-            LOGGER.error("An error occurred when casting baskets elements", e);
+            log.error("An error occurred when casting baskets elements", e);
             handler.handle(new Either.Left<String, JsonObject>(""));
         }
     }
@@ -566,11 +613,11 @@ public class DefaultBasketService extends SqlCrudService implements BasketServic
             JsonObject returns = new JsonObject()
                     .put("nb_order", basicBDObject.getInteger(basicBDObject.containsKey("f2") ? "f2" : "f1"));
             if (basicBDObject.containsKey("f2")) {
-               try{
-                   returns.put("amount", basicBDObject.getDouble("f1"));
-               }catch (Exception e){
-                   returns.put("amount",basicBDObject.getInteger("f1"));
-               }
+                try{
+                    returns.put("amount", basicBDObject.getDouble("f1"));
+                }catch (Exception e){
+                    returns.put("amount",basicBDObject.getInteger("f1"));
+                }
             }
             DateFormat format = new SimpleDateFormat("dd/MM/yyyy HH:mm");
             final double cons = 100.0;
@@ -592,13 +639,13 @@ public class DefaultBasketService extends SqlCrudService implements BasketServic
                                             getHost(request), I18n.acceptLanguage(request))
                                     + " " + format.format(new Date()) + " ");
                 } else {
-                    LOGGER.info("Sending mails is enable in conf.json.template");
+                    log.info("Sending mails is enable in conf.json.template");
                 }
             } else {
-                LOGGER.info("EnableMail doesn't exist in object mail contents conf.json.template");
+                log.info("EnableMail doesn't exist in object mail contents conf.json.template");
             }
         } else {
-            LOGGER.error("An error occurred when launching 'order' transaction");
+            log.error("An error occurred when launching 'order' transaction");
             handler.handle(new Either.Left<String, JsonObject>(""));
         }
     }
