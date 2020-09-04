@@ -4,7 +4,7 @@ import fr.openent.lystore.Lystore;
 import fr.openent.lystore.export.ExportObject;
 import fr.openent.lystore.export.validOrders.BC.*;
 import fr.openent.lystore.export.validOrders.listLycee.ListLycee;
-import fr.openent.lystore.export.validOrders.listLycee.RecapListLycee;
+import fr.openent.lystore.export.validOrders.listLycee.ListLycWithPrice;
 import fr.openent.lystore.helpers.ExportHelper;
 import fr.openent.lystore.service.ExportService;
 import fr.openent.lystore.service.SupplierService;
@@ -71,7 +71,7 @@ public class ValidOrders extends ExportObject {
         futures.add(RecapListLyceeFuture);
         futureHandler(handler, workbook, futures);
         new ListLycee(workbook, this.numberValidation).create(getHandler(ListLyceeFuture));
-        new RecapListLycee(workbook, this.numberValidation).create(getHandler(RecapListLyceeFuture));
+        new ListLycWithPrice(workbook, this.numberValidation).create(getHandler(RecapListLyceeFuture));
 
     }
 

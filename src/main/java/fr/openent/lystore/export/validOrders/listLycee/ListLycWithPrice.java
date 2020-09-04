@@ -8,12 +8,15 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.poi.ss.usermodel.Workbook;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
-public class RecapListLycee extends TabHelper {
+public class ListLycWithPrice extends TabHelper {
     private String numberValidation;
     private ArrayList<Integer> totalsXQty = new ArrayList<>();
-    public RecapListLycee(Workbook workbook, String numberValidation) {
+    public ListLycWithPrice(Workbook workbook, String numberValidation) {
         super(workbook,"Liste Commandes avec Prix");
         this.numberValidation = numberValidation;
     }
@@ -169,10 +172,10 @@ public class RecapListLycee extends TabHelper {
     }
 
     private void insertHeader() {
-        String title ="MARCHE N°" + datas.getJsonObject(0).getString("market_reference") +" - "+ datas.getJsonObject(0).getString("market_name") + ", \n";
-        if(true == false)
-            title+= "BON DE COMMANDE N°"
-                    ;
+        String title = "N° VALIDATION : "+this.numberValidation +
+                " - MARCHE N°" + datas.getJsonObject(0).getString("market_reference") + " - " + datas.getJsonObject(0).getString("market_name") +
+                " - DATE BC : " + getFormatDate(datas.getJsonObject(0).getString("creation_bc")) ;
+
         excel.insertWithStyle(2,0,title,excel.blackOnBlueHeader);
         sizeMergeRegionWithStyle(0,2,5,excel.blackOnBlueHeader);
     }
@@ -242,6 +245,18 @@ public class RecapListLycee extends TabHelper {
 
     }
 
+    private String getFormatDate(String date) {
+        date = date.replace("T"," ");
+        SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        SimpleDateFormat formatterDateExcel = new SimpleDateFormat("dd/MM/yyyy");
+        Date orderDate = null;
+        try {
+            orderDate = formatterDate.parse(date);
+        } catch (ParseException e) {
+            log.error("Incorrect date format");
+        }
+        return formatterDateExcel.format(orderDate);
+    }
     private void insertPircesAndFormula(int line, String formulaQty, String formulaEquipmentHT, String formulaPrestaHT, String formulaTotalHT, String formulaTotalTTC) {
         excel.insertFormulaWithStyle(5, line, formulaQty,excel.labelHeadStyle);
         excel.insertFormula(6, line, formulaEquipmentHT);
@@ -293,12 +308,15 @@ public class RecapListLycee extends TabHelper {
                 "       oce.id_structure,  " +
                 "       et.NAME  as typeequipment," +
                 "       market.name as market_name," +
-                "       market.reference as market_reference " +
+                "       market.reference as market_reference," +
+                "       od.date_creation as creation_bc " +
                 "       FROM   "+ Lystore.lystoreSchema +".order_client_equipment oce  " +
                 "       INNER JOIN "+ Lystore.lystoreSchema +".equipment_type et  " +
                 "               ON oce.id_type = et.id  " +
                 "       INNER JOIN "+ Lystore.lystoreSchema +".contract market  " +
                 "               ON oce.id_contract = market.id  " +
+                "           INNER JOIN " + Lystore.lystoreSchema + ".order od " +
+                "               ON oce.id_order = od.id " +
                 "WHERE  number_validation = ?  " +
                 "GROUP  BY oce.equipment_key,  " +
                 "          oce.price,  " +
@@ -308,9 +326,10 @@ public class RecapListLycee extends TabHelper {
                 "          oce.id_structure,  " +
                 "          et.NAME ," +
                 "          market_name," +
-                "          market_reference " +
-                "UNION  " +
-                "SELECT opt.price,  " +
+                "          market_reference," +
+                "          od.date_creation " +
+                " UNION  " +
+                " SELECT opt.price,  " +
                 "       opt.tax_amount,  " +
                 "       opt.NAME,  " +
                 "       opt.id_contract,  " +
@@ -318,7 +337,8 @@ public class RecapListLycee extends TabHelper {
                 "       opt.id_structure,  " +
                 "       opt.typeequipment," +
                 "       opt.market_name," +
-                "       opt.market_reference      " +
+                "       opt.market_reference ," +
+                "       opt.date_creation as creation_bc " +
                 "FROM   (SELECT options.price,  " +
                 "               options.tax_amount,  " +
                 "               options.NAME,  " +
@@ -328,7 +348,9 @@ public class RecapListLycee extends TabHelper {
                 "               oce.id_structure,  " +
                 "               market.name as market_name," +
                 "               market.reference as market_reference, " +
-                "               et.NAME AS typeequipment  " +
+                "               et.NAME AS typeequipment , " +
+                "                od.date_creation  " +
+
                 "        FROM   "+ Lystore.lystoreSchema +".order_client_options options  " +
                 "               INNER JOIN "+ Lystore.lystoreSchema +".order_client_equipment oce  " +
                 "                       ON ( options.id_order_client_equipment = oce.id )  " +
@@ -336,6 +358,8 @@ public class RecapListLycee extends TabHelper {
                 "                       ON options.id_type = et.id " +
                 "               INNER JOIN " + Lystore.lystoreSchema + ".contract market " +
                 "                       ON oce.id_contract = market.id "  +
+                "           INNER JOIN " + Lystore.lystoreSchema + ".order od " +
+                "               ON oce.id_order = od.id " +
                 "        WHERE  number_validation = ? ) AS opt  " +
                 "       INNER JOIN "+ Lystore.lystoreSchema +".order_client_equipment equipment  " +
                 "               ON ( opt.id_order_client_equipment = equipment.id )  " +
@@ -346,7 +370,8 @@ public class RecapListLycee extends TabHelper {
                 "          opt.id_structure,  " +
                 "          opt.typeequipment ," +
                 "           opt.market_name," +
-                "           market_reference";
+                "           market_reference," +
+                "           opt.date_creation";
 
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray();
         params.add(this.numberValidation).add(this.numberValidation);
