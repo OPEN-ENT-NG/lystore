@@ -316,6 +316,8 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                 await $scope.initOrderStructures();
                 $scope.orderToUpdate = await $scope.orderClient.getOneOrderClient(idOrder, $scope.structures.all, "waiting");
                 await $scope.equipments.syncAll($scope.orderToUpdate.campaign.id);
+                $scope.loadingArray = false;
+
                 $scope.orderToUpdate.equipment = $scope.equipments.all.find(findElement => findElement.id === $scope.orderToUpdate.equipment_key);
                 $scope.orderParent = OrderUtils.initParentOrder($scope.orderToUpdate);
                 Utils.safeApply($scope);
