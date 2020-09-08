@@ -196,10 +196,10 @@ export const orderController = ng.controller('orderController',
                 template.open('validOrder.lightbox', 'administrator/order/order-valid-confirmation');
                 $scope.display.lightbox.validOrder = true;
             }
-            $scope.getOrderWaitingFiltered($scope.campaign);
             Utils.safeApply($scope);
         };
         $scope.cancelBasketDelete = () => {
+            $scope.getOrderWaitingFiltered($scope.campaign);
             $scope.display.lightbox.validOrder = false;
             template.close('validOrder.lightbox');
             let indexToSplice = 0
