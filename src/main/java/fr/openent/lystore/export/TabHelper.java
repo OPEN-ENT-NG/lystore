@@ -27,12 +27,11 @@ import org.entcore.common.sql.SqlResult;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public abstract class TabHelper {
     protected Logger logger = LoggerFactory.getLogger(DefaultProjectService.class);
@@ -127,7 +126,18 @@ public abstract class TabHelper {
      */
     protected void setArray(JsonArray programs) {
     }
-
+    protected String getFormatDate(String date) {
+        date = date.replace("T"," ");
+        SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        SimpleDateFormat formatterDateExcel = new SimpleDateFormat("dd/MM/yyyy");
+        Date orderDate = null;
+        try {
+            orderDate = formatterDate.parse(date);
+        } catch (ParseException e) {
+            log.error("Incorrect date format");
+        }
+        return formatterDateExcel.format(orderDate);
+    }
     protected JsonArray sortByCity(JsonArray values, boolean byZipCode) {
         JsonArray sortedJsonArray = new JsonArray();
 

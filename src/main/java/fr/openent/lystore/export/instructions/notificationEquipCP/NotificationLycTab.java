@@ -187,7 +187,8 @@ public class NotificationLycTab extends TabHelper {
     }
 
 
-    private String getFormatDate(String dateCp) {
+    @Override
+    protected String getFormatDate(String dateCp) {
         SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
         SimpleDateFormat formatterDateExcel = new SimpleDateFormat("dd/MM/yyyy");
         Date orderDate = null;

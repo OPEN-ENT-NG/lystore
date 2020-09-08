@@ -245,18 +245,7 @@ public class ListLycWithPrice extends TabHelper {
 
     }
 
-    private String getFormatDate(String date) {
-        date = date.replace("T"," ");
-        SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
-        SimpleDateFormat formatterDateExcel = new SimpleDateFormat("dd/MM/yyyy");
-        Date orderDate = null;
-        try {
-            orderDate = formatterDate.parse(date);
-        } catch (ParseException e) {
-            log.error("Incorrect date format");
-        }
-        return formatterDateExcel.format(orderDate);
-    }
+
     private void insertPircesAndFormula(int line, String formulaQty, String formulaEquipmentHT, String formulaPrestaHT, String formulaTotalHT, String formulaTotalTTC) {
         excel.insertFormulaWithStyle(5, line, formulaQty,excel.labelHeadStyle);
         excel.insertFormula(6, line, formulaEquipmentHT);
