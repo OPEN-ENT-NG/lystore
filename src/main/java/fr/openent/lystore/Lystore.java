@@ -26,6 +26,7 @@ public class Lystore extends BaseServer {
     public static long timeout = 99999999999L;
     public static final String ORDERS = "ORDERS";
     public static final String INSTRUCTIONS = "INSTRUCTION";
+    public static final String CAMPAIGN = "CAMPAIGN";
     public static final String XLSX = "xlsx";
     public static final String PDF = "pdf";
 
@@ -56,7 +57,7 @@ public class Lystore extends BaseServer {
         addController(new EquipmentController(vertx));
         addController(new TaxController());
         addController(new LogController());
-        addController(new CampaignController());
+        addController(new CampaignController(storage));
         addController(new PurseController(vertx));
         addController(new StructureGroupController(vertx));
         addController(new StructureController());

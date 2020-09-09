@@ -117,7 +117,8 @@ public class ExportHelper {
         });
     }
 
-    private static void soloExport(EventBus eb, HttpServerRequest request, ExportService exportService, String typeObject, String extension, String action, JsonObject infoFile, String finalId, String titleFile, JsonObject finalParams, UserInfos user) {
+    private static void soloExport(EventBus eb, HttpServerRequest request, ExportService exportService, String typeObject, String extension, String action,
+                                   JsonObject infoFile, String finalId, String titleFile, JsonObject finalParams, UserInfos user) {
         exportService.createWhenStart(typeObject, extension, infoFile, finalId, titleFile, user.getUserId(), action, finalParams, newExport -> {
             if (newExport.isRight()) {
                 String idExport = newExport.right().getValue().getString("id");
@@ -244,7 +245,8 @@ public class ExportHelper {
         }
 
         public GetIdAndMutliExport invoke() {
-            if(request.getParam("id")!=null && typeObject.equals(Lystore.INSTRUCTIONS))
+
+            if(request.getParam("id")!=null && (typeObject.equals(Lystore.INSTRUCTIONS) || typeObject.equals(Lystore.CAMPAIGN)))
                 id = request.getParam("id");
 
             if(request.params().getAll("number_validation") != null && !request.params().getAll("number_validation").isEmpty() ){

@@ -162,10 +162,26 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
             case ExportTypes.BC_BEFORE_VALIDATION_STRUCT:
                 exportBCOrdersBeforeValidationStruct(params,fileName,exportHandler);
                 break;
+            case ExportTypes.CAMPAIGN_ORDERS:
+                exportCampaignOrder(params,fileName,exportHandler);
+                logger.info("body : "+ body);
+                break;
             default:
                 ExportHelper.catchError(exportService, idNewFile, "Invalid action in worker : " + action,exportHandler);
                 break;
         }
+    }
+
+    private void exportCampaignOrder(JsonObject params, String fileName, Handler<Either<String, Boolean>> exportHandler) {
+
+        logger.info("Export orders from campaign : ");
+
+        logger.info(params);
+
+//        this.validOrders = new ValidOrders(exportService,params,idNewFile,this.eb,this.vertx,this.config);
+//        this.validOrders.exportBCBeforeValidationByStructures(event1 -> {
+//            saveExportHandler(titleFile, exportHandler, event1, "error when creating BCOrdersBeforeValidationStruct PDF ", PDFHEADER);
+//        });
     }
 
     private void exportBCOrdersBeforeValidationStruct(JsonObject params, String titleFile, Handler<Either<String, Boolean>> exportHandler) {
