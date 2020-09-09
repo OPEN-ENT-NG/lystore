@@ -1,5 +1,5 @@
 import http from 'axios';
-import {_, notify} from 'entcore';
+import {_, notify,toasts} from 'entcore';
 import {Mix, Selectable, Selection} from 'entcore-toolkit';
 import {Purses, StructureGroup, Tags, Titles} from './index';
 
@@ -110,6 +110,12 @@ export class Campaign implements Selectable  {
         } catch (e) {
             notify.error('lystore.campaign.sync.err');
         }
+    }
+
+    async exportOrders() {
+        let { status } = await http.get(`/lystore/campaign/export/order/${this.id}`);
+        if(status === 200)
+            toasts.info("lystore.export.notif")
     }
 }
 
