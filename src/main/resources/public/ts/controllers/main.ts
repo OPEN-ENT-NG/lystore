@@ -343,6 +343,7 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                         $scope.orderParent = undefined;
                     }
                 }
+                $scope.loadingArray = false;
                 Utils.safeApply($scope);
             },
             instruction: async () =>{
