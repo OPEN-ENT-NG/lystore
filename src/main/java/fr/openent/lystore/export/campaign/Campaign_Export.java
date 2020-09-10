@@ -2,10 +2,7 @@ package fr.openent.lystore.export.campaign;
 
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.export.ExportObject;
-import fr.openent.lystore.export.validOrders.BC.*;
-import fr.openent.lystore.export.validOrders.ValidOrders;
-import fr.openent.lystore.export.validOrders.listLycee.ListLycWithPrice;
-import fr.openent.lystore.export.validOrders.listLycee.ListLycee;
+import fr.openent.lystore.export.campaign.extractionOrder.ExtractionOrder;
 import fr.openent.lystore.helpers.ExportHelper;
 import fr.openent.lystore.service.ExportService;
 import fr.openent.lystore.service.SupplierService;
@@ -44,16 +41,26 @@ public class Campaign_Export extends ExportObject {
         this.supplierService = new DefaultSupplierService(Lystore.lystoreSchema, "supplier");
 
     }
-    public Campaign_Export(ExportService exportService, Integer param, String idNewFile,EventBus eb, Vertx vertx, JsonObject config) {
-        this(exportService,idNewFile,eb,vertx,config);
-        this.id = param;
-    }
-
-
 
 
     public void exportOrders(Handler<Either<String, Buffer>> handler) {
-        ExportHelper.catchError(exportService, idFile, "number validations is not nullable");
-        handler.handle(new Either.Left<>("number validations is not nullable"));
+        if (this.id == null) {
+            ExportHelper.catchError(exportService, idFile, "Instruction identifier is not nullable");
+            handler.handle(new Either.Left<>("Instruction identifier is not nullable"));
+        }else{
+            Workbook workbook = new XSSFWorkbook();
+            List<Future> futures = new ArrayList<>();
+            Future<Boolean> ExtractionFuture = Future.future();
+            Future<Boolean> RecapListFuture = Future.future();
+
+            futures.add(ExtractionFuture);
+//            futures.add(RecapListFuture);
+            futureHandler(handler, workbook, futures);
+            new ExtractionOrder(workbook,this.id).create(getHandler(ExtractionFuture));
+//            new ListLycee(workbook, this.numberValidation).create(getHandler(ListLyceeFuture));
+//            new ListLycWithPrice(workbook, this.numberValidation).create(getHandler(RecapListLyceeFuture));
+
+        }
     }
+
 }
