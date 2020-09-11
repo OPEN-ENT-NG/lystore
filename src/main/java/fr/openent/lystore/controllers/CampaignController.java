@@ -2,7 +2,7 @@ package fr.openent.lystore.controllers;
 
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.export.ExportTypes;
-import fr.openent.lystore.helpers.ExportHelper;
+import fr.openent.lystore.export.helpers.ExportHelper;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;

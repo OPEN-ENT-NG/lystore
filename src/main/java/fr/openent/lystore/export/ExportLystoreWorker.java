@@ -1,9 +1,9 @@
 package fr.openent.lystore.export;
 
+import fr.openent.lystore.export.campaign.CampaignExport;
 import fr.openent.lystore.export.instructions.Instruction;
 import fr.openent.lystore.export.validOrders.ValidOrders;
-import fr.openent.lystore.helpers.ExcelHelper;
-import fr.openent.lystore.helpers.ExportHelper;
+import fr.openent.lystore.export.helpers.ExportHelper;
 import fr.openent.lystore.service.ExportService;
 import fr.openent.lystore.service.impl.DefaultExportServiceService;
 import fr.wseduc.webutils.Either;
@@ -26,6 +26,7 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
     private boolean isSleeping = true;
     private final String XLSXHEADER= "application/vnd.ms-excel";
     private final String PDFHEADER = "application/pdf";
+    private CampaignExport campaign;
 
     @Override
     public void start() {
@@ -163,7 +164,7 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
                 exportBCOrdersBeforeValidationStruct(params,fileName,exportHandler);
                 break;
             case ExportTypes.CAMPAIGN_ORDERS:
-                exportCampaignOrder(params,fileName,exportHandler);
+                exportCampaignOrder(object_id,fileName,exportHandler);
                 logger.info("body : "+ body);
                 break;
             default:
@@ -172,12 +173,14 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
         }
     }
 
-    private void exportCampaignOrder(JsonObject params, String fileName, Handler<Either<String, Boolean>> exportHandler) {
+    private void exportCampaignOrder(Integer cmapaign_id, String titleFile, Handler<Either<String, Boolean>> exportHandler) {
 
         logger.info("Export orders from campaign : ");
 
-        logger.info(params);
-
+        this.campaign = new CampaignExport(exportService, idNewFile, cmapaign_id);
+        this.campaign.exportOrders(event1 -> {
+            saveExportHandler(titleFile, exportHandler, event1, "error when creating export order Campaign xlsx :", XLSXHEADER);
+        });
 //        this.validOrders = new ValidOrders(exportService,params,idNewFile,this.eb,this.vertx,this.config);
 //        this.validOrders.exportBCBeforeValidationByStructures(event1 -> {
 //            saveExportHandler(titleFile, exportHandler, event1, "error when creating BCOrdersBeforeValidationStruct PDF ", PDFHEADER);

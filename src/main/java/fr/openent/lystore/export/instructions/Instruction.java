@@ -11,17 +11,13 @@ import fr.openent.lystore.export.instructions.notificationEquipCP.RecapMarketGes
 import fr.openent.lystore.export.instructions.publipostage.Publipostage;
 import fr.openent.lystore.export.instructions.subventionEquipment.Market;
 import fr.openent.lystore.export.instructions.subventionEquipment.Subventions;
-import fr.openent.lystore.helpers.ExcelHelper;
-import fr.openent.lystore.helpers.ExportHelper;
+import fr.openent.lystore.export.helpers.ExportHelper;
 import fr.openent.lystore.service.ExportService;
-import fr.openent.lystore.service.impl.DefaultProjectService;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.data.FileResolver;
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.buffer.impl.BufferImpl;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -31,7 +27,6 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package fr.openent.lystore.helpers;
+package fr.openent.lystore.export.helpers;
 
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.export.ExportTypes;
