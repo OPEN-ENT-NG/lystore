@@ -126,14 +126,14 @@ export class Operations extends Selection<Operation>{
             let { data } = await http.get(`/lystore/operations/?${queriesFilter}`);
             this.all = Mix.castArrayAs(Operation, data);
             this.all.map( operation => {
+                operation.instruction
+                    ? operation.instruction =  JSON.parse(operation.instruction.toString())
+                    : operation.instruction = null;
                 operation.date_cp = operation.date_cp !== null  && operation.instruction ? moment(operation.instruction.date_cp) : null;
                 operation.date_operation = operation.date_operation !== null ? moment(operation.date_operation) : null;
                 operation.label.toString() !== 'null' && operation.label !== null ?
                     operation.label = Mix.castAs(label, JSON.parse(operation.label.toString()))
                     : operation.label = new label();
-                operation.instruction ?
-                    operation.instruction =  JSON.parse(operation.instruction.toString())
-                    : operation.instruction = null;
                 operation.nb_orders = operation.nb_orders || 0;
                 operation.nbOrberSub = operation.number_sub || 0;
             })
