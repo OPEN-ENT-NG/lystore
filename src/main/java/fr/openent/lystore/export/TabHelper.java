@@ -379,7 +379,6 @@ public abstract class TabHelper {
                 putDataIfNotNull("city",data, structure);
                     putDataIfNotNull("type",data, structure);
                 putDataIfNotNull("address",data, structure);
-                log.info(structure);
                 putDataIfNotNull("academy",data, structure);
                 putDataIfNotNull("zipCode",data, structure);
                 putDataIfNotNull("phone",data, structure);
@@ -399,6 +398,7 @@ public abstract class TabHelper {
         data.put("city", NULL_DATA);
         data.put("type", NULL_DATA);
         data.put("address",NULL_DATA);
+        data.put("academy",NULL_DATA);
         data.put("zipCode", "??");
         data.put("phone", NULL_DATA);
     }

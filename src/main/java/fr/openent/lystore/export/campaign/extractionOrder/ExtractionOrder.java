@@ -137,7 +137,7 @@ public class ExtractionOrder extends TabHelper {
     }
     @Override
     public void getDatas(Handler<Either<String, JsonArray>> handler) {
-        query = " SELECT DISTINCT rel_group_structure.id_structure as id_structure , campaign.name as campaign_name  " +
+        query = " SELECT DISTINCT oce.id, rel_group_structure.id_structure as id_structure , campaign.name as campaign_name  " +
                 " FROM " + Lystore.lystoreSchema + ".campaign " +
                 " INNER JOIN " + Lystore.lystoreSchema + ".rel_group_campaign rgc " +
                 " ON rgc.id_campaign = campaign.id " +
