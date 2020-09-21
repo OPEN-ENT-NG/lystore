@@ -41,6 +41,13 @@ public class OperationController  extends ControllerHelper {
     public void getOperations(HttpServerRequest request) {
         operationService.getOperations(request.params().getAll("q"), arrayResponseHandler(request));
     }
+    @Get("/operations/list")
+    @ApiDoc("List all operations in database")
+    @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+    public void lisOperations(HttpServerRequest request) {
+        operationService.listOperations(request.params().getAll("q"), arrayResponseHandler(request));
+    }
+
 
     @Post("/operation")
     @ApiDoc("Create an operation")
