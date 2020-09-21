@@ -279,8 +279,8 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
     private void saveBuffer(Buffer buff, String fileName,Handler<Either<String,Boolean>> handler,String fileType) {
         storage.writeBuffer(buff, fileType, fileName, file -> {
             if (!"ok".equals(file.getString("status"))) {
-                ExportHelper.catchError(exportService, idNewFile, "An error occurred when inserting xlsx ",handler);
-                handler.handle(new Either.Left<>("An error occurred when inserting xlsx"));
+                ExportHelper.catchError(exportService, idNewFile, "An error occurred when inserting file ",handler);
+                handler.handle(new Either.Left<>("An error occurred when inserting file"));
             } else {
                 logger.info(fileName + " insert in storage");
                 exportService.updateWhenSuccess(file.getString("_id"), idNewFile,handler);
