@@ -25,9 +25,14 @@ export class Titles extends Selection<Title> {
         super([]);
     }
 
-    async sync(idCampaign: number, idStructure?: string): Promise<void> {
+    async sync(idCampaign?: number, idStructure?: string): Promise<void> {
         {
-            const uri = idStructure ? `/lystore/titles/campaigns/${idCampaign}/structures/${idStructure}` : `/lystore/titles/campaigns/${idCampaign}`;
+
+            const uri = idCampaign
+                ? idStructure
+                    ? `/lystore/titles/campaigns/${idCampaign}/structures/${idStructure}`
+                    : `/lystore/titles/campaigns/${idCampaign}`
+                : `/lystore/titles/`;
             let titles = await http.get(uri);
             this.all = Mix.castArrayAs(Title, titles.data);
         }
