@@ -18,7 +18,7 @@ export class Project implements Selectable {
     grades: Grades;
     eventer: Eventer;
     id_grade: number;
-
+    id_title:number;
 
     constructor() {
         if (this.title) {
@@ -108,9 +108,15 @@ export class Projects extends Selection<Project> {
         super([]);
     }
 
-    async sync(): Promise<void> {
+    async sync(waitingOrders?:boolean): Promise<void> {
         {
-            let projects = await http.get(`/lystore/projects`);
+            let url: string;
+            if (waitingOrders){
+                url = `/lystore/projects/list/waiting`;
+            }else{
+                url = `/lystore/projects`;
+            }
+            let projects = await http.get(url);
             this.all = Mix.castArrayAs(Project, projects.data);
 
         }
