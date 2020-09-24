@@ -15,7 +15,7 @@ import {
     Utils,
     Grade,
     Title,
-    Project
+    Project, Contracts, ContractTypes, Suppliers, Campaigns, Projects, Titles
 } from './index';
 import http from 'axios';
 
@@ -57,7 +57,7 @@ export class OrderClient implements Order  {
     id_contract:number;
     id_order:number;
     id_project:number;
-    id_supplier: string;
+    id_supplier: number;
     grade?: Grade;
     name:string;
     name_structure: string;
@@ -198,8 +198,10 @@ export class OrdersClient extends Selection<OrderClient> {
     }
 
 
-    async sync (status: string, structures: Structures = new Structures(), idCampaign?: number, idStructure?: string):Promise<void> {
-        try {
+    async sync (status: string, structures: Structures = new Structures(),contracts : Contracts, contractTypes : ContractTypes,
+                suppliers : Suppliers, campaigns : Campaigns,projects : Projects, titles : Titles,
+                idCampaign?: number, idStructure?: string):Promise<void> {
+        // try {
             this.projects = new Selection<Project>([]);
             this.id_project_use = -1;
             if (idCampaign && idStructure) {
@@ -210,6 +212,16 @@ export class OrdersClient extends Selection<OrderClient> {
                 const { data } = await http.get(  `/lystore/orders?status=${status}`);
                 this.all = Mix.castArrayAs(OrderClient, data);
                 this.all.map((order: OrderClient) => {
+                    order.contract = contracts.all.find(c => c.id === order.id_contract);
+                    order.contract_type = contractTypes.all.find(c => c.id === order.contract.id_contract_type);
+                    order.supplier = suppliers.all.find(s => s.id === order.contract.id_supplier);
+                    order.campaign = campaigns.all.find(c => c.id === order.id_campaign);
+                    order.project = projects.all.find(p => p.id === order.id_project);
+                    try {
+                        order.title = titles.all.find(t => t.id === order.project.id_title);
+                    }catch (e) {
+                        console.log(order.id)
+                    }
                     order.name_structure =  structures.length > 0 ? OrderUtils.initNameStructure(order.id_structure, structures) : '';
                     order.structure = structures.length > 0 ? OrderUtils.initStructure(order.id_structure, structures) : new Structure();
                     order.price = parseFloat(status === 'VALID' ? order.price.toString().replace(',', '.') : order.price.toString());
@@ -224,9 +236,9 @@ export class OrdersClient extends Selection<OrderClient> {
                     }
                 });
             }
-        } catch (e) {
-            notify.error('lystore.order.sync.err');
-        }
+        // } catch (e) {
+        //     notify.error('lystore.order.sync.err');
+        // }
     }
 
     syncWithIdsCampaignAndStructure(idCampaign:number, idStructure:string):void{
@@ -258,13 +270,17 @@ export class OrdersClient extends Selection<OrderClient> {
 
     makeOrderNotValid(order:OrderClient):void{
         order.tax_amount = parseFloat(order.tax_amount.toString());
-        order.contract = Mix.castAs(Contract,  JSON.parse(order.contract.toString()));
-        order.contract_type = Mix.castAs(ContractType,  JSON.parse(order.contract_type.toString()));
-        order.supplier = Mix.castAs(Supplier,  JSON.parse(order.supplier.toString()));
+        try{
+            order.contract = Mix.castAs(Contract,  JSON.parse(order.contract.toString()));
+            order.contract_type = Mix.castAs(ContractType,  JSON.parse(order.contract_type.toString()));
+            order.supplier = Mix.castAs(Supplier,  JSON.parse(order.supplier.toString()));
+            order.campaign = Mix.castAs(Campaign,  JSON.parse(order.campaign.toString()));
+            order.project = Mix.castAs(Project, JSON.parse(order.project.toString()));
+            order.project.title = Mix.castAs(Title, JSON.parse(order.title.toString()));
+        }catch (e) {
+
+        }
         order.id_supplier = order.supplier.id;
-        order.campaign = Mix.castAs(Campaign,  JSON.parse(order.campaign.toString()));
-        order.project = Mix.castAs(Project, JSON.parse(order.project.toString()));
-        order.project.title = Mix.castAs(Title, JSON.parse(order.title.toString()));
         order.rank = order.rank ? parseInt(order.rank.toString()) : null ;
         if (this.id_project_use != order.project.id)this.makeProjects(order);
         order.creation_date = moment(order.creation_date).format('L');

@@ -78,7 +78,7 @@ export const orderPersonnelController = ng.controller('orderPersonnelController'
                 await $scope.deleteOrderEquipment(ordersEquipment[i]);
             }
             $scope.cancelOrderEquipmentDelete();
-            await $scope.ordersClient.sync(null, [], $routeParams.idCampaign, $scope.current.structure.id);
+            await $scope.ordersClient.sync(null, [],[],[],[],[], [],[],$routeParams.idCampaign, $scope.current.structure.id);
             Utils.safeApply($scope);
         };
 
@@ -156,7 +156,7 @@ export const orderPersonnelController = ng.controller('orderPersonnelController'
                     }
                 }
             }
-            await $scope.ordersClient.sync(null, [], $routeParams.idCampaign, $scope.current.structure.id);
+            await $scope.ordersClient.sync(null, [],[],[],[],[],[], [],$routeParams.idCampaign, $scope.current.structure.id);
             $scope.display.lightbox.deleteProject = false;
             template.close('orderClient.deleteProject');
             Utils.safeApply($scope);

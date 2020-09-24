@@ -149,8 +149,14 @@ export const orderController = ng.controller('orderController',
 
         $scope.getSelectedOrders = () => $scope.displayedOrders.selected;
 
-        $scope.getStructureGroupsList = (structureGroups: string[]): string => {
-            return structureGroups.join(', ');
+        $scope.getStructureGroupsList = (structureGroups : any): string => {
+            try{
+                return structureGroups.join(', ');
+            }catch (e) {
+                let result = "";
+                result = structureGroups.replaceAll("\"","").replace("[","").replace("]","")
+                return result
+            }
         };
 
         $scope.addFilterWords = (filterWord) => {
@@ -226,7 +232,8 @@ export const orderController = ng.controller('orderController',
         };
         $scope.syncOrders = async (status: string) =>{
             $scope.displayedOrders.all = [];
-            await $scope.ordersClient.sync(status, $scope.structures.all);
+            await $scope.ordersClient.sync(status, $scope.structures.all,$scope.contracts,
+                $scope.contractTypes, $scope.suppliers,$scope.campaigns, $scope.projects , $scope.titles);
             $scope.displayedOrders.all = $scope.ordersClient.all;
             $scope.displayedOrders.all.map(order => {
                     order.selected = false;

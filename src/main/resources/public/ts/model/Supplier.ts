@@ -3,7 +3,7 @@ import http from 'axios';
 import { Mix, Selectable, Selection } from 'entcore-toolkit';
 
 export class Supplier implements Selectable {
-    id: string;
+    id: number;
     email: string;
     name: string;
     phone: string;

@@ -59,4 +59,6 @@ public interface TitleService {
     void deleteRelation(Integer idCampaign, Integer idTitle, String idStructure, Handler<Either<String, JsonObject>> handler);
 
     void getTitlesAdmin(Integer campaignId, Handler<Either<String, JsonArray>> handler);
+
+    void getList(Handler<Either<String, JsonArray>> arrayResponseHandler);
 }

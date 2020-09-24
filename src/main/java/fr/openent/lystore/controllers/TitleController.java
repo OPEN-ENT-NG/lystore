@@ -47,8 +47,15 @@ public class TitleController extends ControllerHelper {
         importCSVHelper = new ImportCSVHelper(vertx, eb);
     }
 
+    @Get("/titles/")
+    @ApiDoc("get list of the title")
+    @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+    public void  getListTitles(HttpServerRequest request){
+        titleService.getList(arrayResponseHandler(request));
+    }
+
     @Get("/titles/campaigns/:idCampaign")
-    @ApiDoc("Get list of the titles")
+    @ApiDoc("Get list of the titles of a campaign")
     @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
     public void getTitles(HttpServerRequest request) {
         try {

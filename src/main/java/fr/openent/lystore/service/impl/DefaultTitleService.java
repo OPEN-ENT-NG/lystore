@@ -56,6 +56,17 @@ public class DefaultTitleService extends SqlCrudService implements TitleService 
 
         Sql.getInstance().prepared(query, params, SqlResult.validResultHandler(handler));
     }
+
+    @Override
+    public void getList(Handler<Either<String, JsonArray>> handler) {
+        String query = "SELECT distinct title.id, title.name " +
+                "FROM " + Lystore.lystoreSchema + ".title " ;
+
+        JsonArray params = new JsonArray();
+
+        Sql.getInstance().prepared(query, params, SqlResult.validResultHandler(handler));
+    }
+
     @Override
     public void importTitlesForCampaign(Integer idCampaign, JsonObject importMap, JsonObject newTitlesMap, Handler<Either<String, JsonObject>> handler) {
         JsonArray statements = new JsonArray();

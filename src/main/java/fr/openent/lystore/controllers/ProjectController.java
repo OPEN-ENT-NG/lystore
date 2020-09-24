@@ -37,11 +37,19 @@ public class ProjectController extends ControllerHelper {
     }
 
     @Get("/projects")
-    @ApiDoc("Get list of the projects")
+    @ApiDoc("Get list of the projects and the titles")
     @SecuredAction(value = " ", type = ActionType.AUTHENTICATED)
     public void getProjects(HttpServerRequest request) {
         projectService.getProjects(arrayResponseHandler(request));
     }
+
+    @Get("/projects/list/waiting")
+    @ApiDoc("Get list of the projects")
+    @SecuredAction(value = " ", type = ActionType.AUTHENTICATED)
+    public void getlistProjects(HttpServerRequest request) {
+        projectService.getListProjectWaiting(arrayResponseHandler(request));
+    }
+
 
     @Get("/project/:id")
     @ApiDoc("Get one project")
