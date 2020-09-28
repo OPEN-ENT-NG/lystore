@@ -205,10 +205,11 @@ export const orderController = ng.controller('orderController',
             Utils.safeApply($scope);
         };
         $scope.cancelBasketDelete = () => {
-            $scope.getOrderWaitingFiltered($scope.campaign);
+            $scope.displayedOrders.all =  $scope.displayedOrders.all.filter(order => !order.selected)
+            $scope.ordersClient.all =  $scope.ordersClient.all.filter(order => !order.selected)
+            // $scope.getOrderWaitingFiltered($scope.campaign);
             $scope.display.lightbox.validOrder = false;
             template.close('validOrder.lightbox');
-            let indexToSplice = 0
             if($scope.operationId) {
                 $scope.ordersClient.selected.map(orderSelected =>{
                     $scope.displayedOrders.all = $scope.displayedOrders.all.filter(order => order.id !== orderSelected.id)

@@ -534,12 +534,11 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
         };
 
         $scope.syncOrders = async (status: string) =>{
-            $scope.displayedOrders.all = [];
             await $scope.ordersClient.sync(status, $scope.structures.all,$scope.contracts,$scope.contractTypes,
                 $scope.suppliers,$scope.campaigns,$scope.projects,$scope.titles);
             $scope.displayedOrders.all = $scope.ordersClient.all;
             $scope.loadingArray = false;
-
+            Utils.safeApply($scope);
         };
 
         $scope.initOrders = async (status) => {
@@ -548,9 +547,12 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                     await  $scope.contracts.sync();
                 if($scope.contractTypes.all === undefined  || $scope.contractTypes.all.length === 0)
                     await $scope.contractTypes.sync();
-                await $scope.suppliers.sync();
-                await $scope.projects.sync(true);
-                await $scope.titles.sync();
+                if($scope.suppliers.all === undefined  || $scope.suppliers.all.length === 0)
+                    await $scope.suppliers.sync();
+                if($scope.projects.all === undefined  || $scope.projects.all.length === 0)
+                    await $scope.projects.sync(true);
+                if($scope.titles.all === undefined  || $scope.titles.all.length === 0)
+                    await $scope.titles.sync();
             }
             await $scope.initOrderStructures();
             await $scope.syncOrders(status);
