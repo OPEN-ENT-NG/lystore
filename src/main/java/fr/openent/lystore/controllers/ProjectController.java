@@ -43,11 +43,12 @@ public class ProjectController extends ControllerHelper {
         projectService.getProjects(arrayResponseHandler(request));
     }
 
-    @Get("/projects/list/waiting")
+    @Get("/projects/list/:status")
     @ApiDoc("Get list of the projects")
     @SecuredAction(value = " ", type = ActionType.AUTHENTICATED)
     public void getlistProjects(HttpServerRequest request) {
-        projectService.getListProjectWaiting(arrayResponseHandler(request));
+        String status = request.params().get("status");
+        projectService.getListProjectWaiting(arrayResponseHandler(request),status);
     }
 
 

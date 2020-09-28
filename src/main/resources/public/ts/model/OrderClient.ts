@@ -220,7 +220,6 @@ export class OrdersClient extends Selection<OrderClient> {
                     try {
                         order.title = titles.all.find(t => t.id === order.project.id_title);
                     }catch (e) {
-                        console.log(order.id)
                     }
                     order.name_structure =  structures.length > 0 ? OrderUtils.initNameStructure(order.id_structure, structures) : '';
                     order.structure = structures.length > 0 ? OrderUtils.initStructure(order.id_structure, structures) : new Structure();
@@ -233,6 +232,7 @@ export class OrdersClient extends Selection<OrderClient> {
                         });
                     if (status !== 'VALID') {
                         this.makeOrderNotValid(order);
+                        return;
                     }
                 });
             }
@@ -278,7 +278,6 @@ export class OrdersClient extends Selection<OrderClient> {
             order.project = Mix.castAs(Project, JSON.parse(order.project.toString()));
             order.project.title = Mix.castAs(Title, JSON.parse(order.title.toString()));
         }catch (e) {
-
         }
         order.id_supplier = order.supplier.id;
         order.rank = order.rank ? parseInt(order.rank.toString()) : null ;
