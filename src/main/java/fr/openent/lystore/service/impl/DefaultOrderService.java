@@ -867,13 +867,16 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                                             @Override
                                             public void handle(Either<String, JsonArray> stringJsonArrayEither) {
 
-
-                                                final JsonObject result = new JsonObject()
-                                                        .put("number_validation", numberOrder)
-                                                        .put("agent", agentNames);
-                                                handler.handle(new Either.Right<String, JsonObject>(result));
-                                                emailSender.sendMails(request, result,  rows,  user,  url,
-                                                        (JsonArray) stringJsonArrayEither.right().getValue());
+                                                try {
+                                                    final JsonObject result = new JsonObject()
+                                                            .put("number_validation", numberOrder)
+                                                            .put("agent", agentNames);
+                                                    handler.handle(new Either.Right<String, JsonObject>(result));
+                                                    emailSender.sendMails(request, result, rows, user, url,
+                                                            (JsonArray) stringJsonArrayEither.right().getValue());
+                                                }catch (NullPointerException e){
+                                                    LOGGER.error("no mail to send");
+                                                }
                                             }
                                         });
                             }
