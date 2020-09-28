@@ -104,15 +104,17 @@ export class Project implements Selectable {
 
 
 export class Projects extends Selection<Project> {
+    status ?: string;
     constructor() {
         super([]);
     }
 
-    async sync(waitingOrders?:boolean): Promise<void> {
+    async sync(status?:string): Promise<void> {
         {
             let url: string;
-            if (waitingOrders){
-                url = `/lystore/projects/list/waiting`;
+            if (status){
+                this.status = status;
+                url = `/lystore/projects/list/${status}`;
             }else{
                 url = `/lystore/projects`;
             }

@@ -125,7 +125,10 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "ON oco.id_order_client_equipment = oce.id " +
                 " LEFT JOIN " + Lystore.lystoreSchema + ".order_file ON oce.id = order_file.id_order_client_equipment " +
                 " WHERE oce.status = ?" +
-                "GROUP BY oce.id" +
+                "GROUP  BY oce.id, " +
+                "    oce.id_project, " +
+                "    oce.id_structure, " +
+                "    oce.id_contract" +
                 " ORDER by id DESC " +
 //                " LIMIT 50 OFFSET 50" +
                 " ;";
