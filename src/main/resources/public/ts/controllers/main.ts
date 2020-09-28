@@ -282,6 +282,8 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                                 campaignPref = c;
                         });
                         if (campaignPref) {
+                            template.open('administrator-main');
+                            template.open('selectCampaign', 'administrator/order/select-campaign');
                             await $scope.initOrders('WAITING');
                             $scope.selectCampaignShow(campaignPref);
                             $scope.loadingArray = false;
@@ -542,15 +544,18 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
         };
 
         $scope.initOrders = async (status) => {
-            if(status === 'WAITING'){
+            if(status === 'WAITING' || status === 'SENT'){
+                if( ($scope.projects.status && $scope.projects.status !== status  )
+                    || ( $scope.projects.all === undefined || $scope.projects.all.length === 0 ))
+                    await $scope.projects.sync(status);
                 if($scope.contracts.all === undefined || $scope.contracts.all.length === 0 )
                     await  $scope.contracts.sync();
+                if($scope.campaigns.all === undefined || $scope.campaigns.all.length === 0 )
+                    await  $scope.campaigns.sync();
                 if($scope.contractTypes.all === undefined  || $scope.contractTypes.all.length === 0)
                     await $scope.contractTypes.sync();
                 if($scope.suppliers.all === undefined  || $scope.suppliers.all.length === 0)
                     await $scope.suppliers.sync();
-                if($scope.projects.all === undefined  || $scope.projects.all.length === 0)
-                    await $scope.projects.sync(true);
                 if($scope.titles.all === undefined  || $scope.titles.all.length === 0)
                     await $scope.titles.sync();
             }

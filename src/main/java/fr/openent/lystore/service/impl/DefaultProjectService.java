@@ -41,17 +41,17 @@ public class DefaultProjectService extends SqlCrudService implements ProjectServ
 
 
     @Override
-    public void getListProjectWaiting(Handler<Either<String, JsonArray>> handler) {
+    public void getListProjectWaiting(Handler<Either<String, JsonArray>> handler, String status) {
         String query = "SELECT  project.id,project.description, project.id_title, project.id_grade, project.building, project.stair, project.room, project.site, project.preference, " +
                 "array_to_json( array_agg( tt.* )) as title , array_to_json ( array_agg ( gr.*)) as grade " +
                 "FROM " + Lystore.lystoreSchema + ".project " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".order_client_equipment oce " +
-                "ON (project.id = oce.id_project AND oce.status = 'WAITING')" +
+                "ON (project.id = oce.id_project AND oce.status = ? )" +
                 "LEFT JOIN " + Lystore.lystoreSchema + ".title tt ON tt.id = project.id_title " +
                 "LEFT JOIN " + Lystore.lystoreSchema + ".grade gr ON gr.id = project.id_grade " +
                 "GROUP BY project.preference, tt.name, project.id ,gr.name ;";
 
-        sql.prepared(query, new JsonArray(), SqlResult.validResultHandler(handler));
+        sql.prepared(query, new JsonArray().add(status), SqlResult.validResultHandler(handler));
     }
 
     @Override

@@ -65,5 +65,5 @@ public interface ProjectService {
      */
     void deletableProject(Integer id, Handler<Either<String, JsonObject>> handler);
 
-    void getListProjectWaiting(Handler<Either<String, JsonArray>> arrayResponseHandler);
+    void getListProjectWaiting(Handler<Either<String, JsonArray>> arrayResponseHandler, String status);
 }
