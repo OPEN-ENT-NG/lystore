@@ -120,10 +120,18 @@ export class Operations extends Selection<Operation>{
         this.filters = [];
     }
 
-    async sync() {
+    async sync(onlylist?: boolean) {
         try{
+            let url: string;
             const queriesFilter = Utils.formatGetParameters({q: this.filters});
-            let { data } = await http.get(`/lystore/operations/?${queriesFilter}`);
+            if(onlylist){
+                url = `/lystore/operations/list/?${queriesFilter}`
+            }else{
+                url = `/lystore/operations/?${queriesFilter}`
+
+            }
+
+            let { data } = await http.get(url);
             this.all = Mix.castArrayAs(Operation, data);
             this.all.map( operation => {
                 operation.instruction

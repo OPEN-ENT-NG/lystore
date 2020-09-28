@@ -385,10 +385,10 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
             createRegionOrder: async () => {
                 $scope.loadingArray = true;
                 await  $scope.campaigns.sync();
-                await  $scope.operations.sync();
+                await  $scope.operations.sync(true);
                 let operations = [];
                 $scope.operations.all.map((operation,index)=>{
-                    if(operation.status == 'true' && !operation.instruction) {
+                   if(operation.status == 'true' && !operation.instruction) {
                         operations.push(operation);
                     }
                 });
@@ -422,10 +422,10 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
             }
         };
 
-        $scope.initOperation = async (id_label? ) =>{
+        $scope.initOperation = async (onlylist?:boolean ) =>{
             $scope.labelOperation = new labels();
             await $scope.labelOperation.sync();
-            await $scope.operations.sync();
+            await $scope.operations.sync(onlylist);
         };
         $scope.initBasketItem = async (idEquipment: number, idCampaign: number, structure) => {
             $scope.equipment = _.findWhere($scope.equipments.all, {id: idEquipment});
