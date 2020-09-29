@@ -47,23 +47,23 @@ public class ExtractionOrder extends TabHelper {
 
     @Override
     protected void setLabels() {
-        excel.insertBlackTitleHeaderBorderless(1,1,"Lsytore - Extraction Demande ");
-        excel.insertBlackTitleHeaderBorderless(1,2,"Campagne : " + datas.getJsonObject(0).getString("campaign_name"));
-        excel.insertBlackTitleHeader(0,3,"Informations des structures");
-        sizeMergeRegion(3,0,6);
-        setStructuresInfoLabel();
-        excel.insertBlackTitleHeader(7,3,"Projet");
-        sizeMergeRegion(3,7,19);
-        setProjectLabel();
-        excel.insertBlackTitleHeader(20,3,"Équipements");
-        sizeMergeRegion(3,20,25);
-        setEquipmentLabel();
-        excel.insertBlackTitleHeader(26,3,"Éléments comptables");
-        sizeMergeRegion(3,26,35);
-        setAccountingElementsLabel();
-        excel.insertBlackTitleHeader(36,3,"Gestion");
-        sizeMergeRegion(3,36,41);
-        setManagementLabel();
+//        excel.insertBlackTitleHeaderBorderless(1,1,"Lsytore - Extraction Demande ");
+//        excel.insertBlackTitleHeaderBorderless(1,2,"Campagne : " + datas.getJsonObject(0).getString("campaign_name"));
+//        excel.insertBlackTitleHeader(0,3,"Informations des structures");
+//        sizeMergeRegion(3,0,6);
+//        setStructuresInfoLabel();
+//        excel.insertBlackTitleHeader(7,3,"Projet");
+//        sizeMergeRegion(3,7,19);
+//        setProjectLabel();
+//        excel.insertBlackTitleHeader(20,3,"Équipements");
+//        sizeMergeRegion(3,20,25);
+//        setEquipmentLabel();
+//        excel.insertBlackTitleHeader(26,3,"Éléments comptables");
+//        sizeMergeRegion(3,26,35);
+//        setAccountingElementsLabel();
+//        excel.insertBlackTitleHeader(36,3,"Gestion");
+//        sizeMergeRegion(3,36,41);
+//        setManagementLabel();
     }
 
     private void setManagementLabel() {
@@ -137,7 +137,11 @@ public class ExtractionOrder extends TabHelper {
     }
     @Override
     public void getDatas(Handler<Either<String, JsonArray>> handler) {
-        query = " SELECT DISTINCT oce.id, rel_group_structure.id_structure as id_structure , campaign.name as campaign_name  " +
+        query = " SELECT" +
+                " DISTINCT " +
+                " ao.id, ao.id_structure as id_structure " +
+//                "," +
+//                "  rel_group_structure.id_structure as id_structure , campaign.name as campaign_name  " +
                 " FROM " + Lystore.lystoreSchema + ".campaign " +
                 " INNER JOIN " + Lystore.lystoreSchema + ".rel_group_campaign rgc " +
                 " ON rgc.id_campaign = campaign.id " +
@@ -145,8 +149,8 @@ public class ExtractionOrder extends TabHelper {
                 " ON rgc.id_structure_group = structure_group.id " +
                 " INNER JOIN " + Lystore.lystoreSchema + ".rel_group_structure " +
                 " ON rel_group_structure.id_structure_group = structure_group.id "+
-                " INNER JOIN " + Lystore.lystoreSchema + ".order_client_equipment oce " +
-                " ON oce.id_campaign = campaign.id "+
+                " INNER JOIN " + Lystore.lystoreSchema + ".allOrders ao " +
+                " ON ao.id_campaign = campaign.id "+
         " WHERE campaign.id = ? "
         ;
 
