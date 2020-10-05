@@ -45,6 +45,7 @@ export const searchAndSelect = ng.directive('searchAndSelect', function() {
             $scope.toggleItem = function(item) {
                 $scope.ngModel = item;
                 $scope.show = false;
+                $scope.toggleVisibility();
             };
             $scope.fsearch = (item) => {
                 if ($scope.search.input){
