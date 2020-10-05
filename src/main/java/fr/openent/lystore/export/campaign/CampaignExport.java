@@ -3,6 +3,7 @@ package fr.openent.lystore.export.campaign;
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.export.ExportObject;
 import fr.openent.lystore.export.campaign.extractionOrder.ExtractionOrder;
+import fr.openent.lystore.export.campaign.extractionOrder.RecapStructOrder;
 import fr.openent.lystore.export.helpers.ExportHelper;
 import fr.openent.lystore.service.ExportService;
 import fr.openent.lystore.service.SupplierService;
@@ -46,11 +47,10 @@ public class CampaignExport extends ExportObject {
             Future<Boolean> RecapListFuture = Future.future();
 
             futures.add(ExtractionFuture);
-//            futures.add(RecapListFuture);
+            futures.add(RecapListFuture);
             futureHandler(handler, workbook, futures);
-//            new ExtractionOrder(workbook,this.id).create(getHandler(ExtractionFuture));
-//            new ListLycee(workbook, this.numberValidation).create(getHandler(ListLyceeFuture));
-//            new ListLycWithPrice(workbook, this.numberValidation).create(getHandler(RecapListLyceeFuture));
+            new ExtractionOrder(workbook,this.id).create(getHandler(ExtractionFuture));
+            new RecapStructOrder(workbook,this.id).create(getHandler(RecapListFuture));
 
         }
     }

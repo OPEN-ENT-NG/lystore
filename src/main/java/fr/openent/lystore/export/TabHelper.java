@@ -299,7 +299,7 @@ public abstract class TabHelper {
             //logger.info("Object safeGetDouble : " + jo + " key : " + key);
             result = jo.getDouble(key);
         }catch (Exception e){
-            logger.info("Exception safeGetDouble : key : " + key + " ;name tab : " + nameTab);
+//            logger.info("Exception safeGetDouble : key : " + key + " ;name tab : " + nameTab);
             result = Double.parseDouble(jo.getString(key).replaceAll(",", "."));
         }
         return  result;

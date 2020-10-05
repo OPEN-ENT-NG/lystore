@@ -39,7 +39,43 @@ public class ExtractionOrder extends TabHelper {
             excel.insertCellTab(2, 5+i, data.getString("nameEtab"));
             excel.insertCellTab(3, 5+i, data.getString("zipCode").substring(0,2));
             excel.insertCellTab(4, 5+i, data.getString("city"));
-            excel.insertCellTab(5, 5+i, data.getString("academy"));
+            excel.insertCellTab(5, 5+i, data.getString("cite_mixte"));
+            excel.insertCellTab(6, 5+i, data.getString("academy"));
+            excel.insertCellTabInt(7, 5+i, 7);
+            excel.insertCellTabInt(8, 5+i, 8);
+            excel.insertCellTabInt(9, 5+i,9);
+            excel.insertCellTabInt(10, 5+i, 10);
+            excel.insertCellTabInt(11, 5+i, 11);
+            excel.insertCellTabInt(12, 5+i, 12);
+            excel.insertCellTabInt(13, 5+i, 13);
+            excel.insertCellTabInt(14, 5+i,14);
+            excel.insertCellTab(15, 5+i, data.getString("status"));
+            excel.insertCellTabInt(16, 5+i, 16);
+            excel.insertCellTab(17, 5+i, data.getString("priority_order"));
+            excel.insertCellTab(18, 5+i, data.getString("comment"));
+            excel.insertCellTabInt(19, 5+i, 19);
+            //TODO check pour ORE
+            excel.insertCellTab(20,5+i,data.getString("equipment_name"));
+            excel.insertCellTabDouble(21,5+i,safeGetDouble(data,"quantity","ExtractionOrder"));
+            excel.insertCellTabDouble(22,5+i,safeGetDouble(data,"priceht","ExtractionOrder"));
+            excel.insertCellTabDouble(23,5+i,safeGetDouble(data,"tva","ExtractionOrder"));
+            excel.insertCellTabDouble(24,5+i,safeGetDouble(data,"quantity","ExtractionOrder"));
+            excel.insertCellTabInt(25,5+i,25);
+            excel.insertCellTabInt(26,5+i,26);
+            excel.insertCellTabInt(27,5+i,27);
+            excel.insertCellTabInt(28,5+i,28);
+            excel.insertCellTabInt(29,5+i,29);
+            excel.insertCellTabInt(30,5+i,30);
+            excel.insertCellTabInt(31,5+i,31);
+            excel.insertCellTabInt(32,5+i,32);
+            excel.insertCellTabInt(34,5+i,34);
+            excel.insertCellTabInt(35,5+i,35);
+            excel.insertCellTabInt(36,5+i,36);
+            excel.insertCellTabInt(37,5+i,37);
+            excel.insertCellTabInt(38,5+i,38);
+            excel.insertCellTabInt(39,5+i,39);
+            excel.insertCellTabInt(40,5+i,40);
+            excel.insertCellTabInt(41,5+i,41);
 
         }
     }
@@ -47,23 +83,23 @@ public class ExtractionOrder extends TabHelper {
 
     @Override
     protected void setLabels() {
-//        excel.insertBlackTitleHeaderBorderless(1,1,"Lsytore - Extraction Demande ");
-//        excel.insertBlackTitleHeaderBorderless(1,2,"Campagne : " + datas.getJsonObject(0).getString("campaign_name"));
-//        excel.insertBlackTitleHeader(0,3,"Informations des structures");
-//        sizeMergeRegion(3,0,6);
-//        setStructuresInfoLabel();
-//        excel.insertBlackTitleHeader(7,3,"Projet");
-//        sizeMergeRegion(3,7,19);
-//        setProjectLabel();
-//        excel.insertBlackTitleHeader(20,3,"Équipements");
-//        sizeMergeRegion(3,20,25);
-//        setEquipmentLabel();
-//        excel.insertBlackTitleHeader(26,3,"Éléments comptables");
-//        sizeMergeRegion(3,26,35);
-//        setAccountingElementsLabel();
-//        excel.insertBlackTitleHeader(36,3,"Gestion");
-//        sizeMergeRegion(3,36,41);
-//        setManagementLabel();
+        excel.insertBlackTitleHeaderBorderless(1,1,"Lsytore - Extraction Demande ");
+        excel.insertBlackTitleHeaderBorderless(1,2,"Campagne : " + datas.getJsonObject(0).getString("campaign_name"));
+        excel.insertBlackTitleHeader(0,3,"Informations des structures");
+        sizeMergeRegion(3,0,6);
+        setStructuresInfoLabel();
+        excel.insertBlackTitleHeader(7,3,"Projet");
+        sizeMergeRegion(3,7,19);
+        setProjectLabel();
+        excel.insertBlackTitleHeader(20,3,"Équipements");
+        sizeMergeRegion(3,20,25);
+        setEquipmentLabel();
+        excel.insertBlackTitleHeader(26,3,"Éléments comptables");
+        sizeMergeRegion(3,26,35);
+        setAccountingElementsLabel();
+        excel.insertBlackTitleHeader(36,3,"Gestion");
+        sizeMergeRegion(3,36,41);
+        setManagementLabel();
     }
 
     private void setManagementLabel() {
@@ -137,22 +173,54 @@ public class ExtractionOrder extends TabHelper {
     }
     @Override
     public void getDatas(Handler<Either<String, JsonArray>> handler) {
-        query = " SELECT" +
-                " DISTINCT " +
-                " ao.id, ao.id_structure as id_structure " +
-//                "," +
-//                "  rel_group_structure.id_structure as id_structure , campaign.name as campaign_name  " +
-                " FROM " + Lystore.lystoreSchema + ".campaign " +
-                " INNER JOIN " + Lystore.lystoreSchema + ".rel_group_campaign rgc " +
-                " ON rgc.id_campaign = campaign.id " +
-                " INNER JOIN " + Lystore.lystoreSchema + ".structure_group " +
-                " ON rgc.id_structure_group = structure_group.id " +
-                " INNER JOIN " + Lystore.lystoreSchema + ".rel_group_structure " +
-                " ON rel_group_structure.id_structure_group = structure_group.id "+
-                " INNER JOIN " + Lystore.lystoreSchema + ".allOrders ao " +
-                " ON ao.id_campaign = campaign.id "+
-        " WHERE campaign.id = ? "
-        ;
+        query = " SELECT DISTINCT orders.id," +
+                "      campaign.name as campaign_name ," +
+                "    orders.\"price TTC\" as priceTTC," +
+                "    orders.amount as quantity," +
+                "   orders.name as equipment_name ," +
+                "    orders.priceHT as priceHT," +
+                "    orders.tax_amount as TVA, "+
+                "    orders.id_structure," +
+                "    orders.status, " +
+                "    orders.comment ," +
+                " CASE " +
+                "   orders.prio IS NULL" +
+                " THEN ' '" +
+                " ELSE orders.prio END  as priority_order, " +
+                "     CASE  " +
+                "      WHEN ss.type IS NULL THEN ' '  " +
+                "      ELSE ss.type  " +
+                "    END   AS cite_mixte , " +
+                "     SUM(Round(( (SELECT CASE  " +
+                "               WHEN orders.price_proposal IS NOT NULL THEN 0  " +
+                "               WHEN orders.override_region IS NULL THEN 0  " +
+                "               WHEN Sum(oco.price + ( (  " +
+                "                      oco.price * oco.tax_amount ) / 100 )  " +
+                "                                  *  oco.amount) IS  NULL " +
+                "                       THEN 0  " +
+                "                       ELSE Sum(oco.price + ( ( oco.price * oco.tax_amount ) / 100 )  * oco.amount)  " +
+                "                      END  " +
+                "               FROM    " + Lystore.lystoreSchema +".order_client_options oco  " +
+                "        WHERE  oco.id_order_client_equipment = orders.id)  + orders.\"price TTC\" ) * orders.amount, 2)) AS Total " +
+                "FROM    " + Lystore.lystoreSchema +".allorders orders  " +
+                "       INNER JOIN  " + Lystore.lystoreSchema +".campaign  " +
+                "               ON campaign.id = orders.id_campaign  " +
+                "                  AND id_campaign = ?  " +
+                "       LEFT JOIN  " + Lystore.lystoreSchema +".specific_structures ss  " +
+                "              ON ss.id = orders.id_structure  " +
+                "GROUP  BY " +
+                "         orders.id," +
+                "         id_structure,  " +
+                "          campaign.NAME,  " +
+                "          ss.type," +
+                " orders.\"price TTC\" ," +
+                "   quantity," +
+                "   TVA," +
+                "   priceHT," +
+                " equipment_name," +
+                " orders.status," +
+                "  orders.comment , " +
+                " priority_order ; ";
 
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray();
         params.add(id_campaign);
