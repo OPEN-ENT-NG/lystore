@@ -180,6 +180,9 @@ export const basketController = ng.controller('basketController',
                 })
                 toasts.warning(message)
             }
+            if(status === 210){
+                toasts.warning("error.purse.negative.basket");
+            }
             status === 200 ?  $scope.confirmOrder(data) :  null ;
         };
         $scope.confirmOrder = (data) => {
