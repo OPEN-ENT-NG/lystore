@@ -23,6 +23,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import static fr.wseduc.webutils.http.Renders.badRequest;
 import static fr.wseduc.webutils.http.Renders.getHost;
 
 public class DefaultBasketService extends SqlCrudService implements BasketService {
@@ -299,6 +300,7 @@ public class DefaultBasketService extends SqlCrudService implements BasketServic
                 if (purse_enabled) {
                     statements.add(purseService.updatePurseAmountStatement(Double.valueOf(basket.getString("total_price")),
                             idCampaign, idStructure, "-"));
+
                 }
                 statements.add(getInsertEquipmentOrderStatement(basket, idProject));
                 if(! "[null]".equals( basket.getString("options"))) {
@@ -312,12 +314,21 @@ public class DefaultBasketService extends SqlCrudService implements BasketServic
             }
             statements.add(getDeletionBasketsEquipmentStatments(idCampaign, idStructure, baskets_objects, purse_enabled));
             sql.transaction(statements, event -> {
-                JsonObject results = event.body().getJsonArray("results")
-                        .getJsonObject(event.body().getJsonArray("results").size()-1);
-                JsonArray objectResult = results.getJsonArray("results").getJsonArray(0);
-                String jsonValue = objectResult.getString(0) == null ? "{}" : objectResult.getString(0);
-                getTransactionHandler(request, nameStructure, getTotalPriceOfBasketList(baskets),
-                        event, new JsonObject(jsonValue), handler);
+                String status = event.body().getString("status");
+                if(status.equals("ok")) {
+                    JsonObject results = event.body().getJsonArray("results")
+                            .getJsonObject(event.body().getJsonArray("results").size() - 1);
+                    JsonArray objectResult = results.getJsonArray("results").getJsonArray(0);
+                    String jsonValue = objectResult.getString(0) == null ? "{}" : objectResult.getString(0);
+                    getTransactionHandler(request, nameStructure, getTotalPriceOfBasketList(baskets),
+                            event, new JsonObject(jsonValue), handler);
+                }else if (status.equals("error")){
+                    if(event.body().getString("message").contains("Check_amount_positive")){ // c est pas biien
+                        request.response().setStatusCode(210).end();
+                    }else{
+                        badRequest(request);
+                    }
+                }
             });
         }catch (ClassCastException e) {
             log.error("An error occurred when casting baskets elements", e);
