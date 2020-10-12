@@ -22,6 +22,7 @@ import org.entcore.common.user.UserUtils;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
 
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultResponseHandler;
 
@@ -81,11 +82,16 @@ public class ExportHelper {
         String type = "";
         JsonObject infoFile = new JsonObject();
 
+
         if (withType) {
             type = request.getParam("type");
             infoFile.put("type", type);
         }
 
+        if(action.equals(ExportTypes.CAMPAIGN_ORDERS)){
+            List<String> ids = request.params().getAll("id");
+            infoFile.put("ids",ids);
+        }
         log.info("makeExportExcel");
         String finalId = id;
 

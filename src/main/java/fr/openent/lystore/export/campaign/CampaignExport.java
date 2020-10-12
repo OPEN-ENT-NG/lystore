@@ -27,12 +27,15 @@ public class CampaignExport extends ExportObject {
     private Logger log = LoggerFactory.getLogger(fr.openent.lystore.export.validOrders.ValidOrders.class);
     private String idFile;
     private Integer id;
+    private List<Integer> ids;
     private SupplierService supplierService;
 
-    public CampaignExport(ExportService exportService, String idNewFile,Integer id){
+    public CampaignExport(ExportService exportService, String idNewFile, Integer id, List<Integer> ids){
         super(exportService,idNewFile);
         this.supplierService = new DefaultSupplierService(Lystore.lystoreSchema, "supplier");
         this.id = id;
+        this.ids = ids;
+        log.info("id CAMPAGNE "+ ids);
     }
 
 
@@ -47,10 +50,10 @@ public class CampaignExport extends ExportObject {
             Future<Boolean> RecapListFuture = Future.future();
 
             futures.add(ExtractionFuture);
-            futures.add(RecapListFuture);
+//            futures.add(RecapListFuture);
             futureHandler(handler, workbook, futures);
-            new ExtractionOrder(workbook,this.id).create(getHandler(ExtractionFuture));
-            new RecapStructOrder(workbook,this.id).create(getHandler(RecapListFuture));
+            new ExtractionOrder(workbook,this.ids).create(getHandler(ExtractionFuture));
+//            new RecapStructOrder(workbook,this.ids).create(getHandler(RecapListFuture));
 
         }
     }

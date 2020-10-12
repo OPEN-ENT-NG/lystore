@@ -153,6 +153,15 @@ export class Campaigns extends Selection<Campaign> {
     isEmpty (): boolean {
         return this.all.length === 0;
     }
+
+    async exportOrders(campaigns: Campaign[]) {
+        let filter = '';
+        campaigns.map((campaign) => filter += `id=${campaign.id}&`);
+        filter = filter.slice(0, -1);
+        let { status } = await http.get(`/lystore/campaign/export/order?${filter}`);
+        if(status === 200)
+            toasts.info("lystore.export.notif")
+    }
 }
 
 export enum PRIORITY_FIELD {

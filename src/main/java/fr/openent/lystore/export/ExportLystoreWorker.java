@@ -14,6 +14,9 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.common.storage.Storage;
 import org.vertx.java.busmods.BusModBase;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static fr.openent.lystore.Lystore.*;
 
 public class ExportLystoreWorker extends BusModBase implements Handler<Message<JsonObject>> {
@@ -90,7 +93,12 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
         idNewFile = body.getString("_id");
         Integer object_id = -1;
         String string_object_id ="";
+        List<Integer> ids= new ArrayList<Integer>();
         JsonObject params = body.getJsonObject("externalParams");
+        if(action.equals(ExportTypes.CAMPAIGN_ORDERS)){
+            for(Object o : body.getJsonArray("ids")){
+                ids.add(Integer.parseInt((String)o));            }
+        }
         try {
             object_id = Integer.parseInt(body.getString("object_id"));
             string_object_id = object_id.toString();
@@ -164,7 +172,7 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
                 exportBCOrdersBeforeValidationStruct(params,fileName,exportHandler);
                 break;
             case ExportTypes.CAMPAIGN_ORDERS:
-                exportCampaignOrder(object_id,fileName,exportHandler);
+                exportCampaignOrder(object_id,fileName,ids,exportHandler);
                 logger.info("body : "+ body);
                 break;
             default:
@@ -173,11 +181,11 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
         }
     }
 
-    private void exportCampaignOrder(Integer cmapaign_id, String titleFile, Handler<Either<String, Boolean>> exportHandler) {
+    private void exportCampaignOrder(Integer cmapaign_id, String titleFile, List<Integer> ids,Handler<Either<String, Boolean>> exportHandler) {
 
         logger.info("Export orders from campaign : ");
 
-        this.campaign = new CampaignExport(exportService, idNewFile, cmapaign_id);
+        this.campaign = new CampaignExport(exportService, idNewFile, cmapaign_id,ids);
         this.campaign.exportOrders(event1 -> {
             saveExportHandler(titleFile, exportHandler, event1, "error when creating export order Campaign xlsx :", XLSXHEADER);
         });

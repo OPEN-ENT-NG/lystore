@@ -88,6 +88,8 @@ public class DefaultExportServiceService implements ExportService {
                                 .put("externalParams",requestParams);
                         if(infoFile.containsKey("type"))
                             params.put("type",infoFile.getString("type"));
+                        if(infoFile.containsKey("ids"))
+                            params.put("ids",infoFile.getValue("ids"));
 
                         mongo.addExport(params, new Handler<String>() {
                             @Override

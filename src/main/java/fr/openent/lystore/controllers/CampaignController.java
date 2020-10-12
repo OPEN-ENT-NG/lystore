@@ -190,7 +190,7 @@ public class CampaignController extends ControllerHelper {
             badRequest(request);
         }
     }
-    @Get("/campaign/export/order/:id")
+    @Get("/campaign/export/order")
     @ApiDoc("Generate export of orders in the campaign")
     @SecuredAction(value = "",type = ActionType.RESOURCE)
     @ResourceFilter(ManagerRight.class)

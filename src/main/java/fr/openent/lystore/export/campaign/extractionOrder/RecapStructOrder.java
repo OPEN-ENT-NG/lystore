@@ -7,15 +7,17 @@ import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.entcore.common.sql.Sql;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class RecapStructOrder  extends TabHelper {
-    Integer id_campaign;
+    List<Integer> ids_campaigns;
 
-    public RecapStructOrder(Workbook workbook, Integer id) {
+    public RecapStructOrder(Workbook workbook, List<Integer> ids) {
         super(workbook,"Récap");
-        id_campaign = id;
+        ids_campaigns = ids;
     }
 
     @Override
@@ -118,7 +120,7 @@ public class RecapStructOrder  extends TabHelper {
                 "FROM    " + Lystore.lystoreSchema +".allorders orders  " +
                 "       INNER JOIN  " + Lystore.lystoreSchema +".campaign  " +
                 "               ON campaign.id = orders.id_campaign  " +
-                "                  AND id_campaign = ?  " +
+                "                  AND id_campaign IN "+ Sql.listPrepared(ids_campaigns) +
                 "       LEFT JOIN  " + Lystore.lystoreSchema +".specific_structures ss  " +
                 "              ON ss.id = orders.id_structure  " +
                 "GROUP  BY id_structure,  " +
@@ -131,8 +133,7 @@ public class RecapStructOrder  extends TabHelper {
 //                "    orders.amount "
         ;
 
-        JsonArray params = new fr.wseduc.webutils.collections.JsonArray();
-        params.add(id_campaign);
+        JsonArray params = new JsonArray(ids_campaigns);
         sqlHandler(handler,params);
     }
 }
