@@ -2,6 +2,7 @@ package fr.openent.lystore.export.campaign.extractionOrder;
 
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.export.TabHelper;
+import fr.openent.lystore.model.*;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
@@ -13,12 +14,11 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class ExtractionOrder extends TabHelper {
     List<Integer> ids_campaigns;
-
+    List<Order> orders = new ArrayList<>();
     public ExtractionOrder(Workbook workbook, List<Integer> ids) {
         super(workbook,"Extraction");
         ids_campaigns = ids;
@@ -32,23 +32,205 @@ public class ExtractionOrder extends TabHelper {
     @Override
     protected  void fillPage(JsonArray structures){
         setStructuresFromDatas(structures);
+        datas = sortByUai(datas);
         setLabels();
-        datas =sortByUai(datas);
+        log.info(datas.size());
+        initObjects();
         setDatas();
     }
 
+    private void initObjects() {
+        Map<String,Structure> structures = new HashMap<>();
+        Map<Long, Campaign> campaigns = new HashMap<>();
+        Map<Long, Project> projects = new HashMap<>();
+        Map<Long, Market> markets = new HashMap<>();
+        Map<Long, AccountingProgram> programs = new HashMap<>();
+        Map<Long, AccountingProgramAction> programActions = new HashMap<>();
+        Map<Long, Operation> operations = new HashMap<>();
+
+        for (Object jo : datas){
+            JsonObject data = (JsonObject)jo;
+            Order order = new Order();
+            String idStructure = data.getString("id_structure");
+            Long idCampaign = data.getLong("campaign_id");
+            Long idProject = data.getLong("project_id");
+            Long idMarket = data.getLong("market_id");
+            Long idProgram =data.getLong("program_id");
+            Long idProgramAction = data.getLong("accounting_nature_id");
+            Long idOperation = data.getLong("id_operation");
+            setOrderStructure(structures, data, order, idStructure);
+            setOrderCampaign(campaigns,data,order,idCampaign);
+            setOrderProject(projects,data,order,idProject);
+            setOrderData(data,order);
+            setOrderMarket(markets,data,order,idMarket);
+            setOrderProgram(programs,data,order,idProgram);
+            setOrderProgramAction(programActions,data,order,idProgramAction);
+            if(idOperation != -1){
+                setOrderOperation(operations,data,order,idOperation);
+            }
+            orders.add(order);
+        }
+    }
+
+    private void setOrderOperation(Map<Long, Operation> operations, JsonObject data, Order order, Long idOperation) {
+        if(!operations.containsKey(idOperation)){
+            Operation operation = new Operation();
+            operation.setId(idOperation.toString());
+            operation.setLabel(data.getString("label_operation"));
+            order.setOperation(operation);
+
+        }else {
+            order.setOperation(operations.get(idOperation));
+        }
+    }
+
+    private void setOrderProgramAction(Map<Long, AccountingProgramAction> programActions, JsonObject data, Order order, Long idProgramAction) {
+        if(!programActions.containsKey(idProgramAction)){
+            AccountingProgramAction accountingProgramAction = new AccountingProgramAction();
+            accountingProgramAction.setId(idProgramAction.toString());
+            accountingProgramAction.setNumber(data.getString("action_number"));
+            accountingProgramAction.setDescription(data.getString("action_description"));
+            order.setProgramAction(accountingProgramAction);
+
+        }else {
+            order.setProgramAction(programActions.get(idProgramAction));
+        }
+    }
+
+
+    private void setOrderProgram(Map<Long, AccountingProgram> programs, JsonObject data, Order order, Long idProgram) {
+        if(!programs.containsKey(idProgram)){
+            AccountingProgram program = new AccountingProgram();
+            program.setId(idProgram.toString());
+            program.setName(data.getString("program_name"));
+            program.setProgramChapter(data.getLong("program_chapter").toString());
+            program.setFunctionnalCode(data.getValue("functional_code").toString());
+            program.setSection(data.getString("program_section"));
+            program.setChapter(data.getValue("program_chapter").toString());
+            order.setAccountingProgram(program);
+
+        }else {
+            order.setAccountingProgram(programs.get(idProgram));
+        }
+    }
+
+    private void setOrderMarket(Map<Long, Market> markets, JsonObject data, Order order, Long idMarket) {
+        if(!markets.containsKey(idMarket)){
+            Market market = new Market();
+            market.setId(idMarket.toString());
+            market.setName(data.getString("market_name"));
+            market.setMarket_number(data.getString("market_number"));
+            market.setAgent(data.getString("market_agent"));
+            market.setRegion_supplier(data.getString("market_supplier"));
+            market.setAccoutingCode(data.getString("accounting_code"));
+            market.setAccoutingNature(data.getString("accounting_nature"));
+            order.setMarket(market);
+
+        }else {
+            order.setMarket(markets.get(idMarket));
+        }
+    }
+
+    private void setOrderData(JsonObject data, Order order) {
+
+        if(data.getString("order_origin").equals("REGION"))
+            order.setId("R-" + data.getInteger("id").toString());
+        else
+            order.setId("E-" + data.getInteger("id").toString());
+
+        order.setOrigin(data.getString("order_origin"));
+        order.setCreationDate(data.getString("orders_date"));
+        order.setStatus(data.getString("status"));
+        order.setComment(data.getString("comment"));
+        //TODO filename
+        order.setName(data.getString("equipment_name"));
+        order.setPriceHT(safeGetDouble(data,"priceht","ExtractionOrder"));
+        order.setTax_amount(safeGetDouble(data,"tva","ExtractionOrder"));
+        order.setName(data.getString("equipment_name"));
+        order.setAmount(data.getInteger("quantity"));
+        order.setTotalTTC(safeGetDouble(data,"total","ExtractionOrder"));
+        if(Integer.parseInt(data.getString("priority_order"))!= -1)
+            order.setRank(Integer.parseInt(data.getString("priority_order")));
+        if(safeGetDouble(data,"price_proposal","ExtractionOrder") != -1.d)
+            order.setPriceProposal(safeGetDouble(data,"price_proposal","ExtractionOrder"));
+    }
+
+    private void setOrderProject(Map<Long, Project> projects, JsonObject data, Order order, Long idProject) {
+        if(!projects.containsKey(idProject)){
+            Project project = new Project();
+            project.setId(idProject.toString());
+            project.setName(data.getString("project_name"));
+            project.setComment(data.getString("project_comment"));
+            project.setBuilding(data.getString("project_building"));
+            project.setRoom(data.getString("project_room"));
+
+            for (int j = 0 ; j< data.getJsonArray("structure_groups").size() ; j++){
+                project.addStructureGroup(data.getJsonArray("structure_groups").getJsonArray(j).getString(1));
+            }
+            for (int j = 0 ; j< data.getJsonArray("tags_name").size() ; j++){
+                project.addTag(data.getJsonArray("tags_name").getJsonArray(j).getString(1));
+
+            }
+            projects.put(idProject,project);
+            if(data.getInteger("priority_project").equals(-1))
+                project.setRank(data.getInteger("priority_project"));
+
+            order.setProject(project);
+
+        }else {
+            order.setProject(projects.get(idProject));
+        }
+    }
+
+    //TODO FIX DATES
+    private void setOrderCampaign(Map<Long, Campaign> campaigns, JsonObject data, Order order, Long idCampaign) {
+        if(!campaigns.containsKey(idCampaign)){
+            Campaign campaign = new Campaign();
+            campaign.setId(idCampaign.toString());
+            campaign.setOpen(data.getBoolean("campaign_open"));
+            campaign.setName(data.getString("campaign_name"));
+            Double purse =safeGetDouble(data,"purse_amount","ExtractionOrder");
+            if(purse != -1.d)
+                campaign.setPurse(purse);
+            else
+                campaign.setHasPurse(false);
+//                campaign.setStartDate(data.getString("campaign_start_date"));
+//                campaign.setEndDate(data.getString("campaign_end_date"));
+
+            campaigns.put(idCampaign,campaign);
+            order.setCampaign(campaign);
+        }else {
+            order.setCampaign(campaigns.get(idCampaign));
+        }
+    }
+
+    private void setOrderStructure(Map<String, Structure> structures, JsonObject data, Order order, String idStructure) {
+        if(!structures.containsKey(idStructure)){
+            Structure structure = new Structure();
+            structure.setId(idStructure);
+            structure.setAcademy(data.getString("academy"));
+            structure.setUAI(data.getString("uai"));
+            structure.setType(data.getString("type"));
+            structure.setName(data.getString("nameEtab"));
+            structure.setZipCode(data.getString("zipCode"));
+            structure.setCity(data.getString("city"));
+            structure.setCiteMixte(data.getString("cite_mixte"));
+            structures.put(idStructure,structure);
+            order.setStructure(structure);
+        }else {
+            order.setStructure(structures.get(idStructure));
+        }
+    }
+
     private void setDatas() {
-        for(int i = 0; i < datas.size() ; i++) {
-            JsonObject data =  datas.getJsonObject(i);
-            insertDates(i, data);
-            insertStruturesInfosFromData(i, data);
-            setProjectAndCampaignsDatas(i, data);
-            //TODO check pour ORE
-            insertEquipmementDatas(i, data);
-            insertAccountingDatas(i,data);
-            setManagementInstructionDatas(i,data);
-            //Important pour libérer de la mémoire dans le garbage collector
-            data = null;
+        for(int i = 0; i < orders.size() ; i++) {
+            Order order =  orders.get(i);
+            insertStruturesInfosFromData(i, order.getStructure());
+            setProjectAndCampaignsDatas(i, order);
+////            //TODO check pour ORE
+            insertEquipmementDatas(i, order);
+            insertAccountingDatas(i,order);
+//            setManagementInstructionDatas(i,data);
             if(i == 10){
                 excel.autoSize(60);
             }
@@ -75,104 +257,69 @@ public class ExtractionOrder extends TabHelper {
 
     }
 
-    private void insertAccountingDatas(int i, JsonObject data) {
-        excel.insertCellTab(35,5+i,data.getString("market_name"));
-        excel.insertCellTab(36,5+i,data.getString("market_number"));
-        excel.insertCellTab(37,5+i,data.getString("market_supplier"));
-        excel.insertCellTab(38,5+i,data.getString("market_agent"));
-        excel.insertCellTab(39,5+i,data.getString("accounting_code"));
-        excel.insertCellTab(40,5+i,data.getString("accounting_nature"));
-        excel.insertCellTab(41,5+i,data.getLong("program_chapter") + " " + data.getString("program_section"));
-        excel.insertCellTab(42,5+i,data.getValue("functional_code").toString());
-        excel.insertCellTab(43,5+i,data.getString("program_name"));
-        excel.insertCellTab(44,5+i,data.getString("program_section"));
-        excel.insertCellTab(45,5+i,data.getString("action_description"));
-        excel.insertCellTab(46,5+i,data.getString("action_number"));
+    private void insertAccountingDatas(int i, Order order) {
+        Market market = order.getMarket();
+        AccountingProgram program = order.getAccountingProgram();
+        AccountingProgramAction programAction = order.getProgramAction();
+        excel.insertCellTab(35,5+i,market.getName());
+        excel.insertCellTab(36,5+i,market.getMarket_number());
+        excel.insertCellTab(37,5+i,market.getRegion_supplier());
+        excel.insertCellTab(38,5+i,market.getAgent());
+        excel.insertCellTab(39,5+i,market.getAccoutingCode());
+        excel.insertCellTab(40,5+i,market.getAccoutingNature());
+        excel.insertCellTab(41,5+i,program.getChapter() + " " + program.getSection());
+        excel.insertCellTab(42,5+i,program.getFunctionnalCode());
+        excel.insertCellTab(43,5+i,program.getName());
+        excel.insertCellTab(44,5+i,program.getSection());
+        excel.insertCellTab(45,5+i,programAction.getDescription());
+        excel.insertCellTab(46,5+i,programAction.getNumber());
     }
 
-    private void insertEquipmementDatas(int i, JsonObject data) {
-        if(data.getString("order_origin").equals("REGION"))
-            excel.insertCellTab(18,5+i,  "R-" + data.getInteger("id").toString());
-        else
-            excel.insertCellTab(18,5+i,  "E-" + data.getInteger("id").toString());
-        excel.insertCellTab(19,5+i,data.getString("order_origin"));
+    private void insertEquipmementDatas(int i, Order order) {
+        excel.insertCellTab(18,5+i, order.getId());
+        excel.insertCellTab(19,5+i, order.getOrigin());
         excel.insertCellTab(20,5+i,"TODO");
-        excel.insertCellTab(21,5+i,data.getString("orders_date"));
-        excel.insertCellTab(22,5+i,data.getString("status"));
-        excel.insertCellTab(23,5+i,(!data.getString("priority_order").equals("-1") ? data.getString("priority_order"): "" ));
-        excel.insertCellTab(24,5+i,(data.getLong("priority_project") != -1 ? data.getLong("priority_project").toString(): "" ));
-        excel.insertCellTab(25,5+i,data.getString("comment"));
-        excel.insertCellTab(26,5+i,data.getString("filename"));
-        excel.insertCellTab(27,5+i,data.getString("equipment_name"));
-        excel.insertCellTabDouble(28,5+i,safeGetDouble(data,"quantity","ExtractionOrder"));
-        excel.insertCellTabDouble(29,5+i,safeGetDouble(data,"priceht","ExtractionOrder"));
-        excel.insertCellTabDouble(30,5+i,safeGetDouble(data,"tva","ExtractionOrder"));
-        excel.insertWithStyle(31,5+i,
-                (safeGetDouble(data,"price_proposal","ExtractionOrder")!=-1.d ? safeGetDouble(data,"price_proposal","ExtractionOrder") : ""),excel.tabCurrencyStyle );
-        excel.insertCellTabDoubleWithPrice(32,5+i,safeGetDouble(data,"total","ExtractionOrder"));
+        excel.insertCellTab(21,5+i, order.getCreationDate());
+        excel.insertCellTab(22,5+i, order.getStatus());
+        excel.insertCellTab(23,5+i,(order.hasRank() ? order.getRank().toString() : "" ));
+        excel.insertCellTab(24,5+i,(order.getProject().hasRank() ? order.getProject().getRank().toString(): "" ));
+        excel.insertCellTab(25,5+i, order.getComment());
+//        excel.insertCellTab(26,5+i,data.getString("filename"));
+        excel.insertCellTab(27,5+i,order.getName());
+        excel.insertCellTabInt(28,5+i,order.getAmount());
+        excel.insertCellTabDouble(29,5+i,order.getPriceHT());
+        excel.insertCellTabDouble(30,5+i,order.getTax_amount());
+        excel.insertWithStyle(31,5+i,(order.hasPriceProposal() ? order.getPriceProposal().toString() : " " ),excel.tabCurrencyStyle);
+        excel.insertCellTabDoubleWithPrice(32,5+i,order.getTotalTTC());
         excel.insertCellTabInt(33,5+i,35);
         excel.insertCellTabInt(34,5+i,36);
     }
 
-    private void setProjectAndCampaignsDatas(int i, JsonObject data) {
-        excel.insertCellTab(7,5+i,data.getString("campaign_name"));
-        Double purse_amount = safeGetDouble(data,"purse_amount","ExtractionOrder");
-        if(purse_amount != -1.d)
-            excel.insertCellTabDoubleWithPrice(8,5+i,purse_amount);
-        else
-            excel.insertCellTab(8,5+i,"");
-        excel.insertCellTab(11,5+i,data.getBoolean("campaign_open") ? "Ouverte" : "Fermée");
-        excel.insertCellTab(12, 5+i, data.getString("project_name"));
-        excel.insertCellTab(13, 5+i, data.getString("project_comment"));
-
-
-        StringBuilder structure_groups = new StringBuilder();
-        structure_groups.append("{") ;
-        for (int j = 0 ; j< data.getJsonArray("structure_groups").size() ; j++){
-            structure_groups.append(data.getJsonArray("structure_groups").getJsonArray(j).getString(1));
-            if(j!= data.getJsonArray("structure_groups").size()-1){
-                structure_groups.append(",");
-            }
-        }
-        structure_groups.append("}");
-        excel.insertCellTab(14, 5+i  , structure_groups.toString());
-
-        StringBuilder tags = new StringBuilder();
-        tags.append("{") ;
-        for (int j = 0 ; j< data.getJsonArray("tags_name").size() ; j++){
-            tags.append(data.getJsonArray("tags_name").getJsonArray(j).getString(1));
-            if(j!= data.getJsonArray("tags_name").size()-1){
-                tags.append(",");
-            }
-        }
-        tags.append("}");
-        excel.insertCellTab(15, 5+i  , tags.toString());
-
-        excel.insertCellTab(16,5+i,data.getString("project_room"));
-        excel.insertCellTab(17,5+i,data.getString("project_building"));
+    private void setProjectAndCampaignsDatas(int i, Order order) {
+        Campaign campaign = order.getCampaign();
+        Project project = order.getProject();
+        excel.insertCellTab(7,5+i,campaign.getName());
+        if(campaign.hasPurse())
+            excel.insertCellTabDoubleWithPrice(8,5+i,campaign.getPurse());
+        excel.insertCellTab(9,5+i,campaign.getStartDate());
+        excel.insertCellTab(10,5+i,campaign.getEndDate());
+        excel.insertCellTab(11,5+i,campaign.isOpen() ? "Ouverte" : "Fermée");
+        excel.insertCellTab(12, 5+i, project.getName());
+        excel.insertCellTab(13, 5+i, project.getComment());
+        excel.insertCellTab(14, 5+i  , project.getStructureGroupString());
+        excel.insertCellTab(15, 5+i  , project.getTags().toString());
+        excel.insertCellTab(16,5+i,project.getRoom());
+        excel.insertCellTab(17,5+i,project.getBuilding());
     }
 
-    private void insertStruturesInfosFromData(int i, JsonObject data) {
-        excel.insertCellTab(0, 5+i, data.getString("uai"));
-        excel.insertCellTab(1, 5+i, data.getString("type"));
-        excel.insertCellTab(2, 5+i, data.getString("nameEtab"));
-        excel.insertCellTab(3, 5+i, data.getString("zipCode").substring(0,2));
-        excel.insertCellTab(4, 5+i, data.getString("city"));
-        excel.insertCellTab(5, 5+i, data.getString("cite_mixte"));
-        excel.insertCellTab(6, 5+i, data.getString("academy"));
-    }
-
-    private void insertDates(int i, JsonObject data) {
-        try{
-            excel.insertCellTab(10,5+i,data.getString("campaign_end_date"));
-        }catch (NullPointerException ignored){
-            excel.insertCellTab(10,5+i,"");
-        }
-        try{
-            excel.insertCellTab(9,5+i,data.getString("campaign_start_date"));
-        }catch (NullPointerException ignored){
-            excel.insertCellTab(9,5+i,"");
-        }
+    private void insertStruturesInfosFromData(int i, Structure structure) {
+        excel.insertCellTab(0, 5+i, structure.getUAI());
+        excel.insertCellTab(1, 5+i, structure.getType());
+        excel.insertCellTab(2, 5+i, structure.getName());
+        excel.insertCellTab(3, 5+i, structure.getZipCode().substring(0,2));
+        excel.insertCellTab(4, 5+i, structure.getCity());
+        excel.insertCellTab(5, 5+i, structure.getCiteMixte());
+        excel.insertCellTab(6, 5+i, structure.getAcademy());
     }
 
 
@@ -200,6 +347,17 @@ public class ExtractionOrder extends TabHelper {
         excel.insertBlackTitleHeader(47,3,"Gestion des rapports CP");
         sizeMergeRegion(3,47,54);
         setManagementInstructionLabel();
+        excel.insertBlackTitleHeader(55,3,"Gestion des bons de commandes");
+        sizeMergeRegion(3,55,59);
+        setBCManagementLabel();
+    }
+
+    private void setBCManagementLabel() {
+        excel.insertWithStyle(55,4,"Numéro de Validation",excel.LabelBlackOnRed);
+        excel.insertWithStyle(56,4,"N° Bon de Commande",excel.LabelBlackOnRed);
+        excel.insertWithStyle(57,4,"N° Engagement",excel.LabelBlackOnRed);
+        excel.insertWithStyle(58,4,"Programme",excel.LabelBlackOnRed);
+        excel.insertWithStyle(59,4,"Date création",excel.LabelBlackOnRed);
     }
 
     private void setOptionsEquipmentLabel() {
@@ -305,50 +463,39 @@ public class ExtractionOrder extends TabHelper {
                 "SELECT  " +
                 "  DISTINCT orders.id,  " +
                 "  orders.creation_date as orders_date,  " +
-                "  campaign.name as campaign_name,  " +
+                "  campaign.name as campaign_name, " +
+                "  campaign.id as campaign_id, " +
                 "  orders.\"price TTC\" as priceTTC,  " +
                 "  orders.amount as quantity,  " +
                 "  orders.name as equipment_name,  " +
                 "  orders.id_structure,  " +
                 "  orders.status,  " +
                 "  contract_type.name as accounting_nature,  " +
-                "  contract_type.code as accounting_code,  " +
+                "  contract_type.code as accounting_code," +
+                "  contract_type.id as accounting_nature_id,  " +
                 "  market.name as market_name,  " +
-                "  market.reference as market_number,  " +
+                "  market.reference as market_number, " +
+                "  market.id as market_id, " +
                 "  supplier.name as market_supplier,  " +
                 "  agent.name as market_agent,  " +
                 "  program.name as program_name,  " +
                 "  program.chapter as program_chapter,  " +
-                "  program.functional_code as functional_code,  " +
+                "  program.functional_code as functional_code," +
+                "  program.id as program_id,  " +
                 "  program.section as program_section,  " +
                 "  program_action.action as action_number,  " +
                 "  program_action.description as action_description,  " +
                 "  instruction_operation.label as label_operation, " +
                 "  instruction_operation.status as operation_status, " +
-                "  title.name as project_name, " +
+                "  title.name as project_name," +
+                "  project.id as project_id, " +
                 "  CASE when project.description is NULL THEN '' ELSE project.description END as project_comment,  " +
                 "  CASE when project.room is NULL THEN '' ELSE project.room END as project_room,  " +
                 "  CASE when project.building is NULL THEN '' ELSE project.building END as project_building,  " +
                 "  CASE when orders.override_region IS NULL THEN 'REGION' ELSE 'EPLE' END as order_origin,  " +
-                "  CASE WHEN( " +
-                "    SELECT  " +
-                "      filename  " +
-                "    FROM  " +
-                "      lystore.order_file  " +
-                "    WHERE  " +
-                "      order_file.id_order_client_equipment = orders.id  " +
-                "      AND orders.override_region is false " +
-                "  ) IS NULL THEN '' ELSE ( " +
-                "    SELECT  " +
-                "      filename  " +
-                "    FROM  " +
-                "      lystore.order_file  " +
-                "    WHERE  " +
-                "      order_file.id_order_client_equipment = orders.id  " +
-                "      AND orders.override_region is false " +
-                "  ) END as filename,  " +
                 "  campaign.start_date as campaign_start_date,  " +
-                "  campaign.end_date campaign_end_date,  " +
+                "  campaign.end_date campaign_end_date," +
+                "     " +
                 "  CASE WHEN campaign.purse_enabled IS TRUE THEN ( " +
                 "    SELECT  " +
                 "      purse.initial_amount  " +
@@ -369,7 +516,8 @@ public class ExtractionOrder extends TabHelper {
                 "  CASE WHEN ss.type IS NULL THEN ' ' ELSE ss.type END AS cite_mixte,  " +
                 "  CASE WHEN orders.tax_amount = -1 THEN 20 ELSE orders.tax_amount END as TVA,  " +
                 "  CASE WHEN orders.priceHT = -1 THEN orders.\"price TTC\" / 1.2 ELSE orders.priceHT END as priceHT,  " +
-                "  CASE WHEN orders.price_proposal IS NULL THEN -1 ELSE orders.price_proposal END as price_proposal, " +
+                "  CASE WHEN orders.price_proposal IS NULL THEN -1 ELSE orders.price_proposal END as price_proposal," +
+                "  CASE WHEN instruction_operation.id_operation IS NULL THEN -1 ELSE instruction_operation.id_operation END as id_operation, " +
                 "  CASE WHEN instruction_operation.cp_number IS NULL THEN '' ELSE instruction_operation.cp_number END as cp_number, " +
                 "  CASE WHEN instruction_operation.label IS NULL THEN '' ELSE instruction_operation.label END as label_operation, " +
                 "  CASE WHEN instruction_operation.object IS NULL THEN '' ELSE instruction_operation.object END as label_instruction, " +
@@ -386,6 +534,8 @@ public class ExtractionOrder extends TabHelper {
                 "    WHERE  " +
                 "      order_file.id_order_client_equipment = orders.id  " +
                 "      AND orders.override_region is false " +
+                //TODO DELETE LES LIMIT 1 PLUS TARD
+                "   LIMIT 1" +
                 "  ) IS NULL THEN '' ELSE ( " +
                 "    SELECT  " +
                 "      filename  " +
@@ -394,6 +544,7 @@ public class ExtractionOrder extends TabHelper {
                 "    WHERE  " +
                 "      order_file.id_order_client_equipment = orders.id  " +
                 "      AND orders.override_region is false " +
+                "   LIMIT 1" +
                 "  ) END as filename  " +
                 "FROM  " +
                 "  lystore.allorders orders  " +
@@ -492,7 +643,15 @@ public class ExtractionOrder extends TabHelper {
                 "  instruction_operation.label," +
                 "   instruction_operation.cp_number," +
                 "   instruction_operation.object," +
-                "   instruction_operation.status;  ";
+                "   instruction_operation.status," +
+                "   campaign.id," +
+                "   project.id," +
+                "   market.id," +
+                "   contract_type.id," +
+                "   program.id," +
+                "   program_action.id," +
+                "   instruction_operation.id_operation" +
+                " ;  ";
 
         launchSQLFutures(handler);
     }
@@ -533,12 +692,11 @@ public class ExtractionOrder extends TabHelper {
     }
     @Override
     protected void sqlHandler(Handler<Either<String,JsonArray>> handler, JsonArray params){
-        log.info("params : " +params);
         Sql.getInstance().prepared(query, params, new DeliveryOptions().setSendTimeout(Lystore.timeout * 1000000000L),SqlResult.validResultHandler(event -> {
             if (event.isLeft()) {
                 handler.handle(event.left());
             } else {
-               JsonArray datas = event.right().getValue();
+                JsonArray datas = event.right().getValue();
                 handler.handle(new Either.Right<>(datas));
             }
         }));

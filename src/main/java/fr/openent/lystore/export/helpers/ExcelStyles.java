@@ -48,6 +48,7 @@ public abstract class ExcelStyles {
     public final CellStyle labelOnOrange;
     public final CellStyle labelOnGreen;
     public final CellStyle labelOnYellow;
+    public final CellStyle labelOnPink;
     public final CellStyle LabelBlackOnRed;
 
 
@@ -100,6 +101,7 @@ public abstract class ExcelStyles {
         this.labelOnBlueGrey = wb.createCellStyle();
         this.labelOnOrange = wb.createCellStyle();
         this.labelOnGreen = wb.createCellStyle();
+        this.labelOnPink = wb.createCellStyle();
         format = wb.createDataFormat();
         format.getFormat("#.#");
 
@@ -564,5 +566,17 @@ public abstract class ExcelStyles {
         this.labelOnGreen.setAlignment(HorizontalAlignment.CENTER);
         this.labelOnGreen.setVerticalAlignment(VerticalAlignment.CENTER);
         this.labelOnGreen.setFont(headerFont);
+
+
+        this.labelOnPink.setBorderLeft(BorderStyle.THIN);
+        this.labelOnPink.setBorderRight(BorderStyle.THIN);
+        this.labelOnPink.setBorderTop(BorderStyle.THIN);
+        this.labelOnPink.setBorderBottom(BorderStyle.THIN);
+        this.labelOnPink.setWrapText(true);
+        this.labelOnPink.setFillForegroundColor(IndexedColors.PINK.getIndex());
+        this.labelOnPink.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        this.labelOnPink.setAlignment(HorizontalAlignment.CENTER);
+        this.labelOnPink.setVerticalAlignment(VerticalAlignment.CENTER);
+        this.labelOnPink.setFont(headerFont);
     }
 }
