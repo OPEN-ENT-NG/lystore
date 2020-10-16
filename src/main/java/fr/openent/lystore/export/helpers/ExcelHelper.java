@@ -262,6 +262,10 @@ public class ExcelHelper extends ExcelStyles{
         insertWithStyle(cellColumn, line, data, tabStringStyle);
     }
 
+    public void insertCellTab(int cellColumn, int line, Object data) {
+        insertWithStyle(cellColumn, line, data, tabStringStyle);
+    }
+
     /**
      * insert a cell with an int in the tab
      *

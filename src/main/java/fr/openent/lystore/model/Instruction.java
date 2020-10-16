@@ -3,19 +3,20 @@ package fr.openent.lystore.model;
 import io.vertx.core.json.JsonObject;
 
 public class Instruction extends Model {
-    String exercice;
+    String exercise;
     String object;
     String service_number;
     Boolean submittedToCp;
     String date_cp;
+    String cp_number;
     String comment;
 
-    public String getExercice() {
-        return exercice;
+    public String getExercise() {
+        return exercise;
     }
 
-    public void setExercice(String exercice) {
-        this.exercice = exercice;
+    public void setExercise(String exercise) {
+        this.exercise = exercise;
     }
 
     public String getObject() {
@@ -50,6 +51,13 @@ public class Instruction extends Model {
         this.comment = comment;
     }
 
+    public String getCp_number() {
+        return cp_number;
+    }
+
+    public void setCp_number(String cp_number) {
+        this.cp_number = cp_number;
+    }
 
     public String getDate_cp() {
         return date_cp;

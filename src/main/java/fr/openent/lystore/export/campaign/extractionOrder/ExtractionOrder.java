@@ -19,6 +19,8 @@ import java.util.*;
 public class ExtractionOrder extends TabHelper {
     List<Integer> ids_campaigns;
     List<Order> orders = new ArrayList<>();
+    final String TODO = "TODO";
+    final String EMPTY = "";
     public ExtractionOrder(Workbook workbook, List<Integer> ids) {
         super(workbook,"Extraction");
         ids_campaigns = ids;
@@ -34,8 +36,9 @@ public class ExtractionOrder extends TabHelper {
         setStructuresFromDatas(structures);
         datas = sortByUai(datas);
         setLabels();
-        log.info(datas.size());
         initObjects();
+        datas = new JsonArray();
+        log.info(orders.size());
         setDatas();
     }
 
@@ -47,7 +50,7 @@ public class ExtractionOrder extends TabHelper {
         Map<Long, AccountingProgram> programs = new HashMap<>();
         Map<Long, AccountingProgramAction> programActions = new HashMap<>();
         Map<Long, Operation> operations = new HashMap<>();
-
+        Map<Long, Instruction> instructions = new HashMap<>();
         for (Object jo : datas){
             JsonObject data = (JsonObject)jo;
             Order order = new Order();
@@ -58,6 +61,7 @@ public class ExtractionOrder extends TabHelper {
             Long idProgram =data.getLong("program_id");
             Long idProgramAction = data.getLong("accounting_nature_id");
             Long idOperation = data.getLong("id_operation");
+            boolean isValid = data.getBoolean("isvalid");
             setOrderStructure(structures, data, order, idStructure);
             setOrderCampaign(campaigns,data,order,idCampaign);
             setOrderProject(projects,data,order,idProject);
@@ -66,17 +70,49 @@ public class ExtractionOrder extends TabHelper {
             setOrderProgram(programs,data,order,idProgram);
             setOrderProgramAction(programActions,data,order,idProgramAction);
             if(idOperation != -1){
-                setOrderOperation(operations,data,order,idOperation);
+                setOrderOperation(operations,instructions,data,order,idOperation);
+            }
+            if(isValid){
+                setOrderBCAndValid(order,data);
             }
             orders.add(order);
         }
     }
 
-    private void setOrderOperation(Map<Long, Operation> operations, JsonObject data, Order order, Long idOperation) {
+    private void setOrderBCAndValid(Order order, JsonObject data) {
+        order.setNumberValidation(data.getString("order_validation_number"));
+        order.setAtLeastValid(true);
+        if(data.getBoolean("hasbc")){
+            order.setHasBC(true);
+            order.setProgram(data.getString("order_program"));
+            BCOrder bcOrder = new BCOrder();
+            bcOrder.setDateCreation("bc_date_creation");
+            bcOrder.setEngagementNumber("bc_engagement_number");
+            bcOrder.setNumber("bc_number");
+            order.setBcOrder(bcOrder);
+        }
+    }
+
+    private void setOrderOperation(Map<Long, Operation> operations, Map<Long, Instruction> instructions, JsonObject data, Order order, Long idOperation) {
+
         if(!operations.containsKey(idOperation)){
             Operation operation = new Operation();
+            Long idInstruction = data.getLong("instruction_id");
+            if(idInstruction != -1){
+                if(!instructions.containsKey(idInstruction)) {
+                    Instruction instruction = new Instruction();
+                    instruction.setId(idInstruction.toString());
+//                instruction.setDate_cp(da);
+                    instruction.setExercise(data.getString("exercise_year"));
+                    instruction.setCp_number(data.getString("cp_number"));
+                    instructions.put(idInstruction, instruction);
+                    instruction.setObject(data.getString("label_instruction"));
+                }
+                operation.setInstruction(instructions.get(idInstruction));
+            }
             operation.setId(idOperation.toString());
             operation.setLabel(data.getString("label_operation"));
+            operation.setStatus(Boolean.parseBoolean(data.getString("operation_status")));
             order.setOperation(operation);
 
         }else {
@@ -142,7 +178,7 @@ public class ExtractionOrder extends TabHelper {
         order.setCreationDate(data.getString("orders_date"));
         order.setStatus(data.getString("status"));
         order.setComment(data.getString("comment"));
-        //TODO filename
+        //TODO options + date
         order.setName(data.getString("equipment_name"));
         order.setPriceHT(safeGetDouble(data,"priceht","ExtractionOrder"));
         order.setTax_amount(safeGetDouble(data,"tva","ExtractionOrder"));
@@ -153,6 +189,12 @@ public class ExtractionOrder extends TabHelper {
             order.setRank(Integer.parseInt(data.getString("priority_order")));
         if(safeGetDouble(data,"price_proposal","ExtractionOrder") != -1.d)
             order.setPriceProposal(safeGetDouble(data,"price_proposal","ExtractionOrder"));
+        if(data.getBoolean("has_file")){
+            JsonArray filesArray= data.getJsonArray("filenames");
+            for(int i = 0 ; i < filesArray.size(); i ++){
+                order.addFilenames(filesArray.getJsonArray(i).getString(1));
+            }
+        }
     }
 
     private void setOrderProject(Map<Long, Project> projects, JsonObject data, Order order, Long idProject) {
@@ -189,11 +231,15 @@ public class ExtractionOrder extends TabHelper {
             campaign.setId(idCampaign.toString());
             campaign.setOpen(data.getBoolean("campaign_open"));
             campaign.setName(data.getString("campaign_name"));
-            Double purse =safeGetDouble(data,"purse_amount","ExtractionOrder");
-            if(purse != -1.d)
-                campaign.setPurse(purse);
-            else
-                campaign.setHasPurse(false);
+            try {
+                Double purse = safeGetDouble(data, "purse_amount", "ExtractionOrder");
+                if (purse != -1.d)
+                    campaign.setPurse(purse);
+                else
+                    campaign.setHasPurse(false);
+            }catch (NullPointerException e){
+                data.getValue("purse_amount");
+            }
 //                campaign.setStartDate(data.getString("campaign_start_date"));
 //                campaign.setEndDate(data.getString("campaign_end_date"));
 
@@ -223,38 +269,63 @@ public class ExtractionOrder extends TabHelper {
     }
 
     private void setDatas() {
-        for(int i = 0; i < orders.size() ; i++) {
-            Order order =  orders.get(i);
+        int nbOrder = orders.size();
+        for(int i = 0; i < nbOrder ; i++) {
+            Order order = orders.get(0);
             insertStruturesInfosFromData(i, order.getStructure());
             setProjectAndCampaignsDatas(i, order);
 ////            //TODO check pour ORE
             insertEquipmementDatas(i, order);
-            insertAccountingDatas(i,order);
-//            setManagementInstructionDatas(i,data);
-            if(i == 10){
+            insertAccountingDatas(i, order);
+            setManagementInstructionDatas(i, order);
+            setBCManagementData(i,order);
+            if (i == 10) {
                 excel.autoSize(60);
             }
+            orders.remove(0);
         }
-        if(datas.size()<10){
+        if (nbOrder < 10) {
             excel.autoSize(60);
         }
     }
 
-    private void setManagementInstructionDatas(int i, JsonObject data) {
-        excel.insertCellTab(47,5+i,"TODO");
-        excel.insertCellTab(48,5+i,data.getString("label_operation"));
-        excel.insertCellTab(49,5+i,"DATE CP");
-        try{
-            excel.insertCellTab(50,5+i,(Boolean.parseBoolean(data.getString("operation_status"))? "Ouverte" : "Fermée"));
-        }catch (NullPointerException e){
-            excel.insertCellTab(50,5+i,"");
+    private void setBCManagementData(int i, Order order) {
+        if(order.isAtLeastValid()) {
+            excel.insertCellTab(55,5+i,order.getNumberValidation());
+            if(order.hasBC()){
+                BCOrder bcOrder = order.getBcOrder();
+                excel.insertCellTab(58,5+i,order.getProgram());
+                excel.insertCellTab(56,5+i,bcOrder.getNumber());
+                excel.insertCellTab(57,5+i,bcOrder.getEngagementNumber());
+                excel.insertCellTab(59,5+i,bcOrder.getDateCreation());
+            }
+        }else {
+            for(int j = 0; j <= 4; j++){
+                excel.insertCellTab(55+j, 5 + i, EMPTY);
+            }
         }
-        excel.insertCellTab(51,5+i,data.getString("label_instruction"));
-        excel.insertCellTab(52,5+i,data.getString("cp_number"));
-        excel.insertCellTab(53,5+i,"DATE CP");
 
-        excel.insertCellTab(54,5+i,"Statut Rapport CP");
+    }
 
+    private void setManagementInstructionDatas(int i, Order order) {
+        if(order.hasOperation()) {
+            Operation operation = order.getOperation();
+            excel.insertCellTab(48, 5 + i, operation.getLabel());
+            excel.insertCellTab(49, 5 + i, "DATE CP");
+            excel.insertCellTab(50, 5 + i, (operation.getStatus() ? "Ouverte" : "Fermée"));
+            if(operation.hasInstruction()){
+                Instruction instruction = operation.getInstruction();
+                excel.insertCellTab(47, 5 + i, instruction.getExercise());
+                excel.insertCellTab(51,5 + i, instruction.getObject());
+                excel.insertCellTab(52,5 + i, instruction.getCp_number());
+//                excel.insertCellTab(53,5 + i,instruction.getDate_cp());
+            }
+            excel.insertCellTab(54, 5 + i, "Statut Rapport CP");
+        }else{
+            for(int j = 0; j <= 7; j++){
+                excel.insertCellTab(47+j, 5 + i, EMPTY);
+            }
+        }
     }
 
     private void insertAccountingDatas(int i, Order order) {
@@ -278,18 +349,21 @@ public class ExtractionOrder extends TabHelper {
     private void insertEquipmementDatas(int i, Order order) {
         excel.insertCellTab(18,5+i, order.getId());
         excel.insertCellTab(19,5+i, order.getOrigin());
-        excel.insertCellTab(20,5+i,"TODO");
+        excel.insertCellTab(20,5+i,TODO);
         excel.insertCellTab(21,5+i, order.getCreationDate());
         excel.insertCellTab(22,5+i, order.getStatus());
-        excel.insertCellTab(23,5+i,(order.hasRank() ? order.getRank().toString() : "" ));
-        excel.insertCellTab(24,5+i,(order.getProject().hasRank() ? order.getProject().getRank().toString(): "" ));
+        excel.insertCellTab(23,5+i,(order.hasRank() ? order.getRank() : EMPTY ));
+        excel.insertCellTab(24,5+i,(order.getProject().hasRank() ? order.getProject().getRank(): EMPTY ));
         excel.insertCellTab(25,5+i, order.getComment());
-//        excel.insertCellTab(26,5+i,data.getString("filename"));
+        if(order.hasFilename())
+            excel.insertCellTab(26,5+i,order.getFilenames().toString());
+        else
+            excel.insertCellTab(26,5+i,"");
         excel.insertCellTab(27,5+i,order.getName());
         excel.insertCellTabInt(28,5+i,order.getAmount());
         excel.insertCellTabDouble(29,5+i,order.getPriceHT());
         excel.insertCellTabDouble(30,5+i,order.getTax_amount());
-        excel.insertWithStyle(31,5+i,(order.hasPriceProposal() ? order.getPriceProposal().toString() : " " ),excel.tabCurrencyStyle);
+        excel.insertWithStyle(31,5+i,(order.hasPriceProposal() ? order.getPriceProposal() : EMPTY ),excel.tabCurrencyStyle);
         excel.insertCellTabDoubleWithPrice(32,5+i,order.getTotalTTC());
         excel.insertCellTabInt(33,5+i,35);
         excel.insertCellTabInt(34,5+i,36);
@@ -353,11 +427,11 @@ public class ExtractionOrder extends TabHelper {
     }
 
     private void setBCManagementLabel() {
-        excel.insertWithStyle(55,4,"Numéro de Validation",excel.LabelBlackOnRed);
-        excel.insertWithStyle(56,4,"N° Bon de Commande",excel.LabelBlackOnRed);
-        excel.insertWithStyle(57,4,"N° Engagement",excel.LabelBlackOnRed);
-        excel.insertWithStyle(58,4,"Programme",excel.LabelBlackOnRed);
-        excel.insertWithStyle(59,4,"Date création",excel.LabelBlackOnRed);
+        excel.insertWithStyle(55,4,"Numéro de Validation",excel.labelOnOrange);
+        excel.insertWithStyle(56,4,"N° Bon de Commande",excel.labelOnOrange);
+        excel.insertWithStyle(57,4,"N° Engagement",excel.labelOnOrange);
+        excel.insertWithStyle(58,4,"Programme",excel.labelOnOrange);
+        excel.insertWithStyle(59,4,"Date création",excel.labelOnOrange);
     }
 
     private void setOptionsEquipmentLabel() {
@@ -449,209 +523,247 @@ public class ExtractionOrder extends TabHelper {
     @Override
     public void getDatas(Handler<Either<String, JsonArray>> handler) {
         query = " WITH info_group_and_tag as ( " +
-                "  SELECT  " +
-                "    tag.name,  " +
-                "    rgc.id_campaign as id_campaign,  " +
-                "    rgs.id_structure as id_struct,  " +
-                "    structure_group.name as group_name  " +
-                "  FROM  " +
-                "    lystore.tag  " +
-                "    INNER JOIN lystore.rel_group_campaign rgc on tag.id = rgc.id_tag  " +
-                "    INNER JOIN lystore.structure_group on rgc.id_structure_group = structure_group.id  " +
+                "  SELECT " +
+                "    tag.name, " +
+                "    rgc.id_campaign as id_campaign, " +
+                "    rgs.id_structure as id_struct, " +
+                "    structure_group.name as group_name " +
+                "  FROM " +
+                "    lystore.tag " +
+                "    INNER JOIN lystore.rel_group_campaign rgc on tag.id = rgc.id_tag " +
+                "    INNER JOIN lystore.structure_group on rgc.id_structure_group = structure_group.id " +
                 "    INNER JOIN lystore.rel_group_structure rgs on structure_group.id = rgs.id_structure_group " +
-                ")  " +
-                "SELECT  " +
-                "  DISTINCT orders.id,  " +
-                "  orders.creation_date as orders_date,  " +
+                ") " +
+                "SELECT " +
+                "  DISTINCT orders.id, " +
+                "  orders.creation_date as orders_date, " +
                 "  campaign.name as campaign_name, " +
                 "  campaign.id as campaign_id, " +
-                "  orders.\"price TTC\" as priceTTC,  " +
-                "  orders.amount as quantity,  " +
-                "  orders.name as equipment_name,  " +
-                "  orders.id_structure,  " +
-                "  orders.status,  " +
-                "  contract_type.name as accounting_nature,  " +
-                "  contract_type.code as accounting_code," +
-                "  contract_type.id as accounting_nature_id,  " +
-                "  market.name as market_name,  " +
+                "  orders.\"price TTC\" as priceTTC, " +
+                "  orders.amount as quantity, " +
+                "  orders.name as equipment_name, " +
+                "  orders.id_structure, " +
+                "  orders.status, " +
+                "  contract_type.name as accounting_nature, " +
+                "  contract_type.code as accounting_code, " +
+                "  contract_type.id as accounting_nature_id, " +
+                "  market.name as market_name, " +
                 "  market.reference as market_number, " +
                 "  market.id as market_id, " +
-                "  supplier.name as market_supplier,  " +
-                "  agent.name as market_agent,  " +
-                "  program.name as program_name,  " +
-                "  program.chapter as program_chapter,  " +
-                "  program.functional_code as functional_code," +
-                "  program.id as program_id,  " +
-                "  program.section as program_section,  " +
-                "  program_action.action as action_number,  " +
-                "  program_action.description as action_description,  " +
+                "  supplier.name as market_supplier, " +
+                "  agent.name as market_agent, " +
+                "  program.name as program_name, " +
+                "  program.chapter as program_chapter, " +
+                "  program.functional_code as functional_code, " +
+                "  program.id as program_id, " +
+                "  program.section as program_section, " +
+                "  program_action.action as action_number, " +
+                "  program_action.description as action_description, " +
                 "  instruction_operation.label as label_operation, " +
                 "  instruction_operation.status as operation_status, " +
-                "  title.name as project_name," +
+                "  instruction_operation.date_operation as date_operation, " +
+                "  instruction_operation.cp_number as cp_number, " +
+                "  instruction_operation.year as exercise_year, " +
+                "  title.name as project_name, " +
                 "  project.id as project_id, " +
-                "  CASE when project.description is NULL THEN '' ELSE project.description END as project_comment,  " +
-                "  CASE when project.room is NULL THEN '' ELSE project.room END as project_room,  " +
-                "  CASE when project.building is NULL THEN '' ELSE project.building END as project_building,  " +
-                "  CASE when orders.override_region IS NULL THEN 'REGION' ELSE 'EPLE' END as order_origin,  " +
-                "  campaign.start_date as campaign_start_date,  " +
-                "  campaign.end_date campaign_end_date," +
-                "     " +
+                "  CASE when project.description is NULL THEN '' ELSE project.description END as project_comment, " +
+                "  CASE when orders.id_order is NULL " +
+                "  OR orders.program IS NULL then FALSE else TRUE END as hasBC, " +
+                "  CASE when orders.number_validation is NULL then FALSE else TRUE END as isValid, " +
+                "  CASE when project.room is NULL THEN '' ELSE project.room END as project_room, " +
+                "  CASE when project.building is NULL THEN '' ELSE project.building END as project_building, " +
+                "  CASE when orders.override_region IS NULL THEN 'REGION' ELSE 'EPLE' END as order_origin, " +
+                "  campaign.start_date as campaign_start_date, " +
+                "  campaign.end_date campaign_end_date, " +
+                "  orders.number_validation as order_validation_number, " +
+                "  orders.program as order_program, " +
+                "  orders.action as program_action, " +
                 "  CASE WHEN campaign.purse_enabled IS TRUE THEN ( " +
-                "    SELECT  " +
-                "      purse.initial_amount  " +
-                "    FROM  " +
-                "      lystore.purse  " +
-                "    WHERE  " +
-                "      purse.id_campaign = campaign.id  " +
+                "    SELECT " +
+                "      purse.initial_amount " +
+                "    FROM " +
+                "      lystore.purse " +
+                "    WHERE " +
+                "      purse.id_campaign = campaign.id " +
                 "      AND purse.id_structure = orders.id_structure " +
-                "  ) ELSE -1 END as purse_amount,  " +
-                "  CASE WHEN orders.comment IS NULL THEN '' ELSE orders.comment END as comment,  " +
-                "  array_agg(info_group_and_tag.name) as tags_name,  " +
+                "  ) ELSE -1 END as purse_amount, " +
+                "  CASE WHEN orders.comment IS NULL THEN '' ELSE orders.comment END as comment, " +
+                "  array_agg(info_group_and_tag.name) as tags_name, " +
                 "  array_agg( " +
                 "    DISTINCT info_group_and_tag.group_name " +
-                "  ) as structure_groups,  " +
-                "  campaign.accessible as campaign_open,  " +
-                "  CASE WHEN orders.prio IS NULL THEN -1 ELSE orders.prio END as priority_order,  " +
-                "  CASE WHEN project.preference IS NULL THEN -1 ELSE project.preference END as priority_project,  " +
-                "  CASE WHEN ss.type IS NULL THEN ' ' ELSE ss.type END AS cite_mixte,  " +
-                "  CASE WHEN orders.tax_amount = -1 THEN 20 ELSE orders.tax_amount END as TVA,  " +
-                "  CASE WHEN orders.priceHT = -1 THEN orders.\"price TTC\" / 1.2 ELSE orders.priceHT END as priceHT,  " +
-                "  CASE WHEN orders.price_proposal IS NULL THEN -1 ELSE orders.price_proposal END as price_proposal," +
+                "  ) as structure_groups, " +
+                "  campaign.accessible as campaign_open, " +
+                "  CASE WHEN orders.prio IS NULL THEN -1 ELSE orders.prio END as priority_order, " +
+                "  CASE WHEN project.preference IS NULL THEN -1 ELSE project.preference END as priority_project, " +
+                "  CASE WHEN ss.type IS NULL THEN ' ' ELSE ss.type END AS cite_mixte, " +
+                "  CASE WHEN orders.tax_amount = -1 THEN 20 ELSE orders.tax_amount END as TVA, " +
+                "  CASE WHEN orders.priceHT = -1 THEN orders.\"price TTC\" / 1.2 ELSE orders.priceHT END as priceHT, " +
+                "  CASE WHEN orders.price_proposal IS NULL THEN -1 ELSE orders.price_proposal END as price_proposal, " +
                 "  CASE WHEN instruction_operation.id_operation IS NULL THEN -1 ELSE instruction_operation.id_operation END as id_operation, " +
                 "  CASE WHEN instruction_operation.cp_number IS NULL THEN '' ELSE instruction_operation.cp_number END as cp_number, " +
                 "  CASE WHEN instruction_operation.label IS NULL THEN '' ELSE instruction_operation.label END as label_operation, " +
                 "  CASE WHEN instruction_operation.object IS NULL THEN '' ELSE instruction_operation.object END as label_instruction, " +
-                "  " +
+                "  CASE WHEN instruction_operation.instruction_id IS NULL THEN -1 ELSE instruction_operation.instruction_id END as instruction_id, " +
+                "  ( " +
+                "    SELECT " +
+                "      order_bc.engagement_number " +
+                "    from " +
+                "      lystore.order order_bc " +
+                "    where " +
+                "      order_bc.id = orders.id_order " +
+                "  ) as bc_engagement_number, " +
+                "  ( " +
+                "    SELECT " +
+                "      order_bc.date_creation " +
+                "    from " +
+                "      lystore.order order_bc " +
+                "    where " +
+                "      order_bc.id = orders.id_order " +
+                "  ) as bc_date_creation, " +
+                "  ( " +
+                "    SELECT " +
+                "      order_bc.order_number " +
+                "    from " +
+                "      lystore.order order_bc " +
+                "    where " +
+                "      order_bc.id = orders.id_order " +
+                "  ) as bc_number, " +
                 "  Round( " +
-                "    orders.\"price TTC\" * orders.amount,  " +
+                "    orders.\"price TTC\" * orders.amount, " +
                 "    2 " +
-                "  ) AS Total,  " +
+                "  ) AS Total, " +
                 "  CASE WHEN( " +
-                "    SELECT  " +
-                "      filename  " +
-                "    FROM  " +
-                "      lystore.order_file  " +
-                "    WHERE  " +
-                "      order_file.id_order_client_equipment = orders.id  " +
+                "    SELECT " +
+                "      DISTINCT 1 " +
+                "    FROM " +
+                "      lystore.order_file " +
+                "    WHERE " +
+                "      order_file.id_order_client_equipment = orders.id " +
+                "  ) IS NULL THEN FALSE ELSE  TRUE END as has_file, " +
+                "  " +
+                "  (  SELECT array_agg(filename) " +
+                "    FROM " +
+                "      lystore.order_file " +
+                "    WHERE " +
+                "      order_file.id_order_client_equipment = orders.id " +
                 "      AND orders.override_region is false " +
-                //TODO DELETE LES LIMIT 1 PLUS TARD
-                "   LIMIT 1" +
-                "  ) IS NULL THEN '' ELSE ( " +
-                "    SELECT  " +
-                "      filename  " +
-                "    FROM  " +
-                "      lystore.order_file  " +
-                "    WHERE  " +
-                "      order_file.id_order_client_equipment = orders.id  " +
-                "      AND orders.override_region is false " +
-                "   LIMIT 1" +
-                "  ) END as filename  " +
-                "FROM  " +
-                "  lystore.allorders orders  " +
-                "  INNER JOIN lystore.campaign ON campaign.id = orders.id_campaign  " +
-//                "  AND id_campaign IN   " + Sql.listPrepared(ids_campaigns) +
-                "  AND id_campaign = ?" +
-                "  INNER JOIN lystore.project ON orders.id_project = project.id  " +
-                "  INNER JOIN lystore.title ON project.id_title = title.id  " +
+                "  )  as filenames " +
+                "FROM " +
+                "  lystore.allorders orders " +
+                "  INNER JOIN lystore.campaign ON campaign.id = orders.id_campaign " +
+                "  AND id_campaign = ? " +
+                "  INNER JOIN lystore.project ON orders.id_project = project.id " +
+                "  INNER JOIN lystore.title ON project.id_title = title.id " +
                 "  INNER JOIN info_group_and_tag ON ( " +
-                "    info_group_and_tag.id_campaign = campaign.id  " +
+                "    info_group_and_tag.id_campaign = campaign.id " +
                 "    AND orders.id_structure = info_group_and_tag.id_struct " +
-                "  )  " +
-                "  INNER JOIN lystore.contract market ON (orders.id_contract = market.id)  " +
+                "  ) " +
+                "  INNER JOIN lystore.contract market ON (orders.id_contract = market.id) " +
                 "  INNER JOIN lystore.contract_type ON ( " +
                 "    market.id_contract_type = contract_type.id " +
-                "  )  " +
-                "  INNER JOIN lystore.agent ON (market.id_agent = agent.id)  " +
-                "  INNER JOIN lystore.supplier ON (market.id_supplier = supplier.id)  " +
+                "  ) " +
+                "  INNER JOIN lystore.agent ON (market.id_agent = agent.id) " +
+                "  INNER JOIN lystore.supplier ON (market.id_supplier = supplier.id) " +
                 "  INNER JOIN lystore.structure_program_action spg ON ( " +
                 "    contract_type.id = spg.contract_type_id " +
-                "  )  " +
+                "  ) " +
                 "  INNER JOIN lystore.program_action ON ( " +
                 "    program_action.id = spg.program_action_id " +
-                "  )  " +
+                "  ) " +
                 "  INNER JOIN lystore.program ON ( " +
                 "    program.id = program_action.id_program " +
-                "  )  " +
+                "  ) " +
                 "  LEFT JOIN ( " +
-                "    SELECT  " +
-                "      DISTINCT label_operation.label,  " +
-                "      operation.id as id_operation,  " +
-                "      operation.date_operation,  " +
-                "      instruction.date_cp,  " +
-                "      instruction.object,  " +
-                "      instruction.cp_number,  " +
-                "      instruction.year ," +
-                "       operation.status  " +
-                "    FROM  " +
-                "      lystore.operation  " +
+                "    SELECT " +
+                "      DISTINCT label_operation.label, " +
+                "      operation.id as id_operation, " +
+                "      operation.date_operation, " +
+                "      instruction.date_cp, " +
+                "      instruction.object, " +
+                "      instruction.cp_number, " +
+                "      instruction.year, " +
+                "      operation.status, " +
+                "      instruction.id as instruction_id " +
+                "    FROM " +
+                "      lystore.operation " +
                 "      INNER JOIN lystore.label_operation ON ( " +
                 "        operation.id_label = label_operation.id " +
-                "      )  " +
+                "      ) " +
                 "      LEFT JOIN ( " +
-                "        Select DISTINCT instruction.id,  " +
-                "          instruction.date_cp,  " +
-                "      instruction.object,  " +
-                "      instruction.cp_number,  " +
-                "           exercise.year  " +
-                "        FROM  " +
-                "          lystore.instruction  " +
+                "        Select " +
+                "          DISTINCT instruction.id, " +
+                "          instruction.date_cp, " +
+                "          instruction.object, " +
+                "          instruction.cp_number, " +
+                "          exercise.year " +
+                "        FROM " +
+                "          lystore.instruction " +
                 "          INNER JOIN lystore.exercise on instruction.id_exercise = exercise.id " +
                 "      ) as instruction on operation.id_instruction = instruction.id " +
                 "  ) as instruction_operation ON ( " +
-                "    instruction_operation.id_operation = orders.id_operation  " +
+                "    instruction_operation.id_operation = orders.id_operation " +
                 "    AND orders.id_operation IS NOT NULL " +
-                "  )  " +
-                "  LEFT JOIN lystore.specific_structures ss ON ss.id = orders.id_structure  " +
-                "GROUP BY  " +
-                "  orders.id,  " +
-                "  id_structure,  " +
-                "  campaign.NAME,  " +
-                "  ss.type,  " +
-                "  orders.\"price TTC\",  " +
-                "  quantity,  " +
-                "  TVA,  " +
-                "  priceHT,  " +
-                "  equipment_name,  " +
-                "  orders.status,  " +
-                "  orders.comment,  " +
-                "  priority_order,  " +
-                "  campaign.accessible,  " +
-                "  campaign.start_date,  " +
-                "  campaign.end_date,  " +
-                "  campaign.purse_enabled,  " +
-                "  campaign.id,  " +
-                "  title.name,  " +
-                "  project.description,  " +
-                "  project.room,  " +
-                "  project.building,  " +
-                "  orders.override_region,  " +
-                "  project.preference,  " +
-                "  orders.creation_date,  " +
-                "  orders.price_proposal,  " +
-                "  contract_type.name,  " +
-                "  market.name,  " +
-                "  market.reference,  " +
-                "  contract_type.code,  " +
-                "  supplier.name,  " +
-                "  agent.name,  " +
-                "  program.name,  " +
-                "  program.chapter,  " +
-                "  program.functional_code,  " +
-                "  program.section,  " +
-                "  program_action.action,  " +
-                "  program_action.description,  " +
-                "  instruction_operation.label," +
-                "   instruction_operation.cp_number," +
-                "   instruction_operation.object," +
-                "   instruction_operation.status," +
-                "   campaign.id," +
-                "   project.id," +
-                "   market.id," +
-                "   contract_type.id," +
-                "   program.id," +
-                "   program_action.id," +
-                "   instruction_operation.id_operation" +
-                " ;  ";
+                "  ) " +
+                "  LEFT JOIN lystore.specific_structures ss ON ss.id = orders.id_structure " +
+                "GROUP BY " +
+                "  orders.id, " +
+                "  id_structure, " +
+                "  campaign.NAME, " +
+                "  ss.type, " +
+                "  orders.\"price TTC\", " +
+                "  quantity, " +
+                "  TVA, " +
+                "  priceHT, " +
+                "  equipment_name, " +
+                "  orders.status, " +
+                "  orders.comment, " +
+                "  priority_order, " +
+                "  campaign.accessible, " +
+                "  campaign.start_date, " +
+                "  campaign.end_date, " +
+                "  campaign.purse_enabled, " +
+                "  campaign.id, " +
+                "  title.name, " +
+                "  project.description, " +
+                "  project.room, " +
+                "  project.building, " +
+                "  orders.override_region, " +
+                "  project.preference, " +
+                "  orders.creation_date, " +
+                "  orders.price_proposal, " +
+                "  contract_type.name, " +
+                "  market.name, " +
+                "  market.reference, " +
+                "  contract_type.code, " +
+                "  supplier.name, " +
+                "  agent.name, " +
+                "  program.name, " +
+                "  program.chapter, " +
+                "  program.functional_code, " +
+                "  program.section, " +
+                "  program_action.action, " +
+                "  program_action.description, " +
+                "  instruction_operation.label, " +
+                "  instruction_operation.cp_number, " +
+                "  instruction_operation.object, " +
+                "  instruction_operation.status, " +
+                "  campaign.id, " +
+                "  project.id, " +
+                "  market.id, " +
+                "  contract_type.id, " +
+                "  program.id, " +
+                "  program_action.id, " +
+                "  instruction_operation.id_operation, " +
+                "  instruction_operation.instruction_id, " +
+                "  instruction_operation.date_operation, " +
+                "  instruction_operation.cp_number, " +
+                "  instruction_operation.year, " +
+                "  orders.number_validation, " +
+                "  orders.program, " +
+                "  orders.action, " +
+                "  orders.id_order " +
+                "LIMIT " +
+                "  100000000;  ";
 
         launchSQLFutures(handler);
     }
@@ -677,7 +789,6 @@ public class ExtractionOrder extends TabHelper {
                 JsonArray results =new JsonArray();
                 List<JsonArray> resultsList = event.result().list();
                 for (JsonArray objects : resultsList) {
-//                    results.add(objects.getJsonObject(0));
                     for(Object jo : objects){
                         results.add((JsonObject)jo);
                     }

@@ -3,6 +3,9 @@ package fr.openent.lystore.model;
 import fr.openent.lystore.controllers.ProjectController;
 import io.vertx.core.json.JsonObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Model Class for orders
  */
@@ -13,17 +16,17 @@ public class Order extends Model {
     private Structure structure;
     private Campaign campaign;
     private Project project;
-    private Double priceHT;
-    private Double priceTTC;
-    private Double priceProposal;
-    private Double tax_amount;
-    private Double totalTTC;
+    private double priceHT;
+    private double priceTTC;
+    private double priceProposal;
+    private double tax_amount;
+    private double totalTTC;
     private boolean hasPriceProposal = false;
     private boolean hasRank = false;
-    private Boolean overrideRegion;
-    private Integer rank;
-    private Integer amount;
-    private Integer equipment_key;
+    private boolean overrideRegion;
+    private int rank;
+    private int amount;
+    private int equipment_key;
     private String image;
     private String name;
     private String description;
@@ -34,20 +37,35 @@ public class Order extends Model {
     private String status;
     private String action;
     private String creationDate;
-
+    private String numberValidation;
+    private boolean atLeastValid = false;
+    private boolean hasBC = false;
     private Market market;
     private AccountingProgram accountingProgram;
     private AccountingProgramAction programAction;
-
+    private BCOrder bcOrder;
+    private List<String> filenames = new ArrayList<>();
     public Order() {
         super();
 
     }
 
-    public boolean isHasOperation() {
+    public boolean hasOperation() {
         return hasOperation;
     }
 
+    public List<String> getFilenames() {
+        return filenames;
+    }
+
+
+    public void addFilenames(String filename) {
+        filenames.add(filename);
+    }
+
+    public boolean hasFilename(){
+        return filenames.size() > 0;
+    }
     public AccountingProgram getAccountingProgram() {
         return accountingProgram;
     }
@@ -74,6 +92,27 @@ public class Order extends Model {
 
     public void setMarket(Market market) {
         this.market = market;
+    }
+
+    public String getNumberValidation() {
+        return numberValidation;
+    }
+
+    public void setNumberValidation(String numberValidation) {
+        this.numberValidation = numberValidation;
+    }
+
+
+    public void setHasBC(boolean hasBC) {
+        this.hasBC = hasBC;
+    }
+
+    public BCOrder getBcOrder() {
+        return bcOrder;
+    }
+
+    public void setBcOrder(BCOrder bcOrder) {
+        this.bcOrder = bcOrder;
     }
 
     public String getOrigin() {
@@ -113,73 +152,89 @@ public class Order extends Model {
         this.structure = structure;
     }
 
-    public Double getTotalTTC() {
+    public double getTotalTTC() {
         return totalTTC;
     }
 
-    public void setTotalTTC(Double totalTTC) {
+    public void setTotalTTC(double totalTTC) {
         this.totalTTC = totalTTC;
     }
 
-    public Double getPriceHT() {
+    public double getPriceHT() {
         return priceHT;
     }
 
-    public void setPriceHT(Double priceHT) {
+    public boolean isAtLeastValid() {
+        return atLeastValid;
+    }
+
+    public void setAtLeastValid(boolean atLeastValid) {
+        this.atLeastValid = atLeastValid;
+    }
+
+    public boolean hasBC() {
+        return hasBC;
+    }
+
+    public void hasBC(boolean hasBC) {
+        this.hasBC = hasBC;
+    }
+
+    public void setPriceHT(double priceHT) {
         this.priceHT = priceHT;
     }
 
-    public Double getPriceTTC() {
+    public double getPriceTTC() {
         return priceTTC;
     }
 
-    public void setPriceTTC(Double priceTTC) {
+    public void setPriceTTC(double priceTTC) {
         this.priceTTC = priceTTC;
     }
 
-    public Double getPriceProposal() {
+    public double getPriceProposal() {
         return priceProposal;
     }
 
-    public void setPriceProposal(Double priceProposal) {
+    public void setPriceProposal(double priceProposal) {
         hasPriceProposal = true;
         this.priceProposal = priceProposal;
     }
 
-    public Double getTax_amount() {
+    public double getTax_amount() {
         return tax_amount;
     }
 
-    public void setTax_amount(Double tax_amount) {
+    public void setTax_amount(double tax_amount) {
         this.tax_amount = tax_amount;
     }
 
-    public Boolean getOverrideRegion() {
+    public boolean getOverrideRegion() {
         return overrideRegion;
     }
 
-    public void setOverrideRegion(Boolean overrideRegion) {
+    public void setOverrideRegion(boolean overrideRegion) {
         this.overrideRegion = overrideRegion;
     }
 
-    public Integer getRank() {
+    public int getRank() {
         return rank;
     }
 
-    public void setRank(Integer rank) {
+    public void setRank(int rank) {
         hasRank = true;
         this.rank = rank;
     }
 
-    public Integer getAmount() {
+    public int getAmount() {
         return amount;
     }
 
-    public void setAmount(Integer amount) {
+    public void setAmount(int amount) {
         this.amount = amount;
     }
 
-    public Integer getEquipment_key() {
+    public int getEquipment_key() {
         return equipment_key;
     }
 
@@ -199,7 +254,7 @@ public class Order extends Model {
         this.project = project;
     }
 
-    public void setEquipment_key(Integer equipment_key) {
+    public void setEquipment_key(int equipment_key) {
         this.equipment_key = equipment_key;
     }
 

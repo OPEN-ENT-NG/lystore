@@ -18,7 +18,7 @@ public class Project extends Model{
     private List<String> tags = new ArrayList<>();
     private String room;
     private String building;
-    private Integer rank;
+    private int rank;
     private boolean hasRank = false;
 
     @Override
@@ -42,11 +42,11 @@ public class Project extends Model{
         this.name = name;
     }
 
-    public Integer getRank() {
+    public int getRank() {
         return rank;
     }
 
-    public void setRank(Integer rank) {
+    public void setRank(int rank) {
         this.hasRank = true;
         this.rank = rank;
     }
