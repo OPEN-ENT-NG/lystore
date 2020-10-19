@@ -45,6 +45,9 @@ public class Order extends Model {
     private AccountingProgramAction programAction;
     private BCOrder bcOrder;
     private List<String> filenames = new ArrayList<>();
+    private List<String> optionsNames = new ArrayList<>();
+    private Double optionAmount;
+    private  boolean hasOptions;
     public Order() {
         super();
 
@@ -84,6 +87,32 @@ public class Order extends Model {
 
     public JsonObject getOldJo() {
         return oldJo;
+    }
+
+    public List<String> getOptionsNames() {
+        return optionsNames;
+    }
+
+    public void setOptionsNames(List<String> optionsNames) {
+        this.optionsNames = optionsNames;
+    }
+    public void addOption(String option){
+        this.optionsNames.add(option);
+    };
+    public Double getOptionAmount() {
+        return optionAmount;
+    }
+
+    public void setOptionAmount(Double optionAmount) {
+        this.optionAmount = optionAmount;
+    }
+
+    public boolean hasOptions() {
+        return hasOptions;
+    }
+
+    public void setHasOptions(boolean hasOptions) {
+        this.hasOptions = hasOptions;
     }
 
     public Market getMarket() {

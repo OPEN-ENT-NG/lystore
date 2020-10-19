@@ -128,10 +128,11 @@ public abstract class TabHelper {
         Date orderDate = null;
         try {
             orderDate = formatterDate.parse(date);
+            return formatterDateExcel.format(orderDate);
         } catch (ParseException e) {
-            log.error("Incorrect date format");
+            log.error("Incorrect date format : " + date);
+            return "";
         }
-        return formatterDateExcel.format(orderDate);
     }
     protected JsonArray sortByCity(JsonArray values, boolean byZipCode) {
         JsonArray sortedJsonArray = new JsonArray();

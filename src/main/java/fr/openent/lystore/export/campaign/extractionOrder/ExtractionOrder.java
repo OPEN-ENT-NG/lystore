@@ -86,9 +86,9 @@ public class ExtractionOrder extends TabHelper {
             order.setHasBC(true);
             order.setProgram(data.getString("order_program"));
             BCOrder bcOrder = new BCOrder();
-            bcOrder.setDateCreation("bc_date_creation");
-            bcOrder.setEngagementNumber("bc_engagement_number");
-            bcOrder.setNumber("bc_number");
+            bcOrder.setDateCreation(getFormatDate(data.getString("bc_date_creation")));
+            bcOrder.setEngagementNumber(data.getString("bc_engagement_number"));
+            bcOrder.setNumber(data.getString("bc_number"));
             order.setBcOrder(bcOrder);
         }
     }
@@ -102,7 +102,7 @@ public class ExtractionOrder extends TabHelper {
                 if(!instructions.containsKey(idInstruction)) {
                     Instruction instruction = new Instruction();
                     instruction.setId(idInstruction.toString());
-//                instruction.setDate_cp(da);
+                    instruction.setDate_cp(getFormatDate(data.getString("date_cp")));
                     instruction.setExercise(data.getString("exercise_year"));
                     instruction.setCp_number(data.getString("cp_number"));
                     instructions.put(idInstruction, instruction);
@@ -175,7 +175,7 @@ public class ExtractionOrder extends TabHelper {
             order.setId("E-" + data.getInteger("id").toString());
 
         order.setOrigin(data.getString("order_origin"));
-        order.setCreationDate(data.getString("orders_date"));
+        order.setCreationDate(getFormatDate(data.getString("orders_date")));
         order.setStatus(data.getString("status"));
         order.setComment(data.getString("comment"));
         //TODO options + date
@@ -193,6 +193,14 @@ public class ExtractionOrder extends TabHelper {
             JsonArray filesArray= data.getJsonArray("filenames");
             for(int i = 0 ; i < filesArray.size(); i ++){
                 order.addFilenames(filesArray.getJsonArray(i).getString(1));
+            }
+        }
+        if(data.getBoolean("has_options")){
+            order.setHasOptions(true);
+            order.setOptionAmount(safeGetDouble(data,"options_amount","ExtractionOrder"));
+            JsonArray options= data.getJsonArray("options_names");
+            for(int i = 0 ; i < options.size(); i ++){
+                order.addOption(options.getJsonArray(i).getString(1));
             }
         }
     }
@@ -240,8 +248,15 @@ public class ExtractionOrder extends TabHelper {
             }catch (NullPointerException e){
                 data.getValue("purse_amount");
             }
-//                campaign.setStartDate(data.getString("campaign_start_date"));
-//                campaign.setEndDate(data.getString("campaign_end_date"));
+            if(data.getBoolean("has_campaign_start"))
+                campaign.setStartDate(getFormatDate(data.getString("campaign_start_date")));
+            else
+                campaign.setStartDate("");
+            if(data.getBoolean("has_campaign_end"))
+                campaign.setEndDate(getFormatDate(data.getString("campaign_end_date")));
+            else
+                campaign.setEndDate("");
+
 
             campaigns.put(idCampaign,campaign);
             order.setCampaign(campaign);
@@ -274,7 +289,7 @@ public class ExtractionOrder extends TabHelper {
             Order order = orders.get(0);
             insertStruturesInfosFromData(i, order.getStructure());
             setProjectAndCampaignsDatas(i, order);
-////            //TODO check pour ORE
+//          TODO check pour ORE
             insertEquipmementDatas(i, order);
             insertAccountingDatas(i, order);
             setManagementInstructionDatas(i, order);
@@ -298,6 +313,10 @@ public class ExtractionOrder extends TabHelper {
                 excel.insertCellTab(56,5+i,bcOrder.getNumber());
                 excel.insertCellTab(57,5+i,bcOrder.getEngagementNumber());
                 excel.insertCellTab(59,5+i,bcOrder.getDateCreation());
+            }else{
+                for(int j = 1; j <= 4; j++){
+                    excel.insertCellTab(55+j, 5 + i, EMPTY);
+                }
             }
         }else {
             for(int j = 0; j <= 4; j++){
@@ -318,7 +337,13 @@ public class ExtractionOrder extends TabHelper {
                 excel.insertCellTab(47, 5 + i, instruction.getExercise());
                 excel.insertCellTab(51,5 + i, instruction.getObject());
                 excel.insertCellTab(52,5 + i, instruction.getCp_number());
-//                excel.insertCellTab(53,5 + i,instruction.getDate_cp());
+                excel.insertCellTab(53,5 + i,instruction.getDate_cp());
+            }else{
+                excel.insertCellTab(47, 5 + i, EMPTY);
+                excel.insertCellTab(51,5 + i, EMPTY);
+                excel.insertCellTab(52,5 + i, EMPTY);
+                excel.insertCellTab(53,5 + i, EMPTY);
+
             }
             excel.insertCellTab(54, 5 + i, "Statut Rapport CP");
         }else{
@@ -365,8 +390,13 @@ public class ExtractionOrder extends TabHelper {
         excel.insertCellTabDouble(30,5+i,order.getTax_amount());
         excel.insertWithStyle(31,5+i,(order.hasPriceProposal() ? order.getPriceProposal() : EMPTY ),excel.tabCurrencyStyle);
         excel.insertCellTabDoubleWithPrice(32,5+i,order.getTotalTTC());
-        excel.insertCellTabInt(33,5+i,35);
-        excel.insertCellTabInt(34,5+i,36);
+        if(order.hasOptions()) {
+            excel.insertCellTab(33, 5 + i, order.getOptionsNames().toString());
+            excel.insertWithStyle(34, 5 + i, order.getOptionAmount(),excel.tabCurrencyStyle);
+        }else{
+            excel.insertCellTab(33, 5 + i, EMPTY);
+            excel.insertCellTab(34, 5 + i, EMPTY);
+        }
     }
 
     private void setProjectAndCampaignsDatas(int i, Order order) {
@@ -562,7 +592,8 @@ public class ExtractionOrder extends TabHelper {
                 "  instruction_operation.label as label_operation, " +
                 "  instruction_operation.status as operation_status, " +
                 "  instruction_operation.date_operation as date_operation, " +
-                "  instruction_operation.cp_number as cp_number, " +
+                "  instruction_operation.cp_number as cp_number," +
+                "  instruction_operation.date_cp as date_cp, " +
                 "  instruction_operation.year as exercise_year, " +
                 "  title.name as project_name, " +
                 "  project.id as project_id, " +
@@ -603,7 +634,32 @@ public class ExtractionOrder extends TabHelper {
                 "  CASE WHEN instruction_operation.cp_number IS NULL THEN '' ELSE instruction_operation.cp_number END as cp_number, " +
                 "  CASE WHEN instruction_operation.label IS NULL THEN '' ELSE instruction_operation.label END as label_operation, " +
                 "  CASE WHEN instruction_operation.object IS NULL THEN '' ELSE instruction_operation.object END as label_instruction, " +
-                "  CASE WHEN instruction_operation.instruction_id IS NULL THEN -1 ELSE instruction_operation.instruction_id END as instruction_id, " +
+                "  CASE WHEN instruction_operation.instruction_id IS NULL THEN -1 ELSE instruction_operation.instruction_id END as instruction_id," +
+                "  CASE WHEN campaign.start_date IS NULL THEN FALSE ELSE TRUE END as has_campaign_start," +
+                "  CASE WHEN campaign.end_date IS NULL  THEN FALSE ELSE TRUE END as has_campaign_end," +
+                "   (  SELECT array_agg(name) " +
+                "    FROM  " +
+                "      lystore.order_client_options oco " +
+                "    WHERE  " +
+                "     oco.id_order_client_equipment = orders.id " +
+                "      AND orders.override_region is false  " +
+                "  )  as options_names , " +
+                "   (  SELECT SUM(oco.price + ((oco.price * oco.tax_amount) /100) * oco.amount)" +
+                "    FROM  " +
+                "      lystore.order_client_options oco " +
+                "    WHERE  " +
+                "     oco.id_order_client_equipment = orders.id " +
+                "      AND orders.override_region is false  " +
+                "  )  as options_amount , " +
+                "  CASE WHEN( " +
+                "    SELECT " +
+                "      DISTINCT 1 " +
+                "    FROM  " +
+                "      lystore.order_client_options oco " +
+                "    WHERE  " +
+                "     oco.id_order_client_equipment = orders.id " +
+                "      AND orders.override_region is false  " +
+                "  ) IS NULL THEN FALSE ELSE  TRUE END as has_options, " +
                 "  ( " +
                 "    SELECT " +
                 "      order_bc.engagement_number " +
@@ -704,7 +760,8 @@ public class ExtractionOrder extends TabHelper {
                 "    instruction_operation.id_operation = orders.id_operation " +
                 "    AND orders.id_operation IS NOT NULL " +
                 "  ) " +
-                "  LEFT JOIN lystore.specific_structures ss ON ss.id = orders.id_structure " +
+                "  LEFT JOIN lystore.specific_structures ss ON ss.id = orders.id_structure" +
+                " WHERE orders.override_region is not true " +
                 "GROUP BY " +
                 "  orders.id, " +
                 "  id_structure, " +
@@ -756,14 +813,14 @@ public class ExtractionOrder extends TabHelper {
                 "  instruction_operation.id_operation, " +
                 "  instruction_operation.instruction_id, " +
                 "  instruction_operation.date_operation, " +
-                "  instruction_operation.cp_number, " +
+                "  instruction_operation.cp_number," +
+                "  instruction_operation.date_cp, " +
                 "  instruction_operation.year, " +
                 "  orders.number_validation, " +
                 "  orders.program, " +
                 "  orders.action, " +
                 "  orders.id_order " +
-                "LIMIT " +
-                "  100000000;  ";
+                "  ;  ";
 
         launchSQLFutures(handler);
     }
