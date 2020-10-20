@@ -30,8 +30,8 @@ public class ListLycee extends TabHelper {
         ArrayList structuresId = new ArrayList<>();
         for (int i = 0; i < datas.size(); i++) {
             JsonObject data = datas.getJsonObject(i);
-                if(!structuresId.contains(data.getString("id_structure")))
-                    structuresId.add(structuresId.size(), data.getString("id_structure"));
+            if(!structuresId.contains(data.getString("id_structure")))
+                structuresId.add(structuresId.size(), data.getString("id_structure"));
 
         }
         getStructures(new JsonArray(structuresId), new Handler<Either<String, JsonArray>>() {
@@ -81,20 +81,29 @@ public class ListLycee extends TabHelper {
         excel.insertWithStyle(7,0,"Tel",excel.yellowLabel);
         excel.insertWithStyle(8,0,"Equipment",excel.yellowLabel);
         excel.insertWithStyle(9,0,"Qté",excel.yellowLabel);
-            for(int i=0;i<datas.size();i++){
-                JsonObject data = datas.getJsonObject(i);
-                excel.insertCellTab(0,i+1,makeCellWithoutNull(numberValidation));
-                excel.insertCellTab(1,i+1,makeCellWithoutNull(data.getString("market_reference")));
-                excel.insertCellTab(2,i+1,makeCellWithoutNull(data.getString("market_name")));
-                excel.insertCellTab(3,i+1,makeCellWithoutNull( getFormatDate(data.getString("creation_bc"))));
-                excel.insertCellTab(4,i+1,makeCellWithoutNull(data.getString("uai")));
-                excel.insertCellTab(5,i+1,makeCellWithoutNull(data.getString("nameEtab")));
-                excel.insertCellTab(6,i+1,makeCellWithoutNull(data.getString("city")));
-                excel.insertCellTab(7,i+1,makeCellWithoutNull(data.getString("phone")));
-                excel.insertCellTab(8,i+1,makeCellWithoutNull(data.getString("name")));
-                excel.insertCellTab(9,i+1,makeCellWithoutNull(data.getString("amount")));
+        for(int i=0;i<datas.size();i++){
+            JsonObject data = datas.getJsonObject(i);
+            excel.insertCellTab(0,i+1,makeCellWithoutNull(numberValidation));
+            excel.insertCellTab(1,i+1,makeCellWithoutNull(data.getString("market_reference")));
+            excel.insertCellTab(2,i+1,makeCellWithoutNull(data.getString("market_name")));
+            try {
+                excel.insertCellTab(3, i + 1, makeCellWithoutNull(getFormatDate(data.getString("creation_bc"))));
+            }catch (NullPointerException e){
+                excel.insertCellTab(3, i + 1, "Bon de commande en attente de validation");
             }
+            excel.insertCellTab(4,i+1,makeCellWithoutNull(data.getString("uai")));
+            excel.insertCellTab(5,i+1,makeCellWithoutNull(data.getString("nameEtab")));
+            excel.insertCellTab(6,i+1,makeCellWithoutNull(data.getString("city")));
+            excel.insertCellTab(7,i+1,makeCellWithoutNull(data.getString("phone")));
+            excel.insertCellTab(8,i+1,makeCellWithoutNull(data.getString("name")));
+            excel.insertCellTab(9,i+1,makeCellWithoutNull(data.getString("amount")));
+            if(i == 10){
+                excel.autoSize(10);
+            }
+        }
+        if(datas.size() < 10){
             excel.autoSize(10);
+        }
     }
 
     @Override
@@ -113,7 +122,7 @@ public class ListLycee extends TabHelper {
                 "               ON oce.id_type = et.id  " +
                 "       INNER JOIN "+ Lystore.lystoreSchema +".contract market  " +
                 "               ON oce.id_contract = market.id  " +
-                "           INNER JOIN " + Lystore.lystoreSchema + ".order od " +
+                "           LEFT JOIN " + Lystore.lystoreSchema + ".order od " +
                 "               ON oce.id_order = od.id " +
                 "WHERE number_validation = ? ";
         query += " GROUP BY equipment_key, price, tax_amount, oce.name, oce.id_contract,  oce.id_structure ,market_name, market_reference, creation_bc" +
@@ -142,7 +151,7 @@ public class ListLycee extends TabHelper {
                 "               ON equipment.id_type = et.id  " +
                 "       INNER JOIN "+ Lystore.lystoreSchema +".contract market  " +
                 "               ON equipment.id_contract = market.id  " +
-                "           INNER JOIN " + Lystore.lystoreSchema + ".order od " +
+                "           LEFT JOIN " + Lystore.lystoreSchema + ".order od " +
                 "               ON equipment.id_order = od.id " +
 
                 "WHERE number_validation = ? "+
@@ -153,5 +162,5 @@ public class ListLycee extends TabHelper {
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray();
         params.add(this.numberValidation).add(this.numberValidation);
         sqlHandler(handler,params);
-        }
+    }
 }

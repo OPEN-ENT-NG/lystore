@@ -108,8 +108,13 @@ public class ListLycWithPrice extends TabHelper {
             excel.insertWithStyle(9,currentI,priceAmount + (priceAmount * Double.parseDouble(data.getString("tax_amount"))/100),excel.tabCurrencyStyle);
             oldUai = data.getString("uai");
             currentI ++;
+            if(i == 10){
+                excel.autoSize(20);
+            }
         }
-
+        if(datas.size() < 10){
+            excel.autoSize(20);
+        }
         //handle last struct
         fillYellowCells(currentI);
         excel.insertWithStyle(0,currentI ,"Total " + oldUai,excel.labelHeadStyle);
@@ -117,7 +122,6 @@ public class ListLycWithPrice extends TabHelper {
         mergeStructures(currentI, initx);
         mergeFinalCells(currentI, initx);
         insertFinalTotal(currentI+2);
-        excel.autoSize(20);
         insertHeader();
 
     }
@@ -131,9 +135,9 @@ public class ListLycWithPrice extends TabHelper {
 
     private void mergeStructures(int currentI, int initx) {
         if(currentI-1 != initx) {
-        sizeMergeRegionLinesWithStyle(1,initx,currentI - 1 ,excel.tabStringStyleCenterBold);
-        sizeMergeRegionLinesWithStyle(2,initx,currentI - 1 ,excel.tabStringStyleCenterBold);
-        sizeMergeRegionLinesWithStyle(3,initx,currentI - 1 ,excel.tabStringStyleCenterBold);
+            sizeMergeRegionLinesWithStyle(1,initx,currentI - 1 ,excel.tabStringStyleCenterBold);
+            sizeMergeRegionLinesWithStyle(2,initx,currentI - 1 ,excel.tabStringStyleCenterBold);
+            sizeMergeRegionLinesWithStyle(3,initx,currentI - 1 ,excel.tabStringStyleCenterBold);
 //        sizeMergeRegionLinesWithStyle(4,initx,currentI - 1 ,excel.tabStringStyleCenterBold);
         }
     }
@@ -173,8 +177,13 @@ public class ListLycWithPrice extends TabHelper {
 
     private void insertHeader() {
         String title = "N° VALIDATION : "+this.numberValidation +
-                " - MARCHE N°" + datas.getJsonObject(0).getString("market_reference") + " - " + datas.getJsonObject(0).getString("market_name") +
-                " - DATE BC : " + getFormatDate(datas.getJsonObject(0).getString("creation_bc")) ;
+                " - MARCHE N°" + datas.getJsonObject(0).getString("market_reference") + " - " + datas.getJsonObject(0).getString("market_name")  + " - DATE BC : " ;
+        try {
+            title += getFormatDate(datas.getJsonObject(0).getString("creation_bc"));
+        }catch (NullPointerException e){
+            title += "-";
+
+        }
 
         excel.insertWithStyle(2,0,title,excel.blackOnBlueHeader);
         sizeMergeRegionWithStyle(0,2,5,excel.blackOnBlueHeader);
@@ -304,7 +313,7 @@ public class ListLycWithPrice extends TabHelper {
                 "               ON oce.id_type = et.id  " +
                 "       INNER JOIN "+ Lystore.lystoreSchema +".contract market  " +
                 "               ON oce.id_contract = market.id  " +
-                "           INNER JOIN " + Lystore.lystoreSchema + ".order od " +
+                "           LEFT JOIN " + Lystore.lystoreSchema + ".order od " +
                 "               ON oce.id_order = od.id " +
                 "WHERE  number_validation = ?  " +
                 "GROUP  BY oce.equipment_key,  " +
@@ -347,7 +356,7 @@ public class ListLycWithPrice extends TabHelper {
                 "                       ON options.id_type = et.id " +
                 "               INNER JOIN " + Lystore.lystoreSchema + ".contract market " +
                 "                       ON oce.id_contract = market.id "  +
-                "           INNER JOIN " + Lystore.lystoreSchema + ".order od " +
+                "           LEFT JOIN " + Lystore.lystoreSchema + ".order od " +
                 "               ON oce.id_order = od.id " +
                 "        WHERE  number_validation = ? ) AS opt  " +
                 "       INNER JOIN "+ Lystore.lystoreSchema +".order_client_equipment equipment  " +
