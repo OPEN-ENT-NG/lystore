@@ -19,7 +19,6 @@ import java.util.*;
 public class ExtractionOrder extends TabHelper {
     List<Integer> ids_campaigns;
     List<Order> orders = new ArrayList<>();
-    final String TODO = "TODO";
     final String EMPTY = "";
     public ExtractionOrder(Workbook workbook, List<Integer> ids) {
         super(workbook,"Extraction");
@@ -178,7 +177,6 @@ public class ExtractionOrder extends TabHelper {
         order.setCreationDate(getFormatDate(data.getString("orders_date")));
         order.setStatus(data.getString("status"));
         order.setComment(data.getString("comment"));
-        //TODO options + date
         order.setName(data.getString("equipment_name"));
         order.setPriceHT(safeGetDouble(data,"priceht","ExtractionOrder"));
         order.setTax_amount(safeGetDouble(data,"tva","ExtractionOrder"));
@@ -194,6 +192,9 @@ public class ExtractionOrder extends TabHelper {
             for(int i = 0 ; i < filesArray.size(); i ++){
                 order.addFilenames(filesArray.getJsonArray(i).getString(1));
             }
+        }
+        if(data.getLong("id_order_client_equipment") != -1){
+            order.setIdOrderClientEquipment(data.getLong("id_order_client_equipment"));
         }
         if(data.getBoolean("has_options")){
             order.setHasOptions(true);
@@ -232,7 +233,6 @@ public class ExtractionOrder extends TabHelper {
         }
     }
 
-    //TODO FIX DATES
     private void setOrderCampaign(Map<Long, Campaign> campaigns, JsonObject data, Order order, Long idCampaign) {
         if(!campaigns.containsKey(idCampaign)){
             Campaign campaign = new Campaign();
@@ -289,7 +289,6 @@ public class ExtractionOrder extends TabHelper {
             Order order = orders.get(0);
             insertStruturesInfosFromData(i, order.getStructure());
             setProjectAndCampaignsDatas(i, order);
-//          TODO check pour ORE
             insertEquipmementDatas(i, order);
             insertAccountingDatas(i, order);
             setManagementInstructionDatas(i, order);
@@ -374,21 +373,21 @@ public class ExtractionOrder extends TabHelper {
     private void insertEquipmementDatas(int i, Order order) {
         excel.insertCellTab(18,5+i, order.getId());
         excel.insertCellTab(19,5+i, order.getOrigin());
-        excel.insertCellTab(20,5+i,TODO);
+        excel.insertCellTab(20,5+i, (order.hasidOrderClientEquipment()) ? "E-" + order.getIdOrderClientEquipment() : EMPTY);
         excel.insertCellTab(21,5+i, order.getCreationDate());
         excel.insertCellTab(22,5+i, order.getStatus());
-        excel.insertCellTab(23,5+i,(order.hasRank() ? order.getRank() : EMPTY ));
+        excel.insertCellTab(23,5+i,(order.hasRank() && order.getRank() !=-1.d ? order.getRank() : EMPTY ));
         excel.insertCellTab(24,5+i,(order.getProject().hasRank() ? order.getProject().getRank(): EMPTY ));
         excel.insertCellTab(25,5+i, order.getComment());
         if(order.hasFilename())
             excel.insertCellTab(26,5+i,order.getFilenames().toString());
         else
-            excel.insertCellTab(26,5+i,"");
+            excel.insertCellTab(26,5+i,EMPTY);
         excel.insertCellTab(27,5+i,order.getName());
         excel.insertCellTabInt(28,5+i,order.getAmount());
         excel.insertCellTabDouble(29,5+i,order.getPriceHT());
         excel.insertCellTabDouble(30,5+i,order.getTax_amount());
-        excel.insertWithStyle(31,5+i,(order.hasPriceProposal() ? order.getPriceProposal() : EMPTY ),excel.tabCurrencyStyle);
+        excel.insertWithStyle(31,5+i,(order.hasPriceProposal() && order.getPriceProposal() != -1.d ? order.getPriceProposal() : EMPTY ),excel.tabCurrencyStyle);
         excel.insertCellTabDoubleWithPrice(32,5+i,order.getTotalTTC());
         if(order.hasOptions()) {
             excel.insertCellTab(33, 5 + i, order.getOptionsNames().toString());
@@ -430,8 +429,6 @@ public class ExtractionOrder extends TabHelper {
     @Override
     protected void setLabels() {
         excel.insertBlackTitleHeaderBorderless(1,1,"Lsytore - Extraction Demande ");
-
-        excel.insertBlackTitleHeaderBorderless(1,2,"Campagne : " + datas.getJsonObject(0).getString("campaign_name"));
         sizeMergeRegion(2,1,3);
         excel.insertBlackTitleHeader(0,3,"Informations des structures");
         sizeMergeRegion(3,0,6);
@@ -604,6 +601,7 @@ public class ExtractionOrder extends TabHelper {
                 "  CASE when project.room is NULL THEN '' ELSE project.room END as project_room, " +
                 "  CASE when project.building is NULL THEN '' ELSE project.building END as project_building, " +
                 "  CASE when orders.override_region IS NULL THEN 'REGION' ELSE 'EPLE' END as order_origin, " +
+                "  CASE when orders.id_order_client_equipment IS NULL THEN -1 ELSE  orders.id_order_client_equipment END as id_order_client_equipment," +
                 "  campaign.start_date as campaign_start_date, " +
                 "  campaign.end_date campaign_end_date, " +
                 "  orders.number_validation as order_validation_number, " +
@@ -819,7 +817,8 @@ public class ExtractionOrder extends TabHelper {
                 "  orders.number_validation, " +
                 "  orders.program, " +
                 "  orders.action, " +
-                "  orders.id_order " +
+                "  orders.id_order," +
+                "orders.id_order_client_equipment " +
                 "  ;  ";
 
         launchSQLFutures(handler);

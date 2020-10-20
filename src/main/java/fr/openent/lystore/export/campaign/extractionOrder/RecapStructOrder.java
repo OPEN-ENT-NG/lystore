@@ -30,7 +30,7 @@ public class RecapStructOrder  extends TabHelper {
     protected  void fillPage(JsonArray structures){
         setStructuresFromDatas(structures);
         setLabels();
-        setDatas();
+//        setDatas();
     }
 
     private void setDatas() {
@@ -58,7 +58,6 @@ public class RecapStructOrder  extends TabHelper {
     @Override
     protected void setLabels() {
         excel.insertBlackTitleHeaderBorderless(1,1,"Lsytore - Extraction Demande ");
-        excel.insertBlackTitleHeaderBorderless(1,2,"Campagne : " + datas.getJsonObject(0).getString("campaign_name"));
         excel.insertBlackTitleHeader(0,3,"Informations des structures");
         sizeMergeRegion(3,0,6);
         excel.insertBlackTitleHeader(7,3,"");

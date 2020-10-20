@@ -53,7 +53,7 @@ public class CampaignExport extends ExportObject {
 //            futures.add(RecapListFuture);
             futureHandler(handler, workbook, futures);
             new ExtractionOrder(workbook,this.ids).create(getHandler(ExtractionFuture));
-//            new RecapStructOrder(workbook,this.ids).create(getHandler(RecapListFuture));
+            new RecapStructOrder(workbook,this.ids).create(getHandler(RecapListFuture));
 
         }
     }

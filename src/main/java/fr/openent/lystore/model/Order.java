@@ -12,6 +12,7 @@ import java.util.List;
 public class Order extends Model {
     JsonObject oldJo;
     private boolean hasOperation = false;
+    private Long idOrderClientEquipment;
     private Operation operation;
     private Structure structure;
     private Campaign campaign;
@@ -38,6 +39,7 @@ public class Order extends Model {
     private String action;
     private String creationDate;
     private String numberValidation;
+    private boolean hasidOrderClientEquipment = false;
     private boolean atLeastValid = false;
     private boolean hasBC = false;
     private Market market;
@@ -357,6 +359,19 @@ public class Order extends Model {
 
     public boolean hasRank() {
         return hasRank;
+    }
+
+    public Long getIdOrderClientEquipment() {
+        return idOrderClientEquipment;
+    }
+
+    public void setIdOrderClientEquipment(Long idOrderClientEquipment) {
+        hasidOrderClientEquipment = true;
+        this.idOrderClientEquipment = idOrderClientEquipment;
+    }
+
+    public boolean hasidOrderClientEquipment() {
+        return hasidOrderClientEquipment;
     }
 
     @Override
