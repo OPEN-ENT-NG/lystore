@@ -16,7 +16,7 @@ public class RecapStructOrder  extends TabHelper {
     List<Integer> ids_campaigns;
 
     public RecapStructOrder(Workbook workbook, List<Integer> ids) {
-        super(workbook,"Récap");
+        super(workbook,"Récap_Extraction");
         ids_campaigns = ids;
     }
 
@@ -67,15 +67,11 @@ public class RecapStructOrder  extends TabHelper {
     }
 
     private void setStructuresInfoLabel() {
-        excel.insertWithStyle(0,4,"UAI",excel.labelOnGrey);
-        excel.insertWithStyle(1,4,"Type",excel.labelOnGrey);
-        excel.insertWithStyle(2,4,"Dénomination",excel.labelOnGrey);
-        excel.insertWithStyle(3,4,"Dpt",excel.labelOnGrey);
-        excel.insertWithStyle(4,4,"Commune",excel.labelOnGrey);
-        excel.insertWithStyle(5,4,"Cité Mixte",excel.labelOnGrey);
-        excel.insertWithStyle(6,4,"Académie",excel.labelOnGrey);
-        excel.insertWithStyle(7,4,"Nombre de demandes",excel.labelOnYellow);
-        excel.insertWithStyle(8,4,"Somme totale des Montants Proposés TTC",excel.labelOnYellow);
+        excel.insertWithStyle(0,4,"Identifiant Campagne",excel.labelOnBlueGrey);
+        excel.insertWithStyle(1,4,"Libellé Campagne",excel.labelOnBlueGrey);
+        excel.insertWithStyle(2,4,"Origine Demande",excel.labelOnBlueGrey);
+        excel.insertWithStyle(3,4,"Status Demande",excel.labelOnBlueGrey);
+        excel.insertWithStyle(4,4,"Nombre Demandes",excel.labelOnBlueGrey);
     }
 
     @Override
