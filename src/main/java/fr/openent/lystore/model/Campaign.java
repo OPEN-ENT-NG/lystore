@@ -2,6 +2,9 @@ package fr.openent.lystore.model;
 
 import io.vertx.core.json.JsonObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Model Class for campaign
  */
@@ -13,7 +16,7 @@ public class Campaign extends Model {
     private String startDate;
     private String endDate;
     private String name;
-
+    private List<SummaryOrder> summaryOrders = new ArrayList();
     @Override
     public JsonObject toJsonObject() {
         return null;
@@ -74,5 +77,43 @@ public class Campaign extends Model {
 
     public void setEndDate(String endDate) {
         this.endDate = endDate;
+    }
+
+    public List<SummaryOrder> getSummaryOrders() {
+        return summaryOrders;
+    }
+
+    public void addSummaryOrder(SummaryOrder summaryOrder) {
+        this.summaryOrders.add(summaryOrder);
+    }
+
+    public static class SummaryOrder {
+        private long numberOrders;
+        private String status;
+        private String origin;
+
+        public long getNumberOrders() {
+            return numberOrders;
+        }
+
+        public void setNumberOrders(long numberOrders) {
+            this.numberOrders = numberOrders;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public void setStatus(String status) {
+            this.status = status;
+        }
+
+        public String getOrigin() {
+            return origin;
+        }
+
+        public void setOrigin(String origin) {
+            this.origin = origin;
+        }
     }
 }

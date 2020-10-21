@@ -52,6 +52,7 @@ public abstract class TabHelper {
     protected JsonArray datas;
     protected final int LIMIT_FORMULA_SIZE = 8000;
     protected final int LIMIT_ATTEMPTS_CREATION = 3;
+    protected final String EMPTY = "";
     protected int attemptNumber = 0;
     /**
      * Format : H-code

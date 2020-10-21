@@ -14,12 +14,13 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class ExtractionOrder extends TabHelper {
     List<Integer> ids_campaigns;
     List<Order> orders = new ArrayList<>();
-    final String EMPTY = "";
     public ExtractionOrder(Workbook workbook, List<Integer> ids) {
         super(workbook,"Extraction");
         ids_campaigns = ids;
@@ -428,8 +429,10 @@ public class ExtractionOrder extends TabHelper {
 
     @Override
     protected void setLabels() {
-        excel.insertBlackTitleHeaderBorderless(1,1,"Lsytore - Extraction Demande ");
-        sizeMergeRegion(2,1,3);
+        SimpleDateFormat formatterDateExcel = new SimpleDateFormat("dd.MM.yyyy");
+        Date orderDate =  new Date();
+
+        excel.insertBlackTitleHeaderBorderless(1,1,"Lystore - Extraction Demande - " + formatterDateExcel.format(orderDate));
         excel.insertBlackTitleHeader(0,3,"Informations des structures");
         sizeMergeRegion(3,0,6);
         setStructuresInfoLabel();
@@ -550,276 +553,286 @@ public class ExtractionOrder extends TabHelper {
     @Override
     public void getDatas(Handler<Either<String, JsonArray>> handler) {
         query = " WITH info_group_and_tag as ( " +
-                "  SELECT " +
-                "    tag.name, " +
-                "    rgc.id_campaign as id_campaign, " +
-                "    rgs.id_structure as id_struct, " +
-                "    structure_group.name as group_name " +
-                "  FROM " +
-                "    lystore.tag " +
-                "    INNER JOIN lystore.rel_group_campaign rgc on tag.id = rgc.id_tag " +
-                "    INNER JOIN lystore.structure_group on rgc.id_structure_group = structure_group.id " +
-                "    INNER JOIN lystore.rel_group_structure rgs on structure_group.id = rgs.id_structure_group " +
-                ") " +
-                "SELECT " +
-                "  DISTINCT orders.id, " +
-                "  orders.creation_date as orders_date, " +
-                "  campaign.name as campaign_name, " +
-                "  campaign.id as campaign_id, " +
-                "  orders.\"price TTC\" as priceTTC, " +
-                "  orders.amount as quantity, " +
-                "  orders.name as equipment_name, " +
-                "  orders.id_structure, " +
-                "  orders.status, " +
-                "  contract_type.name as accounting_nature, " +
-                "  contract_type.code as accounting_code, " +
-                "  contract_type.id as accounting_nature_id, " +
-                "  market.name as market_name, " +
-                "  market.reference as market_number, " +
-                "  market.id as market_id, " +
-                "  supplier.name as market_supplier, " +
-                "  agent.name as market_agent, " +
-                "  program.name as program_name, " +
-                "  program.chapter as program_chapter, " +
-                "  program.functional_code as functional_code, " +
-                "  program.id as program_id, " +
-                "  program.section as program_section, " +
-                "  program_action.action as action_number, " +
-                "  program_action.description as action_description, " +
-                "  instruction_operation.label as label_operation, " +
-                "  instruction_operation.status as operation_status, " +
-                "  instruction_operation.date_operation as date_operation, " +
-                "  instruction_operation.cp_number as cp_number," +
-                "  instruction_operation.date_cp as date_cp, " +
-                "  instruction_operation.year as exercise_year, " +
-                "  title.name as project_name, " +
-                "  project.id as project_id, " +
-                "  CASE when project.description is NULL THEN '' ELSE project.description END as project_comment, " +
-                "  CASE when orders.id_order is NULL " +
-                "  OR orders.program IS NULL then FALSE else TRUE END as hasBC, " +
-                "  CASE when orders.number_validation is NULL then FALSE else TRUE END as isValid, " +
-                "  CASE when project.room is NULL THEN '' ELSE project.room END as project_room, " +
-                "  CASE when project.building is NULL THEN '' ELSE project.building END as project_building, " +
-                "  CASE when orders.override_region IS NULL THEN 'REGION' ELSE 'EPLE' END as order_origin, " +
-                "  CASE when orders.id_order_client_equipment IS NULL THEN -1 ELSE  orders.id_order_client_equipment END as id_order_client_equipment," +
-                "  campaign.start_date as campaign_start_date, " +
-                "  campaign.end_date campaign_end_date, " +
-                "  orders.number_validation as order_validation_number, " +
-                "  orders.program as order_program, " +
-                "  orders.action as program_action, " +
+                "  SELECT  " +
+                "    tag.name,  " +
+                "    rgc.id_campaign as id_campaign,  " +
+                "    rgs.id_structure as id_struct,  " +
+                "    structure_group.name as group_name  " +
+                "  FROM  " +
+                "    " + Lystore.lystoreSchema + ".tag  " +
+                "    INNER JOIN " +  Lystore.lystoreSchema + ".rel_group_campaign rgc on tag.id = rgc.id_tag  " +
+                "    INNER JOIN " +  Lystore.lystoreSchema + ".structure_group on rgc.id_structure_group = structure_group.id  " +
+                "    INNER JOIN " +  Lystore.lystoreSchema + ".rel_group_structure rgs on structure_group.id = rgs.id_structure_group " +
+                ")  " +
+                "SELECT  " +
+                "  DISTINCT orders.id,  " +
+                "  orders.creation_date as orders_date,  " +
+                "  campaign.name as campaign_name,  " +
+                "  campaign.id as campaign_id,  " +
+                "  orders.\"price TTC\" as priceTTC,  " +
+                "  orders.amount as quantity,  " +
+                "  orders.name as equipment_name,  " +
+                "  orders.id_structure,  " +
+                "  orders.status,  " +
+                "  contract_type.name as accounting_nature,  " +
+                "  contract_type.code as accounting_code,  " +
+                "  contract_type.id as accounting_nature_id,  " +
+                "  market.name as market_name,  " +
+                "  market.reference as market_number,  " +
+                "  market.id as market_id,  " +
+                "  supplier.name as market_supplier,  " +
+                "  agent.name as market_agent,  " +
+                "  program.name as program_name,  " +
+                "  program.chapter as program_chapter,  " +
+                "  program.functional_code as functional_code,  " +
+                "  program.id as program_id,  " +
+                "  program.section as program_section,  " +
+                "  program_action.action as action_number,  " +
+                "  program_action.description as action_description,  " +
+                "  instruction_operation.label as label_operation,  " +
+                "  instruction_operation.status as operation_status,  " +
+                "  instruction_operation.date_operation as date_operation,  " +
+                "  instruction_operation.cp_number as cp_number,  " +
+                "  instruction_operation.date_cp as date_cp,  " +
+                "  instruction_operation.year as exercise_year,  " +
+                "  title.name as project_name,  " +
+                "  project.id as project_id,  " +
+                "  CASE when project.description is NULL THEN '' ELSE project.description END as project_comment,  " +
+                "  CASE when orders.id_order is NULL  " +
+                "  OR orders.program IS NULL then FALSE else TRUE END as hasBC,  " +
+                "  CASE when orders.number_validation is NULL then FALSE else TRUE END as isValid,  " +
+                "  CASE when project.room is NULL THEN '' ELSE project.room END as project_room,  " +
+                "  CASE when project.building is NULL THEN '' ELSE project.building END as project_building,  " +
+                "  CASE when orders.override_region IS NULL THEN 'REGION' ELSE 'EPLE' END as order_origin,  " +
+                "  CASE when orders.id_order_client_equipment IS NULL THEN -1 ELSE orders.id_order_client_equipment END as id_order_client_equipment,  " +
+                "  campaign.start_date as campaign_start_date,  " +
+                "  campaign.end_date campaign_end_date,  " +
+                "  orders.number_validation as order_validation_number,  " +
+                "  orders.program as order_program,  " +
+                "  orders.action as program_action,  " +
                 "  CASE WHEN campaign.purse_enabled IS TRUE THEN ( " +
-                "    SELECT " +
-                "      purse.initial_amount " +
-                "    FROM " +
-                "      lystore.purse " +
-                "    WHERE " +
-                "      purse.id_campaign = campaign.id " +
+                "    SELECT  " +
+                "      purse.initial_amount  " +
+                "    FROM  " +
+                "      " +  Lystore.lystoreSchema + ".purse  " +
+                "    WHERE  " +
+                "      purse.id_campaign = campaign.id  " +
                 "      AND purse.id_structure = orders.id_structure " +
-                "  ) ELSE -1 END as purse_amount, " +
-                "  CASE WHEN orders.comment IS NULL THEN '' ELSE orders.comment END as comment, " +
-                "  array_agg(info_group_and_tag.name) as tags_name, " +
+                "  ) ELSE -1 END as purse_amount,  " +
+                "  CASE WHEN orders.comment IS NULL THEN '' ELSE orders.comment END as comment,  " +
+                "  array_agg(info_group_and_tag.name) as tags_name,  " +
                 "  array_agg( " +
                 "    DISTINCT info_group_and_tag.group_name " +
-                "  ) as structure_groups, " +
-                "  campaign.accessible as campaign_open, " +
-                "  CASE WHEN orders.prio IS NULL THEN -1 ELSE orders.prio END as priority_order, " +
-                "  CASE WHEN project.preference IS NULL THEN -1 ELSE project.preference END as priority_project, " +
-                "  CASE WHEN ss.type IS NULL THEN ' ' ELSE ss.type END AS cite_mixte, " +
-                "  CASE WHEN orders.tax_amount = -1 THEN 20 ELSE orders.tax_amount END as TVA, " +
-                "  CASE WHEN orders.priceHT = -1 THEN orders.\"price TTC\" / 1.2 ELSE orders.priceHT END as priceHT, " +
-                "  CASE WHEN orders.price_proposal IS NULL THEN -1 ELSE orders.price_proposal END as price_proposal, " +
-                "  CASE WHEN instruction_operation.id_operation IS NULL THEN -1 ELSE instruction_operation.id_operation END as id_operation, " +
-                "  CASE WHEN instruction_operation.cp_number IS NULL THEN '' ELSE instruction_operation.cp_number END as cp_number, " +
-                "  CASE WHEN instruction_operation.label IS NULL THEN '' ELSE instruction_operation.label END as label_operation, " +
-                "  CASE WHEN instruction_operation.object IS NULL THEN '' ELSE instruction_operation.object END as label_instruction, " +
-                "  CASE WHEN instruction_operation.instruction_id IS NULL THEN -1 ELSE instruction_operation.instruction_id END as instruction_id," +
-                "  CASE WHEN campaign.start_date IS NULL THEN FALSE ELSE TRUE END as has_campaign_start," +
-                "  CASE WHEN campaign.end_date IS NULL  THEN FALSE ELSE TRUE END as has_campaign_end," +
-                "   (  SELECT array_agg(name) " +
-                "    FROM  " +
-                "      lystore.order_client_options oco " +
-                "    WHERE  " +
-                "     oco.id_order_client_equipment = orders.id " +
-                "      AND orders.override_region is false  " +
-                "  )  as options_names , " +
-                "   (  SELECT SUM(oco.price + ((oco.price * oco.tax_amount) /100) * oco.amount)" +
-                "    FROM  " +
-                "      lystore.order_client_options oco " +
-                "    WHERE  " +
-                "     oco.id_order_client_equipment = orders.id " +
-                "      AND orders.override_region is false  " +
-                "  )  as options_amount , " +
-                "  CASE WHEN( " +
-                "    SELECT " +
-                "      DISTINCT 1 " +
-                "    FROM  " +
-                "      lystore.order_client_options oco " +
-                "    WHERE  " +
-                "     oco.id_order_client_equipment = orders.id " +
-                "      AND orders.override_region is false  " +
-                "  ) IS NULL THEN FALSE ELSE  TRUE END as has_options, " +
+                "  ) as structure_groups,  " +
+                "  campaign.accessible as campaign_open,  " +
+                "  CASE WHEN orders.prio IS NULL THEN -1 ELSE orders.prio END as priority_order,  " +
+                "  CASE WHEN project.preference IS NULL THEN -1 ELSE project.preference END as priority_project,  " +
+                "  CASE WHEN ss.type IS NULL  " +
+                "  OR ss.type = 'LYC' THEN ' ' ELSE ss.type END AS cite_mixte,  " +
+                "  CASE WHEN orders.tax_amount = -1 THEN 20 ELSE orders.tax_amount END as TVA,  " +
+                "  CASE WHEN orders.priceHT = -1 THEN orders.\"price TTC\" / 1.2 ELSE orders.priceHT END as priceHT,  " +
+                "  CASE WHEN orders.price_proposal IS NULL THEN -1 ELSE orders.price_proposal END as price_proposal,  " +
+                "  CASE WHEN instruction_operation.id_operation IS NULL THEN -1 ELSE instruction_operation.id_operation END as id_operation,  " +
+                "  CASE WHEN instruction_operation.cp_number IS NULL THEN '' ELSE instruction_operation.cp_number END as cp_number,  " +
+                "  CASE WHEN instruction_operation.label IS NULL THEN '' ELSE instruction_operation.label END as label_operation,  " +
+                "  CASE WHEN instruction_operation.object IS NULL THEN '' ELSE instruction_operation.object END as label_instruction,  " +
+                "  CASE WHEN instruction_operation.instruction_id IS NULL THEN -1 ELSE instruction_operation.instruction_id END as instruction_id,  " +
+                "  CASE WHEN campaign.start_date IS NULL THEN FALSE ELSE TRUE END as has_campaign_start,  " +
+                "  CASE WHEN campaign.end_date IS NULL THEN FALSE ELSE TRUE END as has_campaign_end,  " +
                 "  ( " +
-                "    SELECT " +
-                "      order_bc.engagement_number " +
-                "    from " +
-                "      lystore.order order_bc " +
-                "    where " +
-                "      order_bc.id = orders.id_order " +
-                "  ) as bc_engagement_number, " +
-                "  ( " +
-                "    SELECT " +
-                "      order_bc.date_creation " +
-                "    from " +
-                "      lystore.order order_bc " +
-                "    where " +
-                "      order_bc.id = orders.id_order " +
-                "  ) as bc_date_creation, " +
-                "  ( " +
-                "    SELECT " +
-                "      order_bc.order_number " +
-                "    from " +
-                "      lystore.order order_bc " +
-                "    where " +
-                "      order_bc.id = orders.id_order " +
-                "  ) as bc_number, " +
-                "  Round( " +
-                "    orders.\"price TTC\" * orders.amount, " +
-                "    2 " +
-                "  ) AS Total, " +
-                "  CASE WHEN( " +
-                "    SELECT " +
-                "      DISTINCT 1 " +
-                "    FROM " +
-                "      lystore.order_file " +
-                "    WHERE " +
-                "      order_file.id_order_client_equipment = orders.id " +
-                "  ) IS NULL THEN FALSE ELSE  TRUE END as has_file, " +
-                "  " +
-                "  (  SELECT array_agg(filename) " +
-                "    FROM " +
-                "      lystore.order_file " +
-                "    WHERE " +
-                "      order_file.id_order_client_equipment = orders.id " +
+                "    SELECT  " +
+                "      array_agg(name)  " +
+                "    FROM  " +
+                "      " +  Lystore.lystoreSchema + ".order_client_options oco  " +
+                "    WHERE  " +
+                "      oco.id_order_client_equipment = orders.id  " +
                 "      AND orders.override_region is false " +
-                "  )  as filenames " +
-                "FROM " +
-                "  lystore.allorders orders " +
-                "  INNER JOIN lystore.campaign ON campaign.id = orders.id_campaign " +
-                "  AND id_campaign = ? " +
-                "  INNER JOIN lystore.project ON orders.id_project = project.id " +
-                "  INNER JOIN lystore.title ON project.id_title = title.id " +
+                "  ) as options_names,  " +
+                "  ( " +
+                "    SELECT  " +
+                "      SUM( " +
+                "        oco.price + ( " +
+                "          (oco.price * oco.tax_amount) / 100 " +
+                "        ) * oco.amount " +
+                "      )  " +
+                "    FROM  " +
+                "      " +  Lystore.lystoreSchema + ".order_client_options oco  " +
+                "    WHERE  " +
+                "      oco.id_order_client_equipment = orders.id  " +
+                "      AND orders.override_region is false " +
+                "  ) as options_amount,  " +
+                "  CASE WHEN( " +
+                "    SELECT  " +
+                "      DISTINCT 1  " +
+                "    FROM  " +
+                "      " +  Lystore.lystoreSchema + ".order_client_options oco  " +
+                "    WHERE  " +
+                "      oco.id_order_client_equipment = orders.id  " +
+                "      AND orders.override_region is false " +
+                "  ) IS NULL THEN FALSE ELSE TRUE END as has_options,  " +
+                "  ( " +
+                "    SELECT  " +
+                "      order_bc.engagement_number  " +
+                "    from  " +
+                "      " +  Lystore.lystoreSchema + ".order order_bc  " +
+                "    where  " +
+                "      order_bc.id = orders.id_order " +
+                "  ) as bc_engagement_number,  " +
+                "  ( " +
+                "    SELECT  " +
+                "      order_bc.date_creation  " +
+                "    from  " +
+                "      " +  Lystore.lystoreSchema + ".order order_bc  " +
+                "    where  " +
+                "      order_bc.id = orders.id_order " +
+                "  ) as bc_date_creation,  " +
+                "  ( " +
+                "    SELECT  " +
+                "      order_bc.order_number  " +
+                "    from  " +
+                "      " +  Lystore.lystoreSchema + ".order order_bc  " +
+                "    where  " +
+                "      order_bc.id = orders.id_order " +
+                "  ) as bc_number,  " +
+                "  Round( " +
+                "    orders.\"price TTC\" * orders.amount,  " +
+                "    2 " +
+                "  ) AS Total,  " +
+                "  CASE WHEN( " +
+                "    SELECT  " +
+                "      DISTINCT 1  " +
+                "    FROM  " +
+                "      " +  Lystore.lystoreSchema + ".order_file  " +
+                "    WHERE  " +
+                "      order_file.id_order_client_equipment = orders.id " +
+                "  ) IS NULL THEN FALSE ELSE TRUE END as has_file,  " +
+                "  ( " +
+                "    SELECT  " +
+                "      array_agg(filename)  " +
+                "    FROM  " +
+                "      " +  Lystore.lystoreSchema + ".order_file  " +
+                "    WHERE  " +
+                "      order_file.id_order_client_equipment = orders.id  " +
+                "      AND orders.override_region is false " +
+                "  ) as filenames  " +
+                "FROM  " +
+                "  " +  Lystore.lystoreSchema + ".allorders orders  " +
+                "  INNER JOIN " +  Lystore.lystoreSchema + ".campaign ON campaign.id = orders.id_campaign  " +
+                "  AND id_campaign = ?  " +
+                "  INNER JOIN " +  Lystore.lystoreSchema + ".project ON orders.id_project = project.id  " +
+                "  INNER JOIN " +  Lystore.lystoreSchema + ".title ON project.id_title = title.id  " +
                 "  INNER JOIN info_group_and_tag ON ( " +
-                "    info_group_and_tag.id_campaign = campaign.id " +
+                "    info_group_and_tag.id_campaign = campaign.id  " +
                 "    AND orders.id_structure = info_group_and_tag.id_struct " +
-                "  ) " +
-                "  INNER JOIN lystore.contract market ON (orders.id_contract = market.id) " +
-                "  INNER JOIN lystore.contract_type ON ( " +
+                "  )  " +
+                "  INNER JOIN " +  Lystore.lystoreSchema + ".contract market ON (orders.id_contract = market.id)  " +
+                "  INNER JOIN " +  Lystore.lystoreSchema + ".contract_type ON ( " +
                 "    market.id_contract_type = contract_type.id " +
-                "  ) " +
-                "  INNER JOIN lystore.agent ON (market.id_agent = agent.id) " +
-                "  INNER JOIN lystore.supplier ON (market.id_supplier = supplier.id) " +
-                "  INNER JOIN lystore.structure_program_action spg ON ( " +
+                "  )  " +
+                "  INNER JOIN " +  Lystore.lystoreSchema + ".agent ON (market.id_agent = agent.id)  " +
+                "  INNER JOIN " +  Lystore.lystoreSchema + ".supplier ON (market.id_supplier = supplier.id)  " +
+                "  INNER JOIN " +  Lystore.lystoreSchema + ".structure_program_action spg ON ( " +
                 "    contract_type.id = spg.contract_type_id " +
-                "  ) " +
-                "  INNER JOIN lystore.program_action ON ( " +
+                "  )  " +
+                "  INNER JOIN " +  Lystore.lystoreSchema + ".program_action ON ( " +
                 "    program_action.id = spg.program_action_id " +
-                "  ) " +
-                "  INNER JOIN lystore.program ON ( " +
+                "  )  " +
+                "  INNER JOIN " +  Lystore.lystoreSchema + ".program ON ( " +
                 "    program.id = program_action.id_program " +
-                "  ) " +
+                "  )  " +
                 "  LEFT JOIN ( " +
-                "    SELECT " +
-                "      DISTINCT label_operation.label, " +
-                "      operation.id as id_operation, " +
-                "      operation.date_operation, " +
-                "      instruction.date_cp, " +
-                "      instruction.object, " +
-                "      instruction.cp_number, " +
-                "      instruction.year, " +
-                "      operation.status, " +
-                "      instruction.id as instruction_id " +
-                "    FROM " +
-                "      lystore.operation " +
-                "      INNER JOIN lystore.label_operation ON ( " +
+                "    SELECT  " +
+                "      DISTINCT label_operation.label,  " +
+                "      operation.id as id_operation,  " +
+                "      operation.date_operation,  " +
+                "      instruction.date_cp,  " +
+                "      instruction.object,  " +
+                "      instruction.cp_number,  " +
+                "      instruction.year,  " +
+                "      operation.status,  " +
+                "      instruction.id as instruction_id  " +
+                "    FROM  " +
+                "      " +  Lystore.lystoreSchema + ".operation  " +
+                "      INNER JOIN " +  Lystore.lystoreSchema + ".label_operation ON ( " +
                 "        operation.id_label = label_operation.id " +
-                "      ) " +
+                "      )  " +
                 "      LEFT JOIN ( " +
-                "        Select " +
-                "          DISTINCT instruction.id, " +
-                "          instruction.date_cp, " +
-                "          instruction.object, " +
-                "          instruction.cp_number, " +
-                "          exercise.year " +
-                "        FROM " +
-                "          lystore.instruction " +
-                "          INNER JOIN lystore.exercise on instruction.id_exercise = exercise.id " +
+                "        Select  " +
+                "          DISTINCT instruction.id,  " +
+                "          instruction.date_cp,  " +
+                "          instruction.object,  " +
+                "          instruction.cp_number,  " +
+                "          exercise.year  " +
+                "        FROM  " +
+                "          " +  Lystore.lystoreSchema + ".instruction  " +
+                "          INNER JOIN " +  Lystore.lystoreSchema + ".exercise on instruction.id_exercise = exercise.id " +
                 "      ) as instruction on operation.id_instruction = instruction.id " +
                 "  ) as instruction_operation ON ( " +
-                "    instruction_operation.id_operation = orders.id_operation " +
+                "    instruction_operation.id_operation = orders.id_operation  " +
                 "    AND orders.id_operation IS NOT NULL " +
-                "  ) " +
-                "  LEFT JOIN lystore.specific_structures ss ON ss.id = orders.id_structure" +
-                " WHERE orders.override_region is not true " +
-                "GROUP BY " +
-                "  orders.id, " +
-                "  id_structure, " +
-                "  campaign.NAME, " +
-                "  ss.type, " +
-                "  orders.\"price TTC\", " +
-                "  quantity, " +
-                "  TVA, " +
-                "  priceHT, " +
-                "  equipment_name, " +
-                "  orders.status, " +
-                "  orders.comment, " +
-                "  priority_order, " +
-                "  campaign.accessible, " +
-                "  campaign.start_date, " +
-                "  campaign.end_date, " +
-                "  campaign.purse_enabled, " +
-                "  campaign.id, " +
-                "  title.name, " +
-                "  project.description, " +
-                "  project.room, " +
-                "  project.building, " +
-                "  orders.override_region, " +
-                "  project.preference, " +
-                "  orders.creation_date, " +
-                "  orders.price_proposal, " +
-                "  contract_type.name, " +
-                "  market.name, " +
-                "  market.reference, " +
-                "  contract_type.code, " +
-                "  supplier.name, " +
-                "  agent.name, " +
-                "  program.name, " +
-                "  program.chapter, " +
-                "  program.functional_code, " +
-                "  program.section, " +
-                "  program_action.action, " +
-                "  program_action.description, " +
-                "  instruction_operation.label, " +
-                "  instruction_operation.cp_number, " +
-                "  instruction_operation.object, " +
-                "  instruction_operation.status, " +
-                "  campaign.id, " +
-                "  project.id, " +
-                "  market.id, " +
-                "  contract_type.id, " +
-                "  program.id, " +
-                "  program_action.id, " +
-                "  instruction_operation.id_operation, " +
-                "  instruction_operation.instruction_id, " +
-                "  instruction_operation.date_operation, " +
-                "  instruction_operation.cp_number," +
-                "  instruction_operation.date_cp, " +
-                "  instruction_operation.year, " +
-                "  orders.number_validation, " +
-                "  orders.program, " +
-                "  orders.action, " +
-                "  orders.id_order," +
-                "orders.id_order_client_equipment " +
-                "  ;  ";
+                "  )  " +
+                "  LEFT JOIN " +  Lystore.lystoreSchema + ".specific_structures ss ON ss.id = orders.id_structure  " +
+                "WHERE  " +
+                "  orders.override_region is not true  " +
+                "GROUP BY  " +
+                "  orders.id,  " +
+                "  id_structure,  " +
+                "  campaign.NAME,  " +
+                "  ss.type,  " +
+                "  orders.\"price TTC\",  " +
+                "  quantity,  " +
+                "  TVA,  " +
+                "  priceHT,  " +
+                "  equipment_name,  " +
+                "  orders.status,  " +
+                "  orders.comment,  " +
+                "  priority_order,  " +
+                "  campaign.accessible,  " +
+                "  campaign.start_date,  " +
+                "  campaign.end_date,  " +
+                "  campaign.purse_enabled,  " +
+                "  campaign.id,  " +
+                "  title.name,  " +
+                "  project.description,  " +
+                "  project.room,  " +
+                "  project.building,  " +
+                "  orders.override_region,  " +
+                "  project.preference,  " +
+                "  orders.creation_date,  " +
+                "  orders.price_proposal,  " +
+                "  contract_type.name,  " +
+                "  market.name,  " +
+                "  market.reference,  " +
+                "  contract_type.code,  " +
+                "  supplier.name,  " +
+                "  agent.name,  " +
+                "  program.name,  " +
+                "  program.chapter,  " +
+                "  program.functional_code,  " +
+                "  program.section,  " +
+                "  program_action.action,  " +
+                "  program_action.description,  " +
+                "  instruction_operation.label,  " +
+                "  instruction_operation.cp_number,  " +
+                "  instruction_operation.object,  " +
+                "  instruction_operation.status,  " +
+                "  campaign.id,  " +
+                "  project.id,  " +
+                "  market.id,  " +
+                "  contract_type.id,  " +
+                "  program.id,  " +
+                "  program_action.id,  " +
+                "  instruction_operation.id_operation,  " +
+                "  instruction_operation.instruction_id,  " +
+                "  instruction_operation.date_operation,  " +
+                "  instruction_operation.cp_number,  " +
+                "  instruction_operation.date_cp,  " +
+                "  instruction_operation.year,  " +
+                "  orders.number_validation,  " +
+                "  orders.program,  " +
+                "  orders.action,  " +
+                "  orders.id_order,  " +
+                "  orders.id_order_client_equipment; ;  ";
 
         launchSQLFutures(handler);
     }

@@ -166,6 +166,9 @@ public class ExcelHelper extends ExcelStyles{
             case "Integer":
                 cell.setCellValue((Integer) data);
                 break;
+            case "Long":
+                cell.setCellValue((Long) data);
+                break;
             default:
                 cell.setCellValue(data.toString());
                 break;

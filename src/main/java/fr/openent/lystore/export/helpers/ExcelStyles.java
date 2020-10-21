@@ -50,7 +50,8 @@ public abstract class ExcelStyles {
     public final CellStyle labelOnYellow;
     public final CellStyle labelOnPink;
     public final CellStyle LabelBlackOnRed;
-
+    public final CellStyle tabIntStyleRight;
+    public final CellStyle tabIntRedBoldRight;
 
     protected static Logger log = LoggerFactory.getLogger(ExcelHelper.class);
 
@@ -69,7 +70,8 @@ public abstract class ExcelStyles {
         this.currencyStyle = wb.createCellStyle();
         this.tabStringStyleCenter = wb.createCellStyle();
         this.tabStringStyleCenterBold = wb.createCellStyle();
-
+        this.tabIntStyleRight = wb.createCellStyle();
+        this.tabIntRedBoldRight = wb.createCellStyle();
         this.totalStyle = wb.createCellStyle();
         this.yellowHeader = wb.createCellStyle();
         this.labelOnYellow = wb.createCellStyle();
@@ -191,6 +193,31 @@ public abstract class ExcelStyles {
         this.tabStringStyle.setVerticalAlignment(VerticalAlignment.CENTER);
         this.tabStringStyle.setFont(tabFont);
         this.tabStringStyle.setDataFormat(format.getFormat("#,##0.00"));
+
+        this.tabIntStyleRight.setBorderLeft(BorderStyle.THIN);
+        this.tabIntStyleRight.setBorderRight(BorderStyle.THIN);
+        this.tabIntStyleRight.setBorderTop(BorderStyle.THIN);
+        this.tabIntStyleRight.setBorderBottom(BorderStyle.THIN);
+        this.tabIntStyleRight.setWrapText(true);
+        this.tabIntStyleRight.setAlignment(HorizontalAlignment.RIGHT);
+        this.tabIntStyleRight.setVerticalAlignment(VerticalAlignment.CENTER);
+        this.tabIntStyleRight.setFont(tabFont);
+        this.tabIntStyleRight.setDataFormat(format.getFormat("#"));
+
+        Font tabRedBoldFont = this.wb.createFont();
+        tabRedBoldFont.setFontHeightInPoints((short) 11);
+        tabRedBoldFont.setFontName("Calibri");
+        tabRedBoldFont.setBold(true);
+        tabRedBoldFont.setColor(IndexedColors.RED.getIndex());
+        this.tabIntRedBoldRight.setBorderLeft(BorderStyle.THIN);
+        this.tabIntRedBoldRight.setBorderRight(BorderStyle.THIN);
+        this.tabIntRedBoldRight.setBorderTop(BorderStyle.THIN);
+        this.tabIntRedBoldRight.setBorderBottom(BorderStyle.THIN);
+        this.tabIntRedBoldRight.setWrapText(true);
+        this.tabIntRedBoldRight.setAlignment(HorizontalAlignment.RIGHT);
+        this.tabIntRedBoldRight.setVerticalAlignment(VerticalAlignment.CENTER);
+        this.tabIntRedBoldRight.setFont(tabRedBoldFont);
+        this.tabIntRedBoldRight.setDataFormat(format.getFormat("#"));
 
         this.tabStringStyleCenter.setBorderLeft(BorderStyle.THIN);
         this.tabStringStyleCenter.setBorderRight(BorderStyle.THIN);

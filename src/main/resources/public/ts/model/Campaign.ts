@@ -112,11 +112,7 @@ export class Campaign implements Selectable  {
         }
     }
 
-    async exportOrders() {
-        let { status } = await http.get(`/lystore/campaign/export/order/${this.id}`);
-        if(status === 200)
-            toasts.info("lystore.export.notif")
-    }
+
 }
 
 
@@ -159,7 +155,7 @@ export class Campaigns extends Selection<Campaign> {
         campaigns.map((campaign) => filter += `id=${campaign.id}&`);
         filter = filter.slice(0, -1);
         let { status } = await http.get(`/lystore/campaign/export/order?${filter}`);
-        if(status === 200)
+        if(status === 201)
             toasts.info("lystore.export.notif")
     }
 }
