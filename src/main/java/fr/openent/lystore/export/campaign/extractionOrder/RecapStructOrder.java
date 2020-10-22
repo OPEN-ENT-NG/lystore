@@ -137,7 +137,7 @@ public class RecapStructOrder  extends TabHelper {
                 "FROM  " +
                   Lystore.lystoreSchema + ".allorders orders  " +
                 "  INNER JOIN " +  Lystore.lystoreSchema + ".campaign ON campaign.id = orders.id_campaign  " +
-                "  AND id_campaign IN (?)  " +
+                "  AND id_campaign IN " + Sql.listPrepared(ids_campaigns) +
                 "WHERE  " +
                 "  orders.override_region IS NOT TRUE  " +
                 "GROUP BY  " +
