@@ -1,5 +1,5 @@
 import http from 'axios';
-import {_, notify,moment} from 'entcore';
+import {_, notify,moment,toasts} from 'entcore';
 import {Mix, Selectable, Selection} from 'entcore-toolkit';
 import {Purses, StructureGroup, Tags, Titles, Utils} from './index';
 import {createModifiersFromModifierFlags} from "typescript/lib/tsserverlibrary";
@@ -124,6 +124,8 @@ export class Campaign implements Selectable  {
             notify.error('lystore.campaign.sync.err');
         }
     }
+
+
 }
 
 
@@ -167,6 +169,15 @@ export class Campaigns extends Selection<Campaign> {
 
     isEmpty (): boolean {
         return this.all.length === 0;
+    }
+
+    async exportOrders(campaigns: Campaign[]) {
+        let filter = '';
+        campaigns.map((campaign) => filter += `id=${campaign.id}&`);
+        filter = filter.slice(0, -1);
+        let { status } = await http.get(`/lystore/campaign/export/order?${filter}`);
+        if(status === 201)
+            toasts.info("lystore.export.notif")
     }
 }
 

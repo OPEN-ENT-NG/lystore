@@ -419,6 +419,11 @@ export const configurationController = ng.controller('configurationController',
             id ? $scope.updateSelectedCampaign(id) : null;
             Utils.safeApply($scope);
         };
+        $scope.exportOrders = async  ()=>{
+           await $scope.campaigns.exportOrders($scope.campaigns.selected);
+            // await campaign.exportOrders();
+            // $scope.campaigns = [];
+        }
 
         $scope.updateSelectedCampaign = async (id) => {
             await $scope.campaign.sync(id, $scope.tags.all);

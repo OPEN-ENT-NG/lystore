@@ -1,6 +1,8 @@
 Create View lystore.allOrders  as
                      (SELECT ore.id,
                             ore.price AS "price TTC",
+                            -1 as priceHT,
+                            -1 as tax_amount,
                             ore.amount,
                             ore.creation_date,
                             ore.modification_date,
@@ -33,6 +35,8 @@ Create View lystore.allOrders  as
                                        WHEN price_proposal IS NULL THEN price + (price*tax_amount/100)
                                        ELSE price_proposal
                                 END AS "price TTC",
+                                price as priceHT,
+                                tax_amount,
                                 amount,
                                 creation_date,
                                 NULL AS modification_date,

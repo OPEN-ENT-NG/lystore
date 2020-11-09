@@ -1,4 +1,4 @@
-package fr.openent.lystore.helpers;
+package fr.openent.lystore.export.helpers;
 
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.export.ExportTypes;
@@ -22,6 +22,7 @@ import org.entcore.common.user.UserUtils;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
 
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultResponseHandler;
 
@@ -81,11 +82,16 @@ public class ExportHelper {
         String type = "";
         JsonObject infoFile = new JsonObject();
 
+
         if (withType) {
             type = request.getParam("type");
             infoFile.put("type", type);
         }
 
+        if(action.equals(ExportTypes.CAMPAIGN_ORDERS)){
+            List<String> ids = request.params().getAll("id");
+            infoFile.put("ids",ids);
+        }
         log.info("makeExportExcel");
         String finalId = id;
 
@@ -117,7 +123,8 @@ public class ExportHelper {
         });
     }
 
-    private static void soloExport(EventBus eb, HttpServerRequest request, ExportService exportService, String typeObject, String extension, String action, JsonObject infoFile, String finalId, String titleFile, JsonObject finalParams, UserInfos user) {
+    private static void soloExport(EventBus eb, HttpServerRequest request, ExportService exportService, String typeObject, String extension, String action,
+                                   JsonObject infoFile, String finalId, String titleFile, JsonObject finalParams, UserInfos user) {
         exportService.createWhenStart(typeObject, extension, infoFile, finalId, titleFile, user.getUserId(), action, finalParams, newExport -> {
             if (newExport.isRight()) {
                 String idExport = newExport.right().getValue().getString("id");
@@ -244,7 +251,8 @@ public class ExportHelper {
         }
 
         public GetIdAndMutliExport invoke() {
-            if(request.getParam("id")!=null && typeObject.equals(Lystore.INSTRUCTIONS))
+
+            if(request.getParam("id")!=null && (typeObject.equals(Lystore.INSTRUCTIONS) || typeObject.equals(Lystore.CAMPAIGN)))
                 id = request.getParam("id");
 
             if(request.params().getAll("number_validation") != null && !request.params().getAll("number_validation").isEmpty() ){

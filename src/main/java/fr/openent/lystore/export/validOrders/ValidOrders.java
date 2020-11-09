@@ -5,7 +5,7 @@ import fr.openent.lystore.export.ExportObject;
 import fr.openent.lystore.export.validOrders.BC.*;
 import fr.openent.lystore.export.validOrders.listLycee.ListLycee;
 import fr.openent.lystore.export.validOrders.listLycee.ListLycWithPrice;
-import fr.openent.lystore.helpers.ExportHelper;
+import fr.openent.lystore.export.helpers.ExportHelper;
 import fr.openent.lystore.service.ExportService;
 import fr.openent.lystore.service.SupplierService;
 import fr.openent.lystore.service.impl.DefaultSupplierService;

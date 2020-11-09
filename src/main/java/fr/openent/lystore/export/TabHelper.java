@@ -1,15 +1,12 @@
 package fr.openent.lystore.export;
 
 import fr.openent.lystore.Lystore;
-import fr.openent.lystore.helpers.ExcelHelper;
+import fr.openent.lystore.export.helpers.ExcelHelper;
 import fr.openent.lystore.service.impl.DefaultProjectService;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.VertxException;
-import io.vertx.core.buffer.Buffer;
-import io.vertx.core.buffer.impl.BufferImpl;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -25,8 +22,6 @@ import org.entcore.common.neo4j.Neo4jResult;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -57,6 +52,7 @@ public abstract class TabHelper {
     protected JsonArray datas;
     protected final int LIMIT_FORMULA_SIZE = 8000;
     protected final int LIMIT_ATTEMPTS_CREATION = 3;
+    protected final String EMPTY = "";
     protected int attemptNumber = 0;
     /**
      * Format : H-code
@@ -133,10 +129,11 @@ public abstract class TabHelper {
         Date orderDate = null;
         try {
             orderDate = formatterDate.parse(date);
+            return formatterDateExcel.format(orderDate);
         } catch (ParseException e) {
-            log.error("Incorrect date format");
+            log.error("Incorrect date format : " + date);
+            return "";
         }
-        return formatterDateExcel.format(orderDate);
     }
     protected JsonArray sortByCity(JsonArray values, boolean byZipCode) {
         JsonArray sortedJsonArray = new JsonArray();
@@ -304,7 +301,7 @@ public abstract class TabHelper {
             //logger.info("Object safeGetDouble : " + jo + " key : " + key);
             result = jo.getDouble(key);
         }catch (Exception e){
-            logger.info("Exception safeGetDouble : key : " + key + " ;name tab : " + nameTab);
+//            logger.info("Exception safeGetDouble : key : " + key + " ;name tab : " + nameTab);
             result = Double.parseDouble(jo.getString(key).replaceAll(",", "."));
         }
         return  result;
@@ -384,6 +381,7 @@ public abstract class TabHelper {
                 putDataIfNotNull("city",data, structure);
                     putDataIfNotNull("type",data, structure);
                 putDataIfNotNull("address",data, structure);
+                putDataIfNotNull("academy",data, structure);
                 putDataIfNotNull("zipCode",data, structure);
                 putDataIfNotNull("phone",data, structure);
             }
@@ -402,6 +400,7 @@ public abstract class TabHelper {
         data.put("city", NULL_DATA);
         data.put("type", NULL_DATA);
         data.put("address",NULL_DATA);
+        data.put("academy",NULL_DATA);
         data.put("zipCode", "??");
         data.put("phone", NULL_DATA);
     }
@@ -502,6 +501,7 @@ public abstract class TabHelper {
                 "s.id as id," +
                 " s.UAI as uai," +
                 " s.name as name," +
+                " s.academy as academy ," +
                 " s.address + ' ,' + s.zipCode +' ' + s.city as address,  " +
                 "s.zipCode as zipCode," +
                 " s.city as city," +
@@ -578,7 +578,6 @@ public abstract class TabHelper {
                 if (repStructures.isRight()) {
                     try {
                         JsonArray structures = repStructures.right().getValue();
-//                        log.info(structures);
                         fillPage(structures);
                     }catch (Exception e){
                         errorCatch = true;

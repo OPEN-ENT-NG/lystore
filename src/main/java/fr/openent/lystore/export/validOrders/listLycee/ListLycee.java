@@ -70,17 +70,17 @@ public class ListLycee extends TabHelper {
 
     private void writeArray(Handler<Either<String, Boolean>> handler) {
 
-        excel.insertWithStyle(0,0,"Numéro de validation",excel.yellowLabel);
-        excel.insertWithStyle(1,0,"Numéro du marché",excel.yellowLabel);
-        excel.insertWithStyle(2,0,"Libellé du marché",excel.yellowLabel);
-        excel.insertWithStyle(3,0,"Date du BC",excel.yellowLabel);
+        excel.insertWithStyle(0,0,"Numéro de validation",excel.labelOnYellow);
+        excel.insertWithStyle(1,0,"Numéro du marché",excel.labelOnYellow);
+        excel.insertWithStyle(2,0,"Libellé du marché",excel.labelOnYellow);
+        excel.insertWithStyle(3,0,"Date du BC",excel.labelOnYellow);
 
-        excel.insertWithStyle(4,0,"UAI",excel.yellowLabel);
-        excel.insertWithStyle(5,0,"Nom de l'établissement",excel.yellowLabel);
-        excel.insertWithStyle(6,0,"Commune",excel.yellowLabel);
-        excel.insertWithStyle(7,0,"Tel",excel.yellowLabel);
-        excel.insertWithStyle(8,0,"Equipment",excel.yellowLabel);
-        excel.insertWithStyle(9,0,"Qté",excel.yellowLabel);
+        excel.insertWithStyle(4,0,"UAI",excel.labelOnYellow);
+        excel.insertWithStyle(5,0,"Nom de l'établissement",excel.labelOnYellow);
+        excel.insertWithStyle(6,0,"Commune",excel.labelOnYellow);
+        excel.insertWithStyle(7,0,"Tel",excel.labelOnYellow);
+        excel.insertWithStyle(8,0,"Equipment",excel.labelOnYellow);
+        excel.insertWithStyle(9,0,"Qté",excel.labelOnYellow);
         for(int i=0;i<datas.size();i++){
             JsonObject data = datas.getJsonObject(i);
             excel.insertCellTab(0,i+1,makeCellWithoutNull(numberValidation));

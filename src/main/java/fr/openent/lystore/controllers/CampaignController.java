@@ -1,12 +1,16 @@
 package fr.openent.lystore.controllers;
 
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.export.ExportTypes;
+import fr.openent.lystore.export.helpers.ExportHelper;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
 import fr.openent.lystore.security.*;
 import fr.openent.lystore.service.CampaignService;
+import fr.openent.lystore.service.ExportService;
 import fr.openent.lystore.service.impl.DefaultCampaignService;
+import fr.openent.lystore.service.impl.DefaultExportServiceService;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
@@ -18,6 +22,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 
@@ -29,10 +34,12 @@ import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultRes
 public class CampaignController extends ControllerHelper {
 
     private final CampaignService campaignService;
+    private ExportService exportService;
 
-    public CampaignController () {
+    public CampaignController (Storage storage) {
         super();
         this.campaignService = new DefaultCampaignService(Lystore.lystoreSchema, "campaign");
+        this.exportService = new DefaultExportServiceService(storage);
     }
 
     @Get("/campaigns")
@@ -182,5 +189,13 @@ public class CampaignController extends ControllerHelper {
             log.error(" An error occurred when casting campaign(s) id(s)", e);
             badRequest(request);
         }
+    }
+    @Get("/campaign/export/order")
+    @ApiDoc("Generate export of orders in the campaign")
+    @SecuredAction(value = "",type = ActionType.RESOURCE)
+    @ResourceFilter(ManagerRight.class)
+    public void exportOrders(HttpServerRequest request){
+        ExportHelper.makeExport(request, eb, exportService, Lystore.CAMPAIGN, Lystore.XLSX, ExportTypes.CAMPAIGN_ORDERS, "_campaign_order");
+
     }
 }

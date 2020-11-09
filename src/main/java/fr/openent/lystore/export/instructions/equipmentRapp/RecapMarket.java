@@ -2,7 +2,7 @@ package fr.openent.lystore.export.instructions.equipmentRapp;
 
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.export.TabHelper;
-import fr.openent.lystore.helpers.ExcelHelper;
+import fr.openent.lystore.export.helpers.ExcelHelper;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
