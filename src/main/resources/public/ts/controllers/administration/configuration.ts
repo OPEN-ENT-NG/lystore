@@ -29,7 +29,8 @@ export const configurationController = ng.controller('configurationController',
                 tag: false,
                 equipment: false,
                 campaign: false,
-                structureGroup: false
+                structureGroup: false,
+                automaticCampaign:false
             },
             input: {
                 group: []
@@ -443,11 +444,14 @@ export const configurationController = ng.controller('configurationController',
                 return structureGroup.tags.length > 0;
             })
         };
+
         $scope.validCampaignForm = (campaign: Campaign) => {
             return campaign.name !== undefined
             && campaign.name.trim() !== ''
             && _.findWhere($scope.structureGroups.all, {selected: true}) !== undefined
-            && (_.where($scope.structureGroups.all, {selected: true}).length > 0) ? $scope.checkTags()
+            && (_.where($scope.structureGroups.all, {selected: true}).length > 0)
+            && (!campaign.automatic_close || campaign.start_date < campaign.end_date)
+                ? $scope.checkTags()
              : false;
 
         };
@@ -508,6 +512,24 @@ export const configurationController = ng.controller('configurationController',
             Utils.safeApply($scope);
         };
 
+        $scope.updateAccessibility = (campaign : Campaign) =>{
+            $scope.automaticCampaign = campaign;
+            if(campaign.automatic_close){
+                template.open('campaign.lightbox.automaticCampaign', 'administrator/campaign/campaign-change-manual');
+                $scope.display.lightbox.automaticCampaign = true;
+            }else{
+                campaign.updateAccessibility()
+            }
+        }
+        $scope.confirmManualChange = () =>{
+            $scope.display.lightbox.automaticCampaign = false;
+            $scope.automaticCampaign.updateAccessibility()
+        }
+        $scope.cancelManualChange = () =>{
+            $scope.display.lightbox.automaticCampaign = false;
+            $scope.automaticCampaign.accessible = !$scope.automaticCampaign.accessible;
+            $scope.safeApply($scope);
+        }
         $scope.deselectAllStructures = (structures: any) => {
             structures.deselectAll();
             Utils.safeApply($scope);

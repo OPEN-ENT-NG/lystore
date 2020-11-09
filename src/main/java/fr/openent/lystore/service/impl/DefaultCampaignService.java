@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 public class DefaultCampaignService extends SqlCrudService implements CampaignService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultCampaignService.class);
+    private static final Logger log = LoggerFactory.getLogger(DefaultCampaignService.class);
 
 
     public DefaultCampaignService(String schema, String table) {
@@ -53,7 +53,7 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                         campaign = campaignMap.getJsonObject(object.getInteger("id_campaign").toString());
                         campaign.put("purse_amount", object.getString("purse"));
                     }catch (NullPointerException e){
-                        LOGGER.info("A purse is present on this structure but the structure is not linked to the campaign");
+                        log.info("A purse is present on this structure but the structure is not linked to the campaign");
                     }
                 }
 
@@ -63,7 +63,7 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                         campaign = campaignMap.getJsonObject(object.getInteger("id_campaign").toString());
                         campaign.put("nb_orders_" + object.getString("status").toLowerCase(), object.getLong("count"));
                     }catch (NullPointerException e){
-                        LOGGER.info("An order is present on this structure but the structure is not linked to the campaign");
+                        log.info("An order is present on this structure but the structure is not linked to the campaign");
                     }
                 }
 
@@ -96,7 +96,7 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
             if (event.isRight()) {
                 future.complete(event.right().getValue());
             } else {
-                LOGGER.error(event.left().getValue());
+                log.error(event.left().getValue());
                 future.fail(event.left().getValue());
             }
         };
@@ -194,7 +194,7 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                     campaign = campaignMap.getJsonObject(object.getInteger("id_campaign").toString());
                     campaign.put("nb_panier", object.getLong("nb_panier"));
                     }catch (NullPointerException e){
-                        LOGGER.info("A basket is present on this structure but the structure is not linked to the campaign");
+                        log.info("A basket is present on this structure but the structure is not linked to the campaign");
                     }
                 }
 
@@ -205,7 +205,7 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                         campaign.put("purse_amount", object.getString("amount"));
                         campaign.put("initial_purse_amount",object.getString("initial_amount"));
                     }catch (NullPointerException e){
-                        LOGGER.info("A purse is present on this structure but the structure is not linked to the campaign");
+                        log.info("A purse is present on this structure but the structure is not linked to the campaign");
                     }
                 }
                 for (int i = 0; i < orders.size(); i++) {
@@ -214,7 +214,7 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                         campaign = campaignMap.getJsonObject(object.getInteger("id_campaign").toString());
                         campaign.put("nb_order", object.getLong("nb_order"));
                     }catch (NullPointerException e){
-                        LOGGER.info("An order is present on this structure but the structure is not linked to the campaign");
+                        log.info("An order is present on this structure but the structure is not linked to the campaign");
                     }
                 }
 
@@ -282,11 +282,11 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                             }
                         });
                     } catch (ClassCastException e) {
-                        LOGGER.error("An error occurred when casting tags ids", e);
+                        log.error("An error occurred when casting tags ids", e);
                         handler.handle(new Either.Left<String, JsonObject>(""));
                     }
                 } else {
-                    LOGGER.error("An error occurred when selecting next val");
+                    log.error("An error occurred when selecting next val");
                     handler.handle(new Either.Left<String, JsonObject>(""));
                 }
             }
@@ -370,10 +370,32 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
 
     public void updateAccessibility(final Integer id,final JsonObject campaign,
                                     final Handler<Either<String, JsonObject>> handler){
+        String options = "";
+        String finalCondition  = "";
+        if(!campaign.getBoolean("automatic_close")) {
+            if (campaign.getValue("start_date") == null && campaign.getBoolean("accessible")) {
+                options += "start_date = NOW() ,";
+            }
+            if(!campaign.getBoolean("accessible")){
+                options += "end_date = NOW() ,";
+            }else {
+                options += "end_date = NULL ,";
+            }
+        }else{
+            if(campaign.getBoolean("accessible")){
+                options += "start_date = NOW (),";
+                finalCondition = " AND start_date > NOW()";
+            }else{
+                options += "end_date = NOW() ,";
+            }
+        }
         JsonArray statements = new fr.wseduc.webutils.collections.JsonArray();
         String query = "UPDATE " + Lystore.lystoreSchema + ".campaign SET " +
+                options +
                 "accessible= ? " +
-                "WHERE id = ?";
+                "WHERE id = ? " +
+                finalCondition +
+                ";";
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray()
                 .add(campaign.getBoolean("accessible"))
                 .add(id);
@@ -432,9 +454,17 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
      */
     private JsonObject getCampaignUpdateStatement(Number id, JsonObject campaign) {
         String query = "UPDATE " + Lystore.lystoreSchema + ".campaign " +
-                "SET  name=?, description=?, image=?, purse_enabled=?, priority_enabled=?, priority_field=? " +
+                "SET  name=?, " +
+                "description=?," +
+                " image=?, " +
+                "purse_enabled=?, " +
+                "priority_enabled=?," +
+                " priority_field=?," +
+                "start_date = ?," +
+                " end_date = ?, " +
+                "automatic_close = ?," +
+                "accessible = ? " +
                 "WHERE id = ?";
-
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray()
                 .add(campaign.getString("name"))
                 .add(campaign.getString("description"))
@@ -442,6 +472,10 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                 .add(campaign.getBoolean("purse_enabled"))
                 .add(campaign.getBoolean("priority_enabled"))
                 .add(campaign.getString("priority_field"))
+                .add(campaign.getString("start_date"))
+                .add(campaign.getString("end_date"))
+                .add(campaign.getBoolean("automatic_close"))
+                .add(campaign.getBoolean("accessible"))
                 .add(id);
 
         return new JsonObject()
@@ -451,8 +485,9 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
     }
     private JsonObject getCampaignCreationStatement(Number id, JsonObject campaign) {
         String insertCampaignQuery =
-                "INSERT INTO " + Lystore.lystoreSchema + ".campaign(id, name, description, image, accessible, purse_enabled, priority_enabled, priority_field )" +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id; ";
+                "INSERT INTO " + Lystore.lystoreSchema + ".campaign(id, name, description, image, accessible," +
+                        " purse_enabled, priority_enabled, priority_field, start_date, end_date,automatic_close )" +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?) RETURNING id; ";
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray()
                 .add(id)
                 .add(campaign.getString("name"))
@@ -461,7 +496,10 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                 .add(campaign.getBoolean("accessible"))
                 .add(campaign.getBoolean("purse_enabled"))
                 .add(campaign.getBoolean("priority_enabled"))
-                .add(campaign.getString("priority_field"));
+                .add(campaign.getString("priority_field"))
+                .add(campaign.getString("start_date"))
+                .add(campaign.getString("end_date"))
+                .add(campaign.getBoolean("automatic_close"));
 
         return new JsonObject()
                 .put("statement", insertCampaignQuery)
@@ -516,7 +554,7 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                     .put("id", id);
             either = new Either.Right<>(returns);
         } else {
-            LOGGER.error("An error occurred when launching campaign transaction");
+            log.error("An error occurred when launching campaign transaction");
             either = new Either.Left<>("");
         }
         return either;

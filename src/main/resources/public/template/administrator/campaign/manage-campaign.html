@@ -45,7 +45,7 @@
         <div class="row" workflow="lystore.administrator">
             <div class="right-magnet">
                 <span class="horizontal-spacing cell"><i18n>lystore.campaign.accessibility</i18n></span>
-                <switch-toggle ng-model="campaign.accessible" ng-change="campaign.updateAccessibility()"
+                <switch-toggle ng-model="campaign.accessible" ng-change="updateAccessibility(campaign)"
                                class="cell"></switch-toggle>
             </div>
         </div>
@@ -56,6 +56,13 @@
           show="display.lightbox.campaign"
           workflow="lystore.administrator">
     <container template="campaign.lightbox"></container>
+</lightbox>
+
+
+<lightbox on-close="display.lightbox.automaticCampaign = false;"
+          show="display.lightbox.automaticCampaign"
+          workflow="lystore.administrator">
+    <container template="campaign.lightbox.automaticCampaign"></container>
 </lightbox>
 
 <section class="toggle-buttons" ng-class="{ hide: campaigns.selected.length === 0 }" workflow="lystore.administrator">
