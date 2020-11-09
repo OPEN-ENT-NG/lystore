@@ -1,9 +1,9 @@
 package fr.openent.lystore.export;
 
+import fr.openent.lystore.export.campaign.CampaignExport;
 import fr.openent.lystore.export.instructions.Instruction;
 import fr.openent.lystore.export.validOrders.ValidOrders;
-import fr.openent.lystore.helpers.ExcelHelper;
-import fr.openent.lystore.helpers.ExportHelper;
+import fr.openent.lystore.export.helpers.ExportHelper;
 import fr.openent.lystore.service.ExportService;
 import fr.openent.lystore.service.impl.DefaultExportServiceService;
 import fr.wseduc.webutils.Either;
@@ -13,6 +13,9 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.storage.Storage;
 import org.vertx.java.busmods.BusModBase;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static fr.openent.lystore.Lystore.*;
 
@@ -26,6 +29,7 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
     private boolean isSleeping = true;
     private final String XLSXHEADER= "application/vnd.ms-excel";
     private final String PDFHEADER = "application/pdf";
+    private CampaignExport campaign;
 
     @Override
     public void start() {
@@ -89,7 +93,12 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
         idNewFile = body.getString("_id");
         Integer object_id = -1;
         String string_object_id ="";
+        List<Integer> ids= new ArrayList<Integer>();
         JsonObject params = body.getJsonObject("externalParams");
+        if(action.equals(ExportTypes.CAMPAIGN_ORDERS)){
+            for(Object o : body.getJsonArray("ids")){
+                ids.add(Integer.parseInt((String)o));            }
+        }
         try {
             object_id = Integer.parseInt(body.getString("object_id"));
             string_object_id = object_id.toString();
@@ -162,10 +171,28 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
             case ExportTypes.BC_BEFORE_VALIDATION_STRUCT:
                 exportBCOrdersBeforeValidationStruct(params,fileName,exportHandler);
                 break;
+            case ExportTypes.CAMPAIGN_ORDERS:
+                exportCampaignOrder(object_id,fileName,ids,exportHandler);
+                logger.info("body : "+ body);
+                break;
             default:
                 ExportHelper.catchError(exportService, idNewFile, "Invalid action in worker : " + action,exportHandler);
                 break;
         }
+    }
+
+    private void exportCampaignOrder(Integer cmapaign_id, String titleFile, List<Integer> ids,Handler<Either<String, Boolean>> exportHandler) {
+
+        logger.info("Export orders from campaign : ");
+
+        this.campaign = new CampaignExport(exportService, idNewFile, cmapaign_id,ids);
+        this.campaign.exportOrders(event1 -> {
+            saveExportHandler(titleFile, exportHandler, event1, "error when creating export order Campaign xlsx :", XLSXHEADER);
+        });
+//        this.validOrders = new ValidOrders(exportService,params,idNewFile,this.eb,this.vertx,this.config);
+//        this.validOrders.exportBCBeforeValidationByStructures(event1 -> {
+//            saveExportHandler(titleFile, exportHandler, event1, "error when creating BCOrdersBeforeValidationStruct PDF ", PDFHEADER);
+//        });
     }
 
     private void exportBCOrdersBeforeValidationStruct(JsonObject params, String titleFile, Handler<Either<String, Boolean>> exportHandler) {

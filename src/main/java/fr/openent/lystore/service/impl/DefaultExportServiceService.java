@@ -21,7 +21,7 @@ import java.time.format.DateTimeFormatter;
 
 public class DefaultExportServiceService implements ExportService {
     Storage storage;
-    private Logger logger = LoggerFactory.getLogger(DefaultProjectService.class);
+    private Logger log = LoggerFactory.getLogger(DefaultProjectService.class);
     private EventBus eb;
     MongoHelper mongo;
 
@@ -86,9 +86,10 @@ public class DefaultExportServiceService implements ExportService {
                                 .put("extension",extension)
                                 .put("NbIterationsLeft",Lystore.iterationWorker)
                                 .put("externalParams",requestParams);
-
                         if(infoFile.containsKey("type"))
                             params.put("type",infoFile.getString("type"));
+                        if(infoFile.containsKey("ids"))
+                            params.put("ids",infoFile.getValue("ids"));
 
                         mongo.addExport(params, new Handler<String>() {
                             @Override
@@ -102,12 +103,12 @@ public class DefaultExportServiceService implements ExportService {
                         });
                     }else{
                         handler.handle(new Either.Left<>("Error when init export excel in Mongo"));
-                        logger.error("Error when init export excel in Mongo");
+                        log.error("Error when init export excel in Mongo");
                     }
                 }
             }));
         } catch (Exception error){
-            logger.error("error when create export" + error);
+            log.error("error when create export" + error);
         }
     }
 
@@ -124,6 +125,9 @@ public class DefaultExportServiceService implements ExportService {
                 break;
             case Lystore.ORDERS:
                 nameQuery = "SELECT 'numéro de validation' as object from " + Lystore.lystoreSchema + ".order_client_equipment LIMIT 1";
+                break;
+            case Lystore.CAMPAIGN:
+                nameQuery = "SELECT 'Campagne' as object from " + Lystore.lystoreSchema + ".order_client_equipment LIMIT 1";
                 break;
         }
         return nameQuery;
@@ -143,13 +147,13 @@ public class DefaultExportServiceService implements ExportService {
                 }
             });
         } catch (Exception error){
-            logger.error("error when update ERROR in export" + error);
+            log.error("error when update ERROR in export" + error);
         }
     }
 
     public void updateWhenSuccess (String fileId, String idExport, Handler<Either<String, Boolean>> handler) {
         try {
-            logger.info("SUCCESS");
+            log.info("SUCCESS");
             mongo.updateExport(idExport,"SUCCESS",fileId,  new Handler<String>() {
                 @Override
                 public void handle(String event) {
@@ -161,7 +165,7 @@ public class DefaultExportServiceService implements ExportService {
                 }
             });
         } catch (Exception error) {
-            logger.error("error when update ERROR in export" + error);
+            log.error("error when update ERROR in export" + error);
 
         }
     }
