@@ -1,7 +1,8 @@
 import http from 'axios';
-import {_, notify} from 'entcore';
+import {_, notify,moment} from 'entcore';
 import {Mix, Selectable, Selection} from 'entcore-toolkit';
-import {Purses, StructureGroup, Tags, Titles} from './index';
+import {Purses, StructureGroup, Tags, Titles, Utils} from './index';
+import {createModifiersFromModifierFlags} from "typescript/lib/tsserverlibrary";
 
 
 export class Campaign implements Selectable  {
@@ -22,6 +23,9 @@ export class Campaign implements Selectable  {
     purse_enabled: boolean;
     priority_enabled: boolean;
     priority_field: null|PRIORITY_FIELD;
+    end_date :Date;
+    start_date : Date;
+    automatic_close : boolean;
 
     constructor (name?: string, description?: string) {
         if (name) this.name = name;
@@ -30,6 +34,7 @@ export class Campaign implements Selectable  {
         this.image = '';
         this.purse_enabled = false;
         this.priority_enabled = true;
+        this.automatic_close = true;
         this.priority_field = PRIORITY_FIELD.ORDER
     }
 
@@ -44,12 +49,17 @@ export class Campaign implements Selectable  {
             }),
             purse_enabled: this.purse_enabled,
             priority_enabled: this.priority_enabled,
-            priority_field: this.priority_field
+            priority_field: this.priority_field,
+            end_date : this.end_date,
+            start_date: this.start_date,
+            automatic_close: this.automatic_close
         };
     }
 
     async save () {
         if (this.id) {
+            if(this.automatic_close)
+                this.accessible = false;
             await this.update();
         } else {
             await this.create();
@@ -96,14 +106,17 @@ export class Campaign implements Selectable  {
         try {
             let { data } = await http.get(`/lystore/campaigns/${id}`);
             Mix.extend(this, Mix.castAs(Campaign, data));
+            this.start_date =  moment(this.start_date);
+            this.end_date = moment(this.end_date);
+            this.accessible = this.accessible|| (this.start_date < this.end_date);
             if (this.groups[0] !== null ) {
                 this.groups = Mix.castArrayAs(StructureGroup, JSON.parse(this.groups.toString())) ;
                 if (tags) {
-                this.groups.map((group) => {
-                    group.tags =  group.tags.map( (tag) => {
-                        return _.findWhere(tags, {id: tag});
+                    this.groups.map((group) => {
+                        group.tags =  group.tags.map( (tag) => {
+                            return _.findWhere(tags, {id: tag});
+                        });
                     });
-                });
                 }
             } else this.groups = [];
 
@@ -135,6 +148,14 @@ export class Campaigns extends Selection<Campaign> {
         try {
             let { data } = await http.get( Structure ? `/lystore/campaigns?idStructure=${Structure}`  : `/lystore/campaigns`  );
             this.all = Mix.castArrayAs(Campaign, data);
+            this.all.forEach(c =>{
+                if(c.end_date != null && c.start_date != null) {
+                    c.accessible = c.accessible
+                        ||
+                        (moment(c.start_date).diff(moment(),'days') <= 0
+                            && moment(c.end_date).diff(moment(),'days') >= 0);
+                }
+            })
         } catch (e) {
             notify.error('lystore.campaigns.sync.err');
         }

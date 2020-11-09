@@ -23,6 +23,35 @@
                         <input type="text" class="twelve" ng-model="campaign.name" required>
                     </label>
                     <div class="row twelve">
+
+                        <label class="four vertical-spacing">
+                            <label class="one checkbox">
+                                <input type="checkbox"
+                                       ng-model="campaign.automatic_close"/>
+                                <span></span>
+                            </label>
+                            <span class="six cell">
+                                <i18n>lystore.campaigns.date.automatisation</i18n>
+                            </span>
+                            <div class="vertical-spacing"
+                                 ng-show="campaign.automatic_close">
+                            <span class="four cell">
+                            <i18n>lystore.campaigns.date.start</i18n>
+                        </span>
+                                <div class="six cell">
+                                    <date-picker ng-model="campaign.start_date" class="cell six twelve-mobile " ></date-picker>
+                                </div>
+                                <span class="four cell">
+                            <i18n>lystore.campaigns.date.end</i18n>
+                        </span>
+                                <div class="six cell">
+                                    <date-picker ng-model="campaign.end_date" class="cell six twelve-mobile "></date-picker>
+                                </div>
+                            </div>
+                        </label>
+
+                    </div>
+                    <div class="row twelve">
                         <label class="row twelve vertical-spacing">
                         <span class="twelve">
                             <i18n>lystore.campaigns.description</i18n>

@@ -26,6 +26,15 @@
     },
     "priority_field":{
       "type":  [ "string", "null" ]
+    },
+    "start_date": {
+      "type":[ "string", "null" ]
+    },
+    "end_date": {
+      "type": [ "string", "null" ]
+    },
+    "automatic_close": {
+      "type": "boolean"
     }
   },
   "required": [
