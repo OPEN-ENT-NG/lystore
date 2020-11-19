@@ -371,10 +371,13 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                 $scope.loadingArray = true;
                 template.close('administrator-main');
                 template.close('operation-main');
-                $scope.operations = new Operations();
-                $scope.structures = new Structures();
-                await $scope.structures.sync();
-                await $scope.operations.sync();
+                console.log($scope.operations)
+                if($scope.operations.all.length < 1){
+                    $scope.operations = new Operations();
+                    $scope.structures = new Structures();
+                    await $scope.structures.sync();
+                    await $scope.operations.sync();
+                }
                 $scope.operation = await $scope.operations.all.find(operationFound => operationFound.id.toString() === params.idOperation.toString());
                 $scope.ordersClientByOperation = await $scope.operation.getOrders($scope.structures.all);
                 template.open('administrator-main', 'administrator/operation/operation-container');

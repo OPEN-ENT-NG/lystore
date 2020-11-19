@@ -1,3 +1,4 @@
+// @ts-ignore
 import {moment} from "entcore";
 import {Order} from "./Order";
 
