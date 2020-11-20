@@ -202,6 +202,7 @@ export const instructionController = ng.controller('instructionController',
                 template.open('instruction.cp.lightbox', 'administrator/instruction/instruction-cp-adopted-lightbox');
             }else{
                 $scope.instruction.cp_adopted = true;
+                Utils.safeApply($scope);
             }
         }
         $scope.sendInstruction = async () => {

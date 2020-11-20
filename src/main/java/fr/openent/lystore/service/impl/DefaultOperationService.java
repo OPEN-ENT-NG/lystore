@@ -84,7 +84,7 @@ public class DefaultOperationService extends SqlCrudService implements Operation
                 "       array_to_json(array_agg(DISTINCT c_client.name) || array_agg(DISTINCT c_region.name)) AS contracts  " +
                 "FROM    " + Lystore.lystoreSchema +".operation  " +
                 "INNER JOIN    " + Lystore.lystoreSchema +".label_operation label ON label.id = operation.id_label  " +
-                "LEFT JOIN    " + Lystore.lystoreSchema +".order_client_equipment oce ON oce.id_operation = operation.id AND oce.override_region IS false AND oce.status = 'IN PROGRESS'  " +
+                "LEFT JOIN    " + Lystore.lystoreSchema +".order_client_equipment oce ON oce.id_operation = operation.id AND oce.override_region IS false AND oce.status IN ('IN PROGRESS','VALID','DONE')  " +
                 "LEFT JOIN    " + Lystore.lystoreSchema +".\"order-region-equipment\" ore ON ore.id_operation = operation.id  " +
                 "LEFT JOIN    " + Lystore.lystoreSchema +".order o_client ON o_client.id = oce.id_order  " +
                 "LEFT JOIN    " + Lystore.lystoreSchema +".order o_region ON o_region.id = ore.id_order  " +

@@ -1,3 +1,4 @@
+// @ts-ignore
 import {ng, template} from 'entcore';
 import {Project, Utils} from '../../model';
 

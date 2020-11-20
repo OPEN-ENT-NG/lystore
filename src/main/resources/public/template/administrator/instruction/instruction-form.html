@@ -58,6 +58,7 @@
                                 </span>
                     <switch-toggle ng-model="instruction.cp_adopted"
                                    ng-change="cancelIfAlreadyTrue()"
+                                   ng-disabled="instruction.cp_adopted"
                                    class="cell">
                     </switch-toggle>
 

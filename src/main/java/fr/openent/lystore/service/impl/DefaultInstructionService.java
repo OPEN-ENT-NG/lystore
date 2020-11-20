@@ -287,7 +287,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 "  oce.id_operation is not null " +
                 "  and oce.code != '236' " +
                 "  and order_client_equipment.id = oce.id " +
-                  "and oce.status = 'IN PROGRESS';";
+                  "and oce.status IN ('IN PROGRESS','VALID','DONE');";
 
         JsonArray params = new JsonArray().add(id);
         return new JsonObject()
