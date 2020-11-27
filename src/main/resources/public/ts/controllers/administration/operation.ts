@@ -1,5 +1,5 @@
-import {_, ng, template,moment, idiom as lang, toasts} from 'entcore';
-import {Notification, Operation, Operations, OrderClient, OrderRegion, OrdersRegion, Utils} from "../../model";
+import {_, ng, template, moment, idiom as lang, toasts, angular} from 'entcore';
+import {label, Notification, Operation, Operations, OrderClient, OrderRegion, OrdersRegion, Utils} from "../../model";
 
 declare let window: any;
 
@@ -23,6 +23,7 @@ export const operationController = ng.controller('operationController',
         $scope.display = {
             lightbox : {
                 operation:false,
+                label: false,
             }
         };
         $scope.noValidatedCP = (operations : Operation[]) =>{
@@ -140,6 +141,40 @@ export const operationController = ng.controller('operationController',
                 $scope.display.lightbox.operation = false;
                 Utils.safeApply($scope);
             }
+        };
+
+
+        $scope.openManageLabelOperation = () => {
+            $scope.redirectTo(`/operation/manageLabel`)
+        };
+
+        $scope.openLabelForm = (action: string) => {
+            console.log("test");
+            if(action === 'create'){
+                $scope.labelOperation = new label();
+            } else if (action === 'edit'){
+                // $scope.labelOperation = $scope.operations.selected[0];
+                // $scope.operation.status = ($scope.operation.status === 'true');
+                // $scope.labelOperation.all.push($scope.operation.label);
+            }
+            $scope.display.lightbox.label = true;
+            template.open('label.lightbox', 'administrator/operation-label/label-form');
+            Utils.safeApply($scope);
+        };
+
+        $scope.validLabelForm = (label:label) =>{
+            if(label.title !== undefined) {
+                // label.id = label.;
+                // return label.label && $scope.isValidLabelDate(label);
+            }else{
+                return true;
+            }
+        };
+
+        $scope.cancelLabelForm = () => {
+            $scope.display.lightbox.label = false;
+            template.close('label.lightbox');
+            Utils.safeApply($scope);
         };
 
 
