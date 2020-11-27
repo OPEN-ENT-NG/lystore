@@ -1,9 +1,9 @@
 <div style="height: 300px;">
-    <form>
+    <form >
         <div class="row">
             <label class="twelve">
             <span class="twelve cell twelve-mobile">
-                <h2><i18n>lystore.operation.label.title.create</i18n></h2>
+                <i18n>lystore.operation.label.title.create</i18n>
             </span>
                 <br/>
                 <!--            <select  ng-model="operation.id_label" class="twelve"-->
@@ -11,13 +11,13 @@
                 <!--                     ng-options="LabelOperation.id as LabelOperation.label for LabelOperation in labelOperation.all" required>-->
                 <!--            </select>-->
             </label>
-            <div>
+            <div class="">
                 <i18n>lystore.operation.label.name</i18n>
-                <input type="text" ng-model="newLabel.label" />
+                <input type="text" />
             </div>
 
-            <div class="warning" ng-show="!validLabelForm(newLabel)">
-                <i18n>operation.label.form.warning</i18n>
+            <div class="warning" ng-show="!validOperationForm(operation)">
+                <i18n>operation.form.warning</i18n>
             </div>
 
             <div class="twelve cell" style="margin-top: 10px;">
@@ -25,17 +25,13 @@
                 <date-picker i18n-placeholder="lystore.instruction.date.place_holder" ng-model="newLabel.start_date">
                 </date-picker>
                 <i18n>lystore.operation.label.end_date</i18n>
-                <date-picker i18n-placeholder="lystore.operation.label.date.place_holder" ng-model="newLabel.end_date">
+                <date-picker i18n-placeholder="lystore.instruction.date.place_holder" ng-model="newLabel.end_date">
                 </date-picker>
-            </div>
-
-            <div class="warning" ng-show="!isValidLabelDate(newLabel)">
-                <i18n>operation.label.date.form.warning</i18n>
             </div>
         </div>
         <div class="right-magnet vertical-spacing">
             <input type="button" class="cancel" ng-click="cancelLabelForm()" i18n-value="cancel"/>
-            <input type="button" class="button" ng-disabled="!validLabelForm(newLabel)" ng-click="validLabel(newLabel)" i18n-value="confirm"/>
+            <input type="button" class="button" ng-disabled="" ng-click="" i18n-value="confirm"/>
         </div>
     </form>
 </div>
