@@ -1,4 +1,5 @@
 import {Mix, Selectable, Selection} from 'entcore-toolkit';
+// @ts-ignore
 import {_, notify} from 'entcore';
 import http from 'axios';
 import {Equipment, EquipmentOption, Structure, Utils} from './index';
