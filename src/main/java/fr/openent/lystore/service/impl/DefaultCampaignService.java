@@ -73,7 +73,7 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                     try {
                         campaign.put("nb_equipments", object.getLong("nb_equipments"));
                     }catch (NullPointerException e){
-                        log.info("The campaign reffered doesn't exist anymore");
+                        log.info("The campaign reffered doesn't exist anymore id_campaign " + object.getInteger("id"));
                     }
                 }
 
@@ -113,7 +113,6 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                 "INNER JOIN " + Lystore.lystoreSchema + ".tag ON (rel_group_campaign.id_tag = tag.id) " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".rel_equipment_tag ON (tag.id = rel_equipment_tag.id_tag) " +
                 "GROUP BY campaign.id";
-        log.info(query);
         Sql.getInstance().prepared(query, new JsonArray(), SqlResult.validResultHandler(handler));
     }
 
