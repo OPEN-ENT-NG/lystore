@@ -70,7 +70,11 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                 for (int i = 0; i < equipments.size(); i++) {
                     object = equipments.getJsonObject(i);
                     campaign = campaignMap.getJsonObject(object.getInteger("id").toString());
-                    campaign.put("nb_equipments", object.getLong("nb_equipments"));
+                    try {
+                        campaign.put("nb_equipments", object.getLong("nb_equipments"));
+                    }catch (NullPointerException e){
+                        log.info("The campaign reffered doesn't exist anymore");
+                    }
                 }
 
                 JsonArray campaignList = new JsonArray();
@@ -103,12 +107,13 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
     }
 
     private void getCampaignEquipmentCount(Handler<Either<String, JsonArray>> handler) {
-        String query = "SELECT campaign.id, COUNT(DISTINCT rel_equipment_tag.id_equipment) as nb_equipments " +
+        String query = "SELECT campaign.id, COUNT(DISTINCT rel_equipment_tag.id_equipment) as nbquipments " +
                 "FROM " + Lystore.lystoreSchema + ".campaign " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".rel_group_campaign ON (campaign.id = rel_group_campaign.id_campaign) " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".tag ON (rel_group_campaign.id_tag = tag.id) " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".rel_equipment_tag ON (tag.id = rel_equipment_tag.id_tag) " +
                 "GROUP BY campaign.id";
+        log.info(query);
         Sql.getInstance().prepared(query, new JsonArray(), SqlResult.validResultHandler(handler));
     }
 
@@ -191,8 +196,8 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                 for (int i = 0; i < baskets.size(); i++) {
                     object = baskets.getJsonObject(i);
                     try {
-                    campaign = campaignMap.getJsonObject(object.getInteger("id_campaign").toString());
-                    campaign.put("nb_panier", object.getLong("nb_panier"));
+                        campaign = campaignMap.getJsonObject(object.getInteger("id_campaign").toString());
+                        campaign.put("nb_panier", object.getLong("nb_panier"));
                     }catch (NullPointerException e){
                         log.info("A basket is present on this structure but the structure is not linked to the campaign");
                     }
