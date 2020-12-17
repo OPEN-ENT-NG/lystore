@@ -21,7 +21,11 @@ public class AccessUpdateOrderOnClosedCampaigne implements ResourcesProvider {
         }else{
             resourceRequest.pause();
             Integer campaignId = Integer.parseInt(resourceRequest.getParam("idCampaign"));
-            String checkQuery = "SELECT accessible " +
+            String checkQuery = "SELECT accessible OR ( " +
+                    " CASE WHEN automatic_close = true " +
+                    " THEN (start_date  < NOW()) AND(end_date  > NOW()) " +
+                    " ELSE false END " +
+                    ") " +
                     "FROM  "+ Lystore.lystoreSchema + ".campaign " +
                     "WHERE id = ? ;";
 
