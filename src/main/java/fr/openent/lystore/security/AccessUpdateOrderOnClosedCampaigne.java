@@ -25,7 +25,7 @@ public class AccessUpdateOrderOnClosedCampaigne implements ResourcesProvider {
                     " CASE WHEN automatic_close = true " +
                     " THEN (start_date  < NOW()) AND(end_date  > NOW()) " +
                     " ELSE false END " +
-                    ") " +
+                    ")  as accessible " +
                     "FROM  "+ Lystore.lystoreSchema + ".campaign " +
                     "WHERE id = ? ;";
 
