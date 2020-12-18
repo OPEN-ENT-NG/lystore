@@ -377,8 +377,8 @@ public class ExtractionOrder extends TabHelper {
         excel.insertCellTab(20,5+i, (order.hasidOrderClientEquipment()) ? "E-" + order.getIdOrderClientEquipment() : EMPTY);
         excel.insertCellTab(21,5+i, order.getCreationDate());
         excel.insertCellTab(22,5+i, order.getStatus());
-        excel.insertCellTab(23,5+i,(order.hasRank() && order.getRank() !=-1.d ? order.getRank() : EMPTY ));
-        excel.insertCellTab(24,5+i,(order.getProject().hasRank() ? order.getProject().getRank(): EMPTY ));
+        excel.insertCellTab(23,5+i,(order.getProject().hasRank() && order.getProject().getRank() !=-1.d ? order.getProject().getRank(): EMPTY ));
+        excel.insertCellTab(24,5+i,(order.hasRank() && order.getRank() !=-1.d ? order.getRank() : EMPTY ));
         excel.insertCellTab(25,5+i, order.getComment());
         if(order.hasFilename())
             excel.insertCellTab(26,5+i,order.getFilenames().toString());
