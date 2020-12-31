@@ -102,7 +102,7 @@ export const operationController = ng.controller('operationController',
         };
 
 
-        $scope.cancelOperationForm = async (id_label?) =>{
+        $scope.cancelOperationForm = async () =>{
             $scope.display.lightbox.operation = false;
             await $scope.initOperation();
             Utils.safeApply($scope);
@@ -148,34 +148,73 @@ export const operationController = ng.controller('operationController',
             $scope.redirectTo(`/operation/manageLabel`)
         };
 
-        $scope.openLabelForm = (action: string) => {
-            console.log("test");
+        $scope.openLabelForm = (action: string, labelToHandle:label) => {
             if(action === 'create'){
-                $scope.labelOperation = new label();
+                $scope.newLabel = new label();
             } else if (action === 'edit'){
-                // $scope.labelOperation = $scope.operations.selected[0];
-                // $scope.operation.status = ($scope.operation.status === 'true');
-                // $scope.labelOperation.all.push($scope.operation.label);
+                $scope.newLabel = Object.assign(new label(), labelToHandle);
             }
             $scope.display.lightbox.label = true;
             template.open('label.lightbox', 'administrator/operation-label/label-form');
             Utils.safeApply($scope);
         };
 
-        $scope.validLabelForm = (label:label) =>{
-            if(label.title !== undefined) {
-                // label.id = label.;
-                // return label.label && $scope.isValidLabelDate(label);
-            }else{
-                return true;
-            }
+        $scope.validLabelForm = (label:label) => {
+            return label.label && label.label.length > 0 && $scope.labelOperation.all.find(l => l.label.toUpperCase() === label.label.toUpperCase()) === undefined && $scope.isValidLabelDate(label);
         };
+
+        $scope.isValidLabelDate = (label:label) => {
+            return moment(label.start_date).isBefore(moment(label.end_date), 'days', '[]');
+        }
+
+        $scope.validLabel = async (label:label) => {
+            await label.save();
+            await $scope.cancelLabelForm();
+            Utils.safeApply($scope);
+        };
+
+        $scope.deleteLabels = async () => {
+            await $scope.labelOperation.delete();
+            template.close('label.lightbox');
+            $scope.display.lightbox.label = false;
+            Utils.safeApply($scope);
+        }
+
+        $scope.trashLabel = async (label:label) => {
+            await label.delete();
+            template.close('label.lightbox');
+            $scope.display.lightbox.label = false;
+            Utils.safeApply($scope);
+        }
+
+        $scope.disabledDeleteToaster = () => {
+            let result = false;
+            $scope.labelOperation.selected.map(
+                label => { if(label.is_used){
+                    result = true;
+            }}
+            )
+            return result;
+        }
 
         $scope.cancelLabelForm = () => {
             $scope.display.lightbox.label = false;
             template.close('label.lightbox');
             Utils.safeApply($scope);
         };
+
+        $scope.openLightboxDeleteLabel = () => {
+            $scope.display.lightbox.label = true;
+            template.open('label.lightbox', 'administrator/operation-label/operation-label-delete-lightbox');
+            Utils.safeApply($scope);
+        }
+
+        $scope.openLightboxTrashLabel = (label:label) => {
+            $scope.label = label;
+            $scope.display.lightbox.label = true;
+            template.open('label.lightbox', 'administrator/operation-label/operation-label-trash-lightbox');
+            Utils.safeApply($scope);
+        }
 
 
         $scope.dropOrdersOperation = async (orders)=>{

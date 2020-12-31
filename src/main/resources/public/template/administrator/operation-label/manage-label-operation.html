@@ -17,13 +17,13 @@
         </div>
     </div>
     <div class="right-magnet twelve-mobile">
-        <button  class="twelve-mobile" ng-click="console.log('button');openLabelForm('create');">
+        <button  class="twelve-mobile" ng-click="openLabelForm('create');">
             <i18n>lystore.operation.label.add</i18n>
         </button>
     </div>
 </div>
 <article class="responsive-table">
-    <table class="twelve">
+    <table class="twelve row">
         <thead>
         <tr>
             <td workflow="lystore.manager" class="table-selector">
@@ -41,14 +41,14 @@
             </td>
             <td>
                 <i18n>lystore.operation.label.start_date</i18n>
-                <i class="up-open"></i>
-                <i class="down-open"></i>
             </td>
 
             <td>
                 <i18n>lystore.operation.label.end_date</i18n>
-                <i class="up-open"></i>
-                <i class="down-open"></i>
+            </td>
+
+            <td>
+
             </td>
         </tr>
         </thead>
@@ -61,8 +61,12 @@
                 </label>
             </td>
             <td >[[label.label]]</td>
-            <td >[[formatDate(operation.start_date)]]</td>
-            <td >[[formatDate(operation.end_date)]]</td>
+            <td >[[formatDate(label.start_date)]]</td>
+            <td >[[formatDate(label.end_date)]]</td>
+            <td ><i class="edit" ng-class="{'color-orange' : label.is_used === 0}" ng-disabled="label.is_used > 0" ng-click="label.is_used === 0 && openLabelForm('edit', label)"></i>
+                <i class="trash" ng-class="{'color-orange' : label.is_used === 0}" ng-disabled="label.is_used > 0" ng-click="label.is_used === 0 && openLightboxTrashLabel(label)"></i>
+            </td>
+
         </tr>
         </tbody>
     </table>
@@ -77,7 +81,7 @@
     <div class="toggle">
         <div class="row">
             <button
-                    ng-click="openLightboxDeleteOperation()"
+                    ng-click="openLightboxDeleteLabel()" ng-disabled="disabledDeleteToaster()"
             >
                 <i18n>delete</i18n>
             </button>

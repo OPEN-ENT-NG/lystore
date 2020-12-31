@@ -11,8 +11,11 @@ import fr.openent.lystore.service.impl.DefaultOperationService;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
+import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.request.RequestUtils;
+import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.http.filter.ResourceFilter;
@@ -108,7 +111,7 @@ public class OperationController  extends ControllerHelper {
     @ApiDoc("Delete operations")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(ManagerRight.class)
-    public void deleteOperaton(final HttpServerRequest request) {
+    public void deleteOperation(final HttpServerRequest request) {
         RequestUtils.bodyToJsonArray(request, operationIds -> operationService.deleteOperation(operationIds, Logging.defaultResponseHandler(eb,
                 request,
                 Contexts.OPERATION.toString(),
@@ -138,5 +141,63 @@ public class OperationController  extends ControllerHelper {
                 Actions.DELETE.toString(),
                 operationIds.toString(),
                 new JsonObject().put("ids", operationIds))));
+    }
+
+    @Post("/operation/manageLabel")
+    @ApiDoc("Create a label operation")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(AdministratorRight.class)
+    public void createLabelOperation(final HttpServerRequest request) {
+        RequestUtils.bodyToJson(request, pathPrefix + "manageLabel", label_operation -> operationService.createLabelOperation(label_operation, Logging.defaultResponseHandler(eb,
+                request,
+                Contexts.LABEL_OPERATION.toString(),
+                Actions.CREATE.toString(),
+                null,
+                label_operation)));
+    }
+
+    @Put("/operation/manageLabel/:idLabelOperation")
+    @ApiDoc("Update a label operation")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(ManagerRight.class)
+    public void updateLabelOperation(final HttpServerRequest request) {
+        final Integer idLabelOperation = Integer.parseInt(request.params().get("idLabelOperation"));
+        RequestUtils.bodyToJson(request, pathPrefix + "manageLabel", label_operation -> operationService.updateLabelOperation(idLabelOperation, label_operation, Logging.defaultResponseHandler(eb,
+                request,
+                Contexts.LABEL_OPERATION.toString(),
+                Actions.UPDATE.toString(),
+                idLabelOperation.toString(),
+                label_operation)));
+    }
+
+    @Delete("/operations/manageLabel")
+    @ApiDoc("Delete label operation")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(ManagerRight.class)
+    public void deleteLabelOperation(final HttpServerRequest request) {
+        RequestUtils.bodyToJsonArray(request, labelOperationIds ->
+                operationService.checkIfLabelUsed(labelOperationIds, new Handler<Either<String, JsonArray>>() {
+                    @Override
+                    public void handle(Either<String, JsonArray> event) {
+                        if(event.isRight()){
+                            log.info(event.right().getValue());
+                            if(event.right().getValue().size() == 0) {
+                                operationService.deleteLabelOperation(labelOperationIds, Logging.defaultResponseHandler(eb,
+                                        request,
+                                        Contexts.LABEL_OPERATION.toString(),
+                                        Actions.DELETE.toString(),
+                                        labelOperationIds.toString(),
+                                        new JsonObject().put("ids", labelOperationIds)));
+                            } else {
+                                request.response().setStatusMessage("Cannot delete anymore : an operation might have been created with one of the labels")
+                                        .setStatusCode(202).end();
+                            }
+
+                        }else{
+                            log.error("[Lystore] OperationController Error when checking label_operation used in operations" );
+                            badRequest(request);
+                        }
+                    }
+                }));
     }
 }

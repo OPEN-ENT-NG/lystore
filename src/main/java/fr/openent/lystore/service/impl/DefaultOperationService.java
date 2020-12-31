@@ -27,8 +27,11 @@ public class DefaultOperationService extends SqlCrudService implements Operation
     }
     private static final Logger log = LoggerFactory.getLogger (DefaultOrderService.class);
     public void getLabels (Handler<Either<String, JsonArray>> handler) {
+        String query = "SELECT label_operation.id, label_operation.label, label_operation.start_date, label_operation.end_date, COUNT(operation.id) AS is_used" +
+                        " FROM " + Lystore.lystoreSchema + ".label_operation" +
+                        " LEFT OUTER JOIN " +  Lystore.lystoreSchema + ".operation ON label_operation.id = operation.id_label" +
+                        " GROUP BY " + Lystore.lystoreSchema + ".label_operation.id ";
 
-        String query = "SELECT * FROM " + Lystore.lystoreSchema +".label_operation";
         sql.prepared(query, new JsonArray(), SqlResult.validResultHandler(handler) );
     }
 
@@ -402,6 +405,62 @@ GROUP BY
         }
     }
 
+    @Override
+    public void createLabelOperation(JsonObject label_operation, Handler<Either<String, JsonObject>> handler){
+        String query = "INSERT INTO " +
+                Lystore.lystoreSchema + " .label_operation(label, start_date, end_date) " +
+                "VALUES (?,?,?)";
+
+        JsonArray params = new fr.wseduc.webutils.collections.JsonArray()
+                .add(label_operation.getString("label"))
+                .add(label_operation.getString("start_date"))
+                .add(label_operation.getString("end_date"));
+
+        sql.prepared(query, params, SqlResult.validUniqueResultHandler(handler));
+    }
+
+    @Override
+    public void updateLabelOperation(Integer id, JsonObject label_operation, Handler<Either<String, JsonObject>> handler){
+        String query = "UPDATE " + Lystore.lystoreSchema + ".label_operation " +
+                " SET id = ?, " +
+                " label = ?, " +
+                " start_date = ?, " +
+                " end_date = ? " +
+                " WHERE id = ? " +
+                " RETURNING id;";
+        JsonArray values = new fr.wseduc.webutils.collections.JsonArray()
+                .add(label_operation.getInteger("id"))
+                .add(label_operation.getString("label"))
+                .add(label_operation.getString("start_date"))
+                .add(label_operation.getString("end_date"))
+                .add(id);
+        sql.prepared(query, values, SqlResult.validRowsResultHandler(handler));
+    }
+
+    @Override
+    public void deleteLabelOperation(JsonArray labelOperationIds, Handler<Either<String, JsonObject>> handler){
+        String query = "DELETE FROM " +
+                Lystore.lystoreSchema +
+                ".label_operation " + "WHERE id IN " +
+                Sql.listPrepared(labelOperationIds.getList());
+        JsonArray values = new JsonArray();
+        for(int i = 0; i < labelOperationIds.size(); i++){
+            values.add(labelOperationIds.getValue(i));
+        }
+        sql.prepared(query, values, SqlResult.validRowsResultHandler(handler));
+    }
+
+    @Override
+    public void checkIfLabelUsed(JsonArray labelOperationIds, Handler<Either <String, JsonArray>> handler) {
+        String query = "SELECT 1 as isUsed FROM " + Lystore.lystoreSchema + ".operation WHERE operation.id_label IN " + Sql.listPrepared(labelOperationIds.getList());
+        JsonArray values =  new JsonArray();
+        for(int i = 0; i < labelOperationIds.size(); i++){
+            values.add(labelOperationIds.getValue(i));
+        }
+
+        sql.prepared(query,values,SqlResult.validResultHandler(handler));
+
+    }
 
 
     private JsonObject getClientsChangement(JsonArray ordersClientsIds) {
