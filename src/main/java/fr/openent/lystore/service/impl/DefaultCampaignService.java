@@ -388,7 +388,8 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
         }else{
             if(campaign.getBoolean("accessible")){
                 options += "start_date = NOW (),";
-                finalCondition = " AND start_date > NOW()";
+                options += "end_date = NULL ,";
+                options += "automatic_close = false , ";
             }else{
                 options += "end_date = NOW() ,";
             }
