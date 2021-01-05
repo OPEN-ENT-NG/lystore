@@ -23,28 +23,28 @@
                         <input type="text" class="twelve" ng-model="campaign.name" required>
                     </label>
                     <div class="row twelve">
-
-                        <label class="four vertical-spacing">
-                            <label class="one checkbox">
-                                <input type="checkbox"
-                                       ng-model="campaign.automatic_close"/>
-                                <span></span>
-                            </label>
-                            <span class="six cell">
+                        <span class="five cell">
                                 <i18n>lystore.campaigns.date.automatisation</i18n>
                             </span>
+                        <label class="one checkbox">
+                            <input type="checkbox"
+                                   ng-model="campaign.automatic_close"/>
+                            <span></span>
+                        </label>
+                        <label class="four vertical-spacing">
+
                             <div class="vertical-spacing"
                                  ng-show="campaign.automatic_close">
-                            <span class="four cell">
+                            <span class="two cell">
                             <i18n>lystore.campaigns.date.start</i18n>
                         </span>
-                                <div class="six cell">
+                                <div class="four cell">
                                     <date-picker ng-model="campaign.start_date" class="cell six twelve-mobile " ></date-picker>
                                 </div>
-                                <span class="four cell">
+                                <span class="two cell">
                             <i18n>lystore.campaigns.date.end</i18n>
                         </span>
-                                <div class="six cell">
+                                <div class="four cell">
                                     <date-picker ng-model="campaign.end_date" class="cell six twelve-mobile "></date-picker>
                                 </div>
                             </div>

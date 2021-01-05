@@ -568,7 +568,7 @@
   "lystore.campaigns.date.start": "Date d'ouverture",
   "lystore.campaigns.date.end": "Date de fermeture",
   "lystore.campaign.delete": "Supprimer la(es) campagne(s): ",
-  "campaign.automatic.manual.change": "Vous allez modifier la date d'ouverture ou de fermeture saisie lors de la création de la campagne. Voulez-vous continuer ?"
+  "campaign.automatic.manual.change": "Vous allez modifier la date d'ouverture ou de fermeture de la Campagne. Voulez-vous continuer ?"
 
 
 }
