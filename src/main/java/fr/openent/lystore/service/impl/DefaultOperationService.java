@@ -5,6 +5,7 @@ import fr.openent.lystore.helpers.FutureHelper;
 import fr.openent.lystore.service.OperationService;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.webutils.Either;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -65,7 +66,7 @@ public class DefaultOperationService extends SqlCrudService implements Operation
                 "GROUP BY (operation.id,  " +
                 "          label.*)";
         Sql.getInstance().prepared(queryOperation, params, SqlResult.validResultHandler(arrayResponseHandler));
-        }
+    }
 
     public void getOperations(List<String> filters, Handler<Either<String, JsonArray>> handler){
         JsonArray params = new JsonArray();
@@ -75,24 +76,63 @@ public class DefaultOperationService extends SqlCrudService implements Operation
             }
         }
 
+        /* old
+        SELECT
+  operation.*,
+  to_json(label.*) AS label,
+  array_to_json(
+    array_agg(o_client.order_number)
+  ) AS bc_number,
+  array_to_json(
+    array_agg(DISTINCT oce.program)
+  ) AS programs,
+  array_to_json(
+    array_agg(DISTINCT c_client.name)
+  ) AS contracts
+FROM
+  lystore.operation
+  INNER JOIN lystore.label_operation label ON label.id = operation.id_label
+  LEFT JOIN lystore.allOrders oce ON oce.id_operation = operation.id
+  AND oce.override_region IS false
+  AND oce.status = 'IN PROGRESS'
+  LEFT JOIN lystore.order o_client ON o_client.id = oce.id_order
+  LEFT JOIN lystore.contract c_client ON c_client.id = oce.id_contract
+GROUP BY
+  (operation.id, label.*)
+         */
 
         String queryOperation = "" +
-                "SELECT operation.*,  " +
-                "       to_json(label.*) AS label,  " +
-                "       array_to_json(array_agg( o_client.order_number) || array_agg(o_region.order_number)) AS bc_number,  " +
-                "       array_to_json(array_agg(DISTINCT oce.program) || array_agg(DISTINCT ore.program)) AS programs,  " +
-                "       array_to_json(array_agg(DISTINCT c_client.name) || array_agg(DISTINCT c_region.name)) AS contracts  " +
-                "FROM    " + Lystore.lystoreSchema +".operation  " +
-                "INNER JOIN    " + Lystore.lystoreSchema +".label_operation label ON label.id = operation.id_label  " +
-                "LEFT JOIN    " + Lystore.lystoreSchema +".order_client_equipment oce ON oce.id_operation = operation.id AND oce.override_region IS false AND oce.status = 'IN PROGRESS'  " +
-                "LEFT JOIN    " + Lystore.lystoreSchema +".\"order-region-equipment\" ore ON ore.id_operation = operation.id  " +
-                "LEFT JOIN    " + Lystore.lystoreSchema +".order o_client ON o_client.id = oce.id_order  " +
-                "LEFT JOIN    " + Lystore.lystoreSchema +".order o_region ON o_region.id = ore.id_order  " +
-                "LEFT JOIN    " + Lystore.lystoreSchema +".contract c_client ON c_client.id = oce.id_contract   " +
-                "LEFT JOIN    " + Lystore.lystoreSchema +".contract c_region ON  c_region.id = ore.id_contract  " +
-                getTextFilter(filters) + " " +
-                "GROUP BY (operation.id,  " +
-                "          label.*)";
+                "SELECT  " +
+                "  operation.*,  " +
+                "  to_json(label.*) AS label,  " +
+                "  array_to_json( " +
+                "    array_agg(order_summary.order_number) " +
+                "  ) AS bc_number,  " +
+                "  array_to_json( " +
+                "    array_agg(DISTINCT order_summary.program) " +
+                "  ) AS programs,  " +
+                "  array_to_json( " +
+                "    array_agg(DISTINCT order_summary.name) " +
+                "  ) AS contracts  " +
+                "FROM  " +
+                Lystore.lystoreSchema + ".operation  " +
+                "  INNER JOIN " + Lystore.lystoreSchema + ".label_operation label ON label.id = operation.id_label  " +
+                "  LEFT JOIN ( " +
+                "    SELECT  " +
+                "      c_client.name,  " +
+                "      oce.program,  " +
+                "      o_client.order_number,  " +
+                "      oce.id_operation  " +
+                "    from  " +
+                "      lystore.allOrders oce  " +
+                "      INNER JOIN " + Lystore.lystoreSchema + ".contract c_client ON c_client.id = oce.id_contract  " +
+                "      LEFT JOIN " + Lystore.lystoreSchema +".order o_client ON o_client.id = oce.id_order  " +
+                "    WHERE  " +
+                "      oce.override_region IS false  " +
+                "      AND oce.status = 'IN PROGRESS' " +
+                "  ) order_summary ON order_summary.id_operation = operation.id  " +
+                "GROUP BY  " +
+                "  (operation.id, label.*) ";
 //        Sql.getInstance().prepared(queryOperation, params, SqlResult.validResultHandler(handler));
 
         Sql.getInstance().prepared(queryOperation, params, SqlResult.validResultHandler(operationsEither -> {
@@ -116,57 +156,11 @@ public class DefaultOperationService extends SqlCrudService implements Operation
                     listFuture.add(getInstructionForOperationFuture);
                     listFuture.add(getAllPriceOperationFuture);
                     listFuture.add(getNumberOrderSubventionFuture);
-
-                    CompositeFuture.all(listFuture).setHandler(asyncEvent -> {
-                        if (asyncEvent.failed()) {
-                            String message = "Failed to retrieve operation";
-                            handler.handle(new Either.Left<>(message));
-                            return;
-                        }
-
-                        JsonArray getOrderCount = getCountOrderInOperationFuture.result();
-                        JsonArray getInstruction = getInstructionForOperationFuture.result();
-                        JsonArray getSumPriceOperation = getAllPriceOperationFuture.result();
-                        JsonArray getNumberSubvention = getNumberOrderSubventionFuture.result();
-
-                        JsonArray operationFinalSend = new JsonArray();
-                        for (int i = 0; i < operations.size(); i++) {
-                            JsonObject operation = operations.getJsonObject(i);
-                            for (int j = 0; j < getOrderCount.size(); j++) {
-                                JsonObject countOrders = getOrderCount.getJsonObject(j);
-                                if (operation.getInteger("id").equals(countOrders.getInteger("id"))) {
-                                    operation.put("nb_orders", countOrders.getString("nb_orders"));
-                                }
-                            }
-                            for (int k = 0; k < getInstruction.size(); k++) {
-                                operation.put("instruction","{}");
-                                JsonObject instruction = getInstruction.getJsonObject(k);
-                                if (operation.getInteger("id").equals(instruction.getInteger("id_operation"))) {
-                                    operation.put("instruction", instruction.getString("instruction"));
-                                }
-                            }
-                            for (int n = 0; n < getSumPriceOperation.size(); n++) {
-                                JsonObject sumPriceOperation = getSumPriceOperation.getJsonObject(n);
-                                if (operation.getInteger("id").equals(sumPriceOperation.getInteger("id"))) {
-                                    operation.put("amount", sumPriceOperation.getString("amount"));
-                                }
-                            }
-
-                            for (int m = 0; m < getNumberSubvention.size(); m++) {
-                                JsonObject numberSubvention = getNumberSubvention.getJsonObject(m);
-                                if (operation.getInteger("id").equals(numberSubvention.getInteger("id_operation"))) {
-                                    operation.put("number_sub", numberSubvention.getString("number_sub"));
-                                }
-                            }
-                            operationFinalSend.add(operation);
-                        }
-                        handler.handle(new Either.Right<>(operationFinalSend));
-                    });
+                    CompositeFuture.all(listFuture).setHandler(makeOperationsDataArray(handler, operations, getCountOrderInOperationFuture, getInstructionForOperationFuture, getAllPriceOperationFuture, getNumberOrderSubventionFuture));
 
                     SqlUtils.getCountOrderInOperation(idsOperations, FutureHelper.handlerJsonArray(getCountOrderInOperationFuture));
                     getInstructionForOperation(idsOperations, FutureHelper.handlerJsonArray(getInstructionForOperationFuture));
                     getAllPriceOperation(idsOperations,FutureHelper.handlerJsonArray(getAllPriceOperationFuture));
-//                    SqlUtils.getAllPriceOperation(idsOperations, FutureHelper.handlerJsonArray(getAllPriceOperationFuture));
                     getNumberOrderSubvention(idsOperations,  FutureHelper.handlerJsonArray(getNumberOrderSubventionFuture));
 
                 } else {
@@ -179,10 +173,58 @@ public class DefaultOperationService extends SqlCrudService implements Operation
         }));
     }
 
+    private Handler<AsyncResult<CompositeFuture>> makeOperationsDataArray(Handler<Either<String, JsonArray>> handler, JsonArray operations, Future<JsonArray> getCountOrderInOperationFuture, Future<JsonArray> getInstructionForOperationFuture, Future<JsonArray> getAllPriceOperationFuture, Future<JsonArray> getNumberOrderSubventionFuture) {
+        return asyncEvent -> {
+            if (asyncEvent.failed()) {
+                String message = "Failed to retrieve operation";
+                handler.handle(new Either.Left<>(message));
+                return;
+            }
+            JsonArray getOrderCount = getCountOrderInOperationFuture.result();
+            JsonArray getInstruction = getInstructionForOperationFuture.result();
+            JsonArray getSumPriceOperation = getAllPriceOperationFuture.result();
+            JsonArray getNumberSubvention = getNumberOrderSubventionFuture.result();
+
+            JsonArray operationFinalSend = new JsonArray();
+            for (int i = 0; i < operations.size(); i++) {
+                JsonObject operation = operations.getJsonObject(i);
+                for (int j = 0; j < getOrderCount.size(); j++) {
+                    JsonObject countOrders = getOrderCount.getJsonObject(j);
+                    if (operation.getInteger("id").equals(countOrders.getInteger("id"))) {
+                        operation.put("nb_orders", countOrders.getString("nb_orders"));
+                    }
+                }
+                for (int k = 0; k < getInstruction.size(); k++) {
+                    operation.put("instruction","{}");
+                    JsonObject instruction = getInstruction.getJsonObject(k);
+                    if (operation.getInteger("id").equals(instruction.getInteger("id_operation"))) {
+                        operation.put("instruction", instruction.getString("instruction"));
+                    }
+                }
+                for (int n = 0; n < getSumPriceOperation.size(); n++) {
+                    JsonObject sumPriceOperation = getSumPriceOperation.getJsonObject(n);
+                    if (operation.getInteger("id").equals(sumPriceOperation.getInteger("id"))) {
+                        operation.put("amount", sumPriceOperation.getString("amount"));
+                    }
+                }
+
+                for (int m = 0; m < getNumberSubvention.size(); m++) {
+                    JsonObject numberSubvention = getNumberSubvention.getJsonObject(m);
+                    if (operation.getInteger("id").equals(numberSubvention.getInteger("id_operation"))) {
+                        operation.put("number_sub", numberSubvention.getString("number_sub"));
+                    }
+                }
+                operationFinalSend.add(operation);
+            }
+            handler.handle(new Either.Right<>(operationFinalSend));
+        };
+    }
+
     private void getAllPriceOperation(JsonArray idsOperations, Handler<Either<String, JsonArray>> handler) {
-        String queryGetTotalOperation = "SELECT * from " + Lystore.lystoreSchema + ".allOperationOrders " +
+        String queryGetTotalOperation = "SELECT  id, Sum(amount) as amount from " + Lystore.lystoreSchema + ".allOperationOrders " +
                 " WHERE id IN " +
-                Sql.listPrepared(idsOperations.getList()) + " ;";
+                Sql.listPrepared(idsOperations.getList()) + " " +
+                "Group by id;";
 
         Sql.getInstance().prepared(queryGetTotalOperation, idsOperations, SqlResult.validResultHandler(handler));
     }
