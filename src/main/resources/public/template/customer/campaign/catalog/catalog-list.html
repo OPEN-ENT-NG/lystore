@@ -46,13 +46,15 @@
                  }"
                  ng-repeat="equipment in equipments.all"
                  ng-click="openEquipment(equipment)">
-
-                <div ng-class="{disabled: equipment.status!== 'AVAILABLE'} "></div>
-                <h1 ng-class="{disabled: equipment.status !== 'AVAILABLE'} " ng-show="equipment.status!== 'AVAILABLE'">
-                    <i18n ng-show="equipment.status === 'UNAVAILABLE'">lystore.UNAVAILABLE</i18n>
-                    <i18n ng-show="equipment.status === 'OUT_OF_STOCK'">lystore.OUT_OF_STOCK</i18n></h1>
+                <div ng-class="{disabled: equipment.status!== 'AVAILABLE'} ">
+                </div>
 
                 <article class="domino row"  ng-class="{ disabled: equipment.status !== 'AVAILABLE' }">
+                    <h1 ng-class="{disabled: equipment.status !== 'AVAILABLE'} "  style="background-color: #ffffff!important;" ng-show="equipment.status!== 'AVAILABLE'">
+                        <i18n ng-show="equipment.status === 'UNAVAILABLE'">lystore.UNAVAILABLE</i18n>
+                        <i18n ng-show="equipment.status === 'OUT_OF_STOCK'">lystore.OUT_OF_STOCK</i18n></h1>
+
+
                         <h2 ng-bind="(calculatePriceOfEquipmentHT(equipment, false, 2) | currency )+ 'HT'"></h2>
                     <div class="twelve cell top" ng-class="{ item: display.equipment }">
                         <img ng-src="[[equipment.image]]" ng-show="equipment.image!==null && equipment.image!==undefined " />
