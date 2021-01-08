@@ -1,5 +1,6 @@
 import {Mix, Selectable, Selection} from 'entcore-toolkit';
 import http from 'axios';
+// @ts-ignore
 import {moment, notify, toasts} from "entcore";
 // @ts-ignore
 import {Utils} from "./Utils";
