@@ -43,7 +43,7 @@ export class Campaign implements Selectable  {
             name: this.name,
             description: this.description || null,
             image: this.image || null,
-            accessible: this.accessible || false,
+            accessible: this.accessible || true,
             groups: this.groups.map((group) => {
                 return group.toJson();
             }),
@@ -108,7 +108,12 @@ export class Campaign implements Selectable  {
             Mix.extend(this, Mix.castAs(Campaign, data));
             this.start_date =  moment(this.start_date);
             this.end_date = moment(this.end_date);
-            this.accessible = this.accessible|| (this.start_date < this.end_date);
+            this.accessible = this.accessible
+                && (
+                    (this.start_date < this.end_date)
+                    &&  (moment(this.start_date).diff(moment(),'days') <= 0
+                    && moment(this.end_date).diff(moment(),'days') >= 0)
+                    && this.automatic_close);// a changer asap prendre en compte la date du jour
             if (this.groups[0] !== null ) {
                 this.groups = Mix.castArrayAs(StructureGroup, JSON.parse(this.groups.toString())) ;
                 if (tags) {
@@ -153,7 +158,7 @@ export class Campaigns extends Selection<Campaign> {
             this.all.forEach(c =>{
                 if(c.end_date != null && c.start_date != null) {
                     c.accessible = c.accessible
-                        ||
+                        &&
                         (moment(c.start_date).diff(moment(),'days') <= 0
                             && moment(c.end_date).diff(moment(),'days') >= 0);
                 }
