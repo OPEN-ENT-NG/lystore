@@ -41,8 +41,9 @@ export const instructionController = ng.controller('instructionController',
             template.open('instruction-main', 'administrator/instruction/instruction-form');
             await $scope.initOperation();
             $scope.operationEditRemoveInstructionIds = [];
+            console.log($scope.operations.all)
             $scope.operations.all = $scope.operations.all
-                .filter(operation => operation.instruction === null && operation.status === 'false');
+                .filter(operation => operation.id_instruction === null  && operation.status === 'false');
             $scope.instructions.all.map(instruction => {
                 instruction.operations.map(idOperation => {
                     $scope.operations.all.filter(operation => operation.id !== idOperation )
@@ -51,6 +52,7 @@ export const instructionController = ng.controller('instructionController',
             $scope.operations.all.sort(function (a, b) {
                 return  a.label.label.localeCompare(b.label.label);
             });
+
 
             $scope.allOperations =  [] ;
             $scope.operations.all.forEach(op =>{
