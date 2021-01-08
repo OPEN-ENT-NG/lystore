@@ -19,6 +19,7 @@ export class Instruction implements Selectable {
     amount:number;
     operations:Array<Operation> ;
     selected:boolean = false;
+    cp_adopted:boolean = false;
 
     constructor(){
     }
@@ -58,6 +59,7 @@ export class Instruction implements Selectable {
             submitted_to_cp: this.submitted_to_cp? true : false,
             date_cp: Utils.formatDatePost(this.date_cp),
             comment: this.comment,
+            cp_adopted: this.cp_adopted && this.submitted_to_cp
         };
     }
 

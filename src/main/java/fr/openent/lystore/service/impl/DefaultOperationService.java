@@ -129,7 +129,7 @@ GROUP BY
                 "      LEFT JOIN " + Lystore.lystoreSchema +".order o_client ON o_client.id = oce.id_order  " +
                 "    WHERE  " +
                 "      oce.override_region IS false  " +
-                "      AND oce.status = 'IN PROGRESS' " +
+                "      AND  oce.status IN ('IN PROGRESS','VALID','DONE') " +
                 "  ) order_summary ON order_summary.id_operation = operation.id  " +
                 "GROUP BY  " +
                 "  (operation.id, label.*) ";
@@ -472,8 +472,8 @@ GROUP BY
                 "FROM   " + Lystore.lystoreSchema +".order_client_equipment oce  " +
                 "INNER JOIN   " + Lystore.lystoreSchema +".contract c ON oce.id_contract = c.id  " +
                 "INNER JOIN   " + Lystore.lystoreSchema +".operation o ON (oce.id_operation = o.id)  " +
-                "WHERE oce.status = 'IN PROGRESS' " +
-                "  AND o.id = ? " +
+                "WHERE  " +
+                "   o.id = ? " +
                 "  AND oce.override_region IS FALSE  " +
                 "GROUP BY (oce.id,  " +
                 "          oce.price,  " +

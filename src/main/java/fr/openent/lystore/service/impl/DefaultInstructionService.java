@@ -3,12 +3,13 @@ package fr.openent.lystore.service.impl;
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.helpers.FutureHelper;
 import fr.openent.lystore.service.InstructionService;
-import fr.openent.lystore.service.OperationService;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -22,7 +23,7 @@ import java.util.List;
 
 public class DefaultInstructionService  extends SqlCrudService implements InstructionService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger (DefaultOrderService.class);
+    private static final Logger log = LoggerFactory.getLogger (DefaultOrderService.class);
     private DefaultOperationService operationService = new DefaultOperationService(Lystore.lystoreSchema, "operation");
 
     public DefaultInstructionService(
@@ -101,7 +102,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                     handler.handle(new Either.Left<>("404"));
                 }
             } catch( Exception e){
-                LOGGER.error("An error when you want get all instructions", e);
+                log.error("An error when you want get all instructions", e);
                 handler.handle(new Either.Left<>(""));
             }
         }));
@@ -176,7 +177,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                     operationService.getNumberOrderSubvention(idsOperations,  FutureHelper.handlerJsonArray(getNumberOrderSubventionFuture));
                 }
             } catch ( Exception e){
-                LOGGER.error("An error when you want get all instructions", e);
+                log.error("An error when you want get all instructions", e);
                 handler.handle(new Either.Left<>("404"));
             }
 
@@ -186,16 +187,130 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
 
 
     public void create(JsonObject instruction, Handler<Either<String, JsonObject>> handler){
-        String query = "INSERT INTO " + Lystore.lystoreSchema +".instruction (" +
+        String getIdQuery = "Select nextval('"+ Lystore.lystoreSchema + ".instruction_id_seq') as id";
+        sql.raw(getIdQuery, SqlResult.validUniqueResultHandler( new Handler<Either<String, JsonObject>>() {
+            @Override
+            public void handle(Either<String, JsonObject> event) {
+                if(event.isRight()) {
+                    try{
+                        final Number id = event.right().getValue().getInteger("id");
+                        JsonArray statements = new fr.wseduc.webutils.collections.JsonArray()
+                                .add(getInstructionCreationStatement(id,instruction));
+
+                        handleAdoptedCP(id, statements, instruction, handler);
+
+                    }catch(ClassCastException e){
+                        log.error("An error occured when casting structures ids " + e);
+                        handler.handle(new Either.Left<String, JsonObject>(""));
+                    }
+                }else{
+                    log.error("An error occurred when selecting next val");
+                    handler.handle(new Either.Left<String, JsonObject>(""));
+                }
+            }
+        }));
+
+
+
+
+    }
+
+    private void handleAdoptedCP(Number id, JsonArray statements, JsonObject instruction, Handler<Either<String, JsonObject>> handler) {
+        if(instruction.getBoolean("cp_adopted")){
+            statements.add(getUpdateOrdersStatementClient(id));
+            statements.add(getUpdateOrdersStatementRegion(id));
+        }
+
+        sql.transaction(statements, new Handler<Message<JsonObject>>() {
+            @Override
+            public void handle(Message<JsonObject> event) {
+                handler.handle(SqlQueryUtils.getTransactionHandler(event,id));
+            }
+        });
+    }
+
+    private JsonObject getUpdateOrdersStatementRegion(Number id) {
+        String statement =
+                "UPDATE " +
+                        Lystore.lystoreSchema + ".\"order-region-equipment\" " +
+                        "SET " +
+                        "  status = 'VALID' " +
+                        "FROM " +
+                        "  ( " +
+                        "    SELECT " +
+                        "      \"order-region-equipment\".id, " +
+                        "      \"order-region-equipment\".status, " +
+                        "      \"order-region-equipment\".id_operation, " +
+                        "      contract_type.code " +
+                        "    FROM " +
+                        "      lystore.\"order-region-equipment\" " +
+                        "      inner join " + Lystore.lystoreSchema +".operation on \"order-region-equipment\".id_operation = operation.id " +
+                        "      inner join " + Lystore.lystoreSchema +".instruction on operation.id_instruction = instruction.id AND instruction.id = ? " +
+                        "      inner join " + Lystore.lystoreSchema +".contract on contract.id = \"order-region-equipment\".id_contract " +
+                        "      inner join " + Lystore.lystoreSchema +".contract_type on contract.id_contract_type = contract_type.id " +
+                        "  ) as ore " +
+                        "where " +
+                        "  ore.id_operation is not null " +
+                        "  and ore.code != '236' " +
+                        "  and \"order-region-equipment\".id = ore.id "+
+                        "  and ore.status = 'IN PROGRESS';";
+
+
+        JsonArray params = new JsonArray().add(id);
+        return new JsonObject()
+                .put("statement", statement)
+                .put("values", params)
+                .put("action", "prepared");
+
+    }
+    private JsonObject getUpdateOrdersStatementClient(Number id) {
+        String statement =
+                "UPDATE " +
+                 Lystore.lystoreSchema + ".order_client_equipment " +
+                "SET " +
+                "  status = 'VALID' " +
+                "FROM " +
+                "  ( " +
+                "    SELECT " +
+                "      order_client_equipment.id, " +
+                "      order_client_equipment.status, " +
+                "      order_client_equipment.id_operation, " +
+                "      contract_type.code " +
+                "    FROM " +
+                "      lystore.order_client_equipment " +
+                "      inner join " + Lystore.lystoreSchema +".operation on order_client_equipment.id_operation = operation.id " +
+                "      inner join " + Lystore.lystoreSchema +".instruction on operation.id_instruction = instruction.id AND instruction.id = ? " +
+                "      inner join " + Lystore.lystoreSchema +".contract on contract.id = order_client_equipment.id_contract " +
+                "      inner join " + Lystore.lystoreSchema +".contract_type on contract.id_contract_type = contract_type.id " +
+                "  ) as oce " +
+                "where " +
+                "  oce.id_operation is not null " +
+                "  and oce.code != '236' " +
+                "  and order_client_equipment.id = oce.id " +
+                  "and oce.status IN ('IN PROGRESS','VALID','DONE');";
+
+        JsonArray params = new JsonArray().add(id);
+        return new JsonObject()
+                .put("statement", statement)
+                .put("values", params)
+                .put("action", "prepared");
+
+    }
+    private JsonObject getInstructionCreationStatement(Number id, JsonObject instruction) {
+
+        String statement = "INSERT INTO " + Lystore.lystoreSchema +".instruction (" +
+                "id, "+
                 "id_exercise," +
                 "object, " +
                 "service_number, " +
                 "cp_number, " +
                 "submitted_to_cp, " +
                 "date_cp, " +
-                "comment) " +
-                "VALUES (? ,? ,? ,? ,? ,? ,? ) " +
+                "comment," +
+                "cp_adopted) " +
+                "VALUES (? ,? ,? ,? ,? ,? ,? ,? ,? ) " +
                 "RETURNING id; ";
+
 
         String object = instruction.getString("object");
         if(object.length() > 80){
@@ -208,12 +323,32 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 .add(instruction.getString("cp_number"))
                 .add(instruction.getBoolean("submitted_to_cp"))
                 .add(instruction.getString("date_cp"))
-                .add(instruction.getString("comment"));
+                .add(instruction.getString("comment"))
+                .add(instruction.getBoolean("cp_adopted"))
+                ;
 
-        sql.prepared(query, params, SqlResult.validUniqueResultHandler(handler));
+        return new JsonObject()
+                .put("statement", statement)
+                .put("values", params)
+                .put("action", "prepared");
     }
+
     public  void updateInstruction(Integer id, JsonObject instruction, Handler<Either<String, JsonObject>> handler){
-        String query = " UPDATE " + Lystore.lystoreSchema + ".instruction " +
+                    try{
+
+                        JsonArray statements = new fr.wseduc.webutils.collections.JsonArray()
+                                .add(getUpdateInstructionStatement(id,instruction));
+
+                        handleAdoptedCP(id, statements, instruction, handler);
+
+                    }catch(ClassCastException e){
+                        log.error("An error occured when casting structures ids " + e);
+                        handler.handle(new Either.Left<String, JsonObject>(""));
+                    }
+            }
+
+    private JsonObject getUpdateInstructionStatement(Integer id, JsonObject instruction) {
+        String statement = " UPDATE " + Lystore.lystoreSchema + ".instruction " +
                 "SET " +
                 "id_exercise = ? ," +
                 "object = ? , " +
@@ -221,9 +356,10 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 "cp_number = ? , " +
                 "submitted_to_cp = ? , " +
                 "date_cp = ? , " +
-                "comment = ? " +
+                "comment = ? , " +
+                "cp_adopted = ?  " +
                 "WHERE id = ? " +
-                "RETURNING id";
+                "RETURNING id;";
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray()
                 .add(instruction.getInteger("id_exercise"))
                 .add(instruction.getString("object"))
@@ -232,8 +368,13 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 .add(instruction.getBoolean("submitted_to_cp"))
                 .add(instruction.getString("date_cp"))
                 .add(instruction.getString("comment"))
+                .add(instruction.getBoolean("cp_adopted"))
                 .add(id);
-        sql.prepared(query, params, SqlResult.validRowsResultHandler(handler));
+
+        return new JsonObject()
+                .put("statement", statement)
+                .put("values", params)
+                .put("action", "prepared");
     }
 
     public  void deleteInstruction(JsonArray instructionIds, Handler<Either<String, JsonObject>> handler){

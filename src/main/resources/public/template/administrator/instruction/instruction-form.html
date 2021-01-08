@@ -10,127 +10,146 @@
     </h1>
     <article class="responsive-table">
         <form ng-submit="sendInstruction()" >
-            <label class="row twelve vertical-spacing">
+            <div class="row">
+                <label class="row twelve vertical-spacing">
                         <span class="twelve">
                             <i18n>lystore.instruction.object</i18n> * <b>(<i18n>max.length.instruction.object</i18n>)</b>
                         </span>
-                <input type="text" class="twelve" ng-model="instruction.object" maxlength="80" required/>
-            </label>
-            <label class="row twelve vertical-spacing">
+                    <input type="text" class="twelve" ng-model="instruction.object" maxlength="80" required/>
+                </label>
+                <label class="row twelve vertical-spacing">
                         <span class="twelve">
                             <i18n>lystore.exercise.year</i18n> *
                         </span>
-                <select  ng-model="instruction.id_exercise" class="twelve"
-                         ng-init="instruction.id_exercise = instruction.id_exercise ||
+                    <select  ng-model="instruction.id_exercise" class="twelve"
+                             ng-init="instruction.id_exercise = instruction.id_exercise ||
                          (exercises.all.length > 0 ? exercises.all[0].id : null)"
-                         ng-options="exercise.id as getYearFromStr(exercise.year) for exercise in exercises.all"
-                >
-                </select>
-            </label>
-            <label class="row twelve vertical-spacing">
+                             ng-options="exercise.id as getYearFromStr(exercise.year) for exercise in exercises.all"
+                    >
+                    </select>
+                </label>
+                <label class="row twelve vertical-spacing">
                         <span class="twelve">
                             <i18n>lystore.instruction.official.number</i18n>
                         </span>
-                <input type="text" class="twelve" ng-model="instruction.cp_number">
-            </label>
-            <label class="row twelve vertical-spacing">
+                    <input type="text" class="twelve" ng-model="instruction.cp_number">
+                </label>
+                <label class="row twelve vertical-spacing">
                         <span class="twelve">
                             <i18n>lystore.instruction.service.number</i18n>
                         </span>
-                <input type="text" class="twelve" ng-model="instruction.service_number">
-            </label>
-            <label class="row vertical-spacing twelve-mobile row-mobile">
+                    <input type="text" class="twelve" ng-model="instruction.service_number">
+                </label>
+                <div class="four cell vertical-spacing twelve-mobile row-mobile">
                                 <span class="cell ">
                                     <i18n>lystore.submitted.to.cp</i18n> *
                                 </span>
-                <switch-toggle ng-model="instruction.submitted_to_cp"
-                               class="cell">
+                    <switch-toggle ng-model="instruction.submitted_to_cp"
+                                   class="cell">
 
-                </switch-toggle>
-                <date-picker i18n-placeholder="lystore.instruction.date.place_holder" ng-model="instruction.date_cp" ng-disaled required>
-                </date-picker>
-            </label>
-            <label class="row twelve vertical-spacing">
+                    </switch-toggle>
+                    <date-picker i18n-placeholder="lystore.instruction.date.place_holder" ng-model="instruction.date_cp" ng-disaled required>
+                    </date-picker>
+                </div>
+                <div ng-show="instruction.submitted_to_cp"
+                     class="six cell vertical-spacing twelve-mobile row-mobile">
+                                <span class="cell ">
+                                    <i18n>lystore.cp.adopted</i18n> *
+                                </span>
+                    <switch-toggle ng-model="instruction.cp_adopted"
+                                   ng-change="cancelIfAlreadyTrue()"
+                                   ng-disabled="instruction.cp_adopted"
+                                   class="cell">
+                    </switch-toggle>
+
+                </div>
+                <div class="row twelve vertical-spacing">
                         <span class="twelve">
                             <i18n>lystore.instruction.commenter</i18n>
                         </span>
-                <textarea ng-model="instruction.comment"
-                          cols="20" rows="10" maxlength="300"></textarea>
-            </label>
-            <div class="row twelve">
-                <h2 class="vertical-spacing">
-                    <i18n>lystore.instruction.operations</i18n>
-                </h2>
-                <article>
-                    <table class="twelve">
-                        <thead>
-                        <td class="two"><i18n>label</i18n></td>
-                        <td class="two"><i18n>lystore.instruction.date_operation</i18n></td>
-                        <td class="two"><i18n>lystore.number.orders</i18n></td>
-                        <td class="two"><i18n>lystore.number.sub</i18n></td>
-                        <td class="two"><i18n>amount</i18n></td>
-                        <td class="two"><i18n>lystore.operation.status</i18n></td>
-                        <td class="one aligne-text-center">&nbsp</td>
-                        </thead>
-                        <tbody>
-                        <tr ng-repeat="operationAdd in instruction.operations">
-                            <td>[[operationAdd.label.label]]</td>
-                            <td>[[formatDate(operationAdd.date_operation)]]</td>
-                            <td ng-show="operationAdd.nb_orders">[[operationAdd.nb_orders]]</td>
-                            <td ng-show="!operationAdd.nb_orders">0</td>
-                            <td>[[operationAdd.nbOrberSub]]</td>
-                            <td ><span ng-bind="operationAdd.amount | currency"></span></td>
-                            <td>
+                    <textarea ng-model="instruction.comment"
+                              cols="20" rows="10" maxlength="300"></textarea>
+                </div>
+                <div class="row twelve">
+                    <h2 class="vertical-spacing">
+                        <i18n>lystore.instruction.operations</i18n>
+                    </h2>
+                    <article>
+                        <table class="twelve">
+                            <thead>
+                            <td class="two"><i18n>label</i18n></td>
+                            <td class="two"><i18n>lystore.instruction.date_operation</i18n></td>
+                            <td class="two"><i18n>lystore.number.orders</i18n></td>
+                            <td class="two"><i18n>lystore.number.sub</i18n></td>
+                            <td class="two"><i18n>amount</i18n></td>
+                            <td class="two"><i18n>lystore.operation.status</i18n></td>
+                            <td class="one aligne-text-center">&nbsp</td>
+                            </thead>
+                            <tbody>
+                            <tr ng-repeat="operationAdd in instruction.operations">
+                                <td>[[operationAdd.label.label]]</td>
+                                <td>[[formatDate(operationAdd.date_operation)]]</td>
+                                <td ng-show="operationAdd.nb_orders">[[operationAdd.nb_orders]]</td>
+                                <td ng-show="!operationAdd.nb_orders">0</td>
+                                <td>[[operationAdd.nbOrberSub]]</td>
+                                <td ><span ng-bind="operationAdd.amount | currency"></span></td>
+                                <td>
                                 <span ng-show="operationAdd.status === true || operationAdd.status === 'true'">
                                     <i18n>open</i18n>
                                 </span>
-                                <span ng-show="operationAdd.status === false || operationAdd.status === 'false'">
+                                    <span ng-show="operationAdd.status === false || operationAdd.status === 'false'">
                                     <i18n>close</i18n>
                                 </span>
-                            </td>
-                            <td class="one aligne-text-center" ng-click="dropOperation($index, operationAdd)">
-                                <i  class="trash"></i>
-                            </td>
-                        </tr>
-                        <tr ng-show="isNewOperation">
-                            <td>
-                                <select ng-model="instruction.operation" class="twelve" ng-change="operationIsSelect()">
-                                    <option value="" disabled selected ><i18n>Selectionnez une opération</i18n></option>
-                                    <option ng-repeat="operationSelect in operations.all" value=[[operationSelect]]>
-                                        [[operationSelect.label.label]] ( [[formatDate(operationSelect.date_operation)]] )
-                                    </option>
-                                </select>
-                            </td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                            <td class="one aligne-text-center" ng-click="cancelFormAddOperation()">
-                                <i class="close-2x"></i>
-                            </td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </article>
-                <input
-                        ng-show="isOperationsIsEmpty"
-                        class="vertical-spacing"
-                        type="button"
-                        ng-disabled="true"
-                        i18n-value="lystore.operation.form.empty"
-                />
-                <input
-                        ng-show="!isOperationsIsEmpty"
-                        class="vertical-spacing"
-                        type="button"
-                        ng-disabled="isNewOperation"
-                        ng-click="addOperationRow()"
-                        i18n-value="lystore.operation.add"
-                />
-            </div>
-            <div class="right-magnet vertical-spacing">
-                <input type="button" class="cancel" ng-click="cancelInstructionForm()" i18n-value="cancel"/>
-                <input type="submit" class="button" ng-disabled="!(instruction.object && instruction.object.length <= 80 && instruction.date_cp)"/>
+                                </td>
+                                <td class="one aligne-text-center" ng-click="dropOperation($index, operationAdd)">
+                                    <i  class="trash"></i>
+                                </td>
+                            </tr>
+                            <tr ng-show="isNewOperation">
+                                <td>
+                                    <select ng-model="instruction.operation" class="twelve" ng-change="operationIsSelect()">
+                                        <option value="" disabled selected ><i18n>Selectionnez une opération</i18n></option>
+                                        <option ng-repeat="operationSelect in operations.all" value=[[operationSelect]]>
+                                            [[operationSelect.label.label]] ( [[formatDate(operationSelect.date_operation)]] )
+                                        </option>
+                                    </select>
+                                </td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td class="one aligne-text-center" ng-click="cancelFormAddOperation()">
+                                    <i class="close-2x"></i>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </article>
+
+                    <input
+                            ng-show="isOperationsIsEmpty"
+                            class="vertical-spacing"
+                            type="button"
+                            ng-disabled="true"
+                            i18n-value="lystore.operation.form.empty"
+                    />
+                    <input
+                            ng-show="!isOperationsIsEmpty"
+                            class="vertical-spacing"
+                            type="button"
+                            ng-disabled="isNewOperation"
+                            ng-click="addOperationRow()"
+                            i18n-value="lystore.operation.add"
+                    />
+                </div>
+                <div class="right-magnet vertical-spacing">
+                    <input type="button" class="cancel" ng-click="cancelInstructionForm()" i18n-value="cancel"/>
+                    <input type="submit" class="button" ng-disabled="!(instruction.object && instruction.object.length <= 80 && instruction.date_cp)"/>
+                </div>
             </div>
         </form>
     </article>
 </div>
+<lightbox show="display.lightbox.cp_adopted"
+          on-close="closeAdoptedLightbox()">
+    <container template="instruction.cp.lightbox"></container>
+</lightbox>

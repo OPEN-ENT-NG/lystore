@@ -79,7 +79,7 @@ public final class SqlUtils {
     }
 
     private static void getTotalOrderClient(Number idOperation, Handler<Either<String, JsonObject>> handler){
-        String status = "IN PROGRESS";
+        String status = "'IN PROGRESS','VALID'";
         String queryGetTotalOperationClient = " " +
                 "SELECT (ROUND(SUM((  " +
                 "                     (SELECT CASE  " +
@@ -96,19 +96,21 @@ public final class SqlUtils {
                 "                                                                   END)) * oce.amount), 2)) AS price_total_orders_clients  " +
                 "FROM   " + Lystore.lystoreSchema + ".order_client_equipment oce  " +
                 "WHERE oce.id_operation = ? " +
-                "AND oce.status = '" + status + "' " +
+                "AND oce.status IN (" + status + ") " +
+
                 "  ";
 
         Sql.getInstance().prepared(queryGetTotalOperationClient, new JsonArray().add(idOperation), SqlResult.validUniqueResultHandler(handler));
     }
 
     private static void getTotalOrderRegion(Number idOperation, Handler<Either<String, JsonObject>> handler){
-        String status = "IN PROGRESS";
+        String status = "'IN PROGRESS','VALID'";
         String queryGetTotalOperationRegion = " " +
                 "SELECT (ROUND(SUM(ore.price * ore.amount), 2)) AS price_total_orders_regions " +
                 "FROM " + Lystore.lystoreSchema + ".\"order-region-equipment\" ore " +
                 "WHERE ore.id_operation = ? " +
-                "AND ore.status = '" + status + "' ;";
+                " AND ore.status IN (" + status + ") " +
+                ";";
 
         Sql.getInstance().prepared(queryGetTotalOperationRegion, new JsonArray().add(idOperation), SqlResult.validUniqueResultHandler(handler));
     }

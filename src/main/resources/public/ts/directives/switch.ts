@@ -6,7 +6,7 @@ export const Switch = ng.directive('switchToggle', () => {
         scope: {
             ngModel: '=',
             ngChange: '&',
-            ngDisabled: '@'
+            ngDisabled: '='
         },
         template: `
         <div>

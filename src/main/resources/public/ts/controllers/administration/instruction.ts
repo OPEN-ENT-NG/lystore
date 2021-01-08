@@ -1,3 +1,4 @@
+// @ts-ignore
 import {_, ng, template, toasts} from 'entcore';
 import {Instruction, Notification, Operation, Utils} from "../../model";
 
@@ -21,6 +22,7 @@ export const instructionController = ng.controller('instructionController',
             lightbox : {
                 instruction:false,
                 exportEquipment: false,
+                cp_adopted:false
             }
         };
         $scope.formatDate = (date) => {
@@ -182,6 +184,29 @@ export const instructionController = ng.controller('instructionController',
                 Utils.safeApply($scope);
             }
         };
+
+        $scope.cancelAdoptedLightbox  = () =>{
+            $scope.instruction.cp_adopted = false;
+            $scope.closeAdoptedLightbox()
+        }
+        $scope.closeAdoptedLightbox = () =>{
+            $scope.display.lightbox.cp_adopted = false;
+            Utils.safeApply($scope);
+        }
+        $scope.validAdoptedLightbox  = () =>{
+            $scope.instruction.cp_adopted = true;
+            $scope.closeAdoptedLightbox()
+        }
+        $scope.cancelIfAlreadyTrue = () =>{
+          console.log($scope.instruction.cp_adopted)
+            if($scope.instruction.cp_adopted){
+                $scope.display.lightbox.cp_adopted = true;
+                template.open('instruction.cp.lightbox', 'administrator/instruction/instruction-cp-adopted-lightbox');
+            }else{
+                $scope.instruction.cp_adopted = true;
+                Utils.safeApply($scope);
+            }
+        }
         $scope.sendInstruction = async () => {
             await $scope.instruction.save();
             if($scope.instruction.operations.length !== 0){

@@ -1,6 +1,8 @@
 import {_, ng, template,moment, idiom as lang, toasts} from 'entcore';
-import {Notification, Operation, OrderClient, OrderRegion, OrdersRegion, Utils} from "../../model";
+import {Notification, Operation, Operations, OrderClient, OrderRegion, OrdersRegion, Utils} from "../../model";
 import {Mix} from 'entcore-toolkit';
+import {nodeModuleNameResolver} from "typescript/lib/tsserverlibrary";
+import normalizedPathToPath = ts.server.normalizedPathToPath;
 
 declare let window: any;
 
@@ -26,6 +28,13 @@ export const operationController = ng.controller('operationController',
                 operation:false,
             }
         };
+        $scope.noValidatedCP = (operations : Operation[]) =>{
+            let noValidateFound = true;
+            operations.forEach(operation =>{
+                noValidateFound = noValidateFound && !operation.instruction.cp_adopted;
+            })
+            return noValidateFound;
+        }
 
         $scope.getFirstElement = jsonArray => {
             let arrayLookFor = JSON.parse(jsonArray);
