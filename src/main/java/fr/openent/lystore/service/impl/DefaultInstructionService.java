@@ -317,6 +317,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
             object = object.substring(0,79);
         }
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray()
+                .add(id)
                 .add(instruction.getInteger("id_exercise"))
                 .add(object)
                 .add(instruction.getString("service_number"))
