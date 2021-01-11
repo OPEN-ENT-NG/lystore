@@ -39,18 +39,19 @@ export class Campaign implements Selectable  {
     }
 
     toJson () {
+        console.log(moment(this.end_date).format('YYYY-MM-DD'))
         return {
             name: this.name,
             description: this.description || null,
             image: this.image || null,
-            accessible: this.accessible || true,
+            accessible: this.accessible || false,
             groups: this.groups.map((group) => {
                 return group.toJson();
             }),
             purse_enabled: this.purse_enabled,
             priority_enabled: this.priority_enabled,
             priority_field: this.priority_field,
-            end_date : this.end_date,
+            end_date: moment(this.end_date).format('YYYY-MM-DD'),
             start_date: this.start_date,
             automatic_close: this.automatic_close
         };
@@ -109,11 +110,11 @@ export class Campaign implements Selectable  {
             this.start_date =  moment(this.start_date);
             this.end_date = moment(this.end_date);
             this.accessible = this.accessible
-                && (
+                || (
                     (this.start_date < this.end_date)
                     &&  (moment(this.start_date).diff(moment(),'days') <= 0
-                    && moment(this.end_date).diff(moment(),'days') >= 0)
-                    && this.automatic_close);// a changer asap prendre en compte la date du jour
+                    && moment(this.end_date).diff(moment(),'days') > 0)
+                    && this.automatic_close);//
             if (this.groups[0] !== null ) {
                 this.groups = Mix.castArrayAs(StructureGroup, JSON.parse(this.groups.toString())) ;
                 if (tags) {
@@ -156,12 +157,13 @@ export class Campaigns extends Selection<Campaign> {
             let { data } = await http.get( Structure ? `/lystore/campaigns?idStructure=${Structure}`  : `/lystore/campaigns`  );
             this.all = Mix.castArrayAs(Campaign, data);
             this.all.forEach(c =>{
-                if(c.end_date != null && c.start_date != null) {
-                    c.accessible = c.accessible
-                        &&
-                        (moment(c.start_date).diff(moment(),'days') <= 0
-                            && moment(c.end_date).diff(moment(),'days') >= 0);
-                }
+                if(c.id == 2)
+                    console.log(c)
+                c.accessible = c.accessible
+                    ||
+                    (c.end_date != null && c.start_date != null && moment(c.start_date).diff(moment(),'days') <= 0
+                        && moment(c.end_date).diff(moment().format('YYYY-MM-DD'),'days') > 0);
+
             })
         } catch (e) {
             notify.error('lystore.campaigns.sync.err');

@@ -376,7 +376,6 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                                     final Handler<Either<String, JsonObject>> handler){
         String options = "";
         String finalCondition  = "";
-        log.info(campaign);
         if(!campaign.getBoolean("automatic_close")) {
             if (campaign.getValue("start_date") == null && campaign.getBoolean("accessible")) {
                 options += "start_date = NOW() ,";
