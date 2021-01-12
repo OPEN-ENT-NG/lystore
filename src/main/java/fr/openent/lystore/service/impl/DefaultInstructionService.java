@@ -306,9 +306,12 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 "cp_number, " +
                 "submitted_to_cp, " +
                 "date_cp, " +
-                "comment," +
-                "cp_adopted) " +
-                "VALUES (? ,? ,? ,? ,? ,? ,? ,? ,? ) " +
+                "comment" +
+//                ",cp_adopted" +
+                ") " +
+                "VALUES (? ,? ,? ,? ,? ,? ,? ," +
+//                "? ," +
+                "? ) " +
                 "RETURNING id; ";
 
 
@@ -325,7 +328,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 .add(instruction.getBoolean("submitted_to_cp"))
                 .add(instruction.getString("date_cp"))
                 .add(instruction.getString("comment"))
-                .add(instruction.getBoolean("cp_adopted"))
+//                .add(instruction.getBoolean("cp_adopted"))
                 ;
 
         return new JsonObject()
@@ -357,8 +360,8 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 "cp_number = ? , " +
                 "submitted_to_cp = ? , " +
                 "date_cp = ? , " +
-                "comment = ? , " +
-                "cp_adopted = ?  " +
+                "comment = ?  " +
+//                ",cp_adopted = ?  " +
                 "WHERE id = ? " +
                 "RETURNING id;";
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray()
@@ -369,7 +372,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 .add(instruction.getBoolean("submitted_to_cp"))
                 .add(instruction.getString("date_cp"))
                 .add(instruction.getString("comment"))
-                .add(instruction.getBoolean("cp_adopted"))
+//                .add(instruction.getBoolean("cp_adopted"))
                 .add(id);
 
         return new JsonObject()
