@@ -457,9 +457,15 @@ GROUP BY
         for(int i = 0; i < labelOperationIds.size(); i++){
             values.add(labelOperationIds.getValue(i));
         }
-
         sql.prepared(query,values,SqlResult.validResultHandler(handler));
+    }
 
+    private void getCreationDate(JsonArray idsOperations, Handler<Either<String, JsonArray>> handler) {
+        String queryGetCreationDate = "SELECT allOrders.creation_date from " + Lystore.lystoreSchema + ".allOrders " +
+                " WHERE id IN " +
+                Sql.listPrepared(idsOperations.getList()) + " ;";
+
+        Sql.getInstance().prepared(queryGetCreationDate, idsOperations, SqlResult.validResultHandler(handler));
     }
 
 
