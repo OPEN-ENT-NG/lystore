@@ -180,7 +180,6 @@ public class OperationController  extends ControllerHelper {
                     @Override
                     public void handle(Either<String, JsonArray> event) {
                         if(event.isRight()){
-                            log.info(event.right().getValue());
                             if(event.right().getValue().size() == 0) {
                                 operationService.deleteLabelOperation(labelOperationIds, Logging.defaultResponseHandler(eb,
                                         request,

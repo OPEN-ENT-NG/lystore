@@ -10,6 +10,10 @@ export const operationController = ng.controller('operationController',
         $scope.ordersRegion = new OrdersRegion();
         $scope.allOrdersOperationSelected = false;
         $scope.sort = {
+            label_operation : {
+                type: 'label.label',
+                reverse: false
+            },
             operation : {
                 type: 'label.label',
                 reverse: false
@@ -210,10 +214,14 @@ export const operationController = ng.controller('operationController',
         }
 
         $scope.openLightboxTrashLabel = (label:label) => {
-            $scope.label = label;
-            $scope.display.lightbox.label = true;
-            template.open('label.lightbox', 'administrator/operation-label/operation-label-trash-lightbox');
-            Utils.safeApply($scope);
+            if(label.is_used > 0) {
+                return false;
+            } else {
+                $scope.label = label;
+                $scope.display.lightbox.label = true;
+                template.open('label.lightbox', 'administrator/operation-label/operation-label-trash-lightbox');
+                Utils.safeApply($scope);
+            }
         }
 
 
