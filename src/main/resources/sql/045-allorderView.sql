@@ -1,6 +1,3 @@
-DROP VIEW lystore.allOrders CASCADE  ;
-
-
 Create View lystore.allOrders  as
                      (SELECT ore.id,
                             ore.price AS "price TTC",
