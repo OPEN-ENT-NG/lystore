@@ -421,6 +421,8 @@ export const configurationController = ng.controller('configurationController',
         };
         $scope.exportOrders = async  ()=>{
            await $scope.campaigns.exportOrders($scope.campaigns.selected);
+            $scope.campaigns.selected.map(c => c.selected = false);
+            Utils.safeApply($scope);
             // await campaign.exportOrders();
             // $scope.campaigns = [];
         }
