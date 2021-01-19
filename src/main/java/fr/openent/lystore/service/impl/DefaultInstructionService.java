@@ -266,28 +266,28 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
     private JsonObject getUpdateOrdersStatementClient(Number id) {
         String statement =
                 "UPDATE " +
-                 Lystore.lystoreSchema + ".order_client_equipment " +
-                "SET " +
-                "  status = 'VALID' " +
-                "FROM " +
-                "  ( " +
-                "    SELECT " +
-                "      order_client_equipment.id, " +
-                "      order_client_equipment.status, " +
-                "      order_client_equipment.id_operation, " +
-                "      contract_type.code " +
-                "    FROM " +
-                "      lystore.order_client_equipment " +
-                "      inner join " + Lystore.lystoreSchema +".operation on order_client_equipment.id_operation = operation.id " +
-                "      inner join " + Lystore.lystoreSchema +".instruction on operation.id_instruction = instruction.id AND instruction.id = ? " +
-                "      inner join " + Lystore.lystoreSchema +".contract on contract.id = order_client_equipment.id_contract " +
-                "      inner join " + Lystore.lystoreSchema +".contract_type on contract.id_contract_type = contract_type.id " +
-                "  ) as oce " +
-                "where " +
-                "  oce.id_operation is not null " +
-                "  and oce.code != '236' " +
-                "  and order_client_equipment.id = oce.id " +
-                  "and oce.status IN ('IN PROGRESS','VALID','DONE');";
+                        Lystore.lystoreSchema + ".order_client_equipment " +
+                        "SET " +
+                        "  status = 'VALID' " +
+                        "FROM " +
+                        "  ( " +
+                        "    SELECT " +
+                        "      order_client_equipment.id, " +
+                        "      order_client_equipment.status, " +
+                        "      order_client_equipment.id_operation, " +
+                        "      contract_type.code " +
+                        "    FROM " +
+                        "      lystore.order_client_equipment " +
+                        "      inner join " + Lystore.lystoreSchema +".operation on order_client_equipment.id_operation = operation.id " +
+                        "      inner join " + Lystore.lystoreSchema +".instruction on operation.id_instruction = instruction.id AND instruction.id = ? " +
+                        "      inner join " + Lystore.lystoreSchema +".contract on contract.id = order_client_equipment.id_contract " +
+                        "      inner join " + Lystore.lystoreSchema +".contract_type on contract.id_contract_type = contract_type.id " +
+                        "  ) as oce " +
+                        "where " +
+                        "  oce.id_operation is not null " +
+                        "  and oce.code != '236' " +
+                        "  and order_client_equipment.id = oce.id " +
+                        "and oce.status IN ('IN PROGRESS');";
 
         JsonArray params = new JsonArray().add(id);
         return new JsonObject()
@@ -307,10 +307,10 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 "submitted_to_cp, " +
                 "date_cp, " +
                 "comment" +
-//                ",cp_adopted" +
+                ",cp_adopted" +
                 ") " +
                 "VALUES (? ,? ,? ,? ,? ,? ,? ," +
-//                "? ," +
+                "? ," +
                 "? ) " +
                 "RETURNING id; ";
 
@@ -328,7 +328,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 .add(instruction.getBoolean("submitted_to_cp"))
                 .add(instruction.getString("date_cp"))
                 .add(instruction.getString("comment"))
-//                .add(instruction.getBoolean("cp_adopted"))
+                .add(instruction.getBoolean("cp_adopted"))
                 ;
 
         return new JsonObject()
@@ -338,18 +338,17 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
     }
 
     public  void updateInstruction(Integer id, JsonObject instruction, Handler<Either<String, JsonObject>> handler){
-                    try{
+        try{
 
-                        JsonArray statements = new fr.wseduc.webutils.collections.JsonArray()
-                                .add(getUpdateInstructionStatement(id,instruction));
+            JsonArray statements = new fr.wseduc.webutils.collections.JsonArray()
+                    .add(getUpdateInstructionStatement(id,instruction));
+            handleAdoptedCP(id, statements, instruction, handler);
 
-                        handleAdoptedCP(id, statements, instruction, handler);
-
-                    }catch(ClassCastException e){
-                        log.error("An error occured when casting structures ids " + e);
-                        handler.handle(new Either.Left<String, JsonObject>(""));
-                    }
-            }
+        }catch(ClassCastException e){
+            log.error("An error occured when casting structures ids " + e);
+            handler.handle(new Either.Left<String, JsonObject>(""));
+        }
+    }
 
     private JsonObject getUpdateInstructionStatement(Integer id, JsonObject instruction) {
         String statement = " UPDATE " + Lystore.lystoreSchema + ".instruction " +
@@ -361,7 +360,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 "submitted_to_cp = ? , " +
                 "date_cp = ? , " +
                 "comment = ?  " +
-//                ",cp_adopted = ?  " +
+                ",cp_adopted = ?  " +
                 "WHERE id = ? " +
                 "RETURNING id;";
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray()
@@ -372,7 +371,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 .add(instruction.getBoolean("submitted_to_cp"))
                 .add(instruction.getString("date_cp"))
                 .add(instruction.getString("comment"))
-//                .add(instruction.getBoolean("cp_adopted"))
+                .add(instruction.getBoolean("cp_adopted"))
                 .add(id);
 
         return new JsonObject()

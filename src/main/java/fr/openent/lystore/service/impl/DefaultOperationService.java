@@ -250,7 +250,7 @@ GROUP BY
                 "   WHERE oce.id_operation IN " +
                 Sql.listPrepared(idsOperations.getList()) + " " +
                 "     AND oce.override_region IS FALSE " +
-                "     AND oce.status = 'IN PROGRESS' " +
+                "     AND oce.status IN ('IN PROGRESS','VALID','DONE') " +
                 "   GROUP BY (oce.id_operation)) " +
                 "SELECT operations.id_operation, " +
                 "       SUM(operations.number_sub) AS number_sub " +
