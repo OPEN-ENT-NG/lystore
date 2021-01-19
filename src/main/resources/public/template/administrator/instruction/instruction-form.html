@@ -51,18 +51,17 @@
                     <date-picker i18n-placeholder="lystore.instruction.date.place_holder" ng-model="instruction.date_cp" ng-disaled required>
                     </date-picker>
                 </div>
-<!--                <div ng-show="instruction.submitted_to_cp"-->
-<!--                     class="six cell vertical-spacing twelve-mobile row-mobile">-->
-<!--                                <span class="cell ">-->
-<!--                                    <i18n>lystore.cp.adopted</i18n> *-->
-<!--                                </span>-->
-<!--                    <switch-toggle ng-model="instruction.cp_adopted"-->
-<!--                                   ng-change="cancelIfAlreadyTrue()"-->
-<!--                                   ng-disabled="instruction.cp_adopted"-->
-<!--                                   class="cell">-->
-<!--                    </switch-toggle>-->
-
-<!--                </div>-->
+                <div ng-show="instruction.submitted_to_cp"
+                     class="six cell vertical-spacing twelve-mobile row-mobile">
+                                <span class="cell ">
+                                    <i18n>lystore.cp.adopted</i18n> *
+                                </span>
+                    <switch-toggle ng-model="instruction.cp_adopted"
+                                   ng-change="cancelIfAlreadyTrue()"
+                                   ng-disabled="instruction.cp_adopted"
+                                   class="cell">
+                    </switch-toggle>
+                </div>
                 <div class="row twelve vertical-spacing">
                         <span class="twelve">
                             <i18n>lystore.instruction.commenter</i18n>
