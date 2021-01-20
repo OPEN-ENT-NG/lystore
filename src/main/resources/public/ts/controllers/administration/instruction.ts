@@ -43,7 +43,6 @@ export const instructionController = ng.controller('instructionController',
             template.open('instruction-main', 'administrator/instruction/instruction-form');
             await $scope.initOperation();
             $scope.operationEditRemoveInstructionIds = [];
-            console.log($scope.operations.all)
             $scope.operations.all = $scope.operations.all
                 .filter(operation => operation.id_instruction === null  && operation.status === 'false');
             $scope.instructions.all.map(instruction => {

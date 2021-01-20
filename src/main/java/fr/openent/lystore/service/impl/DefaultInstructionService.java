@@ -21,6 +21,8 @@ import org.entcore.common.sql.Sql;
 import java.util.ArrayList;
 import java.util.List;
 
+import static fr.openent.lystore.service.impl.DefaultOrderService.getNextValidationNumber;
+
 public class DefaultInstructionService  extends SqlCrudService implements InstructionService {
 
     private static final Logger log = LoggerFactory.getLogger (DefaultOrderService.class);
@@ -217,24 +219,34 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
 
     private void handleAdoptedCP(Number id, JsonArray statements, JsonObject instruction, Handler<Either<String, JsonObject>> handler) {
         if(instruction.getBoolean("cp_adopted")){
-            statements.add(getUpdateOrdersStatementClient(id));
-            statements.add(getUpdateOrdersStatementRegion(id));
+            String getIdQuery = getNextValidationNumber();
+            sql.raw(getIdQuery, SqlResult.validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
+                @Override
+                public void handle(Either<String, JsonObject> event) {
+                    final String numberOrder = event.right().getValue().getString("numberorder");
+                    statements.add( getUpdateOrdersStatementClient(id,numberOrder));
+                    statements.add(getUpdateOrdersStatementRegion(id,numberOrder));
+                    sql.transaction(statements, new Handler<Message<JsonObject>>() {
+                        @Override
+                        public void handle(Message<JsonObject> event) {
+                            handler.handle(SqlQueryUtils.getTransactionHandler(event,id));
+                        }
+                    });
+                }
+            }));
         }
 
-        sql.transaction(statements, new Handler<Message<JsonObject>>() {
-            @Override
-            public void handle(Message<JsonObject> event) {
-                handler.handle(SqlQueryUtils.getTransactionHandler(event,id));
-            }
-        });
+
     }
 
-    private JsonObject getUpdateOrdersStatementRegion(Number id) {
+
+
+    private JsonObject getUpdateOrdersStatementRegion(Number id, String numberOrder) {
         String statement =
                 "UPDATE " +
                         Lystore.lystoreSchema + ".\"order-region-equipment\" " +
                         "SET " +
-                        "  status = 'VALID' " +
+                        "  status = 'VALID', number_validation = ? " +
                         "FROM " +
                         "  ( " +
                         "    SELECT " +
@@ -256,19 +268,19 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                         "  and ore.status = 'IN PROGRESS';";
 
 
-        JsonArray params = new JsonArray().add(id);
+        JsonArray params = new JsonArray().add(numberOrder).add(id);
         return new JsonObject()
                 .put("statement", statement)
                 .put("values", params)
                 .put("action", "prepared");
 
     }
-    private JsonObject getUpdateOrdersStatementClient(Number id) {
+    private JsonObject getUpdateOrdersStatementClient(Number id, String numberOrder) {
         String statement =
                 "UPDATE " +
                         Lystore.lystoreSchema + ".order_client_equipment " +
                         "SET " +
-                        "  status = 'VALID' " +
+                        "  status = 'VALID', number_validation = ? " +
                         "FROM " +
                         "  ( " +
                         "    SELECT " +
@@ -289,7 +301,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                         "  and order_client_equipment.id = oce.id " +
                         "and oce.status IN ('IN PROGRESS');";
 
-        JsonArray params = new JsonArray().add(id);
+        JsonArray params = new JsonArray().add(numberOrder).add(id);
         return new JsonObject()
                 .put("statement", statement)
                 .put("values", params)
