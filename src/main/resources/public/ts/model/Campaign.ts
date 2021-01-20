@@ -36,10 +36,11 @@ export class Campaign implements Selectable  {
         this.priority_enabled = true;
         this.automatic_close = true;
         this.priority_field = PRIORITY_FIELD.ORDER
+        this.start_date = moment().format('YYYY-MM-DD')
+        this.end_date = moment().add(1,'year').format('YYYY-MM-DD')
     }
 
     toJson () {
-        console.log(moment(this.end_date).format('YYYY-MM-DD'))
         return {
             name: this.name,
             description: this.description || null,
