@@ -834,10 +834,13 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 .put("action", "prepared");
     }
 
+    public static String getNextValidationNumber() {
+        return "Select "+ Lystore.lystoreSchema + ".get_validation_number() as numberOrder ";
+    }
     @Override
     public void validateOrders(final HttpServerRequest request, final UserInfos user, final List<Integer> ids,
                                final String url, final Handler<Either<String, JsonObject>> handler){
-        String getIdQuery = "Select "+ Lystore.lystoreSchema + ".get_validation_number() as numberOrder ";
+        String getIdQuery = getNextValidationNumber();
         sql.raw(getIdQuery, SqlResult.validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
             @Override
             public void handle(Either<String, JsonObject> event) {
