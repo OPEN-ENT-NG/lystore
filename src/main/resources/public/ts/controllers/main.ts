@@ -434,6 +434,11 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
             await $scope.labelOperation.sync();
             await $scope.operations.sync(onlylist);
         };
+
+        $scope.initLabel = async () => {
+            await $scope.labelOperation.sync();
+        };
+
         $scope.initBasketItem = async (idEquipment: number, idCampaign: number, structure) => {
             $scope.equipment = _.findWhere($scope.equipments.all, {id: idEquipment});
             if ($scope.equipment === undefined && !isNaN(idEquipment)) {

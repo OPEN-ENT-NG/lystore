@@ -9,7 +9,7 @@ import java.util.List;
 
 public interface OperationService {
 
-    void getLabels (Handler<Either<String, JsonArray>> handler);
+    void getLabels (List<String> filters, Handler<Either<String, JsonArray>> handler);
 
     void getOperations(List<String> filters, Handler<Either<String, JsonArray>> handler);
 

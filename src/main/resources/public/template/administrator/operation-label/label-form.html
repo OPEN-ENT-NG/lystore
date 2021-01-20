@@ -20,7 +20,7 @@
                 <i18n>operation.label.form.warning</i18n>
             </div>
 
-            <div class="twelve cell" style="margin-top: 10px;">
+            <div class="twelve cell" ng-init="" style="margin-top: 10px;">
                 <i18n>lystore.operation.label.start_date</i18n>
                 <date-picker i18n-placeholder="lystore.instruction.date.place_holder" ng-model="newLabel.start_date">
                 </date-picker>
@@ -28,9 +28,13 @@
                 <date-picker i18n-placeholder="lystore.operation.label.date.place_holder" ng-model="newLabel.end_date">
                 </date-picker>
             </div>
-
+                <br/> <br/> <br/>
             <div class="warning" ng-show="!isValidLabelDate(newLabel)">
                 <i18n>operation.label.date.form.warning</i18n>
+            </div>
+
+            <div class="warning" ng-show="!isValidLabelDateUsed(newLabel)">
+                <i18n>operation.label.date.form.warning2</i18n>
             </div>
         </div>
         <div class="right-magnet vertical-spacing">

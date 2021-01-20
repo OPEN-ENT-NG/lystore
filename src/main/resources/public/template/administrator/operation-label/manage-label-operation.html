@@ -3,14 +3,14 @@
 <div class="row">
     <div class="cell twelve-mobile horizontal-spacing search-pagination four">
         <div class="row twelve vertical-spacing">
-            <input type="text" class="twelve" ng-keydown="addInstructionFilter($event)"
+            <input type="text" class="twelve" ng-keydown="addLabelFilter($event)"
                    i18n-placeholder="add.a.filter">
             <i class="search flex-row"></i>
         </div>
         <div class="row horizontal-spacing">
             <div class="select-blocks">
-                <div ng-repeat="filter in instructions.filters"
-                     ng-click="dropInstructionFilter(filter)" class="labels-in-ligne">
+                <div ng-repeat="filter in labelOperation.filters"
+                     ng-click="dropLabelFilter(filter)" class="labels-in-ligne">
                     <div> [[ filter ]]</div>
                 </div>
             </div>

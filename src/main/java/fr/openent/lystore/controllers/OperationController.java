@@ -31,11 +31,11 @@ public class OperationController  extends ControllerHelper {
         this.operationService = new DefaultOperationService(Lystore.lystoreSchema, "operation");
     }
 
-    @Get("/labels")
+    @Get("/labels/")
     @ApiDoc("Returns all labels in database")
     @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
     public void getLabels (HttpServerRequest request) {
-        operationService.getLabels(arrayResponseHandler(request));
+        operationService.getLabels(request.params().getAll("q"), arrayResponseHandler(request));
     }
 
     @Get("/operations/")

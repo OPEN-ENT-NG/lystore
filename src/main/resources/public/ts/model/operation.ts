@@ -194,6 +194,7 @@ export class label implements Selectable {
     end_date: string;
     selected: boolean;
     is_used: number;
+    max_creation_date: string;
 
     constructor() {
 
@@ -244,9 +245,10 @@ export class label implements Selectable {
 }
 
 export class labels extends Selection<label> {
-
+    filters: Array<string>;
     constructor() {
         super([]);
+        this.filters = [];
     }
 
     async delete() {
@@ -259,7 +261,12 @@ export class labels extends Selection<label> {
     }
 
     async sync() {
-        let {data} = await http.get('/lystore/labels');
-        this.all = Mix.castArrayAs(label, data);
+        try{
+            const queriesFilter = Utils.formatGetParameters({q: this.filters});
+            let {data} = await http.get(`/lystore/labels/?${queriesFilter}`);
+            this.all = Mix.castArrayAs(label, data);
+        } catch (err) {
+            toasts.warning('lystore.operation.label.get.err')
+        }
     }
 }

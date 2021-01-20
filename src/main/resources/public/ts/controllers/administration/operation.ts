@@ -1,6 +1,8 @@
 import {_, ng, template, moment, idiom as lang, toasts, angular} from 'entcore';
 import {label, Notification, Operation, Operations, OrderClient, OrderRegion, OrdersRegion, Utils} from "../../model";
 
+
+
 declare let window: any;
 
 export const operationController = ng.controller('operationController',
@@ -163,13 +165,23 @@ export const operationController = ng.controller('operationController',
             Utils.safeApply($scope);
         };
 
-        $scope.validLabelForm = (label:label) => {
-            return label.label && label.label.length > 0 && $scope.labelOperation.all.find(l => l.label.toUpperCase() === label.label.toUpperCase()) === undefined && $scope.isValidLabelDate(label);
-        };
-
         $scope.isValidLabelDate = (label:label) => {
             return moment(label.start_date).isBefore(moment(label.end_date), 'days', '[]');
-        }
+        };
+
+        $scope.isValidLabelDateUsed = (label:label) => {
+                if(label.is_used > 0) {
+                    return moment(label.end_date).isAfter(moment(label.max_creation_date), 'days', '[]');
+                }
+                return true;
+        };
+
+        $scope.validLabelForm = (label:label) => {
+            if (label.id === $scope.newLabel.id) {
+                return label.label && label.label.length > 0 && $scope.isValidLabelDate(label) && $scope.isValidLabelDateUsed(label);
+            }
+            return label.label && label.label.length > 0 && $scope.labelOperation.all.find(l => l.label.toUpperCase() === label.label.toUpperCase()) === undefined && $scope.isValidLabelDate(label) && $scope.isValidLabelDateUsed(label);
+        };
 
         $scope.validLabel = async (label:label) => {
             await label.save();
@@ -207,6 +219,23 @@ export const operationController = ng.controller('operationController',
             Utils.safeApply($scope);
         };
 
+        $scope.addLabelFilter = async (event?) => {
+            if (event && (event.which === 13 || event.keyCode === 13) && event.target.value.trim() !== '') {
+                if(!_.contains($scope.labelOperation.filters, event.target.value)){
+                    $scope.labelOperation.filters = [...$scope.labelOperation.filters, event.target.value];
+                }
+                event.target.value = '';
+                await $scope.initLabel();
+                Utils.safeApply($scope);
+            }
+        };
+
+        $scope.dropLabelFilter = async (filter: string) => {
+            $scope.labelOperation.filters = $scope.labelOperation.filters.filter( filterWord => filterWord !== filter);
+            await $scope.initLabel();
+            Utils.safeApply($scope);
+        };
+
         $scope.openLightboxDeleteLabel = () => {
             $scope.display.lightbox.label = true;
             template.open('label.lightbox', 'administrator/operation-label/operation-label-delete-lightbox');
@@ -223,7 +252,6 @@ export const operationController = ng.controller('operationController',
                 Utils.safeApply($scope);
             }
         }
-
 
         $scope.dropOrdersOperation = async (orders)=>{
             Promise.all([
