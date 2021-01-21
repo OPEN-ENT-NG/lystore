@@ -147,8 +147,11 @@
                 </div>
             </div>
         </article>
-        <div class="right-magnet warning" ng-show="!validCampaignForm(campaign)">
+        <div class="right-magnet warning" ng-show="!checkNamesAndTags(campaign)">
             <i18n>not.valid.campaign.form</i18n>
+        </div>
+        <div class="right-magnet warning" ng-show="!isValidDates(campaign)">
+            <i18n>not.valid.dates.campaign.form</i18n>
         </div>
         <div class="row">
             <div class="right-magnet">
