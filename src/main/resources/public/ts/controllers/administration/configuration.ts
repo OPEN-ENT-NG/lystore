@@ -452,14 +452,22 @@ export const configurationController = ng.controller('configurationController',
             })
         };
 
-        $scope.validCampaignForm = (campaign: Campaign) => {
+        $scope.checkNamesAndTags = (campaign: Campaign)  => {
             return campaign.name !== undefined
-            && campaign.name.trim() !== ''
-            && _.findWhere($scope.structureGroups.all, {selected: true}) !== undefined
-            && (_.where($scope.structureGroups.all, {selected: true}).length > 0)
-            && (!campaign.automatic_close || campaign.start_date < campaign.end_date)
-                ? $scope.checkTags()
-             : false;
+                && campaign.name.trim() !== ''
+                && _.findWhere($scope.structureGroups.all, {selected: true}) !== undefined
+                && (_.where($scope.structureGroups.all, {selected: true}).length > 0)
+                && $scope.checkTags();
+        }
+
+        $scope.isValidDates =  (campaign: Campaign) => {
+            return !campaign.automatic_close || ( moment(campaign.end_date).diff(moment(campaign.start_date),'days') > 0);
+        }
+
+        $scope.validCampaignForm = (campaign: Campaign) => {
+            return $scope.checkNamesAndTags(campaign)
+            && $scope.isValidDates(campaign)
+             ;
 
         };
 
