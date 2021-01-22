@@ -13,7 +13,7 @@ export const operationController = ng.controller('operationController',
         $scope.allOrdersOperationSelected = false;
         $scope.sort = {
             label_operation : {
-                type: 'label.label',
+                type: 'label',
                 reverse: false
             },
             operation : {
@@ -175,6 +175,13 @@ export const operationController = ng.controller('operationController',
                 }
                 return true;
         };
+
+        $scope.initLabelDate = (label:label) => {
+            if(!label.start_date && !label.end_date) {
+                label.start_date = moment().add().format('YYYY-MM-DD');
+                label.end_date = moment(new Date('9999-12-31'));
+            }
+        }
 
         $scope.validLabelForm = (label:label) => {
             if (label.id === $scope.newLabel.id) {

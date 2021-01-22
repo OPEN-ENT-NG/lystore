@@ -33,18 +33,25 @@
                     <span></span>
                 </label>
             </td>
-            <td ng-click="sort.label_operation.type = 'label.label';
+            <td ng-click="sort.label_operation.type = 'label';
                    sort.label_operation.reverse = !sort.label_operation.reverse">
                 <i18n>lystore.operation.label.name</i18n>
-                <i class="up-open" ng-show="sort.label_operation.type === 'label.label' && !sort.label_operation.reverse"></i>
-                <i class="down-open" ng-show="sort.label_operation.type === 'label.label' && sort.label_operation.reverse"></i>
-            </td>
-            <td>
-                <i18n>lystore.operation.label.start_date</i18n>
+                <i class="up-open" ng-show="sort.label_operation.type === 'label' && !sort.label_operation.reverse"></i>
+                <i class="down-open" ng-show="sort.label_operation.type === 'label' && sort.label_operation.reverse"></i>
             </td>
 
-            <td>
+            <td ng-click="sort.label_operation.type = 'start_date';
+                   sort.label_operation.reverse = !sort.label_operation.reverse">
+                <i18n>lystore.operation.label.start_date</i18n>
+                <i class="up-open" ng-show="sort.label_operation.type === 'start_date' && !sort.label_operation.reverse"></i>
+                <i class="down-open" ng-show="sort.label_operation.type === 'start_date' && sort.label_operation.reverse"></i>
+            </td>
+
+            <td ng-click="sort.label_operation.type = 'end_date';
+                   sort.label_operation.reverse = !sort.label_operation.reverse">
                 <i18n>lystore.operation.label.end_date</i18n>
+                <i class="up-open" ng-show="sort.label_operation.type === 'end_date' && !sort.label_operation.reverse"></i>
+                <i class="down-open" ng-show="sort.label_operation.type === 'end_date' && sort.label_operation.reverse"></i>
             </td>
 
             <td>
@@ -53,7 +60,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr ng-repeat="label in labelOperation.all">
+        <tr ng-repeat="label in labelOperation.all | orderBy:sort.label_operation.type:sort.label_operation.reverse">
             <td workflow="lystore.manager" class="table-selector" >
                 <label class="checkbox">
                     <input type="checkbox" ng-model="label.selected">
