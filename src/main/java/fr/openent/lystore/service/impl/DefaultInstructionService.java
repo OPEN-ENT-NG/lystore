@@ -234,6 +234,14 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                     });
                 }
             }));
+        }else{
+            sql.transaction(statements, new Handler<Message<JsonObject>>() {
+            @Override
+            public void handle(Message<JsonObject> event) {
+                handler.handle(SqlQueryUtils.getTransactionHandler(event,id));
+            }
+        });
+
         }
 
 
@@ -352,7 +360,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
     public  void updateInstruction(Integer id, JsonObject instruction, Handler<Either<String, JsonObject>> handler){
         try{
 
-            JsonArray statements = new fr.wseduc.webutils.collections.JsonArray()
+            JsonArray statements = new JsonArray()
                     .add(getUpdateInstructionStatement(id,instruction));
             handleAdoptedCP(id, statements, instruction, handler);
 

@@ -115,7 +115,7 @@
             <td >[[formatDate(operation.date_operation)]]</td>
             <td >[[formatDate(operation.date_cp)]]</td>
             <td >[[operation.instruction.cp_number]]</td>
-            <td ><span ng-bind="[[operation.instruction.cp_adopted]]  | statusV"></span></td>
+            <td ><span ng-bind="[[operation.instruction.cp_adopted]]"></span></td>
             <td tooltip=[[formatArrayToolTip(operation.contracts)]] >
                 [[getFirstElement(operation.contracts)]]
             </td>
