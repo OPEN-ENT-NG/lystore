@@ -39,8 +39,7 @@
                             <i18n>lystore.campaigns.date.start</i18n>
                         </span>
                                 <div class="four cell">
-                                    <date-picker ng-model="campaign.start_date" class="cell six twelve-mobile " ></date-picker>
-                                </div>
+                                    <date-picker ng-model="campaign.start_date" class="cell six twelve-mobile " ></date-picker>                                 </div>
                                 <span class="two cell">
                             <i18n>lystore.campaigns.date.end</i18n>
                         </span>
@@ -152,6 +151,9 @@
         </div>
         <div class="right-magnet warning" ng-show="!isValidDates(campaign)">
             <i18n>not.valid.dates.campaign.form</i18n>
+        </div>
+        <div class="right-magnet warning" ng-show="!checkGapDates(campaign)">
+            <i18n>not.valid.gap.dates.campaign.form</i18n>
         </div>
         <div class="row">
             <div class="right-magnet">
