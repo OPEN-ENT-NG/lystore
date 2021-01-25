@@ -250,20 +250,55 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
     }
 
     public void getCampaign(Integer id, Handler<Either<String, JsonObject>> handler){
-        String query = "  SELECT campaign.*,array_to_json(array_agg(groupe)) as  groups     "+
-                "FROM  " + Lystore.lystoreSchema + ".campaign campaign  "+
-                "LEFT JOIN  "+
-                "(SELECT rel_group_campaign.id_campaign, structure_group.*,  array_to_json(array_agg(id_tag))" +
-                " as  tags FROM " + Lystore.lystoreSchema + ".structure_group " +
-                "INNER JOIN " + Lystore.lystoreSchema + ".rel_group_campaign" +
-                " ON structure_group.id = rel_group_campaign.id_structure_group "+
-                "WHERE rel_group_campaign.id_campaign = ?  "+
-                "GROUP BY (rel_group_campaign.id_campaign, structure_group.id)) as groupe " +
-                "ON groupe.id_campaign = campaign.id "+
-                "where campaign.id = ?  "+
-                "group By (campaign.id);  " ;
+        String query = " SELECT  " +
+                "  campaign.*,  " +
+                "  array_to_json( " +
+                "    array_agg(groupe) " +
+                "  ) as groups,  " +
+                "  orders_info.max_date,  " +
+                "  orders_info.min_date  " +
+                "FROM  " +
+                "    " + Lystore.lystoreSchema + ".campaign campaign  " +
+                "  LEFT JOIN ( " +
+                "    SELECT  " +
+                "      rel_group_campaign.id_campaign,  " +
+                "      structure_group.*,  " +
+                "      array_to_json( " +
+                "        array_agg(id_tag) " +
+                "      ) as tags  " +
+                "    FROM  " +
+                "        " + Lystore.lystoreSchema + ".structure_group  " +
+                "      INNER JOIN   " + Lystore.lystoreSchema + ".rel_group_campaign ON structure_group.id = rel_group_campaign.id_structure_group  " +
+                "    WHERE  " +
+                "      rel_group_campaign.id_campaign = ?  " +
+                "    GROUP BY  " +
+                "      ( " +
+                "        rel_group_campaign.id_campaign,  " +
+                "        structure_group.id " +
+                "      ) " +
+                "  ) as groupe ON groupe.id_campaign = campaign.id  " +
+                "  LEFT JOIN ( " +
+                "    SELECT  " +
+                "      Max(orders.creation_date) as max_date,  " +
+                "      MIN(orders.creation_date) as min_date,  " +
+                "      id_campaign  " +
+                "    FROM  " +
+                "        " + Lystore.lystoreSchema + ".campaign cc  " +
+                "      inner join   " + Lystore.lystoreSchema + ".allorders orders on cc.id = orders.id_campaign  " +
+                "    WHERE  " +
+                "      id_campaign = ?  " +
+                "    Group by  " +
+                "      id_campaign " +
+                "  ) as orders_info on orders_info.id_campaign = campaign.id  " +
+                "where  " +
+                "  campaign.id = ?  " +
+                "group By  " +
+                "  ( " +
+                "    campaign.id, orders_info.min_date,  " +
+                "    orders_info.max_date " +
+                "  );  " ;
 
-        sql.prepared(query, new fr.wseduc.webutils.collections.JsonArray().add(id).add(id), SqlResult.validUniqueResultHandler(handler));
+        sql.prepared(query, new fr.wseduc.webutils.collections.JsonArray().add(id).add(id).add(id), SqlResult.validUniqueResultHandler(handler));
     }
     public void create(final JsonObject campaign, final Handler<Either<String, JsonObject>> handler) {
         String getIdQuery = "SELECT nextval('" + Lystore.lystoreSchema + ".campaign_id_seq') as id";

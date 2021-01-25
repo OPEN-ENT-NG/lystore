@@ -26,6 +26,8 @@ export class Campaign implements Selectable  {
     end_date :Date;
     start_date : Date;
     automatic_close : boolean;
+    max_date:Date;
+    min_date:Date;
 
     constructor (name?: string, description?: string) {
         if (name) this.name = name;
@@ -110,6 +112,10 @@ export class Campaign implements Selectable  {
             Mix.extend(this, Mix.castAs(Campaign, data));
             this.start_date =  moment(this.start_date);
             this.end_date = moment(this.end_date);
+            if(this.automatic_close) {
+                this.max_date = moment(data.max_date)
+                this.min_date = moment(data.min_date)
+            }
             this.accessible = this.accessible
                 || (
                     (this.start_date < this.end_date)

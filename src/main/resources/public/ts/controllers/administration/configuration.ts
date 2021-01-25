@@ -460,13 +460,19 @@ export const configurationController = ng.controller('configurationController',
                 && $scope.checkTags();
         }
 
+        $scope.checkGapDates = (campaign: Campaign) =>{
+            return !campaign.automatic_close
+                || (moment(campaign.end_date).diff(moment(campaign.max_date),'days') > 0)
+            && (moment(campaign.min_date).diff(moment(campaign.start_date),'days') >= 0)
+        }
         $scope.isValidDates =  (campaign: Campaign) => {
-            return !campaign.automatic_close || ( moment(campaign.end_date).diff(moment(campaign.start_date),'days') > 0);
+            return !campaign.automatic_close
+                || ( moment(campaign.end_date).diff(moment(campaign.start_date),'days') > 0);
         }
 
         $scope.validCampaignForm = (campaign: Campaign) => {
             return $scope.checkNamesAndTags(campaign)
-            && $scope.isValidDates(campaign)
+            && $scope.isValidDates(campaign)  && $scope.checkGapDates(campaign)
              ;
 
         };
