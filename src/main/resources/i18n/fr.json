@@ -574,6 +574,6 @@
   "lystore.instruction.cp_adopted": "Adoption CP",
   "campaign.automatic.manual.change": "Vous allez modifier la date d'ouverture ou de fermeture de la Campagne. Voulez-vous continuer ?",
   "campaign.automatic.dates": "Campagne ouverte du ",
-  "to" : " à ",
+  "to" : " au ",
   "not.valid.dates.campaign.form" : "La date de fin doit être supérieure à la date de début"
 }
