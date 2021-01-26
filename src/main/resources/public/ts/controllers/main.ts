@@ -32,7 +32,6 @@ import {
     Utils,
 } from '../model';
 import {Mix} from "entcore-toolkit";
-import Project = ts.server.Project;
 
 export const mainController = ng.controller('MainController', ['$scope', 'route', '$location', '$rootScope',
     ($scope, route, $location, $rootScope) => {

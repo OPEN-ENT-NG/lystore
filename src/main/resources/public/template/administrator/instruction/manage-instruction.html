@@ -74,12 +74,12 @@
                 <i class="up-open" ng-show="sort.instruction.type === 'date_cp' && !sort.instruction.reverse"></i>
                 <i class="down-open" ng-show="sort.instruction.type === 'date_cp' && sort.instruction.reverse"></i>
             </td>
-            <td ng-click="sort.instruction.type = 'cp_adopted';
-                    sort.instruction.reverse = !sort.instruction.reverse">
-                <i18n>lystore.instruction.cp_adopted</i18n>
-                <i class="up-open" ng-show="sort.instruction.type === 'cp_adopted' && !sort.instruction.reverse"></i>
-                <i class="down-open" ng-show="sort.instruction.type === 'cp_adopted' && sort.instruction.reverse"></i>
-            </td>
+<!--            <td ng-click="sort.instruction.type = 'cp_adopted';-->
+<!--                    sort.instruction.reverse = !sort.instruction.reverse">-->
+<!--                <i18n>lystore.instruction.cp_adopted</i18n>-->
+<!--                <i class="up-open" ng-show="sort.instruction.type === 'cp_adopted' && !sort.instruction.reverse"></i>-->
+<!--                <i class="down-open" ng-show="sort.instruction.type === 'cp_adopted' && sort.instruction.reverse"></i>-->
+<!--            </td>-->
         </tr>
         </thead>
         <tbody>
@@ -97,7 +97,7 @@
             <td >[[instruction.service_number]]</td>
             <td >[[instruction.cp_number]]</td>
             <td >[[formatDate(instruction.date_cp)]]</td>
-            <td ><span ng-bind="instruction.cp_adopted | statusV"></span> </td>
+<!--            <td ><span ng-bind="instruction.cp_adopted | statusV"></span> </td>-->
         </tr>
         </tbody>
     </table>

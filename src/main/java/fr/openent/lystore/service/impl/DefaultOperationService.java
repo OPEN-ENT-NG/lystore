@@ -195,7 +195,8 @@ GROUP BY
                     }
                 }
                 for (int k = 0; k < getInstruction.size(); k++) {
-                    operation.put("instruction","{}");
+                    if(!operation.containsKey("instruction"))
+                        operation.put("instruction","{}");
                     JsonObject instruction = getInstruction.getJsonObject(k);
                     if (operation.getInteger("id").equals(instruction.getInteger("id_operation"))) {
                         operation.put("instruction", instruction.getString("instruction"));
@@ -269,6 +270,7 @@ GROUP BY
                 "FROM " + Lystore.lystoreSchema + ".instruction AS i " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".operation o on i.id = o.id_instruction " +
                 "WHERE o.id IN " +
+
                 Sql.listPrepared(idsOperations.getList());
 
         Sql.getInstance().prepared(queryGetTotalOperation, idsOperations, SqlResult.validResultHandler(handler));
