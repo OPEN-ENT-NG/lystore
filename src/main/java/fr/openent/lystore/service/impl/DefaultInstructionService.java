@@ -348,7 +348,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 .add(instruction.getBoolean("submitted_to_cp"))
                 .add(instruction.getString("date_cp"))
                 .add(instruction.getString("comment"))
-                .add(instruction.getBoolean("cp_adopted"))
+//                .add(instruction.getBoolean("cp_adopted"))
                 ;
 
         return new JsonObject()
