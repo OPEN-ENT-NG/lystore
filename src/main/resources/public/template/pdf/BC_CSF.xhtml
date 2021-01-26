@@ -188,11 +188,12 @@
         }
         .signatureTable{
             width: 100%;
+            table-layout: fixed ;
             margin-top: 10px;
             border-collapse: collapse;
         }
 
-        .signatureTable tr  {
+        .signatureTable tr  td {
             padding-top:1px;
             padding-left: 5px ;
             padding-bottom:1px;
@@ -291,21 +292,21 @@
         <div class="break ">
             <table class="signatureTable">
 
-                <tr class="row">
-                    <th class=" seven cell center-text "><strong>A remplir par le chef d’établissement ou son représentant</strong></th>
-                    <th class="five cell center-text"><strong>A remplir par les services de la Région  </strong> </th>
+                <tr >
+                    <td class="  center-text "><strong>A remplir par le chef d’établissement ou son représentant</strong></td>
+                    <td class=" center-text"><strong>A remplir par les services de la Région  </strong> </td>
                 </tr>
-                <tr class="row">
-                    <td class="seven cell">
-                        <strong>Date de livraison du matériel / Service fait   <input type="text"  value = "..../..../........" /> <br/> </strong>
+                <tr >
+                    <td class="">
+                        <strong>Date de livraison du matériel / Service fait :<input type="text"  value = "..../..../........" /> <br/> </strong>
                     </td>
-                    <td class="five cell">
+                    <td class="">
                         <strong> Référence facture :</strong>
                         <input type="text"  value = "...................." />
                     </td>
                 </tr>
-                <tr class="row">
-                    <td class=" seven cell">
+                <tr>
+                    <td >
                         <p>
                             La date de mise en service sera prise comme référence au calcul de pénalités en cas de non respect du
                             délai de livraison et de mise en service (voir CCAP).  Tout dépassement de délai non imputable au prestataire devra être dûment justifié par un écrit.
@@ -314,9 +315,9 @@
 
                         <strong>A renvoyer une fois les observations levées en original</strong>
                     </td>
-                    <td class="five cell">
+                    <td >
                         <strong> Rejet facture</strong><br/>
-                        <span class="top">Motifs :</span>  <textarea  rows="3" cols="33"> </textarea>
+                        <span class="top">Motifs :</span>  <input type="text"  value = ".............................................." />
                         <br>
                         </br>
                         Date : <input type="text"  value = "....../....../........" />
@@ -324,7 +325,7 @@
                 </tr>
 
                 <tr class="row">
-                    <td class="seven cell">
+                    <td >
 
                         A  <input type="text"  value = "..............." />,  le  <input type="text"   />  <br/>
                         Nom:  <input type="text"  value = "..............." />  <br/>
@@ -334,7 +335,7 @@
                             &nbsp;
                         </div>
                     </td>
-                    <td class="five cell">
+                    <td >
                         Validation du service fait  A  <input type="text"  value = "..............." />,
                         le<input type="text"  value = "....../....../........" />   <br/>
                         Par: <input type="text"  value = "..............." />   <br/>
