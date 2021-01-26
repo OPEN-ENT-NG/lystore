@@ -1,8 +1,5 @@
 import {_, ng, template,moment, idiom as lang, toasts} from 'entcore';
 import {Notification, Operation, Operations, OrderClient, OrderRegion, OrdersRegion, Utils} from "../../model";
-import {Mix} from 'entcore-toolkit';
-import {nodeModuleNameResolver} from "typescript/lib/tsserverlibrary";
-import normalizedPathToPath = ts.server.normalizedPathToPath;
 
 declare let window: any;
 

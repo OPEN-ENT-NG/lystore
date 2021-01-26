@@ -28,6 +28,7 @@ export class Operation implements Selectable {
     date_operation: Date;
     nbOrberSub: Number;
     number_sub : Number;
+    cp_adopted = false;
     constructor(){
 
     }

@@ -78,12 +78,12 @@
                 <i class="up-open" ng-show="sort.operation.type === 'instruction.cp_number' && !sort.operation.reverse"></i>
                 <i class="down-open" ng-show="sort.operation.type === 'instruction.cp_number' && sort.operation.reverse"></i>
             </td>
-            <td ng-click="sort.operation.type = 'instruction.cp_adopted';
-                    sort.operation.reverse = !sort.operation.reverse">
-                <i18n>lystore.instruction.cp_adopted</i18n>
-                <i class="up-open" ng-show="sort.operation.type === 'instruction.cp_adopted' && !sort.operation.reverse"></i>
-                <i class="down-open" ng-show="sort.operation.type === 'instruction.cp_adopted' && sort.operation.reverse"></i>
-            </td>
+<!--            <td ng-click="sort.operation.type = 'instruction.cp_adopted';-->
+<!--                    sort.operation.reverse = !sort.operation.reverse">-->
+<!--                <i18n>lystore.instruction.cp_adopted</i18n>-->
+<!--                <i class="up-open" ng-show="sort.operation.type === 'instruction.cp_adopted' && !sort.operation.reverse"></i>-->
+<!--                <i class="down-open" ng-show="sort.operation.type === 'instruction.cp_adopted' && sort.operation.reverse"></i>-->
+<!--            </td>-->
             <td ng-click="sort.operation.type = 'contracts';
                     sort.operation.reverse = !sort.operation.reverse">
                 <i18n>lystore.operation.contracts</i18n>
@@ -115,7 +115,8 @@
             <td >[[formatDate(operation.date_operation)]]</td>
             <td >[[formatDate(operation.date_cp)]]</td>
             <td >[[operation.instruction.cp_number]]</td>
-            <td ><span ng-bind="[[operation.instruction.cp_adopted]]"></span></td>
+<!--            <td ><span ng-if="operation.instruction.cp_adopted !== undefined"-->
+<!--                       ng-bind="[[operation.instruction.cp_adopted]]  | statusV"></span></td>-->
             <td tooltip=[[formatArrayToolTip(operation.contracts)]] >
                 [[getFirstElement(operation.contracts)]]
             </td>
