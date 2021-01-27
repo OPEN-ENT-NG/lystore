@@ -115,7 +115,18 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 " array_to_json(array_agg( DISTINCT oco.*)) as options," +
                 " oce.cause_status, oce.number_validation, oce.id_order, oce.comment, oce.price_proposal, oce.id_project, oce.rank, oce.program," +
                 " oce.action, array_to_json(array_agg( distinct structure_group.name)) as structure_groups, " +
-                " oce.id_operation, oce.override_region, oce.id_type  " +
+                " oce.id_operation, oce.override_region, oce.id_type,  " +
+                "             ROUND((( SELECT CASE          " +
+                "            WHEN oce.price_proposal IS NOT NULL THEN 0     " +
+                "            WHEN oce.override_region IS NULL THEN 0 " +
+                "            WHEN SUM(oco.price + ((oco.price * oco.tax_amount) /100) * oco.amount) IS NULL THEN 0         " +
+                "            ELSE SUM(oco.price + ((oco.price * oco.tax_amount) /100) * oco.amount)         " +
+                "            END           " +
+                "             FROM   " + Lystore.lystoreSchema + ".order_client_options oco  " +
+                "              where oco.id_order_client_equipment = oce.id " +
+                "             ) + oce.price + oce.price * oce.tax_amount/100 " +
+                "              ) * oce.amount   ,2 ) " +
+                "             as Total "+
                 " FROM lystore.order_client_equipment oce " +
                 "INNER JOIN lystore.rel_group_campaign ON (oce.id_campaign = rel_group_campaign.id_campaign) " +
                 "INNER JOIN lystore.rel_group_structure ON (oce.id_structure = rel_group_structure.id_structure) " +
