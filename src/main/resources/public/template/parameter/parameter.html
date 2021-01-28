@@ -1,0 +1,103 @@
+<div class="parameter">
+    <!--Title-->
+    <h1 class="parameter-title">
+        <i18n>lystore.parameter.title</i18n>
+    </h1>
+
+    <!--Header-->
+    <div class="parameter-header" style="justify-content: space-between; margin-bottom: 25px;">
+        <div class="card one" ng-show="structureGarLists.length > 0"
+             style="display: flex; align-items: center; justify-content: center;">
+            <h4><span><i18n>lystore.parameter.exported</i18n>:</span>
+                <span ng-bind="counter.value"></span>/<span ng-bind="structureGarLists.length"></span></h4>
+        </div>
+        <div>
+            <!--        <button ng-click="export()"><i18n>lystore.parameter.export</i18n></button>-->
+            <button ng-click="testMail()">
+                <i18n>lystore.parameter.test.mail</i18n>
+            </button>
+            <button ng-click="downloadArchive()">
+                <i18n>lystore.parameter.archive.download</i18n>
+            </button>
+            <button ng-click="downloadXSDValidation()">
+                <i18n>lystore.parameter.xsd.download</i18n>
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <input type="text" class="twelve cell" i18n-placeholder="lystore.parameter.structure.search"
+               ng-model="filter.value">
+    </div>
+
+    <!--Table-->
+    <table class="parameter-table table table-hover">
+        <thead>
+        <tr>
+            <th width="20%" ng-click="filter.property = 'uai'; filter.desc = !filter.desc">
+                    <span class="sortable">
+						<span class="icons right-spacing">
+							<i class="arrow" ng-class="{'icon-off': !(filter.property === 'uai' && !filter.desc)}"></i>
+							<i class="arrow bottom"
+                               ng-class="{'icon-off': !(filter.property === 'uai' && filter.desc)}"></i>
+						</span>
+						<span><i18n>lystore.uai</i18n></span>
+					</span>
+            </th>
+            <th width="60%" style="text-align: left"
+                ng-click="filter.property = 'name'; filter.desc = !filter.desc">
+                    <span class="sortable">
+						<span class="icons right-spacing">
+							<i class="arrow" ng-class="{'icon-off': !(filter.property === 'name' && !filter.desc)}"></i>
+							<i class="arrow bottom"
+                               ng-class="{'icon-off': !(filter.property === 'name' && filter.desc)}"></i>
+						</span>
+						<span><i18n>lystore.name</i18n></span>
+					</span>
+            </th>
+            <th width="10%" ng-click="filter.property = 'number_deployed'; filter.desc = !filter.desc">
+                    <span class="sortable">
+						<span class="icons right-spacing">
+							<i class="arrow"
+                               ng-class="{'icon-off': !(filter.property === 'number_deployed' && !filter.desc)}"></i>
+							<i class="arrow bottom"
+                               ng-class="{'icon-off': !(filter.property === 'number_deployed' && filter.desc)}"></i>
+						</span>
+						<span><i18n>lystore.state</i18n></span>
+					</span>
+            </th>
+            <th width="10%"></th>
+        </tr>
+        </thead>
+
+        <tbody class="parameter-table-body">
+        <tr ng-repeat="item in structureGarLists|filter:match()|orderBy:filter.property:filter.desc"
+            style="height: 40px;">
+            <th style="text-align: left; text-indent: 10px;">[[item.uai]]</th>
+            <th style="text-align: left; text-indent: 10px;">[[item.name]]</th>
+            <th>
+                    <span ng-if="item.deployed">
+                        <i class="validated-icon-large"></i>
+                    </span>
+            </th>
+            <th>
+                <dots-menu style="text-align: left">
+                    <opt data-ng-disabled="createButton" ng-click="createGarGroup(item)">
+                        <span ng-if="!item.deployed"><i18n>lystore.parameter.deploy</i18n></span>
+                        <span ng-if="item.deployed"><i18n>lystore.parameter.undeploy</i18n></span>
+                    </opt>
+                    <opt data-ng-if="item.deployed"
+                         ng-click="addUser(item.id, item.structureId)">
+                        <i18n>lystore.parameter.add.user</i18n>
+                    </opt>
+                    <opt data-ng-if="item.deployed" ng-click="showRespAffecGarGroup(item)">
+                        <i18n>lystore.show.users</i18n>
+                    </opt>
+                </dots-menu>
+            </th>
+        </tr>
+        </tbody>
+    </table>
+
+
+</div>
