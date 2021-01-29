@@ -1,5 +1,6 @@
 import {appPrefix, ng, template} from "entcore";
 import {ParameterService} from  "../../services"
+import {Utils} from "../../model";
 declare const window: any;
 
 /**
@@ -19,12 +20,12 @@ export const parameterController = ng.controller("ParameterController", [
             value: ''
         };
 
-        const GROUP_Lystore_NAME = "RESP-AFFECT-Lystore";
+        const GROUP_Lystore_NAME = "Lystore";
         $scope.structureLystoreLists = [];
         parameterService.getStructuresLystore().then(structures => {
             $scope.structureLystoreLists = structures;
             $scope.structureLystoreLists.map((structure) => structure.number_deployed = structure.deployed ? 1 : 0);
-            $scope.$apply();
+            Utils.safeApply($scope)
         });
 
         $scope.match = function () {
@@ -38,7 +39,7 @@ export const parameterController = ng.controller("ParameterController", [
         /* button handler */
         $scope.createButton = false;
         $scope.addButton = false;
-        $scope.$apply();
+        Utils.safeApply($scope)
 
 
 
@@ -53,7 +54,7 @@ export const parameterController = ng.controller("ParameterController", [
         $scope.createLystoreGroup = async ({structureId, deployed}) => {
             let response;
             $scope.createButton = true;
-            $scope.$apply();
+            Utils.safeApply($scope)
             if (!deployed) {
                 response = await parameterService.createGroupLystoreToStructure(GROUP_Lystore_NAME, structureId);
             } else {
@@ -64,7 +65,7 @@ export const parameterController = ng.controller("ParameterController", [
                 $scope.structureLystoreLists.map((structure) => structure.number_deployed = structure.deployed ? 1 : 0);
             }
             $scope.createButton = false;
-            $scope.$apply();
+            Utils.safeApply($scope)
         };
 
         $scope.showRespAffecLystoreGroup = function ({structureId, id}) {

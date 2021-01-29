@@ -20,7 +20,7 @@ export const parameterService: ParameterService =  {
 
     getStructuresLystore: async (): Promise<Array<StructureLystore>> => {
         try {
-            const {data}: AxiosResponse = await http.get(`structure/lystore`);
+            const {data}: AxiosResponse = await http.get(`structures/lystore`);
             return data;
         } catch (err) {
             throw err;
