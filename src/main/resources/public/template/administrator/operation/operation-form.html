@@ -2,14 +2,14 @@
     <h2><i18n ng-show="operation.id === undefined">lystore.operation.add</i18n><i18n ng-show="operation.id !== undefined">lystore.operation.modify</i18n></h2>
 
     <form >
-        <div class="row">
+        <div class="row" ng-init="selectLabelForOperation()">
             <label class="twelve">
             <span class="twelve cell twelve-mobile">
                 <i18n>label :</i18n>
             </span>
                 <search-and-select
                         class="four cell"
-                        options="labelOperation.all"
+                        options="filteredLabels"
                         param1="label"
                         ng-model="operation.label"
                         search-on="label"

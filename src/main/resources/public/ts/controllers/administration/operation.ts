@@ -170,24 +170,33 @@ export const operationController = ng.controller('operationController',
         };
 
         $scope.isValidLabelDateUsed = (label:label) => {
-                if(label.is_used > 0) {
+                if(label.is_used && label.is_used > 0) {
                     return moment(label.end_date).isAfter(moment(label.max_creation_date), 'days', '[]');
                 }
                 return true;
         };
 
+        $scope.isValidLabelLength = (label:label) => {
+            return label.label.length > 0;
+        };
+
+        $scope.isValidLabelName = (label:label) => {
+            return !$scope.labelOperation.all.some(l => l.label.toUpperCase() === label.label.toUpperCase());
+        }
+
         $scope.initLabelDate = (label:label) => {
             if(!label.start_date && !label.end_date) {
                 label.start_date = moment().add().format('YYYY-MM-DD');
-                label.end_date = moment(new Date('9999-12-31'));
+                label.end_date = moment(new Date('2099-12-31'));
             }
-        }
+        };
 
         $scope.validLabelForm = (label:label) => {
-            if (label.id === $scope.newLabel.id) {
-                return label.label && label.label.length > 0 && $scope.isValidLabelDate(label) && $scope.isValidLabelDateUsed(label);
+            if(label.id === $scope.newLabel.id) {
+                return label.label && $scope.isValidLabelLength(label) && $scope.isValidLabelDate(label) && $scope.isValidLabelDateUsed(label);
+            } else {
+                return label.label && $scope.isValidLabelLength(label) && $scope.isValidLabelName(label) && $scope.isValidLabelDate(label) && $scope.isValidLabelDateUsed(label);
             }
-            return label.label && label.label.length > 0 && $scope.labelOperation.all.find(l => l.label.toUpperCase() === label.label.toUpperCase()) === undefined && $scope.isValidLabelDate(label) && $scope.isValidLabelDateUsed(label);
         };
 
         $scope.validLabel = async (label:label) => {
@@ -198,17 +207,19 @@ export const operationController = ng.controller('operationController',
 
         $scope.deleteLabels = async () => {
             await $scope.labelOperation.delete();
+            await $scope.initLabel();
             template.close('label.lightbox');
             $scope.display.lightbox.label = false;
             Utils.safeApply($scope);
-        }
+        };
 
         $scope.trashLabel = async (label:label) => {
             await label.delete();
+            await $scope.initLabel();
             template.close('label.lightbox');
             $scope.display.lightbox.label = false;
             Utils.safeApply($scope);
-        }
+        };
 
         $scope.disabledDeleteToaster = () => {
             let result = false;
@@ -218,12 +229,13 @@ export const operationController = ng.controller('operationController',
             }}
             )
             return result;
-        }
+        };
 
-        $scope.cancelLabelForm = () => {
+        $scope.cancelLabelForm = async () => {
             $scope.display.lightbox.label = false;
             template.close('label.lightbox');
             Utils.safeApply($scope);
+            $scope.newLabel = new label();
         };
 
         $scope.addLabelFilter = async (event?) => {
@@ -247,7 +259,7 @@ export const operationController = ng.controller('operationController',
             $scope.display.lightbox.label = true;
             template.open('label.lightbox', 'administrator/operation-label/operation-label-delete-lightbox');
             Utils.safeApply($scope);
-        }
+        };
 
         $scope.openLightboxTrashLabel = (label:label) => {
             if(label.is_used > 0) {
@@ -258,7 +270,15 @@ export const operationController = ng.controller('operationController',
                 template.open('label.lightbox', 'administrator/operation-label/operation-label-trash-lightbox');
                 Utils.safeApply($scope);
             }
-        }
+        };
+
+        $scope.selectLabelForOperation = () => {
+            $scope.filteredLabels = [];
+            $scope.labelOperation.all.map(
+                label => { if(label.is_used === 0){
+                    $scope.filteredLabels.push(label);
+                }})
+        };
 
         $scope.dropOrdersOperation = async (orders)=>{
             Promise.all([

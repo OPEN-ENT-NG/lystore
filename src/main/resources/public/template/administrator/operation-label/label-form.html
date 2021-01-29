@@ -1,9 +1,9 @@
-<div style="height: 300px;">
+<div style="height: 200px;">
     <form>
         <div class="row">
             <label class="twelve">
             <span class="twelve cell twelve-mobile">
-                <h2><i18n>lystore.operation.label.title.create</i18n></h2>
+                <h2><i18n ng-show="newLabel.id === undefined">lystore.operation.label.title.create</i18n><i18n ng-show="newLabel.id !== undefined">lystore.operation.label.title.modify</i18n></h2>
             </span>
                 <br/>
                 <!--            <select  ng-model="operation.id_label" class="twelve"-->
@@ -13,11 +13,28 @@
             </label>
             <div>
                 <i18n>lystore.operation.label.name</i18n>
-                <input type="text" ng-model="newLabel.label" />
+                <input
+                        class="input-form-label-operation"
+                        type="text"
+                        ng-model="newLabel.label"
+                        disabled="true"
+                        ng-if="newLabel.is_used > 0"
+                />
+                <input
+                        class="input-form-label-operation"
+                        type="text"
+                        ng-model="newLabel.label"
+                        ng-if="newLabel.is_used === 0 || newLabel.id === undefined"
+                />
+
             </div>
 
-            <div class="warning" ng-show="!validLabelForm(newLabel)">
+            <div class="warning" ng-show="!isValidLabelName(newLabel)">
                 <i18n>operation.label.form.warning</i18n>
+            </div>
+
+            <div class="warning" ng-show="!isValidLabelLength(newLabel)">
+                <i18n>operation.label.length.form.warning</i18n>
             </div>
 
             <div class="twelve cell" ng-init="initLabelDate(newLabel)" style="margin-top: 10px;">
@@ -29,11 +46,11 @@
                 </date-picker>
             </div>
                 <br/> <br/> <br/>
-            <div class="warning" ng-show="!isValidLabelDate(newLabel)">
+            <div class="warning" ng-if="!isValidLabelDate(newLabel)">
                 <i18n>operation.label.date.form.warning</i18n>
             </div>
 
-            <div class="warning" ng-show="!isValidLabelDateUsed(newLabel)">
+            <div class="warning" ng-if="!isValidLabelDateUsed(newLabel)">
                 <i18n>operation.label.date.form.warning2</i18n>
             </div>
         </div>
