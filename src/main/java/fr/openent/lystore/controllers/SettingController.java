@@ -3,6 +3,7 @@ package fr.openent.lystore.controllers;
 import fr.openent.lystore.service.ParameterService;
 import fr.openent.lystore.service.impl.DefaultParameterService;
 import fr.wseduc.rs.ApiDoc;
+import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.security.ActionType;
@@ -47,6 +48,15 @@ public class SettingController  extends ControllerHelper {
             parameterService.createLystoreGroupToStructure(parameter, DefaultResponseHandler.defaultResponseHandler(request));
         });
 
+    }
+
+    @Delete("/structures/:id")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(SuperAdminFilter.class)
+    @ApiDoc("Undeploy given structure")
+    public void undeployStructure(HttpServerRequest request) {
+        String structureId = request.getParam("id");
+        parameterService.undeployStructureLystore(structureId, DefaultResponseHandler.defaultResponseHandler(request));
     }
 
 }

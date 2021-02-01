@@ -23,6 +23,16 @@ public class DefaultParameterService  implements ParameterService {
         this.eb = eb;
     }
 
+
+    @Override
+    public void undeployStructureLystore(String structureId, Handler<Either<String, JsonObject>> handler) {
+        String query = "MATCH (s:Structure {id:{structureId}})--(g:ManualGroup{name: {groupName} })" +
+                "DETACH DELETE g ;";
+        JsonObject params = new JsonObject()
+                .put("structureId", structureId)
+                .put("groupName", LystoreGroupName);
+        Neo4j.getInstance().execute(query, params, Neo4jResult.validUniqueResultHandler(handler));
+    }
     @Override
     public void getStructuresLystore(Handler<Either<String, JsonArray>> handler) {
         String query = "MATCH (s:Structure) WHERE HAS(s.UAI) OPTIONAL MATCH (s)<-[:DEPENDS]-(g:ManualGroup{name: {groupName} })" +

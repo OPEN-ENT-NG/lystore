@@ -1,4 +1,4 @@
-import {appPrefix, ng, template} from "entcore";
+import {appPrefix, ng, template, toasts} from "entcore";
 import {ParameterService} from  "../../services"
 import {Utils} from "../../model";
 declare const window: any;
@@ -13,6 +13,7 @@ export const parameterController = ng.controller("ParameterController", [
         $scope.counter = {
             value: 0
         };
+        $scope.loadingArray = true;
 
         $scope.filter = {
             property: 'uai',
@@ -25,6 +26,7 @@ export const parameterController = ng.controller("ParameterController", [
         parameterService.getStructuresLystore().then(structures => {
             $scope.structureLystoreLists = structures;
             $scope.structureLystoreLists.map((structure) => structure.number_deployed = structure.deployed ? 1 : 0);
+            $scope.loadingArray = false;
             Utils.safeApply($scope)
         });
 
@@ -57,12 +59,20 @@ export const parameterController = ng.controller("ParameterController", [
             Utils.safeApply($scope)
             if (!deployed) {
                 response = await parameterService.createGroupLystoreToStructure(GROUP_Lystore_NAME, structureId);
+                toasts.info("lystore.deploy.structure.valid")
             } else {
                 response = await parameterService.undeployStructure(structureId);
+                toasts.info("lystore.undeploy.structure.valid")
             }
             if (response.status === 200) {
+                $scope.loadingArray = true;
+                Utils.safeApply($scope);
                 $scope.structureLystoreLists = await parameterService.getStructuresLystore();
                 $scope.structureLystoreLists.map((structure) => structure.number_deployed = structure.deployed ? 1 : 0);
+                $scope.loadingArray = false;
+                Utils.safeApply($scope);
+            }else{
+                toasts.warning("lystore.parameter.update.error")
             }
             $scope.createButton = false;
             Utils.safeApply($scope)
