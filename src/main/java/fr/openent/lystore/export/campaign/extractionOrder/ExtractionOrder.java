@@ -38,7 +38,7 @@ public class ExtractionOrder extends TabHelper {
         setLabels();
         initObjects();
         datas = new JsonArray();
-        log.info(orders.size());
+        log.info("orders number " + orders.size());
         setDatas();
     }
 
@@ -345,7 +345,7 @@ public class ExtractionOrder extends TabHelper {
                 excel.insertCellTab(53,5 + i, EMPTY);
 
             }
-            excel.insertCellTab(54, 5 + i, "Statut Rapport CP");
+            excel.insertCellTab(54, 5 + i, "");
         }else{
             for(int j = 0; j <= 7; j++){
                 excel.insertCellTab(47+j, 5 + i, EMPTY);
@@ -376,7 +376,7 @@ public class ExtractionOrder extends TabHelper {
         excel.insertCellTab(19,5+i, order.getOrigin());
         excel.insertCellTab(20,5+i, (order.hasidOrderClientEquipment()) ? "E-" + order.getIdOrderClientEquipment() : EMPTY);
         excel.insertCellTab(21,5+i, order.getCreationDate());
-        excel.insertCellTab(22,5+i, order.getStatus());
+        excel.insertCellTab(22,5+i, OrderStatus.valueOf(order.getStatus().replace(" ", "_")));
         excel.insertCellTab(23,5+i,(order.getProject().hasRank() && order.getProject().getRank() !=-1.d ? order.getProject().getRank(): EMPTY ));
         excel.insertCellTab(24,5+i,(order.hasRank() && order.getRank() !=-1.d ? order.getRank() : EMPTY ));
         excel.insertCellTab(25,5+i, order.getComment());
@@ -653,7 +653,7 @@ public class ExtractionOrder extends TabHelper {
                 "      SUM( " +
                 "        oco.price + ( " +
                 "          (oco.price * oco.tax_amount) / 100 " +
-                "        ) * oco.amount " +
+                "        ) * oco.amount * orders.amount " +
                 "      )  " +
                 "    FROM  " +
                 "      " +  Lystore.lystoreSchema + ".order_client_options oco  " +
@@ -726,17 +726,15 @@ public class ExtractionOrder extends TabHelper {
                 "    AND orders.id_structure = info_group_and_tag.id_struct " +
                 "  )  " +
                 "  INNER JOIN " +  Lystore.lystoreSchema + ".contract market ON (orders.id_contract = market.id)  " +
-                "  INNER JOIN " +  Lystore.lystoreSchema + ".contract_type ON ( " +
-                "    market.id_contract_type = contract_type.id " +
-                "  )  " +
+                "  INNER JOIN " +  Lystore.lystoreSchema + ".contract_type ON (market.id_contract_type = contract_type.id " +           "  )  " +
                 "  INNER JOIN " +  Lystore.lystoreSchema + ".agent ON (market.id_agent = agent.id)  " +
                 "  INNER JOIN " +  Lystore.lystoreSchema + ".supplier ON (market.id_supplier = supplier.id)  " +
-                "  INNER JOIN " +  Lystore.lystoreSchema + ".structure_program_action spg ON ( " +
+                "  LEFT JOIN " +  Lystore.lystoreSchema + ".specific_structures ss ON (ss.id = orders.id_structure )" +
+                "  INNER JOIN " +  Lystore.lystoreSchema + ".structure_program_action spg ON  " +
                 "    contract_type.id = spg.contract_type_id " +
-                "  )  " +
-                "  INNER JOIN " +  Lystore.lystoreSchema + ".program_action ON ( " +
-                "    program_action.id = spg.program_action_id " +
-                "  )  " +
+                "   AND (spg.structure_type = ss.type OR (spg.structure_type ='" + LYCEE + "' AND ss.type is NULL ))  " +
+
+                "  INNER JOIN " +  Lystore.lystoreSchema + ".program_action ON (program_action.id = spg.program_action_id)" +
                 "  INNER JOIN " +  Lystore.lystoreSchema + ".program ON ( " +
                 "    program.id = program_action.id_program " +
                 "  )  " +
@@ -771,7 +769,6 @@ public class ExtractionOrder extends TabHelper {
                 "    instruction_operation.id_operation = orders.id_operation  " +
                 "    AND orders.id_operation IS NOT NULL " +
                 "  )  " +
-                "  LEFT JOIN " +  Lystore.lystoreSchema + ".specific_structures ss ON ss.id = orders.id_structure  " +
                 "WHERE  " +
                 "  orders.override_region is not true  " +
                 "GROUP BY  " +
@@ -832,7 +829,7 @@ public class ExtractionOrder extends TabHelper {
                 "  orders.program,  " +
                 "  orders.action,  " +
                 "  orders.id_order,  " +
-                "  orders.id_order_client_equipment; ;  ";
+                "  orders.id_order_client_equipment;   ";
 
         launchSQLFutures(handler);
     }
