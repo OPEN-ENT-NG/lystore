@@ -27,18 +27,22 @@
                     <div class="groupButtons">
                         <div class="twelve-mobile four cell" >
                             <div class="small-text-align" >
-                                <em class="small-text">
+                                <em class="">
                                     <i18n>campaign.automatic.dates</i18n>
                                 </em>
                                 <div ng-if="campaign.end_date">
+                                  <h3>
                                     <i18n>campaign.automatic.dates</i18n>
                                     <span ng-bind="formatDate(campaign.start_date, 'DD/MM/YYYY')"></span>
                                     <i18n>to</i18n>
                                     <span ng-bind="formatDate(campaign.end_date, 'DD/MM/YYYY')"></span>
+                                  </h3>
                                 </div>
                                 <div ng-if="!campaign.end_date">
+                                    <h3>
                                     <i18n>campaign.automatic.dates.no.end</i18n>
                                     <span ng-bind="formatDate(campaign.start_date, 'DD/MM/YYYY')"></span>
+                                    </h3>
                                 </div>
                             </div>
                             <p class="small-text-align" ng-if="campaign.purse_enabled">
