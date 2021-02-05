@@ -19,7 +19,7 @@
             <div class="three cell twelve-mobile">
                 <h3>[[campaign.name]]</h3>
                 <p ng-bind-html="campaign.description"></p>
-                <div >
+                <div class = "small-text bold-black-h3">
                     <div ng-if="campaign.end_date">
                         <h3>
                             <i18n>campaign.automatic.dates</i18n>
@@ -28,7 +28,7 @@
                             <span ng-bind="formatDate(campaign.end_date, 'DD/MM/YYYY')"></span>
                         </h3>
                     </div>
-                    <div ng-if="!campaign.end_date">
+                    <div ng-if="!campaign.end_date && campaign.start_date">
                         <h3>
                             <i18n>campaign.automatic.dates.no.end</i18n>
                             <span ng-bind="formatDate(campaign.start_date, 'DD/MM/YYYY')"></span>

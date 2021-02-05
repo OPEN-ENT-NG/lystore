@@ -20,6 +20,12 @@ body.lystore {
     }
   }
 
+  .bold-black-h3{
+    h3{
+      color: black;
+      font-weight: bold;
+    }
+  }
   .tooltip {
     z-index: 99999;
   }

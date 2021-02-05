@@ -26,7 +26,7 @@
                     <p ng-bind-html="campaign.description" class="small-text"></p>
                     <div class="groupButtons">
                         <div class="twelve-mobile four cell" >
-                            <div class="small-text-align" >
+                            <div class="small-text bold-black-h3" >
                                 <em class="">
                                     <i18n>campaign.automatic.dates</i18n>
                                 </em>
@@ -38,7 +38,7 @@
                                     <span ng-bind="formatDate(campaign.end_date, 'DD/MM/YYYY')"></span>
                                   </h3>
                                 </div>
-                                <div ng-if="!campaign.end_date">
+                                <div ng-if="!campaign.end_date && campaign.start_date">
                                     <h3>
                                     <i18n>campaign.automatic.dates.no.end</i18n>
                                     <span ng-bind="formatDate(campaign.start_date, 'DD/MM/YYYY')"></span>
