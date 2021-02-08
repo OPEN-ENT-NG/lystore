@@ -207,4 +207,6 @@ public interface OrderService {
     void getOneOrderClient(int idOrderClient,String status,  Handler<Either<String, JsonObject>> handler);
 
     void getOrderBCParams(JsonArray validationNumbers, Handler<Either<String, JsonObject>> handler);
+
+    void listOrderSent(String status, Handler<Either<String, JsonArray>> arrayResponseHandler);
 }

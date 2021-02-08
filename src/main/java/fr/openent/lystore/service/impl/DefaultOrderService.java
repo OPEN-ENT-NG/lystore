@@ -22,7 +22,7 @@ import java.util.List;
 
 public class DefaultOrderService extends SqlCrudService implements OrderService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger (DefaultOrderService.class);
+    private static final Logger log = LoggerFactory.getLogger (DefaultOrderService.class);
     private PurseService purseService ;
     private EmailSendService emailSender ;
     private StructureService structureService;
@@ -475,7 +475,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                         }
                     });
                 } catch (ClassCastException e) {
-                    LOGGER.error("An error occurred when casting order elements", e);
+                    log.error("An error occurred when casting order elements", e);
                     handler.handle(new Either.Left<>(""));
                 }
             } else {
@@ -767,14 +767,14 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
         try {
             tva = Double.parseDouble((orders.getJsonObject(0)).getString("tax_amount"));
         }catch (ClassCastException e) {
-            LOGGER.error("An error occurred when casting tax amount", e);
+            log.error("An error occurred when casting tax amount", e);
         }
         for (int i = 0; i < orders.size(); i++) {
             try {
                 total += Double.parseDouble((orders.getJsonObject(0)).getString("price")) *
                         Double.parseDouble((orders.getJsonObject(0)).getInstant("amount").toString());
             }catch (ClassCastException e) {
-                LOGGER.error("An error occurred when casting order price", e);
+                log.error("An error occurred when casting order price", e);
             }
         }
         totalTTC = (total * tva)/Const + total;
@@ -892,20 +892,20 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                                                     emailSender.sendMails(request, result, rows, user, url,
                                                             (JsonArray) stringJsonArrayEither.right().getValue());
                                                 }catch (NullPointerException e){
-                                                    LOGGER.error("no mail to send");
+                                                    log.error("no mail to send");
                                                 }
                                             }
                                         });
                             }
                         });
                     } catch (ClassCastException e) {
-                        LOGGER.error("An error occurred when casting numberOrder", e);
+                        log.error("An error occurred when casting numberOrder", e);
                         handler.handle(new Either.Left<String, JsonObject>(""));
                     } catch (NullPointerException e) {
                         e.printStackTrace();
                     }
                 } else {
-                    LOGGER.error("An error occurred when selecting number of the order");
+                    log.error("An error occurred when selecting number of the order");
                     handler.handle(new Either.Left<String, JsonObject>(""));
                 }
             }
@@ -974,7 +974,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
             returns.put("nb_order",amountPurseNbOrder.getDouble("f2"));
             handler.handle(new Either.Right<String, JsonObject>(returns));
         }  else {
-            LOGGER.error("An error occurred when launching 'order' transaction");
+            log.error("An error occurred when launching 'order' transaction");
             handler.handle(new Either.Left<String, JsonObject>(""));
         }
 
@@ -1152,6 +1152,48 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
         JsonArray params = new JsonArray().add(validationNumbers.getString(0));
 
         Sql.getInstance().prepared(query,params,SqlResult.validUniqueResultHandler(handler));
+    }
+
+    @Override
+    public void listOrderSent(String status, Handler<Either<String, JsonArray>> handler) {
+        String query = "SELECT oce.id, oce.price, oce.tax_amount, oce.amount, oce.creation_date, oce.id_campaign, oce.id_structure, oce.name, oce.summary, oce.description," +
+                " oce.image, oce.technical_spec, oce.status, oce.id_contract, oce.equipment_key," +
+                " array_to_json(array_agg(DISTINCT order_file.*)) as files , " +
+                " array_to_json(array_agg( DISTINCT oco.*)) as options," +
+                " oce.cause_status, oce.number_validation, oce.id_order, oce.comment, oce.price_proposal, oce.id_project, oce.rank, oce.program," +
+                " oce.action, array_to_json(array_agg( distinct structure_group.name)) as structure_groups," +
+                " ord.order_number , " +
+                " oce.id_operation, oce.override_region, oce.id_type,  " +
+                "             ROUND((( SELECT CASE          " +
+                "            WHEN oce.price_proposal IS NOT NULL THEN 0     " +
+                "            WHEN oce.override_region IS NULL THEN 0 " +
+                "            WHEN SUM(oco.price + ((oco.price * oco.tax_amount) /100) * oco.amount) IS NULL THEN 0         " +
+                "            ELSE SUM(oco.price + ((oco.price * oco.tax_amount) /100) * oco.amount)         " +
+                "            END           " +
+                "             FROM   " + Lystore.lystoreSchema + ".order_client_options oco  " +
+                "              where oco.id_order_client_equipment = oce.id " +
+                "             ) + oce.price + oce.price * oce.tax_amount/100 " +
+                "              ) * oce.amount   ,2 ) " +
+                "             as Total "+
+                " FROM lystore.order_client_equipment oce " +
+                "INNER JOIN lystore.rel_group_campaign ON (oce.id_campaign = rel_group_campaign.id_campaign) " +
+                "INNER JOIN lystore.rel_group_structure ON (oce.id_structure = rel_group_structure.id_structure) " +
+                "INNER JOIN lystore.structure_group ON (rel_group_structure.id_structure_group = structure_group.id " +
+                "AND rel_group_campaign.id_structure_group = structure_group.id) " +
+                "INNER JOIN lystore.order ord on oce.id_order = ord.id " +
+                "LEFT JOIN lystore.order_client_options oco " +
+                "ON oco.id_order_client_equipment = oce.id " +
+                " LEFT JOIN " + Lystore.lystoreSchema + ".order_file ON oce.id = order_file.id_order_client_equipment " +
+                " WHERE oce.status = ?" +
+                "GROUP  BY oce.id, " +
+                "    oce.id_project, " +
+                "    oce.id_structure, " +
+                "    oce.id_contract," +
+                "   ord.order_number " +
+                " ORDER by id DESC " +
+                " ;";
+        sql.prepared(query, new fr.wseduc.webutils.collections.JsonArray().add(status), SqlResult.validResultHandler(handler));
+
     }
 }
 
