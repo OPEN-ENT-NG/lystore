@@ -142,6 +142,7 @@ public class ExtractionOrder extends TabHelper {
             program.setProgramChapter(data.getLong("program_chapter").toString());
             program.setFunctionnalCode(data.getValue("functional_code").toString());
             program.setSection(data.getString("program_section"));
+            program.setLabel(data.getString("program_label"));
             program.setChapter(data.getValue("program_chapter").toString());
             order.setAccountingProgram(program);
 
@@ -366,7 +367,7 @@ public class ExtractionOrder extends TabHelper {
         excel.insertCellTab(41,5+i,program.getChapter() + " " + program.getSection());
         excel.insertCellTab(42,5+i,program.getFunctionnalCode());
         excel.insertCellTab(43,5+i,program.getName());
-        excel.insertCellTab(44,5+i,program.getSection());
+        excel.insertCellTab(44,5+i,program.getLabel());
         excel.insertCellTab(45,5+i,programAction.getDescription());
         excel.insertCellTab(46,5+i,programAction.getNumber());
     }
@@ -583,6 +584,7 @@ public class ExtractionOrder extends TabHelper {
                 "  supplier.name as market_supplier,  " +
                 "  agent.name as market_agent,  " +
                 "  program.name as program_name,  " +
+                "  program.label as program_label,  " +
                 "  program.chapter as program_chapter,  " +
                 "  program.functional_code as functional_code,  " +
                 "  program.id as program_id,  " +

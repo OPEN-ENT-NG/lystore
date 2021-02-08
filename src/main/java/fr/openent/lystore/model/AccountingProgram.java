@@ -10,6 +10,9 @@ public class AccountingProgram extends  Model {
     String name;
     String section;
     String chapter;
+
+
+    String label;
     @Override
     public JsonObject toJsonObject() {
         return null;
@@ -62,4 +65,8 @@ public class AccountingProgram extends  Model {
     public void setSection(String section) {
         this.section = section;
     }
+
+    public String getLabel() { return label; }
+
+    public void setLabel(String label) { this.label = label; }
 }
