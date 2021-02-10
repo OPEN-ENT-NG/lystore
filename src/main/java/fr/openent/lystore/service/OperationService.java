@@ -9,8 +9,6 @@ import java.util.List;
 
 public interface OperationService {
 
-    void getLabels (List<String> filters, Handler<Either<String, JsonArray>> handler);
-
     void getOperations(List<String> filters, Handler<Either<String, JsonArray>> handler);
 
     void create(JsonObject operation,  Handler<Either<String, JsonObject>> handler);
@@ -28,12 +26,4 @@ public interface OperationService {
     void deleteOrdersOperation(JsonArray ordersIds, Handler<Either<String, JsonObject>> handler);
 
     void listOperations(List<String> q, Handler<Either<String, JsonArray>> arrayResponseHandler);
-
-    void createLabelOperation(JsonObject label_operation, Handler<Either<String, JsonObject>> handler);
-
-    void updateLabelOperation(Integer id, JsonObject label_operation, Handler<Either<String, JsonObject>> handler);
-
-    void deleteLabelOperation(JsonArray labelOperationIds,  Handler<Either<String, JsonObject>> handler);
-
-    void checkIfLabelUsed(JsonArray labelOperationIds, Handler<Either <String, JsonArray>> handler);
 }

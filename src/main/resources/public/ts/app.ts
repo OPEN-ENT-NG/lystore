@@ -36,7 +36,7 @@ routes.define(($routeProvider) => {
             .when('/structureGroups/create', {
                     action: 'createStructureGroup'
                 })
-            .when('/operation/manageLabel', {
+            .when('/labelOperation/manage', {
                     action: 'manageLabel'
             })
         ;

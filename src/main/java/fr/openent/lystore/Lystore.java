@@ -72,6 +72,7 @@ public class Lystore extends BaseServer {
         addController(new InstructionController(storage));
         addController(new OrderRegionController());
         addController(new ExportController(storage));
+        addController(new LabelOperationController());
         CONFIG = config;
         vertx.deployVerticle(ExportLystoreWorker.class, new DeploymentOptions().setConfig(config).setWorker(true));
         launchWorker(eb);

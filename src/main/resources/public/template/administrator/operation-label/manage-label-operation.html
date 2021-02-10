@@ -1,4 +1,4 @@
-<div  ng-controller="operationController">
+<div  ng-controller="labelOperationController">
         <h1><i18n>lystore.operation.manage.label</i18n></h1>
     <div class="row">
         <div class="cell twelve-mobile horizontal-spacing search-pagination four">
@@ -67,7 +67,7 @@
             <tr ng-repeat="label in labelOperation.all | orderBy:sort.label_operation.type:sort.label_operation.reverse">
                 <td workflow="lystore.manager" class="table-selector one cell" >
                     <label class="checkbox">
-                        <input type="checkbox" ng-model="label.selected">
+                        <input type="checkbox" ng-model="label.selected" ng-disabled="label.is_used > 0">
                         <span></span>
                     </label>
                 </td>

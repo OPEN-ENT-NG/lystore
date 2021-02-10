@@ -6,6 +6,7 @@ import {Utils} from "./Utils";
 import {Instruction} from "./instruction";
 import {OrderClient} from "./OrderClient";
 import {Structure} from "./Structure";
+import {label} from "./LabelOperation";
 import {Contract} from "./Contract";
 import {Notification} from "./Notification";
 
@@ -183,102 +184,6 @@ export class Operations extends Selection<Operation> {
         } catch (e) {
             notify.error('lystore.operation.update.err');
             throw e;
-        }
-    }
-}
-
-export class label implements Selectable {
-    id: number;
-    label: string;
-    start_date: Date;
-    end_date: Date;
-    selected: boolean;
-    is_used: number;
-    max_creation_date: string;
-
-    constructor() {
-        this.label = '';
-    }
-
-    async save() {
-        if (this.id) {
-            await this.update();
-        } else {
-            await this.create();
-        }
-    }
-
-    async create() {
-        try {
-            await http.post(`/lystore/operation/manageLabel`, this.toJson());
-        } catch (e) {
-            toasts.warning('lystore.operation.label.create.err');
-            throw e;
-        }
-    }
-
-    async update() {
-        try {
-            await http.put(`/lystore/operation/manageLabel/${this.id}`, this.toJson());
-        } catch (e) {
-            toasts.warning('lystore.operation.label.update.err');
-            throw e;
-        }
-    }
-
-    async delete() {
-        try {
-            let labelIds = [this.id];
-            let {status} = await http.delete('/lystore/operations/manageLabel', {data: labelIds});
-            if (status === 202) {
-                toasts.warning('lystore.operation.label.delete.err');
-            }
-        } catch (e) {
-            toasts.warning('lystore.operation.label.delete.err');
-            throw e;
-        }
-
-    }
-
-    toJson() {
-        return {
-            id: this.id,
-            label: this.label,
-            start_date: this.start_date,
-            end_date: this.end_date,
-        }
-    }
-}
-
-export class labels extends Selection<label> {
-    filters: Array<string>;
-    constructor() {
-        super([]);
-        this.filters = [];
-    }
-
-    async delete() {
-        let labelIds = this.selected.map(label => label.id);
-        try {
-            await http.delete('/lystore/operations/manageLabel', {data: labelIds});
-        } catch (err) {
-            toasts.warning('lystore.operation.label.delete.err');
-        }
-    }
-
-    async sync() {
-        try{
-            const queriesFilter = Utils.formatGetParameters({q: this.filters});
-            let {data} = await http.get(`/lystore/labels/?${queriesFilter}`);
-            this.all = Mix.castArrayAs(label, data);
-            this.all.map(label => {
-                if(label.start_date && label.end_date) {
-                    label.start_date = moment(label.start_date).format('YYYY-MM-DD');
-                    label.end_date = moment(label.end_date).format('YYYY-MM-DD');
-                }
-            })
-        } catch (err) {
-            toasts.warning('lystore.operation.label.get.err')
         }
     }
 }
