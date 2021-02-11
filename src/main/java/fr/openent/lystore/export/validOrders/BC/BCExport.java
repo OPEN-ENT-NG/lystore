@@ -61,6 +61,7 @@ public class BCExport extends PDF_OrderHElper {
                             new Handler<JsonObject>() {
                                 @Override
                                 public void handle(JsonObject data) {
+                                    log.info(data);
                                     data.put("print_order", true);
                                     data.put("print_certificates", false);
                                     generatePDF(exportHandler, data,
