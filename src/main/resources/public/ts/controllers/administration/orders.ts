@@ -106,6 +106,7 @@ export const orderController = ng.controller('orderController',
                 deleteOrder : false,
                 sendOrder : false,
                 validOrder : false,
+                rejectOrder : false,
             },
             generation: {
                 type: 'ORDER'
@@ -474,6 +475,18 @@ export const orderController = ng.controller('orderController',
             template.open('validOrder.lightbox', 'administrator/order/order-valid-add-operation');
             $scope.operationId= operation.id;
         };
+
+        $scope.openConfirmationRejectOrder = () => {
+            $scope.display.lightbox.rejectOrder = true;
+            template.open('rejectOrder.lightbox', 'administrator/order/order-reject-operation');
+            Utils.safeApply($scope);
+        }
+
+        $scope.cancelOrderReject = () => {
+            $scope.display.lightbox.rejectOrder = false;
+            template.close('rejectOrder.lightbox');
+            Utils.safeApply($scope);
+        }
 
         $scope.inProgressOrders = async (orders: OrderClient[]) => {
             let ordersToValidat = new OrdersClient();

@@ -1,0 +1,26 @@
+<div style="height: 300px;">
+    <h1><i18n>lystore.order.rejected</i18n></h1>
+    <form>
+        <div class="row">
+            <i18n>lystore.order.text.reject.start</i18n>
+            [[displayedOrders.selected.length]]
+            <i18n ng-show="displayedOrders.selected.length === 1">lystore.order.text.reject.one.end</i18n>
+            <i18n ng-show="displayedOrders.selected.length > 1">lystore.order.text.reject.many.end</i18n>
+        </div>
+        </br>
+        <label class="row twelve vertical-spacing">
+            <span class="twelve">
+                <i18n>Commentaire</i18n>
+                <em class="smaller-text"><i18n>lystore.equipment.summary.length</i18n></em>
+            </span>
+            <span class="no-style ng-scope">
+                <textarea cols="20" rows="10" maxlength="300" class="ng-pristine ng-touched"></textarea>
+            </span>
+        </label>
+
+        <div class="right-magnet vertical-spacing">
+            <input type="button" class="cancel" ng-click="cancelOrderReject()" i18n-value="cancel"/>
+            <input type="submit" class="button" ng-click="confirmOrderReject()" i18n-value="confirm"/>
+        </div>
+    </form>
+</div>
