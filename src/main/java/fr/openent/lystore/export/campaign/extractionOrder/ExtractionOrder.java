@@ -406,6 +406,8 @@ public class ExtractionOrder extends TabHelper {
         excel.insertCellTab(7,5+i,campaign.getName());
         if(campaign.hasPurse())
             excel.insertCellTabDoubleWithPrice(8,5+i,campaign.getPurse());
+        else
+            excel.insertCellTab(8,5+i,EMPTY);
         excel.insertCellTab(9,5+i,campaign.getStartDate());
         excel.insertCellTab(10,5+i,campaign.getEndDate());
         excel.insertCellTab(11,5+i,campaign.isOpen() ? "Ouverte" : "Fermée");
@@ -643,9 +645,11 @@ public class ExtractionOrder extends TabHelper {
                 "  CASE WHEN campaign.end_date IS NULL THEN FALSE ELSE TRUE END as has_campaign_end,  " +
                 "  ( " +
                 "    SELECT  " +
-                "      array_agg(name)  " +
+                "      array_agg(equipment_type.name  || ' : ' || oco.name )  " +
                 "    FROM  " +
-                "      " +  Lystore.lystoreSchema + ".order_client_options oco  " +
+                "      " +  Lystore.lystoreSchema + ".order_client_options oco " +
+                "    INNER JOIN " +  Lystore.lystoreSchema + ". equipment_type " +
+                "    ON equipment_type.id = oco.id_type " +
                 "    WHERE  " +
                 "      oco.id_order_client_equipment = orders.id  " +
                 "      AND orders.override_region is false " +
