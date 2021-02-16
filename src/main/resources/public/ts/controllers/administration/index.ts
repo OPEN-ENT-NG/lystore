@@ -7,3 +7,4 @@ export * from './export';
 export * from './title';
 export * from './instruction';
 export * from './operation';
+export * from './labelOperation';

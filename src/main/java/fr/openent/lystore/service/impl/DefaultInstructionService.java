@@ -393,7 +393,6 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 .add(instruction.getString("comment"))
 //                .add(instruction.getBoolean("cp_adopted"))
                 .add(id);
-
         return new JsonObject()
                 .put("statement", statement)
                 .put("values", params)

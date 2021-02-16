@@ -2,14 +2,14 @@
     <h2><i18n ng-show="operation.id === undefined">lystore.operation.add</i18n><i18n ng-show="operation.id !== undefined">lystore.operation.modify</i18n></h2>
 
     <form >
-        <div class="row">
+        <div class="row" ng-init="selectLabelForOperation()">
             <label class="twelve">
             <span class="twelve cell twelve-mobile">
                 <i18n>label :</i18n>
             </span>
                 <search-and-select
                         class="four cell"
-                        options="labelOperation.all"
+                        options="filteredLabels"
                         param1="label"
                         ng-model="operation.label"
                         search-on="label"
@@ -29,6 +29,9 @@
             </div>
 
         </div>
+        <div class="warning" ng-show="!isValidOperationDateLabel(operation)">
+            <i18n>lystore.operation.form.date.warning</i18n>
+        </div>
         <label class="row vertical-spacing twelve-mobile row-mobile">
                                 <span class="cell ">
                                     <i18n>lystore.operation.status</i18n>
@@ -41,7 +44,7 @@
         </div>
         <div class="right-magnet vertical-spacing">
             <input type="button" class="cancel" ng-click="cancelOperationForm()" i18n-value="cancel"/>
-            <input type="button" class="button" ng-disabled="!validOperationForm(operation)" ng-click="validOperation(operation)" i18n-value="confirm"/>
+            <input type="button" class="button" ng-disabled="!validOperationForm(operation) || !isValidOperationDateLabel(operation)" ng-click="validOperation(operation)" i18n-value="confirm"/>
         </div>
 
     </form>

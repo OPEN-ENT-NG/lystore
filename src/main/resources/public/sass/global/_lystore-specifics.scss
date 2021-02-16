@@ -336,6 +336,10 @@ body.lystore {
     left: 0;
   }
 
+  input[type="text"]:disabled {
+    background: #ccc;
+    opacity: 0.4;
+  }
   article.disabled {
     background: rgba(0,0,0,0);
     color: rgba(0, 0, 0, 0.4);
@@ -357,6 +361,10 @@ body.lystore {
     left: 0;
     right: 0;
     text-shadow: 0.5px 0.25px #ccc;
+  }
+
+  .input-form-label-operation {
+    width: 500px;
   }
 
   .catalog-list {
