@@ -1,7 +1,8 @@
 import {Mix, Selectable, Selection} from 'entcore-toolkit';
 import {moment, notify} from 'entcore';
 import http from 'axios';
-import {label, Operation} from "./operation";
+import { Operation} from "./operation";
+import {label} from "./LabelOperation";
 import {Utils} from "./Utils";
 
 // import {window} from "../controllers/administration/orders";
