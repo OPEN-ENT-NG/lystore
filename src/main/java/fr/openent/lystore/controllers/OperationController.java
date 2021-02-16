@@ -11,8 +11,11 @@ import fr.openent.lystore.service.impl.DefaultOperationService;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
+import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.request.RequestUtils;
+import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.http.filter.ResourceFilter;
@@ -26,13 +29,6 @@ public class OperationController  extends ControllerHelper {
     public OperationController () {
         super();
         this.operationService = new DefaultOperationService(Lystore.lystoreSchema, "operation");
-    }
-
-    @Get("/labels")
-    @ApiDoc("Returns all labels in database")
-    @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
-    public void getLabels (HttpServerRequest request) {
-        operationService.getLabels(arrayResponseHandler(request));
     }
 
     @Get("/operations/")
@@ -108,7 +104,7 @@ public class OperationController  extends ControllerHelper {
     @ApiDoc("Delete operations")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(ManagerRight.class)
-    public void deleteOperaton(final HttpServerRequest request) {
+    public void deleteOperation(final HttpServerRequest request) {
         RequestUtils.bodyToJsonArray(request, operationIds -> operationService.deleteOperation(operationIds, Logging.defaultResponseHandler(eb,
                 request,
                 Contexts.OPERATION.toString(),

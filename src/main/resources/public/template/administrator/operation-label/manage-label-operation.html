@@ -1,0 +1,103 @@
+<div  ng-controller="labelOperationController">
+        <h1><i18n>lystore.operation.manage.label</i18n></h1>
+    <div class="row">
+        <div class="cell twelve-mobile horizontal-spacing search-pagination four">
+            <div class="row twelve vertical-spacing">
+                <input type="text" class="twelve" ng-keydown="addLabelFilter($event)"
+                       i18n-placeholder="add.a.filter">
+                <i class="search flex-row"></i>
+            </div>
+            <div class="row horizontal-spacing">
+                <div class="select-blocks">
+                    <div ng-repeat="filter in labelOperation.filters"
+                         ng-click="dropLabelFilter(filter)" class="labels-in-ligne">
+                        <div> [[ filter ]]</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="right-magnet twelve-mobile">
+            <button  class="twelve-mobile" ng-click="openLabelForm('create');">
+                <i18n>lystore.operation.label.add</i18n>
+            </button>
+        </div>
+    </div>
+
+    <article class="responsive-table">
+        <table class="twelve">
+            <thead>
+            <tr>
+                <td workflow="lystore.manager" class="table-selector">
+                    <label class="checkbox">
+                        <input type="checkbox"
+                            >
+                        <span></span>
+                    </label>
+                </td>
+                <td ng-click="sort.label_operation.type = 'label';
+                    sort.label_operation.reverse = !sort.label_operation.reverse">
+                    <i18n>lystore.operation.label.name</i18n>
+                    <i class="up-open" ng-show="sort.label_operation.type === 'label' && !sort.label_operation.reverse"></i>
+                    <i class="down-open" ng-show="sort.label_operation.type === 'label' && sort.label_operation.reverse"></i>
+                </td>
+
+                <td ng-click="sort.label_operation.type = 'start_date';
+                    sort.label_operation.reverse = !sort.label_operation.reverse">
+                    <i18n>lystore.operation.label.start_date</i18n>
+                    <i class="up-open" ng-show="sort.label_operation.type === 'start_date' && !sort.label_operation.reverse"></i>
+                    <i class="down-open" ng-show="sort.label_operation.type === 'start_date' && sort.label_operation.reverse"></i>
+                </td>
+
+                <td ng-click="sort.label_operation.type = 'end_date';
+                       sort.label_operation.reverse = !sort.label_operation.reverse">
+                    <i18n>lystore.operation.label.end_date</i18n>
+                    <i class="up-open" ng-show="sort.label_operation.type === 'end_date' && !sort.label_operation.reverse"></i>
+                    <i class="down-open" ng-show="sort.label_operation.type === 'end_date' && sort.label_operation.reverse"></i>
+                </td>
+
+                <td >
+
+                </td>
+                <td >
+
+                </td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="label in labelOperation.all | orderBy:sort.label_operation.type:sort.label_operation.reverse">
+                <td workflow="lystore.manager" class="table-selector one cell" >
+                    <label class="checkbox">
+                        <input type="checkbox" ng-model="label.selected" ng-disabled="label.is_used > 0">
+                        <span></span>
+                    </label>
+                </td>
+                <td >[[label.label]]</td>
+                <td >[[formatDate(label.start_date)]]</td>
+                <td >[[formatDate(label.end_date)]]</td>
+                <td ><i class="edit color-orange"  ng-click="openLabelForm('edit', label)"></i></td>
+                <td ><i class="trash" ng-class="{'color-orange' : label.is_used === 0}" ng-disabled="label.is_used > 0" ng-click="openLightboxTrashLabel(label)"></i></td>
+
+            </tr>
+            </tbody>
+        </table>
+    </article>
+
+
+    <lightbox show="display.lightbox.label"
+              on-close="cancelLabelForm()">
+        <container template="label.lightbox"></container>
+    </lightbox>
+
+    <section class="toggle-buttons" ng-class="{ hide:labelOperation.selected.length === 0 }">
+        <div class="toggle">
+            <div class="row">
+                <button
+                        ng-click="openLightboxDeleteLabel()" ng-disabled="disabledDeleteToaster()"
+                >
+                    <i18n>delete</i18n>
+                </button>
+            </div>
+        </div>
+    </section>
+
+</div>
