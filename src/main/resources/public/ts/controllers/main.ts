@@ -70,6 +70,7 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
         $scope.ub = new Userbook();
         $scope.projects = new Projects();
         $scope.titles = new Titles();
+        $scope.labelOperation = new labels();
         $scope.equipments.eventer.on('loading::true', $scope.$apply);
         $scope.equipments.eventer.on('loading::false', $scope.$apply);
         $scope.loadingArray = false;
@@ -409,7 +410,12 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                 $scope.loadingArray = false;
                 Utils.safeApply($scope);
 
-            }
+            },
+            manageLabel: async () => {
+                await $scope.labelOperation.sync();
+                template.open('administrator-main', 'administrator/operation-label/manage-label-operation');
+                Utils.safeApply($scope);
+            },
         });
         $scope.initInstructions = async ()=>{
             $scope.loadingArray = true;
@@ -425,10 +431,14 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
         };
 
         $scope.initOperation = async (onlylist?:boolean ) =>{
-            $scope.labelOperation = new labels();
             await $scope.labelOperation.sync();
             await $scope.operations.sync(onlylist);
         };
+
+        $scope.initLabel = async () => {
+            await $scope.labelOperation.sync();
+        };
+
         $scope.initBasketItem = async (idEquipment: number, idCampaign: number, structure) => {
             $scope.equipment = _.findWhere($scope.equipments.all, {id: idEquipment});
             if ($scope.equipment === undefined && !isNaN(idEquipment)) {

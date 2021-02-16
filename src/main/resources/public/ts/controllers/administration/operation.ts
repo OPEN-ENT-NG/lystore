@@ -1,5 +1,7 @@
-import {_, ng, template,moment, idiom as lang, toasts} from 'entcore';
+import {_, ng, template, moment, idiom as lang, toasts, angular} from 'entcore';
 import {Notification, Operation, Operations, OrderClient, OrderRegion, OrdersRegion, Utils} from "../../model";
+
+
 
 declare let window: any;
 
@@ -23,6 +25,7 @@ export const operationController = ng.controller('operationController',
         $scope.display = {
             lightbox : {
                 operation:false,
+                label: false,
             }
         };
         $scope.noValidatedCP = (operations : Operation[]) =>{
@@ -91,6 +94,16 @@ export const operationController = ng.controller('operationController',
             });
             return isValid
         };
+
+        $scope.isValidOperationDateLabel = (operation:Operation) => {
+            if(operation.label === undefined || operation.label.end_date === undefined && operation.label.start_date){
+                return true;
+            } else{
+                return moment(operation.label.end_date).diff(moment(operation.date_operation).format('YYYY-MM-DD'),'days') >= 0
+                    && moment(operation.date_operation).diff(moment(operation.label.start_date).format('YYYY-MM-DD'),'days') >= 0;
+            }
+        }
+
         $scope.validOperationForm = (operation:Operation) =>{
             if(operation.label !== undefined) {
                 operation.id_label = operation.label.id;
@@ -100,8 +113,11 @@ export const operationController = ng.controller('operationController',
             }
         };
 
+        $scope.openManageLabelOperation = () => {
+            $scope.redirectTo(`/labelOperation/manage`)
+        };
 
-        $scope.cancelOperationForm = async (id_label?) =>{
+        $scope.cancelOperationForm = async () =>{
             $scope.display.lightbox.operation = false;
             await $scope.initOperation();
             Utils.safeApply($scope);
@@ -142,6 +158,13 @@ export const operationController = ng.controller('operationController',
             }
         };
 
+        $scope.selectLabelForOperation = () => {
+            $scope.filteredLabels = [];
+            $scope.labelOperation.all.map(
+                label => {
+                    $scope.filteredLabels.push(label);
+                })
+        };
 
         $scope.dropOrdersOperation = async (orders)=>{
             Promise.all([

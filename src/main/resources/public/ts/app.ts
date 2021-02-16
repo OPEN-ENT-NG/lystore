@@ -35,8 +35,10 @@ routes.define(($routeProvider) => {
             })
             .when('/structureGroups/create', {
                     action: 'createStructureGroup'
-                }
-            )
+                })
+            .when('/labelOperation/manage', {
+                    action: 'manageLabel'
+            })
         ;
     }
     if (model.me.hasWorkflow(Behaviours.applicationsBehaviours.lystore.rights.workflow.manager)) {

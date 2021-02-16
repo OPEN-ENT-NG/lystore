@@ -26,11 +26,6 @@ public class DefaultOperationService extends SqlCrudService implements Operation
         super(schema, table);
     }
     private static final Logger log = LoggerFactory.getLogger (DefaultOrderService.class);
-    public void getLabels (Handler<Either<String, JsonArray>> handler) {
-
-        String query = "SELECT * FROM " + Lystore.lystoreSchema +".label_operation";
-        sql.prepared(query, new JsonArray(), SqlResult.validResultHandler(handler) );
-    }
 
     private String getTextFilter(List<String> filters) {
         String filter = "";
@@ -47,6 +42,7 @@ public class DefaultOperationService extends SqlCrudService implements Operation
         }
         return filter;
     }
+
     @Override
     public void listOperations(List<String> filters, Handler<Either<String, JsonArray>> arrayResponseHandler) {
         JsonArray params = new JsonArray();
@@ -402,6 +398,12 @@ GROUP BY
         }
     }
 
+    private void getCreationDate(int idOperation, Handler<Either<String, JsonArray>> handler) {
+        String queryGetCreationDate = "SELECT allOrders.creation_date from " + Lystore.lystoreSchema + ".allOrders " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".operation ON operation.id = allOrders.id_operation; ";
+
+        Sql.getInstance().prepared(queryGetCreationDate, new JsonArray().add(idOperation), SqlResult.validResultHandler(handler));
+    }
 
 
     private JsonObject getClientsChangement(JsonArray ordersClientsIds) {
