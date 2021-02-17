@@ -9,7 +9,6 @@ import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -199,7 +198,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                         JsonArray statements = new fr.wseduc.webutils.collections.JsonArray()
                                 .add(getInstructionCreationStatement(id,instruction));
 
-                        handleAdoptedCP(id, statements, instruction, handler);
+                        checkCpValue(id, statements, instruction, handler);
 
                     }catch(ClassCastException e){
                         log.error("An error occured when casting structures ids " + e);
@@ -217,23 +216,9 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
 
     }
 
-    private void handleAdoptedCP(Number id, JsonArray statements, JsonObject instruction, Handler<Either<String, JsonObject>> handler) {
+    private void checkCpValue(Number id, JsonArray statements, JsonObject instruction, Handler<Either<String, JsonObject>> handler) {
         if(instruction.getBoolean("cp_adopted")){
-            String getIdQuery = getNextValidationNumber();
-            sql.raw(getIdQuery, SqlResult.validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
-                @Override
-                public void handle(Either<String, JsonObject> event) {
-                    final String numberOrder = event.right().getValue().getString("numberorder");
-                    statements.add( getUpdateOrdersStatementClient(id,numberOrder));
-                    statements.add(getUpdateOrdersStatementRegion(id,numberOrder));
-                    sql.transaction(statements, new Handler<Message<JsonObject>>() {
-                        @Override
-                        public void handle(Message<JsonObject> event) {
-                            handler.handle(SqlQueryUtils.getTransactionHandler(event,id));
-                        }
-                    });
-                }
-            }));
+            handleCpAdopted(id, statements, handler);
         }else{
             sql.transaction(statements, new Handler<Message<JsonObject>>() {
             @Override
@@ -247,6 +232,23 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
 
     }
 
+    private void handleCpAdopted(Number id, JsonArray statements, Handler<Either<String, JsonObject>> handler) {
+        String getIdQuery = getNextValidationNumber();
+        sql.raw(getIdQuery, SqlResult.validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
+            @Override
+            public void handle(Either<String, JsonObject> event) {
+                final String numberOrder = event.right().getValue().getString("numberorder");
+                statements.add(getUpdateOrdersStatementClient(id, numberOrder));
+                statements.add(getUpdateOrdersStatementRegion(id, numberOrder));
+                sql.transaction(statements, new Handler<Message<JsonObject>>() {
+                    @Override
+                    public void handle(Message<JsonObject> event) {
+                        handler.handle(SqlQueryUtils.getTransactionHandler(event, id));
+                    }
+                });
+            }
+        }));
+    }
 
 
     private JsonObject getUpdateOrdersStatementRegion(Number id, String numberOrder) {
@@ -362,7 +364,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
 
             JsonArray statements = new JsonArray()
                     .add(getUpdateInstructionStatement(id,instruction));
-            handleAdoptedCP(id, statements, instruction, handler);
+            checkCpValue(id, statements, instruction, handler);
 
         }catch(ClassCastException e){
             log.error("An error occured when casting structures ids " + e);
