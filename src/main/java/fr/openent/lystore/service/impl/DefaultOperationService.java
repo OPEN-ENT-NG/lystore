@@ -9,6 +9,7 @@ import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.service.impl.SqlCrudService;
@@ -304,32 +305,112 @@ GROUP BY
     }
 
     public  void addInstructionId(Integer instructionId, JsonArray operationIds, Handler<Either<String, JsonObject>> handler){
+log.info("add la");
+        JsonArray statements = new fr.wseduc.webutils.collections.JsonArray()
+                .add(updateIdInstructionAdd(operationIds,instructionId))
+                .add(updateOperationOrdersRegionAdd(operationIds))
+                .add(updateOperationOrdersClientAdd(operationIds));
+
+        sql.transaction(statements, new Handler<Message<JsonObject>>() {
+            @Override
+            public void handle(Message<JsonObject> event) {
+                handler.handle(SqlQueryUtils.getTransactionHandler(event,operationIds.getInteger(0)));
+            }
+        });
+    }
+
+    public  void removeInstructionId( JsonArray operationIds, Handler<Either<String, JsonObject>> handler){
+        log.info("LA REMOVE");
+        JsonArray statements = new fr.wseduc.webutils.collections.JsonArray()
+                .add(updateIdInstructionRemove(operationIds))
+                .add(updateOperationOrdersRegionRemove(operationIds))
+                .add(updateOperationOrdersClientRemove(operationIds));
+
+        sql.transaction(statements, new Handler<Message<JsonObject>>() {
+            @Override
+            public void handle(Message<JsonObject> event) {
+                handler.handle(SqlQueryUtils.getTransactionHandler(event,operationIds.getInteger(0)));
+            }
+        });
+    }
+    private JsonObject updateOperationOrdersRegionAdd(JsonArray operationIds) {
+        String query = " UPDATE " + Lystore.lystoreSchema + ".\"order-region-equipment\" " +
+                "SET status = 'WAITING_FOR_ACCEPTANCE' " +
+                " WHERE id_operation IN " +
+                Sql.listPrepared(operationIds.getList()) +
+                " RETURNING id";
+
+        JsonObject statement = new JsonObject().put("statement", query)
+                .put("values", operationIds)
+                .put("action", "prepared");
+        return statement;
+    }
+
+    private JsonObject updateOperationOrdersClientAdd(JsonArray operationIds) {
+        String query = " UPDATE " + Lystore.lystoreSchema + ".order_client_equipment " +
+                "SET status = 'WAITING_FOR_ACCEPTANCE' " +
+                " WHERE id_operation IN " +
+                Sql.listPrepared(operationIds.getList()) +
+                " RETURNING id";
+
+        JsonObject statement = new JsonObject().put("statement", query)
+                .put("values", operationIds)
+                .put("action", "prepared");
+        return statement;
+    }
+
+    private JsonObject updateIdInstructionAdd(JsonArray operationIds, Integer instructionId) {
         String query = " UPDATE " + Lystore.lystoreSchema + ".operation " +
                 "SET id_instruction = " +
                 instructionId +
                 " WHERE id IN " +
                 Sql.listPrepared(operationIds.getList()) +
                 " RETURNING id";
-        JsonArray values = new JsonArray();
-        for (int i = 0; i < operationIds.size(); i++) {
-            values.add(operationIds.getValue(i));
-        }
-        sql.prepared(query, values, SqlResult.validRowsResultHandler(handler));
+
+        JsonObject statement = new JsonObject().put("statement", query)
+                .put("values", operationIds)
+                .put("action", "prepared");
+        return statement;
     }
 
-    public  void removeInstructionId( JsonArray operationIds, Handler<Either<String, JsonObject>> handler){
+    private JsonObject updateOperationOrdersRegionRemove(JsonArray operationIds) {
+        String query = " UPDATE " + Lystore.lystoreSchema + ".\"order-region-equipment\" " +
+                "SET status = 'IN PROGRESS' " +
+                " WHERE id_operation IN AND " +
+                Sql.listPrepared(operationIds.getList()) +
+                " RETURNING id";
+
+        JsonObject statement = new JsonObject().put("statement", query)
+                .put("values", operationIds)
+                .put("action", "prepared");
+        return statement;
+    }
+
+    private JsonObject updateOperationOrdersClientRemove(JsonArray operationIds) {
+        String query = " UPDATE " + Lystore.lystoreSchema + ".order_client_equipment " +
+                "SET status = 'IN PROGRESS' " +
+                " WHERE id_operation IN " +
+                Sql.listPrepared(operationIds.getList()) +
+                " RETURNING id";
+
+        JsonObject statement = new JsonObject().put("statement", query)
+                .put("values", operationIds)
+                .put("action", "prepared");
+        return statement;
+    }
+
+    private JsonObject updateIdInstructionRemove(JsonArray operationIds) {
         String query = " UPDATE " + Lystore.lystoreSchema + ".operation " +
-                "SET id_instruction = null " +
+                "SET id_instruction = null" +
                 " WHERE id IN " +
                 Sql.listPrepared(operationIds.getList()) +
                 " RETURNING id";
-        JsonArray values = new JsonArray();
-        for (int i = 0; i < operationIds.size(); i++) {
-            values.add(operationIds.getValue(i));
-        }
-        sql.prepared(query, values, SqlResult.validRowsResultHandler(handler));
-    }
 
+        JsonObject statement = new JsonObject().put("statement", query)
+                .put("values", operationIds)
+                .put("action", "prepared");
+        return statement;
+    }
     public  void deleteOperation(JsonArray operationIds, Handler<Either<String, JsonObject>> handler){
         String query = "DELETE FROM " +
                 Lystore.lystoreSchema +
