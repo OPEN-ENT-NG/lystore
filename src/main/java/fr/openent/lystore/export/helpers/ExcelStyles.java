@@ -52,6 +52,7 @@ public abstract class ExcelStyles {
     public final CellStyle LabelBlackOnRed;
     public final CellStyle tabIntStyleRight;
     public final CellStyle tabIntRedBoldRight;
+    public final CellStyle tabIntStyleRightBold;
 
     protected static Logger log = LoggerFactory.getLogger(ExcelHelper.class);
 
@@ -104,6 +105,7 @@ public abstract class ExcelStyles {
         this.labelOnOrange = wb.createCellStyle();
         this.labelOnGreen = wb.createCellStyle();
         this.labelOnPink = wb.createCellStyle();
+        this.tabIntStyleRightBold = wb.createCellStyle();
         format = wb.createDataFormat();
         format.getFormat("#.#");
 
@@ -238,6 +240,18 @@ public abstract class ExcelStyles {
         this.tabIntStyleCenterBold.setVerticalAlignment(VerticalAlignment.CENTER);
         this.tabIntStyleCenterBold.setFont(headerFont);
         this.tabIntStyleCenterBold.setDataFormat(format.getFormat("#"));
+
+
+
+        this.tabIntStyleRightBold.setBorderLeft(BorderStyle.THIN);
+        this.tabIntStyleRightBold.setBorderRight(BorderStyle.THIN);
+        this.tabIntStyleRightBold.setBorderTop(BorderStyle.THIN);
+        this.tabIntStyleRightBold.setBorderBottom(BorderStyle.THIN);
+        this.tabIntStyleRightBold.setWrapText(true);
+        this.tabIntStyleRightBold.setAlignment(HorizontalAlignment.RIGHT);
+        this.tabIntStyleRightBold.setVerticalAlignment(VerticalAlignment.CENTER);
+        this.tabIntStyleRightBold.setFont(headerFont);
+        this.tabIntStyleRightBold.setDataFormat(format.getFormat("#"));
 
 
         Font tabFontBold = this.wb.createFont();

@@ -277,7 +277,7 @@ public class ExcelHelper extends ExcelStyles{
      * @param data
      */
     public void insertCellTabInt(int cellColumn, int line, int data) {
-        insertWithStyle(cellColumn, line, data, tabNumeralStyle);
+        insertWithStyle(cellColumn, line, data, tabIntStyleRight);
     }
 
     public void insertCellTabCenterBold(int cellColumn, int line, String data) {
