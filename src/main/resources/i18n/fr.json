@@ -608,5 +608,7 @@
   "lystore.parameter.undeploy": "Supprimer",
   "lystore.deploy.structure.valid": "Déploiement réussi",
   "lystore.undeploy.structure.valid": "Suppression du groupe manuel réussi",
-  "lystore.parameter.update.error": "Erreur lors de la création/suppréssion du groupe manuel"
+  "lystore.parameter.update.error": "Erreur lors de la création/suppréssion du groupe manuel",
+  "lystore.order.market.number": "Numéro de marché",
+  "lystore.order.market.name" : "Nom du marché"
 }
