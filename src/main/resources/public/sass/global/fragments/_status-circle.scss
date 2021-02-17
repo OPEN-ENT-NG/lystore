@@ -62,10 +62,8 @@
 
   &.WAITING_FOR_ACCEPTANCE{
     background: $orange;
-    >i:after{
-      content: "?";
-      font-size: 44px;
-      font-family: "Roboto";
+    >i{
+      background-image: url(/lystore/public/img/scss/check.svg);
     }
   }
 
