@@ -573,8 +573,9 @@
   "lystore.export.cp.adopted.text": "Etes-vous sur de vouloir valider le CP? Cette action n est pas reversible",
   "lystore.instruction.cp_adopted": "Adoption CP",
   "campaign.automatic.manual.change": "Vous allez modifier la date d'ouverture ou de fermeture de la Campagne. Voulez-vous continuer ?",
-  "campaign.automatic.dates": "Campagne ouverte du ",
+  "campaign.automatic.dates": "Campagne ouverte",
   "to" : " au ",
+  "from": "du",
   "not.valid.dates.campaign.form" : "La date de fin doit être supérieure à la date de début",
   "campaign.automatic.dates.no.end" : "Campagne ouverte depuis",
   "not.valid.gap.dates.campaign.form": "Toutes les demandes de la campagne doivent être comprises dans la période d'ouverture"
