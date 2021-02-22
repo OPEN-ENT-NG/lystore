@@ -550,6 +550,7 @@ public class OrderController extends ControllerHelper {
                 public void handle(Either<String, JsonObject> event) {
                     if (event.isRight()) {
                         JsonObject supplier = event.right().getValue();
+                        log.info(supplier);
                         getOrdersData(request, "", "", "", supplier.getInteger("id"), new fr.wseduc.webutils.collections.JsonArray(validationNumbers),
                                 new Handler<JsonObject>() {
                                     @Override
@@ -849,7 +850,6 @@ public class OrderController extends ControllerHelper {
             final String nbrEngagement = params.get("engagement_number");
             final String dateGeneration = params.get("dateGeneration");
             Number supplierId = Integer.parseInt(params.get("supplierId"));
-
             getOrdersData(request, nbrBc, nbrEngagement, dateGeneration, supplierId,
                     new fr.wseduc.webutils.collections.JsonArray(ids), new Handler<JsonObject>() {
                         @Override
