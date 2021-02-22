@@ -305,7 +305,6 @@ GROUP BY
     }
 
     public  void addInstructionId(Integer instructionId, JsonArray operationIds, Handler<Either<String, JsonObject>> handler){
-log.info("add la");
         JsonArray statements = new fr.wseduc.webutils.collections.JsonArray()
                 .add(updateIdInstructionAdd(operationIds,instructionId))
                 .add(updateOperationOrdersRegionAdd(operationIds))
@@ -320,7 +319,6 @@ log.info("add la");
     }
 
     public  void removeInstructionId( JsonArray operationIds, Handler<Either<String, JsonObject>> handler){
-        log.info("LA REMOVE");
         JsonArray statements = new fr.wseduc.webutils.collections.JsonArray()
                 .add(updateIdInstructionRemove(operationIds))
                 .add(updateOperationOrdersRegionRemove(operationIds))
@@ -338,7 +336,8 @@ log.info("add la");
                 "SET status = 'WAITING_FOR_ACCEPTANCE' " +
                 " WHERE id_operation IN " +
                 Sql.listPrepared(operationIds.getList()) +
-                " RETURNING id";
+                " AND status = 'IN PROGRESS' " +
+                " RETURNING id;";
 
         JsonObject statement = new JsonObject().put("statement", query)
                 .put("values", operationIds)
@@ -351,7 +350,8 @@ log.info("add la");
                 "SET status = 'WAITING_FOR_ACCEPTANCE' " +
                 " WHERE id_operation IN " +
                 Sql.listPrepared(operationIds.getList()) +
-                " RETURNING id";
+                " AND status = 'IN PROGRESS' " +
+                " RETURNING id;";
 
         JsonObject statement = new JsonObject().put("statement", query)
                 .put("values", operationIds)
