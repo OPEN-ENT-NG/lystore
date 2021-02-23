@@ -368,8 +368,8 @@ public class ExtractionOrder extends TabHelper {
         excel.insertCellTab(42,5+i,program.getFunctionnalCode());
         excel.insertCellTab(43,5+i,program.getName());
         excel.insertCellTab(44,5+i,program.getLabel());
-        excel.insertCellTab(45,5+i,programAction.getDescription());
-        excel.insertCellTab(46,5+i,programAction.getNumber());
+        excel.insertCellTab(45,5+i,programAction.getNumber());
+        excel.insertCellTab(46,5+i,programAction.getDescription());
     }
 
     private void insertEquipmementDatas(int i, Order order) {
