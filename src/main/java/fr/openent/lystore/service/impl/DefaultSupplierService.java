@@ -62,10 +62,10 @@ public class DefaultSupplierService extends SqlCrudService implements SupplierSe
     @Override
     public void getSupplierByValidationNumbers(JsonArray validationNumbers, Handler<Either<String, JsonObject>> handler) {
         String query = "SELECT distinct supplier.id " +
-                "FROM lystore.order_client_equipment " +
-                "INNER JOIN lystore.contract ON (order_client_equipment.id_contract = contract.id) " +
+                "FROM lystore.allOrders orders  " +
+                "INNER JOIN lystore.contract ON (orders.id_contract = contract.id) " +
                 "INNER JOIN lystore.supplier ON (contract.id_supplier = supplier.id) " +
-                "WHERE order_client_equipment.number_validation IN " + Sql.listPrepared(validationNumbers.getList())+
+                "WHERE orders.number_validation IN " + Sql.listPrepared(validationNumbers.getList())+
                 " LIMIT 1";
 
         this.sql.prepared(query, validationNumbers, SqlResult.validUniqueResultHandler(handler, new String[0]));
