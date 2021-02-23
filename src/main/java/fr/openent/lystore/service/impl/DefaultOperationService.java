@@ -336,7 +336,7 @@ GROUP BY
                 "SET status = 'WAITING_FOR_ACCEPTANCE' " +
                 " WHERE id_operation IN " +
                 Sql.listPrepared(operationIds.getList()) +
-                " AND status = 'IN PROGRESS' " +
+                " AND status != 'VALID' OR status != 'DONE' " +
                 " RETURNING id;";
 
         JsonObject statement = new JsonObject().put("statement", query)
@@ -350,7 +350,7 @@ GROUP BY
                 "SET status = 'WAITING_FOR_ACCEPTANCE' " +
                 " WHERE id_operation IN " +
                 Sql.listPrepared(operationIds.getList()) +
-                " AND status = 'IN PROGRESS' " +
+                " AND status != 'VALID' OR status != 'DONE' " +
                 " RETURNING id;";
 
         JsonObject statement = new JsonObject().put("statement", query)

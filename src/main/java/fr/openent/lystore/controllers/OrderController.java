@@ -550,7 +550,6 @@ public class OrderController extends ControllerHelper {
                 public void handle(Either<String, JsonObject> event) {
                     if (event.isRight()) {
                         JsonObject supplier = event.right().getValue();
-                        log.info(supplier);
                         getOrdersData(request, "", "", "", supplier.getInteger("id"), new fr.wseduc.webutils.collections.JsonArray(validationNumbers),
                                 new Handler<JsonObject>() {
                                     @Override
@@ -868,23 +867,27 @@ public class OrderController extends ControllerHelper {
         retrieveManagementInfo(request, ids, supplierId, new Handler<JsonObject>() {
             @Override
             public void handle(final JsonObject managmentInfo) {
+                log.info("1");
                 retrieveStructures(request, ids, new Handler<JsonObject>() {
                     @Override
                     public void handle(final JsonObject structures) {
+                        log.info("2");
                         retrieveOrderData(request, ids, new Handler<JsonObject>() {
                             @Override
                             public void handle(final JsonObject order) {
-                                retrieveOrderDataForCertificate(request, structures, new Handler<JsonArray>() {
+                                log.info("3");
+                                retrieveOrderDataForCertificate(request, nbrEngagement, structures, new Handler<JsonArray>() {
                                     @Override
                                     public void handle(final JsonArray certificates) {
+                                        log.info("4");
                                         retrieveContract(request, ids, new Handler<JsonObject>() {
                                             @Override
                                             public void handle(JsonObject contract) {
+                                                log.info("5");
                                                 retrieveOrderParam(ids, new Handler<JsonObject>() {
                                                     @Override
                                                     public void handle(JsonObject event) {
-
-
+                                                        log.info("6");
                                                         JsonObject certificate;
                                                         for (int i = 0; i < certificates.size(); i++) {
                                                             certificate = certificates.getJsonObject(i);
@@ -943,7 +946,7 @@ public class OrderController extends ControllerHelper {
         }
     }
 
-    private void retrieveOrderDataForCertificate(final HttpServerRequest request, final JsonObject structures,
+    private void retrieveOrderDataForCertificate(final HttpServerRequest request,String nbrEngagement, final JsonObject structures,
                                                  final Handler<JsonArray> handler) {
         JsonObject structure;
         String structureId;
@@ -951,8 +954,8 @@ public class OrderController extends ControllerHelper {
         final JsonArray result = new fr.wseduc.webutils.collections.JsonArray();
         while (structureIds.hasNext()) {
             structureId = structureIds.next();
-            structure = structures.getJsonObject(structureId);
-            orderService.getOrders(structure.getJsonArray("orderIds"), structureId, false, true,
+//            structure = structures.getJsonObject(structureId);
+            orderService.getOrderByValidatioNumber(new JsonArray().add(nbrEngagement),
                     new Handler<Either<String, JsonArray>>() {
                         @Override
                         public void handle(Either<String, JsonArray> event) {

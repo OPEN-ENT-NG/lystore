@@ -226,7 +226,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     @Override
     public void getStructuresId(JsonArray ids, Handler<Either<String, JsonArray>> handler) {
         String query = "SELECT id, id_structure " +
-                "FROM " + Lystore.lystoreSchema + ".order_client_equipment " +
+                "FROM " + Lystore.lystoreSchema + ".allOrders " +
                 "WHERE number_validation IN " + Sql.listPrepared(ids.getList()) + ";";
 
         Sql.getInstance().prepared(query, ids, SqlResult.validResultHandler(handler));
@@ -278,7 +278,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
 
     @Override
     public void getOrderByValidatioNumber(JsonArray ids, Handler<Either<String, JsonArray>> handler) {
-        String query = "SELECT * FROM " + Lystore.lystoreSchema + ".order_client_equipment " +
+        String query = "SELECT * FROM " + Lystore.lystoreSchema + ".allOrders " +
                 "WHERE number_validation IN " + Sql.listPrepared(ids.getList());
 
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray();
