@@ -480,13 +480,24 @@ export const orderController = ng.controller('orderController',
             $scope.display.lightbox.rejectOrder = true;
             template.open('rejectOrder.lightbox', 'administrator/order/order-reject-operation');
             Utils.safeApply($scope);
+        };
+
+        $scope.statusRejectedOrder = async (orders: OrderClient[]) => {
+            let ordersToReject = new OrdersClient();
+            ordersToReject.all = Mix.castArrayAs(OrderClient, orders);
+            await ordersToReject.updateStatus('REJECTED');
+        };
+
+        $scope.rejectOrders = (comment: string) => {
+            $scope.ordersClient.testRejectOrders(comment);
         }
+
 
         $scope.cancelOrderReject = () => {
             $scope.display.lightbox.rejectOrder = false;
             template.close('rejectOrder.lightbox');
             Utils.safeApply($scope);
-        }
+        };
 
         $scope.inProgressOrders = async (orders: OrderClient[]) => {
             let ordersToValidat = new OrdersClient();

@@ -1189,4 +1189,17 @@ public class OrderController extends ControllerHelper {
         Integer idOrder = Integer.parseInt(request.getParam("id"));
         orderService.getOneOrderClient(idOrder,"WAITING" ,defaultResponseHandler(request));
     }
+
+    @Put("/orderClient/reject")
+    @ApiDoc("reject orders")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(ManagerRight.class)
+    public void createRejectOrders(final HttpServerRequest request) {
+        RequestUtils.bodyToJson(request, rejectOrder -> orderService.createRejectOrders(rejectOrder, Logging.defaultResponseHandler(eb,
+                request,
+                Contexts.ORDER.toString(),
+                Actions.CREATE.toString(),
+                null,
+                rejectOrder)));
+    }
 }

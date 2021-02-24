@@ -14,13 +14,13 @@
                 <em class="smaller-text"><i18n>lystore.equipment.summary.length</i18n></em>
             </span>
             <span class="no-style ng-scope">
-                <textarea cols="20" rows="10" maxlength="300" class="ng-pristine ng-touched"></textarea>
+                <textarea ng-model="comment" cols="20" rows="10" maxlength="300" class="ng-pristine ng-touched"></textarea>
             </span>
         </label>
 
         <div class="right-magnet vertical-spacing">
             <input type="button" class="cancel" ng-click="cancelOrderReject()" i18n-value="cancel"/>
-            <input type="submit" class="button" ng-click="confirmOrderReject()" i18n-value="confirm"/>
+            <input type="submit" class="button" ng-click="rejectOrders(comment)" i18n-value="confirm"/>
         </div>
     </form>
 </div>

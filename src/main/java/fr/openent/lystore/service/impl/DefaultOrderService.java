@@ -4,6 +4,7 @@ import fr.openent.lystore.Lystore;
 import fr.openent.lystore.service.OrderService;
 import fr.openent.lystore.service.PurseService;
 import fr.openent.lystore.service.StructureService;
+import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.email.EmailSender;
 import io.vertx.core.Handler;
@@ -1263,6 +1264,52 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 " ;";
         sql.prepared(query, new fr.wseduc.webutils.collections.JsonArray().add(status), SqlResult.validResultHandler(handler));
 
+    }
+
+    @Override
+    public void createRejectOrders(JsonObject rejectOrders, Handler<Either<String, JsonObject>> handler) {
+        /*
+        Ici recup les rejectorders puis faire statementes de création des rejectOrders ET d update des commandes
+         */
+        log.info(rejectOrders);
+
+            }
+
+    private void handleRejectOrders(Number id, JsonArray statements, Handler<Either<String, JsonObject>> handler) {
+
+//          statements.add(createRejectOrders(id, comment));
+//          sql.transaction(statements, new Handler<Message<JsonObject>>() {
+//                @Override
+//                public void handle(Message<JsonObject> event) {
+//                    handler.handle(SqlQueryUtils.getTransactionHandler(event, id));
+//                }
+//            });
+        }
+
+    private JsonObject createRejectOrder(Integer id_order, String comment) {
+        String statement = "INSERT INTO " +
+                Lystore.lystoreSchema + " .order_reject(id_order, comment) " +
+                "VALUES (?, ?) RETURNING id";
+
+        JsonArray params = new JsonArray().add(id_order).add(comment);
+        return new JsonObject()
+                .put("statement", statement)
+                .put("values",  params)
+                .put("action", "prepared");
+    }
+
+    private JsonObject updateStatusRejectOrder(Integer id_order) {
+        String statement = "UPDATE lystore.order_client_equipment " +
+                " SET status = 'REJECT' " +
+                " WHERE id = " +
+                id_order +
+                " RETURNING id;";
+
+        JsonArray  params = new JsonArray().add(id_order);
+        return new JsonObject()
+                .put("statement", statement)
+                .put("values", params)
+                .put("action", "prepared");
     }
 }
 

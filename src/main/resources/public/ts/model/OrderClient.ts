@@ -75,6 +75,7 @@ export class OrderClient implements Order  {
     image:string;
     status:string;
     technical_spec:TechnicalSpec;
+    rejectOrder?: RejectOrder;
 
     constructor() {
         this.typeOrder= "client";
@@ -403,6 +404,25 @@ export class OrdersClient extends Selection<OrderClient> {
             throw e;
         }
     }
+
+    async testRejectOrders (comment: string) {
+        this.selected.map(order => {
+            order.rejectOrder = new RejectOrder();
+            order.rejectOrder.comment =  comment;
+            order.rejectOrder.id_order =  order.id;
+        })
+
+        let rejectOrdersJson = [];
+        this.selected.forEach(order => {
+            rejectOrdersJson.push(order.rejectOrder.toJson())
+        })
+        try{
+            await http.put(`/lystore/orderClient/reject`, {ordersToReject: rejectOrdersJson});
+        }catch (e){
+            notify.error('lystore.reject.orders.err');
+            throw e;
+        }
+    }
 }
 
 export class OrderOptionClient implements Selectable {
@@ -414,4 +434,17 @@ export class OrderOptionClient implements Selectable {
     required: boolean;
     id_order_client_equipment: number;
     selected: boolean;
+}
+
+export class RejectOrder {
+    id: number;
+    id_order: number;
+    comment: string;
+
+    toJson() {
+        return {
+            id_order : this.id_order,
+            comment : this.comment,
+        }
+    }
 }

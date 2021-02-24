@@ -209,4 +209,6 @@ public interface OrderService {
     void getOrderBCParams(JsonArray validationNumbers, Handler<Either<String, JsonObject>> handler);
 
     void listOrderSent(String status, Handler<Either<String, JsonArray>> arrayResponseHandler);
+
+    void createRejectOrders(JsonObject rejectOrder, Handler<Either<String, JsonObject>> handler);
 }
