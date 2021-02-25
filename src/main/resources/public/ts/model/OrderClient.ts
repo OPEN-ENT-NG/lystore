@@ -410,6 +410,7 @@ export class OrdersClient extends Selection<OrderClient> {
             order.rejectOrder = new RejectOrder();
             order.rejectOrder.comment =  comment;
             order.rejectOrder.id_order =  order.id;
+            order.rejectOrder.order_name = order.name;
         })
 
         let rejectOrdersJson = [];
@@ -440,11 +441,13 @@ export class RejectOrder {
     id: number;
     id_order: number;
     comment: string;
+    order_name: string;
 
     toJson() {
         return {
             id_order : this.id_order,
             comment : this.comment,
+            order_name : this.order_name
         }
     }
 }

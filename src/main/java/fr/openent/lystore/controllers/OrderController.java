@@ -1198,7 +1198,7 @@ public class OrderController extends ControllerHelper {
         RequestUtils.bodyToJson(request, rejectOrder -> orderService.createRejectOrders(rejectOrder, Logging.defaultResponseHandler(eb,
                 request,
                 Contexts.ORDER.toString(),
-                Actions.CREATE.toString(),
+                Actions.REJECT.toString(),
                 null,
                 rejectOrder)));
     }

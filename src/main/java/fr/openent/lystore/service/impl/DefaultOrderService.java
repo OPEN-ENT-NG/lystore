@@ -1272,19 +1272,24 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
         Ici recup les rejectorders puis faire statementes de création des rejectOrders ET d update des commandes
          */
         log.info(rejectOrders);
-
-            }
+        JsonArray statements = new JsonArray();
+        JsonArray ordersArray = rejectOrders.getJsonArray("ordersToReject");
+        for(int i = 0; i < ordersArray.size(); i++) {
+            JsonObject order = ordersArray.getJsonObject(i);
+            statements.add(createRejectOrder(order.getInteger("id_order"), order.getString("comment")));
+            statements.add(updateStatusRejectOrder(order.getInteger("id_order")));
+        }
+        handleRejectOrders(ordersArray.getJsonObject(0).getInteger("id_order"), statements, handler);
+    }
 
     private void handleRejectOrders(Number id, JsonArray statements, Handler<Either<String, JsonObject>> handler) {
-
-//          statements.add(createRejectOrders(id, comment));
-//          sql.transaction(statements, new Handler<Message<JsonObject>>() {
-//                @Override
-//                public void handle(Message<JsonObject> event) {
-//                    handler.handle(SqlQueryUtils.getTransactionHandler(event, id));
-//                }
-//            });
-        }
+          sql.transaction(statements, new Handler<Message<JsonObject>>() {
+                @Override
+                public void handle(Message<JsonObject> event) {
+                    handler.handle(SqlQueryUtils.getTransactionHandler(event, id));
+                }
+          });
+    }
 
     private JsonObject createRejectOrder(Integer id_order, String comment) {
         String statement = "INSERT INTO " +
@@ -1300,9 +1305,8 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
 
     private JsonObject updateStatusRejectOrder(Integer id_order) {
         String statement = "UPDATE lystore.order_client_equipment " +
-                " SET status = 'REJECT' " +
-                " WHERE id = " +
-                id_order +
+                " SET status = 'REJECTED' " +
+                " WHERE id = ? " +
                 " RETURNING id;";
 
         JsonArray  params = new JsonArray().add(id_order);
