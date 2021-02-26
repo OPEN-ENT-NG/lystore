@@ -39,8 +39,8 @@ public interface AgentService {
 
     /**
      * Return agent based on order ids
-     * @param ids order ids
+     * @param validationNumbers order validation number
      * @param handler Function handler returning data
      */
-    void getAgentByOrderIds (JsonArray ids, Handler<Either<String, JsonObject>> handler);
+    void getAgentByOrderIds (JsonArray validationNumbers, Handler<Either<String, JsonObject>> handler);
 }
