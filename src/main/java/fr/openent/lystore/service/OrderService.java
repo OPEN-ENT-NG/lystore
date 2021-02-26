@@ -107,10 +107,10 @@ public interface OrderService {
 
     /**
      * Get structure ids based on provided order ids
-     * @param ids order ids
+     * @param validationNumbers order validationNumbers
      * @param handler Function handler returning data
      */
-    void getStructuresId(JsonArray ids, Handler<Either<String, JsonArray>> handler);
+    void getStructuresId(JsonArray validationNumbers, Handler<Either<String, JsonArray>> handler);
 
     /**
      * List an union of equipments and options based on order ids

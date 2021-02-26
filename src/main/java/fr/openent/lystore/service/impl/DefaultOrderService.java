@@ -224,12 +224,12 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     }
 
     @Override
-    public void getStructuresId(JsonArray ids, Handler<Either<String, JsonArray>> handler) {
+    public void getStructuresId(JsonArray validationNumbers, Handler<Either<String, JsonArray>> handler) {
         String query = "SELECT id, id_structure " +
                 "FROM " + Lystore.lystoreSchema + ".allOrders " +
-                "WHERE number_validation IN " + Sql.listPrepared(ids.getList()) + ";";
+                "WHERE number_validation IN " + Sql.listPrepared(validationNumbers.getList()) + ";";
 
-        Sql.getInstance().prepared(query, ids, SqlResult.validResultHandler(handler));
+        Sql.getInstance().prepared(query, validationNumbers, SqlResult.validResultHandler(handler));
     }
 
     @Override
@@ -277,16 +277,37 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
 
 
     @Override
-    public void getOrderByValidatioNumber(JsonArray ids, Handler<Either<String, JsonArray>> handler) {
-        String query = "SELECT * FROM " + Lystore.lystoreSchema + ".allOrders " +
-                "WHERE number_validation IN " + Sql.listPrepared(ids.getList());
+    public void getOrderByValidatioNumber(JsonArray validationNumbers, Handler<Either<String, JsonArray>> handler) {
+        String query = "SELECT \"price TTC\" as pricettc,  name, id_contract,id_structure, " +
+                "SUM(amount) as amount " +
+                "FROM " + Lystore.lystoreSchema + ".allOrders  " +
+                "WHERE number_validation  IN " + Sql.listPrepared(validationNumbers.getList());
+        query += " GROUP BY equipment_key, \"price TTC\",  name, id_contract,id_structure " +
+                "UNION " +
+                "SELECT " +
+                "  opt.price + ( opt.tax_amount * opt.price) as pricettc, " +
+                "  opt.name, " +
+                "  opt.id_contract," +
+                "  id_structure, " +
+                "  SUM(opt.amount) as amount " +
+                "FROM (" +
+                "SELECT options.price, options.tax_amount," +
+                "options.name, equipment.id_contract," +
+                "equipment.amount, options.id_order_client_equipment, equipment.id_structure " +
+                "FROM " + Lystore.lystoreSchema + ".order_client_options options " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".order_client_equipment equipment " +
+                "ON (options.id_order_client_equipment = equipment.id) " +
+                "WHERE  number_validation IN " + Sql.listPrepared(validationNumbers.getList()) +
+                ") as opt";
+        query += " GROUP BY opt.name, opt.price, opt.tax_amount, opt.id_contract,id_structure" ;
 
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray();
 
-        for (int i = 0; i < ids.size(); i++) {
-            params.add(ids.getString(i));
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < validationNumbers.size(); j++) {
+                    params.add(validationNumbers.getString(j));
+            }
         }
-
         Sql.getInstance().prepared(query, params, SqlResult.validResultHandler(handler));
     }
 
@@ -1194,10 +1215,11 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
 
     @Override
     public void getOrderBCParams(JsonArray validationNumbers, Handler<Either<String, JsonObject>> handler) {
+        //MDOIFIER
         String query = "SELECT DISTINCT engagement_number, label_program , order_number " +
                 " FROM " + Lystore.lystoreSchema + ".order od " +
-                " INNER JOIN " + Lystore.lystoreSchema + ".order_client_equipment oce on oce.id_order = od.id " +
-                " WHERE oce.number_validation = ?";
+                " INNER JOIN " + Lystore.lystoreSchema + ".allOrders orders on orders.id_order = od.id " +
+                " WHERE orders.number_validation = ?";
 
         JsonArray params = new JsonArray().add(validationNumbers.getString(0));
 
