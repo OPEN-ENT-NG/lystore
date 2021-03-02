@@ -29,6 +29,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static fr.openent.lystore.controllers.OrderController.getReadableNumber;
+import static fr.openent.lystore.controllers.OrderController.roundWith2Decimals;
+
 public class PDF_OrderHElper {
 
     protected SupplierService supplierService;
@@ -72,19 +75,18 @@ public class PDF_OrderHElper {
         }
     }
 
-    protected void retrieveOrderDataForCertificate(final Handler<Either<String, Buffer>> exportHandler, final JsonObject structures,
-                                                 final Handler<JsonArray> handler) {
+    protected void retrieveOrderDataForCertificate(final Handler<Either<String, Buffer>> exportHandler,
+                                                   final JsonArray numberValidation, final JsonObject structures,
+                                                   final Handler<JsonArray> handler) {
         JsonObject structure;
-        String structureId;
         Iterator<String> structureIds = structures.fieldNames().iterator();
         final JsonArray result = new fr.wseduc.webutils.collections.JsonArray();
         if(!structureIds.hasNext()){
             exportHandler.handle(new Either.Left<>("no structure get"));
         }
         while (structureIds.hasNext()) {
-            structureId = structureIds.next();
-            structure = structures.getJsonObject(structureId);
-            orderService.getOrders(structure.getJsonArray("orderIds"), structureId, false, true,
+            structureIds.next();
+            orderService.getOrderByValidatioNumber(numberValidation,
                     new Handler<Either<String, JsonArray>>() {
                         @Override
                         public void handle(Either<String, JsonArray> event) {
@@ -94,16 +96,14 @@ public class PDF_OrderHElper {
                                         .put("id_structure", order.getString("id_structure"))
                                         .put("structure", structures.getJsonObject(order.getString("id_structure"))
                                                 .getJsonObject("structureInfo"))
-                                        .put("orders", OrderController.formatOrders(event.right().getValue()))
+                                        .put("orders",event.right().getValue())
                                 );
                                 if (result.size() == structures.size()) {
                                     handler.handle(result);
                                 }
                             } else {
-
                                 log.error("An error occurred when collecting orders for certificates");
                                 exportHandler.handle(new Either.Left<>("An error occured when collecting orders for certificates"));
-
                                 return;
                             }
                         }
@@ -124,7 +124,7 @@ public class PDF_OrderHElper {
     }
 
     protected void retrieveContract(final Handler<Either<String, Buffer>> exportHandler, JsonArray ids,
-                                  final Handler<JsonObject> handler) {
+                                    final Handler<JsonObject> handler) {
         contractService.getContract(ids, new Handler<Either<String, JsonArray>>() {
             @Override
             public void handle(Either<String, JsonArray> event) {
@@ -139,7 +139,7 @@ public class PDF_OrderHElper {
     }
 
     protected void retrieveStructures(final Handler<Either<String, Buffer>> exportHandler, JsonArray ids,
-                                    final Handler<JsonObject> handler) {
+                                      final Handler<JsonObject> handler) {
         orderService.getStructuresId(ids, new Handler<Either<String, JsonArray>>() {
 
             @Override
@@ -193,14 +193,15 @@ public class PDF_OrderHElper {
     }
 
 
-    protected Double getTaxesTotal(JsonArray orders) {
+    protected Double getSumTTC(JsonArray orders) {
         Double sum = 0D;
         JsonObject order;
         for (int i = 0; i < orders.size(); i++) {
             order = orders.getJsonObject(i);
-            sum += Double.parseDouble(order.getString("price")) * Integer.parseInt(order.getString("amount"))
-                    * (Double.parseDouble(order.getString("tax_amount")) / 100);
+            sum += Double.parseDouble(order.getString("pricettc")) * Integer.parseInt(order.getString("amount"))
+                  ;
         }
+
 
         return sum;
     }
@@ -210,28 +211,58 @@ public class PDF_OrderHElper {
         Double sum = 0D;
         for (int i = 0; i < orders.size(); i++) {
             order = orders.getJsonObject(i);
-            sum += Double.parseDouble(order.getString("price")) * Integer.parseInt(order.getString("amount"));
+            sum += order.getDouble("priceLocale") * Integer.parseInt(order.getString("amount"));
         }
 
         return sum;
     }
+
+    protected JsonArray formatOrders(JsonArray orders) {
+        JsonObject order;
+        for (int i = 0; i < orders.size(); i++) {
+            order = orders.getJsonObject(i);
+            order.put("priceLocale",
+                    roundWith2Decimals(getTaxExcludedPrice(Double.parseDouble(order.getString("pricettc")),
+                            Double.parseDouble(order.getString("tax_amount")))));
+            order.put("totalPriceLocale",
+                    roundWith2Decimals(getTotalPriceHT(Double.parseDouble(order.getString("pricettc")),
+                            Double.parseDouble(order.getString("amount")),
+                            Double.parseDouble(order.getString("tax_amount")))));
+//            order.put("totalPriceLocale",
+//                    getReadableNumber(roundWith2Decimals(getTaxExcludedPrice(order.getDouble("totalPrice"),
+//                            Double.parseDouble(order.getString("tax_amount"))))));
+        }
+        return orders;
+    }
+
+    private Double getTotalPriceHT(double pricettc, double amount, double tax_amount) {
+        return getTaxExcludedPrice(pricettc,tax_amount) * amount ;
+    }
+
+    private Double getTaxExcludedPrice(double price, double tax_amount) {
+        if(tax_amount == -1.d){
+            tax_amount = 20.d;
+        }
+        return price / ((100 + tax_amount)/ 100 );
+    }
+
     protected void retrieveOrderData(final Handler<Either<String, Buffer>> exportHandler, JsonArray ids,boolean groupByStructure,
-                                   final Handler<JsonObject> handler) {
-        orderService.getOrders(ids, null, true, groupByStructure, new Handler<Either<String, JsonArray>>() {
+                                     final Handler<JsonObject> handler) {
+        orderService.getOrderByValidatioNumber(ids,  new Handler<Either<String, JsonArray>>() {
             @Override
             public void handle(Either<String, JsonArray> event) {
                 if (event.isRight()) {
                     JsonObject order = new JsonObject();
-                    JsonArray orders = OrderController.formatOrders(event.right().getValue());
+                    JsonArray orders = formatOrders(event.right().getValue());
                     order.put("orders", orders);
                     Double sumWithoutTaxes = getSumWithoutTaxes(orders);
-                    Double taxTotal = getTaxesTotal(orders);
+                    Double totalTTC = getSumTTC(orders);
                     order.put("sumLocale",
                             OrderController.getReadableNumber(OrderController.roundWith2Decimals(sumWithoutTaxes)));
                     order.put("totalTaxesLocale",
-                            OrderController.getReadableNumber(OrderController.roundWith2Decimals(taxTotal)));
+                            OrderController.getReadableNumber(OrderController.roundWith2Decimals(totalTTC - sumWithoutTaxes)));
                     order.put("totalPriceTaxeIncludedLocal",
-                            OrderController.getReadableNumber(OrderController.roundWith2Decimals(taxTotal + sumWithoutTaxes)));
+                            OrderController.getReadableNumber(OrderController.roundWith2Decimals(totalTTC )));
                     handler.handle(order);
 
                 } else {
@@ -242,7 +273,7 @@ public class PDF_OrderHElper {
         });
     }
     protected void retrieveManagementInfo(final Handler<Either<String, Buffer>> exportHandler, JsonArray ids,
-                                        final Number supplierId, final Handler<JsonObject> handler) {
+                                          final Number supplierId, final Handler<JsonObject> handler) {
         agentService.getAgentByOrderIds(ids, new Handler<Either<String, JsonObject>>() {
             @Override
             public void handle(Either<String, JsonObject> user) {
@@ -277,25 +308,26 @@ public class PDF_OrderHElper {
     }
     protected void getOrdersData(final Handler<Either<String, Buffer>> exportHandler, final String nbrBc,
                                  final String nbrEngagement, final String dateGeneration,
-                                 final Number supplierId, final JsonArray ids, boolean groupByStructure,
+                                 final Number supplierId, final JsonArray validationNumbers, boolean groupByStructure,
                                  final Handler<JsonObject> handler) {
         SimpleDateFormat formatterDatePDF = new SimpleDateFormat("dd/MM/yyyy");
         SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
         final JsonObject data = new JsonObject();
 
-        retrieveManagementInfo(exportHandler, ids, supplierId, new Handler<JsonObject>() {
+        log.info(validationNumbers);
+        retrieveManagementInfo(exportHandler, validationNumbers, supplierId, new Handler<JsonObject>() {
             @Override
             public void handle(final JsonObject managmentInfo) {
-                retrieveStructures(exportHandler, ids, new Handler<JsonObject>() {
+                retrieveStructures(exportHandler, validationNumbers, new Handler<JsonObject>() {
                     @Override
                     public void handle(final JsonObject structures) {
-                        retrieveOrderData(exportHandler, ids,groupByStructure, new Handler<JsonObject>() {
+                        retrieveOrderData(exportHandler, validationNumbers,groupByStructure, new Handler<JsonObject>() {
                             @Override
                             public void handle(final JsonObject order) {
-                                retrieveOrderDataForCertificate(exportHandler, structures, new Handler<JsonArray>() {
+                                retrieveOrderDataForCertificate(exportHandler, validationNumbers, structures, new Handler<JsonArray>() {
                                     @Override
                                     public void handle(final JsonArray certificates) {
-                                        retrieveContract(exportHandler, ids, new Handler<JsonObject>() {
+                                        retrieveContract(exportHandler, validationNumbers, new Handler<JsonObject>() {
                                             @Override
                                             public void handle(JsonObject contract) {
                                                 JsonObject certificate;
