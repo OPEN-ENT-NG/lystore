@@ -314,7 +314,6 @@ public class PDF_OrderHElper {
         SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
         final JsonObject data = new JsonObject();
 
-        log.info(validationNumbers);
         retrieveManagementInfo(exportHandler, validationNumbers, supplierId, new Handler<JsonObject>() {
             @Override
             public void handle(final JsonObject managmentInfo) {

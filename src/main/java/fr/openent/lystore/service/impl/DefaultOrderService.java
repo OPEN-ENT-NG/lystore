@@ -278,14 +278,14 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
 
     @Override
     public void getOrderByValidatioNumber(JsonArray validationNumbers, Handler<Either<String, JsonArray>> handler) {
-        String query = "SELECT \"price TTC\" as pricettc,  name, id_contract,id_structure, " +
+        String query = "SELECT \"price TTC\" as pricettc,tax_amount,  name, id_contract,id_structure, " +
                 "SUM(amount) as amount " +
                 "FROM " + Lystore.lystoreSchema + ".allOrders  " +
                 "WHERE number_validation  IN " + Sql.listPrepared(validationNumbers.getList());
-        query += " GROUP BY equipment_key, \"price TTC\",  name, id_contract,id_structure " +
+        query += " GROUP BY equipment_key, \"price TTC\",  name, id_contract,id_structure,tax_amount " +
                 "UNION " +
                 "SELECT " +
-                "  opt.price + ( opt.tax_amount * opt.price) as pricettc, " +
+                "  opt.price + ( opt.tax_amount * opt.price) as pricettc,tax_amount, " +
                 "  opt.name, " +
                 "  opt.id_contract," +
                 "  id_structure, " +
@@ -611,12 +611,12 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     }
 
     @Override
-    public void updateStatusToSent(final List<String> ids, String status, final String engagementNumber, final String labelProgram, final String dateCreation,
+    public void updateStatusToSent(final List<String> validationNumbers, String status, final String engagementNumber, final String labelProgram, final String dateCreation,
                                    final String orderNumber, final Handler<Either<String, JsonObject>> handler) {
         String query = "SELECT distinct id_order " +
-                "FROM " + Lystore.lystoreSchema + ".order_client_equipment " +
-                "WHERE order_client_equipment.number_validation IN " + Sql.listPrepared(ids.toArray());
-        Sql.getInstance().prepared(query, new fr.wseduc.webutils.collections.JsonArray(ids), SqlResult.validResultHandler(new Handler<Either<String, JsonArray>>() {
+                "FROM " + Lystore.lystoreSchema + ".allOrders orders " +
+                "WHERE orders.number_validation IN " + Sql.listPrepared(validationNumbers.toArray());
+        Sql.getInstance().prepared(query, new fr.wseduc.webutils.collections.JsonArray(validationNumbers), SqlResult.validResultHandler(new Handler<Either<String, JsonArray>>() {
             @Override
             public void handle(Either<String, JsonArray> updateOrCreateEvent) {
                 if (updateOrCreateEvent.isRight()) {
@@ -631,8 +631,9 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                                     Number orderId = eventId.right().getValue().getInteger("id");
                                     JsonArray statements = new fr.wseduc.webutils.collections.JsonArray()
                                             .add(getOrderCreateStatement(orderId, engagementNumber, labelProgram, dateCreation, orderNumber))
-                                            .add(getAddOrderClientRef(orderId, ids))
-                                            .add(getUpdateClientOrderStatement(new fr.wseduc.webutils.collections.JsonArray(ids), "SENT"));
+                                            .add(getAddOrderClientRef(orderId, validationNumbers))
+                                            .add(getAddOrderRegionRef(orderId, validationNumbers))
+                                            .add(getUpdateClientOrderStatement(new JsonArray(validationNumbers), "SENT"));
 
                                     Sql.getInstance().transaction(statements, SqlResult.validRowsResultHandler(handler));
                                 } else {
@@ -644,7 +645,8 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                         Number orderId = (orderIds.getJsonObject(0)).getInteger("id_order");
                         JsonArray statements = new fr.wseduc.webutils.collections.JsonArray()
                                 .add(getUpdateOrderStatement(engagementNumber, labelProgram, dateCreation, orderNumber, orderId))
-                                .add(getUpdateClientOrderStatement(new fr.wseduc.webutils.collections.JsonArray(ids), "SENT"));
+                                .add(getAddOrderRegionRef(orderId, validationNumbers))
+                                .add(getUpdateClientOrderStatement(new JsonArray(validationNumbers), "SENT"));
 
                         Sql.getInstance().transaction(statements, SqlResult.validRowsResultHandler(handler));
                     }
@@ -670,6 +672,24 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 .put("values", params)
                 .put("action", "prepared");
     }
+
+
+    private JsonObject getAddOrderRegionRef(Number orderId, List<String> validationNumbers) {
+        String query = "UPDATE " + Lystore.lystoreSchema + ".\"order-region-equipment\" " +
+                "SET id_order = ? " +
+                "WHERE number_validation IN " + Sql.listPrepared(validationNumbers.toArray());
+
+        JsonArray params = new fr.wseduc.webutils.collections.JsonArray().add(orderId);
+        for (String number : validationNumbers)  {
+            params.add(number);
+        }
+
+        return new JsonObject()
+                .put("statement", query)
+                .put("values", params)
+                .put("action", "prepared");
+    }
+
 
     private JsonObject getUpdateOrderStatement (String engagementNumber, String labelProgram, String dateCreation, String orderNumber, Number orderId) {
         String query = "UPDATE " + Lystore.lystoreSchema + ".order " +
