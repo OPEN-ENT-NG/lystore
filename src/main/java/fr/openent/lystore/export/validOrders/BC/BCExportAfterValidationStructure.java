@@ -9,7 +9,6 @@ import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -140,7 +139,7 @@ public class BCExportAfterValidationStructure extends PDF_OrderHElper {
         for (String s : listStruct) {
             JsonObject ordersByStructure = order.getJsonObject(s);
             Double sumWithoutTaxes = getSumWithoutTaxes(ordersByStructure.getJsonArray("orders"));
-            Double taxTotal = getTaxesTotal(ordersByStructure.getJsonArray("orders"));
+            Double taxTotal = getSumTTC(ordersByStructure.getJsonArray("orders"));
 
             ordersByStructure.put("sumLocale",
                     OrderController.getReadableNumber(OrderController.roundWith2Decimals(sumWithoutTaxes)));
