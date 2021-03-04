@@ -8,6 +8,7 @@ import fr.openent.lystore.logging.Logging;
 import fr.openent.lystore.service.ExportService;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.Server;
+import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.EventBus;
@@ -24,8 +25,10 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
+import static fr.wseduc.webutils.http.Renders.getScheme;
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultResponseHandler;
 
+//Refacto un de ces 4
 public class ExportHelper {
 
     protected static Logger log = LoggerFactory.getLogger(ExportHelper.class);
@@ -68,8 +71,8 @@ public class ExportHelper {
         return formatter.format(date);
     }
 
-    public static void makeExport(HttpServerRequest request, EventBus eb, ExportService exportService, String typeObject, String extension, String
-            action, String name) {
+    public static void makeExport(HttpServerRequest request, EventBus eb, ExportService exportService,
+                                  String typeObject, String extension, String action, String name) {
         String id="-1";
         JsonObject params = new JsonObject();
         Boolean multipleExport = false;
@@ -91,6 +94,11 @@ public class ExportHelper {
         if(action.equals(ExportTypes.CAMPAIGN_ORDERS)){
             List<String> ids = request.params().getAll("id");
             infoFile.put("ids",ids);
+            for(String idList : ids){
+                name += "_" + idList;
+            }
+            name.substring(0, name.length() - 1);
+            infoFile.put("url", getScheme(request) + "://" + Renders.getHost(request)) ;
         }
         log.info("makeExportExcel");
         String finalId = id;
@@ -112,8 +120,9 @@ public class ExportHelper {
     }
 
 
-    private static void sendExportRequest(EventBus eb, HttpServerRequest request, ExportService exportService, String typeObject, String extension, String
-            action, JsonObject infoFile, String finalId, String titleFile, JsonObject finalParams, boolean isMultipleExport){
+    private static void sendExportRequest(EventBus eb, HttpServerRequest request, ExportService exportService, String typeObject,
+                                          String extension, String action, JsonObject infoFile, String finalId,
+                                          String titleFile, JsonObject finalParams, boolean isMultipleExport){
         UserUtils.getUserInfos(eb, request, user -> {
             if (!isMultipleExport){
                 soloExport(eb, request, exportService, typeObject, extension, action, infoFile, finalId, titleFile, finalParams, user);
@@ -147,7 +156,9 @@ public class ExportHelper {
         });
     }
 
-    private static void mutliExport(EventBus eb, HttpServerRequest request, ExportService exportService, String typeObject, String extension, String action, JsonObject infoFile, String finalId, String titleFile, JsonObject finalParams, UserInfos user) {
+    private static void mutliExport(EventBus eb, HttpServerRequest request, ExportService exportService, String typeObject,
+                                    String extension, String action, JsonObject infoFile, String finalId, String titleFile,
+                                    JsonObject finalParams, UserInfos user) {
         String [] objectsId = finalId.split(",");
         for (String currentId : objectsId) {
             String nameFile = getFileNameMultiExport(extension, action, currentId);

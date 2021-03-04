@@ -30,6 +30,7 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
     private final String XLSXHEADER= "application/vnd.ms-excel";
     private final String PDFHEADER = "application/pdf";
     private CampaignExport campaign;
+    public static String url;
 
     @Override
     public void start() {
@@ -97,7 +98,11 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
         JsonObject params = body.getJsonObject("externalParams");
         if(action.equals(ExportTypes.CAMPAIGN_ORDERS)){
             for(Object o : body.getJsonArray("ids")){
-                ids.add(Integer.parseInt((String)o));            }
+                ids.add(Integer.parseInt((String)o));
+            }
+        }
+        if(body.containsKey("url")){
+            this.url = body.getString("url");
         }
         try {
             object_id = Integer.parseInt(body.getString("object_id"));
@@ -173,7 +178,6 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
                 break;
             case ExportTypes.CAMPAIGN_ORDERS:
                 exportCampaignOrder(object_id,fileName,ids,exportHandler);
-                logger.info("body : "+ body);
                 break;
             default:
                 ExportHelper.catchError(exportService, idNewFile, "Invalid action in worker : " + action,exportHandler);
@@ -181,7 +185,7 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
         }
     }
 
-    private void exportCampaignOrder(Integer cmapaign_id, String titleFile, List<Integer> ids,Handler<Either<String, Boolean>> exportHandler) {
+    private void exportCampaignOrder(Integer cmapaign_id, String titleFile, List<Integer> ids,  Handler<Either<String, Boolean>> exportHandler) {
 
         logger.info("Export orders from campaign : ");
 
@@ -189,10 +193,6 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
         this.campaign.exportOrders(event1 -> {
             saveExportHandler(titleFile, exportHandler, event1, "error when creating export order Campaign xlsx :", XLSXHEADER);
         });
-//        this.validOrders = new ValidOrders(exportService,params,idNewFile,this.eb,this.vertx,this.config);
-//        this.validOrders.exportBCBeforeValidationByStructures(event1 -> {
-//            saveExportHandler(titleFile, exportHandler, event1, "error when creating BCOrdersBeforeValidationStruct PDF ", PDFHEADER);
-//        });
     }
 
     private void exportBCOrdersBeforeValidationStruct(JsonObject params, String titleFile, Handler<Either<String, Boolean>> exportHandler) {

@@ -1,7 +1,9 @@
 package fr.openent.lystore.export.campaign.extractionOrder;
 
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.export.ExportLystoreWorker;
 import fr.openent.lystore.export.TabHelper;
+import fr.openent.lystore.export.helpers.ExportHelper;
 import fr.openent.lystore.model.*;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.CompositeFuture;
@@ -21,7 +23,7 @@ import java.util.*;
 public class ExtractionOrder extends TabHelper {
     List<Integer> ids_campaigns;
     List<Order> orders = new ArrayList<>();
-    public ExtractionOrder(Workbook workbook, List<Integer> ids) {
+    public ExtractionOrder(Workbook workbook, List<Integer> ids ) {
         super(workbook,"Extraction");
         ids_campaigns = ids;
     }
@@ -112,6 +114,7 @@ public class ExtractionOrder extends TabHelper {
             }
             operation.setId(idOperation.toString());
             operation.setLabel(data.getString("label_operation"));
+            operation.setDate_operation(getFormatDate(data.getString("date_operation")));
             operation.setStatus(Boolean.parseBoolean(data.getString("operation_status")));
             order.setOperation(operation);
 
@@ -190,9 +193,11 @@ public class ExtractionOrder extends TabHelper {
         if(safeGetDouble(data,"price_proposal","ExtractionOrder") != -1.d)
             order.setPriceProposal(safeGetDouble(data,"price_proposal","ExtractionOrder"));
         if(data.getBoolean("has_file")){
-            JsonArray filesArray= data.getJsonArray("filenames");
+            JsonArray filesArray= data.getJsonArray("filesid");
             for(int i = 0 ; i < filesArray.size(); i ++){
-                order.addFilenames(filesArray.getJsonArray(i).getString(1));
+                //METTRE URL ICI
+                order.addFilenames(ExportLystoreWorker.url + "/lystore/order/" + order.getId().split("-")[1] +
+                        "/file/" + filesArray.getJsonArray(i).getString(1));
             }
         }
         if(data.getLong("id_order_client_equipment") != -1){
@@ -331,7 +336,7 @@ public class ExtractionOrder extends TabHelper {
         if(order.hasOperation()) {
             Operation operation = order.getOperation();
             excel.insertCellTab(48, 5 + i, operation.getLabel());
-            excel.insertCellTab(49, 5 + i, "DATE CP");
+            excel.insertCellTab(49, 5 + i, operation.getDate_operation());
             excel.insertCellTab(50, 5 + i, (operation.getStatus() ? "Ouverte" : "Fermée"));
             if(operation.hasInstruction()){
                 Instruction instruction = operation.getInstruction();
@@ -721,7 +726,16 @@ public class ExtractionOrder extends TabHelper {
                 "    WHERE  " +
                 "      order_file.id_order_client_equipment = orders.id  " +
                 "      AND orders.override_region is false " +
-                "  ) as filenames  " +
+                "  ) as filenames,  " +
+                "  ( " +
+                "    SELECT  " +
+                "      array_agg(id)  " +
+                "    FROM  " +
+                "      " +  Lystore.lystoreSchema + ".order_file  " +
+                "    WHERE  " +
+                "      order_file.id_order_client_equipment = orders.id  " +
+                "      AND orders.override_region is false " +
+                "  ) as filesid  " +
                 "FROM  " +
                 "  " +  Lystore.lystoreSchema + ".allorders orders  " +
                 "  INNER JOIN " +  Lystore.lystoreSchema + ".campaign ON campaign.id = orders.id_campaign  " +

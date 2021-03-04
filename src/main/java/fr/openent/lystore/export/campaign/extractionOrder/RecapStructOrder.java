@@ -4,6 +4,7 @@ import fr.openent.lystore.Lystore;
 import fr.openent.lystore.export.TabHelper;
 import fr.openent.lystore.model.Campaign;
 import fr.openent.lystore.model.Campaign.SummaryOrder;
+import fr.openent.lystore.model.OrderStatus;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
@@ -68,7 +69,7 @@ public class RecapStructOrder  extends TabHelper {
                 excel.insertWithStyle(0, nbLine, campaign.getId(),excel.tabStringStyleRight);
                 excel.insertWithStyle(1, nbLine, campaign.getName(),excel.tabStringStyle);
                 excel.insertWithStyle(2, nbLine, summaryOrder.getOrigin(),excel.tabStringStyle);
-                excel.insertWithStyle(3, nbLine, summaryOrder.getStatus(),excel.tabStringStyle);
+                excel.insertWithStyle(3, nbLine, OrderStatus.valueOf(summaryOrder.getStatus().replace(" ", "_")),excel.tabStringStyle);
                 excel.insertWithStyle(4, nbLine, summaryOrder.getNumberOrders(),excel.tabIntStyleRight);
                 nbLine ++ ;
                 if(nbLine == 10){
@@ -81,10 +82,9 @@ public class RecapStructOrder  extends TabHelper {
             excel.insertCellTab(3, nbLine,EMPTY);
             excel.setTotalXWithStyle(startSum,nbLine-1,4,nbLine,excel.tabIntRedBoldRight);
             startSum = nbLine++;
-//            nbLine++;
 
         }
-        if(nbLine < 10){
+        if(nbLine <= 10){
             excel.autoSize(40);
         }
     }
