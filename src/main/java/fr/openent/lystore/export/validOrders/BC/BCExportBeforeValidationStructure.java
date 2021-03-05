@@ -3,6 +3,7 @@ package fr.openent.lystore.export.validOrders.BC;
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.controllers.OrderController;
 import fr.openent.lystore.export.validOrders.PDF_OrderHElper;
+import fr.openent.lystore.helpers.OrderHelper;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -20,6 +21,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import static fr.openent.lystore.helpers.OrderHelper.getSumWithoutTaxes;
+import static fr.openent.lystore.helpers.OrderHelper.roundWith2Decimals;
 
 public class BCExportBeforeValidationStructure extends PDF_OrderHElper {
     private Logger log = LoggerFactory.getLogger(BCExportBeforeValidationStructure.class);
@@ -133,14 +137,14 @@ public class BCExportBeforeValidationStructure extends PDF_OrderHElper {
         for (String s : listStruct) {
             JsonObject ordersByStructure = order.getJsonObject(s);
             Double sumWithoutTaxes = getSumWithoutTaxes(ordersByStructure.getJsonArray("orders"));
-            Double taxTotal = getSumTTC(ordersByStructure.getJsonArray("orders"));
+            Double taxTotal = OrderHelper.getSumTTC(ordersByStructure.getJsonArray("orders"));
 
             ordersByStructure.put("sumLocale",
-                    OrderController.getReadableNumber(OrderController.roundWith2Decimals(sumWithoutTaxes)));
+                    OrderController.getReadableNumber(roundWith2Decimals(sumWithoutTaxes)));
             ordersByStructure.put("totalTaxesLocale",
-                    OrderController.getReadableNumber(OrderController.roundWith2Decimals(taxTotal)));
+                    OrderController.getReadableNumber(roundWith2Decimals(taxTotal)));
             ordersByStructure.put("totalPriceTaxeIncludedLocal",
-                    OrderController.getReadableNumber(OrderController.roundWith2Decimals(taxTotal + sumWithoutTaxes)));
+                    OrderController.getReadableNumber(roundWith2Decimals(taxTotal + sumWithoutTaxes)));
             order.put(s, ordersByStructure);
         }
     }

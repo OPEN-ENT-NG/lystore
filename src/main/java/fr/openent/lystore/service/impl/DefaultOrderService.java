@@ -313,8 +313,11 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
 
     @Override
     public void getOrdersGroupByValidationNumber(JsonArray status, Handler<Either<String, JsonArray>> handler) {
-        String query = "SELECT row.id_operation, row.number_validation, row.status, contract.name as contract_name, contract.id as id_contract, supplier.name as supplier_name, " +
-                "array_to_json(array_agg(structure_group.name)) as structure_groups, count(distinct row.id_structure) as structure_count, supplier.id as supplierId, " +
+        String query = "SELECT row.number_validation, row.status, contract.name as contract_name, contract.id as id_contract," +
+                "CASE WHEN id_operation is null THEN false else true END as has_operation ,  " +
+                "supplier.name as supplier_name, " +
+                "array_to_json(array_agg(structure_group.name)) as structure_groups, count(distinct row.id_structure) as structure_count," +
+                " supplier.id as supplierId, " +
                 Lystore.lystoreSchema + ".order.label_program, " + Lystore.lystoreSchema + ".order.order_number " +
                 "FROM " + Lystore.lystoreSchema + ".allOrders row " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".contract ON (row.id_contract = contract.id) " +
@@ -323,7 +326,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "INNER JOIN " + Lystore.lystoreSchema + ".structure_group ON (rel_group_structure.id_structure_group = structure_group.id) " +
                 "LEFT OUTER JOIN " + Lystore.lystoreSchema + ".order ON (row.id_order = lystore.order.id)  " +
                 "WHERE row.status IN " + Sql.listPrepared(status.getList()) +
-                " GROUP BY row.id_operation, row.number_validation, contract.name, supplier.name, contract.id, supplierId, row.status, " + Lystore.lystoreSchema +
+                " GROUP BY  row.number_validation, contract.name, supplier.name, contract.id, supplierId, row.status,has_operation, " + Lystore.lystoreSchema +
                 ".order.label_program, " + Lystore.lystoreSchema + ".order.order_number;";
 
         this.sql.prepared(query, status, SqlResult.validResultHandler(handler));
@@ -331,14 +334,15 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
 
     @Override
     public void getOrdersDetailsIndexedByValidationNumber(JsonArray status, Handler<Either<String, JsonArray>> handler) {
-        String query = "SELECT price, tax_amount, amount::text, number_validation " +
-                "FROM " + Lystore.lystoreSchema + ".order_client_equipment " +
+        String query = "SELECT \"price TTC\" as price, 0 as tax_amount, amount::text, number_validation " +
+                "FROM " + Lystore.lystoreSchema + ".allorders " +
                 "WHERE status IN " + Sql.listPrepared(status.getList()) +
                 " UNION ALL " +
                 "SELECT order_client_options.price, order_client_options.tax_amount, order_client_equipment.amount::text, order_client_equipment.number_validation " +
                 "FROM " + Lystore.lystoreSchema + ".order_client_options " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".order_client_equipment ON (order_client_equipment.id = order_client_options.id_order_client_equipment) " +
-                "WHERE order_client_equipment.status IN " + Sql.listPrepared(status.getList());
+                "WHERE order_client_equipment.status IN " + Sql.listPrepared(status.getList()) +
+                "";
 
         JsonArray statusList = new fr.wseduc.webutils.collections.JsonArray();
         for (int i = 0; i < 2; i++) {
@@ -633,7 +637,8 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                                             .add(getOrderCreateStatement(orderId, engagementNumber, labelProgram, dateCreation, orderNumber))
                                             .add(getAddOrderClientRef(orderId, validationNumbers))
                                             .add(getAddOrderRegionRef(orderId, validationNumbers))
-                                            .add(getUpdateClientOrderStatement(new JsonArray(validationNumbers), "SENT"));
+                                            .add(getUpdateClientOrderStatement(new JsonArray(validationNumbers), "SENT"))
+                                            .add(getUpdateRegionOrderStatement(new JsonArray(validationNumbers), "SENT"));
 
                                     Sql.getInstance().transaction(statements, SqlResult.validRowsResultHandler(handler));
                                 } else {
@@ -646,7 +651,8 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                         JsonArray statements = new fr.wseduc.webutils.collections.JsonArray()
                                 .add(getUpdateOrderStatement(engagementNumber, labelProgram, dateCreation, orderNumber, orderId))
                                 .add(getAddOrderRegionRef(orderId, validationNumbers))
-                                .add(getUpdateClientOrderStatement(new JsonArray(validationNumbers), "SENT"));
+                                .add(getUpdateClientOrderStatement(new JsonArray(validationNumbers), "SENT"))
+                                .add(getUpdateRegionOrderStatement(new JsonArray(validationNumbers), "SENT"));
 
                         Sql.getInstance().transaction(statements, SqlResult.validRowsResultHandler(handler));
                     }
@@ -739,6 +745,24 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 .put("values", params)
                 .put("action", "prepared");
     }
+
+
+    private JsonObject getUpdateRegionOrderStatement (JsonArray validationNumbers, String status) {
+        String query = "UPDATE " + Lystore.lystoreSchema + ".\"order-region-equipment\" " +
+                " SET  status = ? " +
+                " WHERE number_validation in " + Sql.listPrepared(validationNumbers.getList()) +";";
+        JsonArray params = new fr.wseduc.webutils.collections.JsonArray().add(status);
+
+        for (int i = 0; i < validationNumbers.size(); i++) {
+            params.add(validationNumbers.getString(i));
+        }
+
+        return new JsonObject()
+                .put("statement", query)
+                .put("values", params)
+                .put("action", "prepared");
+    }
+
 
     private JsonObject getAddFileStatement(String mongoId, String owner, Number orderId) {
         String query = "INSERT INTO " + Lystore.lystoreSchema + ".file(id_mongo, owner, id_order) " +
