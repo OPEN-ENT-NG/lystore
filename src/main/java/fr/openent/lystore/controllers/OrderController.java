@@ -3,6 +3,7 @@ package fr.openent.lystore.controllers;
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.export.ExportTypes;
 import fr.openent.lystore.export.helpers.ExportHelper;
+import fr.openent.lystore.helpers.OrderHelper;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
@@ -42,6 +43,7 @@ import java.math.BigDecimal;
 import java.text.*;
 import java.util.*;
 
+import static fr.openent.lystore.helpers.OrderHelper.*;
 import static fr.openent.lystore.utils.OrderUtils.getValidOrdersCSVExportHeader;
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultResponseHandler;
@@ -403,6 +405,7 @@ public class OrderController extends ControllerHelper {
                     JsonObject order;
                     for (int i = 0; i < orders.size(); i++) {
                         order = orders.getJsonObject(i);
+                        log.info(order);
                         Logging.insert(eb, request, Contexts.ORDER.toString(), Actions.UPDATE.toString(),
                                 order.getInteger("id").toString(), order);
                     }
@@ -427,7 +430,7 @@ public class OrderController extends ControllerHelper {
                                 @Override
                                 public void handle(Either<String, JsonObject> event) {
                                     if (event.isRight()) {
-                                        logSendingOrder(numberValidations,request);
+//                                        logSendingOrder(numberValidations,request);
                                         ExportHelper.makeExport(request,eb,exportService,Lystore.ORDERSSENT,  Lystore.PDF,ExportTypes.BC_DURING_VALIDATION, "_BC");
                                     } else {
                                         badRequest(request);
@@ -731,7 +734,16 @@ public class OrderController extends ControllerHelper {
             public void handle(Either<String, JsonArray> event) {
                 if (event.isRight()) {
                     JsonObject order = new JsonObject();
-                    order.put("orders", event.right().getValue());
+                    JsonArray orders = OrderHelper.formatOrders(event.right().getValue());
+                    order.put("orders", orders);
+                    Double sumWithoutTaxes = getSumWithoutTaxes(orders);
+                    Double totalTTC = OrderHelper.getSumTTC(orders);
+                    order.put("sumLocale",
+                            OrderController.getReadableNumber(roundWith2Decimals(sumWithoutTaxes)));
+                    order.put("totalTaxesLocale",
+                            OrderController.getReadableNumber(roundWith2Decimals(totalTTC - sumWithoutTaxes)));
+                    order.put("totalPriceTaxeIncludedLocal",
+                            OrderController.getReadableNumber(roundWith2Decimals(totalTTC )));
                     handler.handle(order);
                 } else {
                     log.error("An error occurred when retrieving order data");
@@ -749,6 +761,7 @@ public class OrderController extends ControllerHelper {
         return instance.format(number);
     }
 
+    // A DDEPLACER DANS LE SERVICE
     private Double getTotalOrder(JsonArray orders) {
         Double sum = 0D;
         JsonObject order;
@@ -761,30 +774,7 @@ public class OrderController extends ControllerHelper {
         return sum;
     }
 
-    private Double getTaxesTotal(JsonArray orders) {
-        Double sum = 0D;
-        JsonObject order;
-        for (int i = 0; i < orders.size(); i++) {
-            order = orders.getJsonObject(i);
-            sum += Double.parseDouble(order.getString("price")) * Integer.parseInt(order.getString("amount"))
-                    * (Double.parseDouble(order.getString("tax_amount")) / 100);
-        }
-
-        return sum;
-    }
-
-    private Double getSumWithoutTaxes(JsonArray orders) {
-        JsonObject order;
-        Double sum = 0D;
-        for (int i = 0; i < orders.size(); i++) {
-            order = orders.getJsonObject(i);
-            sum += Double.parseDouble(order.getString("price")) * Integer.parseInt(order.getString("amount"));
-        }
-
-        return sum;
-    }
-
-    // CHECK SI USEFULL APRES
+    // CHECK SI USEFULL APRES -> nouvelle version pour le bc atm
     public static JsonArray formatOrders(JsonArray orders) {
         JsonObject order;
         for (int i = 0; i < orders.size(); i++) {
@@ -808,21 +798,6 @@ public class OrderController extends ControllerHelper {
         }
         return orders;
     }
-
-    public static Double getTotalPrice(Double price, Double amount) {
-        return price * amount;
-    }
-
-    public static Double getTaxIncludedPrice(Double price, Double taxAmount) {
-        Double multiplier = taxAmount / 100 + 1;
-        return roundWith2Decimals(price) * multiplier;
-    }
-
-    public static Double roundWith2Decimals(Double numberToRound) {
-        BigDecimal bd = new BigDecimal(numberToRound);
-        return bd.setScale(2, BigDecimal.ROUND_HALF_UP).doubleValue();
-    }
-
 
     @Get("/orders/preview")
     @ApiDoc("Get orders preview data")

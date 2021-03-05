@@ -3,6 +3,7 @@ package fr.openent.lystore.export.validOrders;
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.controllers.OrderController;
 import fr.openent.lystore.export.validOrders.BC.BCExport;
+import fr.openent.lystore.helpers.OrderHelper;
 import fr.openent.lystore.helpers.RendersHelper;
 import fr.openent.lystore.service.*;
 import fr.openent.lystore.service.impl.*;
@@ -29,8 +30,8 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import static fr.openent.lystore.controllers.OrderController.getReadableNumber;
-import static fr.openent.lystore.controllers.OrderController.roundWith2Decimals;
+import static fr.openent.lystore.helpers.OrderHelper.getSumWithoutTaxes;
+import static fr.openent.lystore.helpers.OrderHelper.roundWith2Decimals;
 
 public class PDF_OrderHElper {
 
@@ -193,58 +194,6 @@ public class PDF_OrderHElper {
     }
 
 
-    protected Double getSumTTC(JsonArray orders) {
-        Double sum = 0D;
-        JsonObject order;
-        for (int i = 0; i < orders.size(); i++) {
-            order = orders.getJsonObject(i);
-            sum += Double.parseDouble(order.getString("pricettc")) * Integer.parseInt(order.getString("amount"))
-                  ;
-        }
-
-
-        return sum;
-    }
-
-    protected Double getSumWithoutTaxes(JsonArray orders) {
-        JsonObject order;
-        Double sum = 0D;
-        for (int i = 0; i < orders.size(); i++) {
-            order = orders.getJsonObject(i);
-            sum += order.getDouble("priceLocale") * Integer.parseInt(order.getString("amount"));
-        }
-
-        return sum;
-    }
-
-    protected JsonArray formatOrders(JsonArray orders) {
-        JsonObject order;
-        for (int i = 0; i < orders.size(); i++) {
-            order = orders.getJsonObject(i);
-            order.put("priceLocale",
-                    roundWith2Decimals(getTaxExcludedPrice(Double.parseDouble(order.getString("pricettc")),
-                            Double.parseDouble(order.getString("tax_amount")))));
-            order.put("totalPriceLocale",
-                    roundWith2Decimals(getTotalPriceHT(Double.parseDouble(order.getString("pricettc")),
-                            Double.parseDouble(order.getString("amount")),
-                            Double.parseDouble(order.getString("tax_amount")))));
-//            order.put("totalPriceLocale",
-//                    getReadableNumber(roundWith2Decimals(getTaxExcludedPrice(order.getDouble("totalPrice"),
-//                            Double.parseDouble(order.getString("tax_amount"))))));
-        }
-        return orders;
-    }
-
-    private Double getTotalPriceHT(double pricettc, double amount, double tax_amount) {
-        return getTaxExcludedPrice(pricettc,tax_amount) * amount ;
-    }
-
-    private Double getTaxExcludedPrice(double price, double tax_amount) {
-        if(tax_amount == -1.d){
-            tax_amount = 20.d;
-        }
-        return price / ((100 + tax_amount)/ 100 );
-    }
 
     protected void retrieveOrderData(final Handler<Either<String, Buffer>> exportHandler, JsonArray ids,boolean groupByStructure,
                                      final Handler<JsonObject> handler) {
@@ -253,16 +202,16 @@ public class PDF_OrderHElper {
             public void handle(Either<String, JsonArray> event) {
                 if (event.isRight()) {
                     JsonObject order = new JsonObject();
-                    JsonArray orders = formatOrders(event.right().getValue());
+                    JsonArray orders = OrderHelper.formatOrders(event.right().getValue());
                     order.put("orders", orders);
                     Double sumWithoutTaxes = getSumWithoutTaxes(orders);
-                    Double totalTTC = getSumTTC(orders);
+                    Double totalTTC = OrderHelper.getSumTTC(orders);
                     order.put("sumLocale",
-                            OrderController.getReadableNumber(OrderController.roundWith2Decimals(sumWithoutTaxes)));
+                            OrderController.getReadableNumber(roundWith2Decimals(sumWithoutTaxes)));
                     order.put("totalTaxesLocale",
-                            OrderController.getReadableNumber(OrderController.roundWith2Decimals(totalTTC - sumWithoutTaxes)));
+                            OrderController.getReadableNumber(roundWith2Decimals(totalTTC - sumWithoutTaxes)));
                     order.put("totalPriceTaxeIncludedLocal",
-                            OrderController.getReadableNumber(OrderController.roundWith2Decimals(totalTTC )));
+                            OrderController.getReadableNumber(roundWith2Decimals(totalTTC )));
                     handler.handle(order);
 
                 } else {
