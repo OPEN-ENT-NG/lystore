@@ -75,19 +75,18 @@ public class BCExportAfterValidationStructure extends PDF_OrderHElper {
 
     }
     @Override
-    protected void retrieveOrderData(final Handler<Either<String, Buffer>> exportHandler, JsonArray ids,boolean groupByStructure,
+    protected void retrieveOrderData(final Handler<Either<String, Buffer>> exportHandler, JsonArray validationNumbers,boolean groupByStructure,
                                      final Handler<JsonObject> handler) {
-        orderService.getOrders(ids, null, true, groupByStructure, new Handler<Either<String, JsonArray>>() {
+        orderService.getOrderByValidatioNumber(validationNumbers,  new Handler<Either<String, JsonArray>>() {
             @Override
             public void handle(Either<String, JsonArray> event) {
                 if (event.isRight()) {
                     JsonObject order = new JsonObject();
                     ArrayList <String> listStruct = new ArrayList<>();
-                    JsonArray orders = OrderController.formatOrders(event.right().getValue());
+                    JsonArray orders = OrderHelper.formatOrders(event.right().getValue());
                     orders = sortByUai(orders);
 
                     sortOrdersBySturcuture(order, listStruct, orders);
-
                     getSubtotalByStructure(order, listStruct);
 
                     structureService.getStructureById(new JsonArray(listStruct), new Handler<Either<String, JsonArray>>() {
@@ -110,8 +109,8 @@ public class BCExportAfterValidationStructure extends PDF_OrderHElper {
                                 setOrdersToArray(ordersArray, listStruct, order);
                                 handler.handle(order);
                             } else {
-                                log.error("An error occurred when collecting structures based on ids");
-                                exportHandler.handle(new Either.Left<>("An error occurred when collecting structures based on ids"));
+                                log.error("An error occurred when collecting structures based on validationNumbers");
+                                exportHandler.handle(new Either.Left<>("An error occurred when collecting structures based on validationNumbers"));
 
                             }
                         }
@@ -201,15 +200,19 @@ public class BCExportAfterValidationStructure extends PDF_OrderHElper {
     }
 
     private void getOrdersDataSql(String nbrbc, Handler<Either<String,JsonArray>> handler) {
+        getOrdersDataQueryByStructure(nbrbc, handler);
+    }
+
+    static void getOrdersDataQueryByStructure(String nbrbc, Handler<Either<String, JsonArray>> handler) {
         String query = "SELECT ord.engagement_number AS nbr_engagement, " +
                 "       ord.date_creation     AS date_generation, " +
                 "       supplier.id           AS supplier_id, " +
-                "       array_to_json(Array_agg(DISTINCT oce.number_validation)) as ids " +
+                "       array_to_json(Array_agg(DISTINCT orders.number_validation)) as ids " +
                 "FROM   lystore.order ord " +
-                "       INNER JOIN lystore.order_client_equipment oce " +
-                "               ON oce.id_order = ord.id " +
+                "       INNER JOIN lystore.allOrders orders " +
+                "               ON orders.id_order = ord.id " +
                 "       LEFT JOIN lystore.contract " +
-                "              ON contract.id = oce.id_contract " +
+                "              ON contract.id = orders.id_contract " +
                 "       INNER JOIN lystore.supplier " +
                 "               ON contract.id_supplier = supplier.id " +
                 "WHERE  ord.order_number = ? " +

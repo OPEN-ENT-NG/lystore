@@ -433,6 +433,7 @@ public class OrderController extends ControllerHelper {
                                 @Override
                                 public void handle(Either<String, JsonObject> event) {
                                     if (event.isRight()) {
+                                        //TODO DECOMMENTER
 //                                        logSendingOrder(numberValidations,request);
                                         ExportHelper.makeExport(request,eb,exportService,Lystore.ORDERSSENT,  Lystore.PDF,ExportTypes.BC_DURING_VALIDATION, "_BC");
                                     } else {
@@ -473,33 +474,6 @@ public class OrderController extends ControllerHelper {
             }
         });
 
-//        RequestUtils.bodyToJson(request, pathPrefix + "orderIds", new Handler<JsonObject>() {
-//            @Override
-//            public void handle(final JsonObject orders) {
-//                final JsonArray ids = orders.getJsonArray("ids");
-//                final String nbrBc = orders.getString("bc_number");
-//                final String nbrEngagement = orders.getString("engagement_number");
-//                final String dateGeneration = orders.getString("dateGeneration");
-//                Number supplierId = orders.getInteger("supplierId");
-//                final Number programId = orders.getInteger("id_program");
-//                getOrdersData(request, nbrBc, nbrEngagement, dateGeneration, supplierId, ids,
-//                        new Handler<JsonObject>() {
-//                            @Override
-//                            public void handle(JsonObject data) {
-//                                data.put("print_order", true);
-//                                exportPDFService.generatePDF(request, data,
-//                                        "BC.xhtml", "Bon_Commande_",
-//                                        new Handler<Buffer>() {
-//                                            @Override
-//                                            public void handle(final Buffer pdf) {
-//                                                manageFileAndUpdateStatus(request, pdf, ids, nbrEngagement, programId, dateGeneration, nbrBc);
-//                                            }
-//                                        }
-//                                );
-//                            }
-//                        });
-//            }
-//        });
     }
 
     @Put("/orders/inprogress")
@@ -634,19 +608,19 @@ public class OrderController extends ControllerHelper {
             }
         });
     }
-
-
-    private void renderValidOrdersCSVExport(HttpServerRequest request, JsonArray equipments) {
-        StringBuilder export = new StringBuilder(UTF8_BOM).append(getValidOrdersCSVExportHeader(request));
-        for (int i = 0; i < equipments.size(); i++) {
-            export.append(getValidOrdersCSVExportline(equipments.getJsonObject(i)));
-        }
-
-        request.response()
-                .putHeader("Content-Type", "text/csv; charset=utf-8")
-                .putHeader("Content-Disposition", "attachment; filename=orders.csv")
-                .end(export.toString());
-    }
+//
+//
+//    private void renderValidOrdersCSVExport(HttpServerRequest request, JsonArray equipments) {
+//        StringBuilder export = new StringBuilder(UTF8_BOM).append(getValidOrdersCSVExportHeader(request));
+//        for (int i = 0; i < equipments.size(); i++) {
+//            export.append(getValidOrdersCSVExportline(equipments.getJsonObject(i)));
+//        }
+//
+//        request.response()
+//                .putHeader("Content-Type", "text/csv; charset=utf-8")
+//                .putHeader("Content-Disposition", "attachment; filename=orders.csv")
+//                .end(export.toString());
+//    }
 
     private String getValidOrdersCSVExportline(JsonObject equipment) {
         return equipment.getString("uai")
@@ -777,30 +751,7 @@ public class OrderController extends ControllerHelper {
         return sum;
     }
 
-    // CHECK SI USEFULL APRES -> nouvelle version pour le bc atm
-    public static JsonArray formatOrders(JsonArray orders) {
-        JsonObject order;
-        for (int i = 0; i < orders.size(); i++) {
-            order = orders.getJsonObject(i);
-            order.put("priceLocale",
-                    getReadableNumber(roundWith2Decimals(Double.parseDouble(order.getString("pricettc")))));
-            order.put("unitPriceTaxIncluded",
-                    getReadableNumber(roundWith2Decimals(getTaxIncludedPrice(Double.parseDouble(order.getString("price")),
-                            Double.parseDouble(order.getString("tax_amount"))))));
-            order.put("unitPriceTaxIncludedLocale",
-                    getReadableNumber(roundWith2Decimals(getTaxIncludedPrice(Double.parseDouble(order.getString("price")),
-                            Double.parseDouble(order.getString("tax_amount"))))));
-            order.put("totalPrice",
-                    roundWith2Decimals(getTotalPrice(Double.parseDouble(order.getString("price")),
-                            Double.parseDouble(order.getString("amount")))));
-            order.put("totalPriceLocale",
-                    getReadableNumber(roundWith2Decimals(Double.parseDouble(order.getDouble("totalPrice").toString()))));
-            order.put("totalPriceTaxIncluded",
-                    getReadableNumber(roundWith2Decimals(getTaxIncludedPrice(order.getDouble("totalPrice"),
-                            Double.parseDouble(order.getString("tax_amount"))))));
-        }
-        return orders;
-    }
+
 
     @Get("/orders/preview")
     @ApiDoc("Get orders preview data")
@@ -834,7 +785,6 @@ public class OrderController extends ControllerHelper {
                                final Number supplierId, final JsonArray validationNumbers,
                                final Handler<JsonObject> handler) {
         final JsonObject data = new JsonObject();
-        log.info(validationNumbers);
         retrieveManagementInfo(request, validationNumbers, supplierId, new Handler<JsonObject>() {
             @Override
             public void handle(final JsonObject managmentInfo) {
@@ -920,6 +870,7 @@ public class OrderController extends ControllerHelper {
         while (structureIds.hasNext()) {
             structureId = structureIds.next();
             structure = structures.getJsonObject(structureId);
+            JsonObject finalStructure = structure;
             orderService.getOrderByValidatioNumber(numberValidation,
                     new Handler<Either<String, JsonArray>>() {
                         @Override
@@ -928,8 +879,7 @@ public class OrderController extends ControllerHelper {
                                 JsonObject order = event.right().getValue().getJsonObject(0);
                                 result.add(new JsonObject()
                                         .put("id_structure", order.getString("id_structure"))
-                                        .put("structure", structures.getJsonObject(order.getString("id_structure"))
-                                                .getJsonObject("structureInfo"))
+                                        .put("structure", finalStructure.getJsonObject("structureInfo"))
                                         .put("orders",event.right().getValue())
                                 );
                                 if (result.size() == structures.size()) {
