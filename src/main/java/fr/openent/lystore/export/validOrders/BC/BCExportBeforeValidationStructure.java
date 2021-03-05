@@ -22,8 +22,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import static fr.openent.lystore.helpers.OrderHelper.getSumWithoutTaxes;
-import static fr.openent.lystore.helpers.OrderHelper.roundWith2Decimals;
+import static fr.openent.lystore.helpers.OrderHelper.*;
 
 public class BCExportBeforeValidationStructure extends PDF_OrderHElper {
     private Logger log = LoggerFactory.getLogger(BCExportBeforeValidationStructure.class);
@@ -68,19 +67,18 @@ public class BCExportBeforeValidationStructure extends PDF_OrderHElper {
 
 
     @Override
-    protected void retrieveOrderData(final Handler<Either<String, Buffer>> exportHandler, JsonArray ids,boolean groupByStructure,
+    protected void retrieveOrderData(final Handler<Either<String, Buffer>> exportHandler, JsonArray validationNumbers,boolean groupByStructure,
                                      final Handler<JsonObject> handler) {
-        orderService.getOrders(ids, null, true, true, new Handler<Either<String, JsonArray>>() {
+        orderService.getOrderByValidatioNumber(validationNumbers, new Handler<Either<String, JsonArray>>() {
             @Override
             public void handle(Either<String, JsonArray> event) {
                 if (event.isRight()) {
                     JsonObject order = new JsonObject();
                     ArrayList<String> listStruct = new ArrayList<>();
-                    JsonArray orders = OrderController.formatOrders(event.right().getValue());
+                    JsonArray orders = formatOrders(event.right().getValue());
                     orders = sortByUai(orders);
 
                     sortOrdersBySturcuture(order, listStruct, orders);
-
                     getSubtotalByStructure(order, listStruct);
 
                     structureService.getStructureById(new JsonArray(listStruct), new Handler<Either<String, JsonArray>>() {
@@ -103,8 +101,8 @@ public class BCExportBeforeValidationStructure extends PDF_OrderHElper {
                                 setOrdersToArray(ordersArray, listStruct, order);
                                 handler.handle(order);
                             } else {
-                                log.error("An error occurred when collecting structures based on ids");
-                                exportHandler.handle(new Either.Left<>("An error occurred when collecting structures based on ids"));
+                                log.error("An error occurred when collecting structures based on validationNumbers");
+                                exportHandler.handle(new Either.Left<>("An error occurred when collecting structures based on validationNumbers"));
 
                             }
                         }

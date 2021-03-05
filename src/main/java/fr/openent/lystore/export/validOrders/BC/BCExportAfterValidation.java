@@ -68,30 +68,6 @@ public class BCExportAfterValidation  extends PDF_OrderHElper {
     }
 
     private void getOrdersDataSql(String nbrbc, Handler<Either<String,JsonArray>> handler) {
-        String query = "SELECT ord.engagement_number AS nbr_engagement, " +
-                "       ord.date_creation     AS date_generation, " +
-                "       supplier.id           AS supplier_id, " +
-                "       array_to_json(Array_agg(DISTINCT orders.number_validation)) as ids " +
-                "FROM   lystore.order ord " +
-                "       INNER JOIN lystore.allOrders orders " +
-                "               ON orders.id_order = ord.id " +
-                "       LEFT JOIN lystore.contract " +
-                "              ON contract.id = orders.id_contract " +
-                "       INNER JOIN lystore.supplier " +
-                "               ON contract.id_supplier = supplier.id " +
-                "WHERE  ord.order_number = ? " +
-                "GROUP  BY ord.engagement_number, " +
-                "          ord.date_creation, " +
-                "          supplier_id "
-                ;
-
-        Sql.getInstance().prepared(query, new JsonArray().add(nbrbc), new DeliveryOptions().setSendTimeout(Lystore.timeout * 1000000000L), SqlResult.validResultHandler(event -> {
-            if (event.isLeft()) {
-                handler.handle(event.left());
-            } else {
-                JsonArray datas = event.right().getValue();
-                handler.handle(new Either.Right<>(datas));
-            }
-        }));
+        BCExportAfterValidationStructure.getOrdersDataQueryByStructure(nbrbc, handler);
     }
 }
