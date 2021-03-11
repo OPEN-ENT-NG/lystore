@@ -96,85 +96,88 @@ public class DefaultProjectService extends SqlCrudService implements ProjectServ
                 "                LEFT JOIN (SELECT SUM((ROUND(price +(tax_amount * price)/100,2))) as price_all_options, " +
                 "                id_order_client_equipment FROM " + Lystore.lystoreSchema + ".order_client_options " +
                 "                GROUP BY id_order_client_equipment) opts ON oe.id = opts.id_order_client_equipment " +
-                "                Where id_campaign= "+ idCampaign +
+                "                Where id_campaign = ?  and id_project = ?"  +
                 "                GROUP BY oe.id, price_all_options) " +
                 "     " +
                 "    SELECT sum (values.price_total_equipment) as total " +
                 "    from values " +
                 "    ";
 
-        sql.raw(getTotalToUpdate,
-                SqlResult.validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
-                                                       @Override
-                                                       public void handle(Either<String, JsonObject> event) {
-                                                           if(event.isRight()){
-                                                               JsonObject order;
-                                                               JsonArray statements = new fr.wseduc.webutils.collections.JsonArray();
+        sql.prepared(getTotalToUpdate,new JsonArray().add(idCampaign).add(id), SqlResult.validResultHandler(
+                deleteProjectAndUpdateLinkedDatas(orders, id, idCampaign, idStructure, handler)
+        ));
+    }
 
-                                                               Double totalToAdd =Double.parseDouble( event.right().getValue().getString("total"));
-                                                               statements.add(getUpdatePurse(idCampaign,idStructure,totalToAdd));
-                                                               //Query
-                                                               for (int i = 0; i < orders.size(); i++) {
-                                                                   order = orders.getJsonObject(i);
-                                                                   statements.add(getInsertBasketEquipmentOrderStatement(order));
-                                                                   if (order.containsKey("options")) {
-                                                                       try {
-                                                                           statements.add(getInsertBasketOptionOrderStatement(order));
-                                                                       } catch (NullPointerException e) {
+    private Handler<Either<String, JsonArray>> deleteProjectAndUpdateLinkedDatas(JsonArray orders, Integer id, Integer idCampaign, String idStructure, Handler<Either<String, JsonObject>> handler) {
+        return new Handler<Either<String, JsonArray>>() {
+            @Override
+            public void handle(Either<String, JsonArray> event) {
+                if(event.isRight()){
+                    JsonObject order;
+                    JsonArray statements = new JsonArray();
+                    Double totalToAdd =Double.parseDouble( event.right().getValue().getJsonObject(0).getString("total"));
+                    statements.add(getUpdatePurse(idCampaign,idStructure,totalToAdd));
+                    //Query
+                    for (int i = 0; i < orders.size(); i++) {
+                        order = orders.getJsonObject(i);
+                        statements.add(getInsertBasketEquipmentOrderStatement(order));
+                        if (order.containsKey("options")) {
+                            try {
+                                statements.add(getInsertBasketOptionOrderStatement(order));
+                            } catch (NullPointerException e) {
 
-                                                                       }
-                                                                   }
-                                                               }
+                            }
+                        }
+                    }
 
-                                                               statements.add(getNewNbBasket(idCampaign, idStructure));
-                                                               statements.add(deleteProject(id));
-                                                               statements.add(getNewNbORDER(idCampaign, idStructure));
-                                                               statements.add(getPurse(idCampaign, idStructure));
+                    statements.add(getNewNbBasket(idCampaign, idStructure));
+                    statements.add(deleteProject(id));
+                    statements.add(getNewNbORDER(idCampaign, idStructure));
+                    statements.add(getPurse(idCampaign, idStructure));
 
-                                                               sql.transaction(statements, new Handler<Message<JsonObject>>() {
-                                                                   @Override
-                                                                   public void handle(Message<JsonObject> event) {
-                                                                       if (!"ok".equals(event.body().getString("status"))) {
-                                                                           String message = "An error occurred when deleting project " + id;
-                                                                           log.error(message);
-                                                                           handler.handle(new Either.Left<>(message));
-                                                                       } else {
-                                                                           JsonArray results = event.body().getJsonArray("results");
-                                                                           Double purse_amount = Double.parseDouble(results.getJsonObject(results.size()-1).getJsonArray("results").getJsonArray(0).getString(0));
-                                                                           JsonObject res;
-                                                                           Integer nb_order = -1;
-                                                                           Integer nb_basket = -1;
-                                                                           JsonArray fields, nb_order_array, nb_basket_array;
-                                                                           for (int i = 0; i < results.size(); i++) {
-                                                                               res = results.getJsonObject(i);
-                                                                               fields = res.getJsonArray("fields");
-                                                                               if (fields.size() != 0) {
-                                                                                   String type = fields.getString(0);
+                    sql.transaction(statements, new Handler<Message<JsonObject>>() {
+                        @Override
+                        public void handle(Message<JsonObject> event) {
+                            if (!"ok".equals(event.body().getString("status"))) {
+                                String message = "An error occurred when deleting project " + id;
+                                log.error(message);
+                                handler.handle(new Either.Left<>(message));
+                            } else {
+                                JsonArray results = event.body().getJsonArray("results");
+                                Double purse_amount = Double.parseDouble(results.getJsonObject(results.size()-1).getJsonArray("results").getJsonArray(0).getString(0));
+                                JsonObject res;
+                                Integer nb_order = -1;
+                                Integer nb_basket = -1;
+                                JsonArray fields, nb_order_array, nb_basket_array;
+                                for (int i = 0; i < results.size(); i++) {
+                                    res = results.getJsonObject(i);
+                                    fields = res.getJsonArray("fields");
+                                    if (fields.size() != 0) {
+                                        String type = fields.getString(0);
 
-                                                                                   if (type.equals("nb_order")) {
-                                                                                       nb_order_array = res.getJsonArray("results");
-                                                                                       nb_order_array = nb_order_array.getJsonArray(0);
-                                                                                       nb_order = nb_order_array.getInteger(0);
-                                                                                   }
-                                                                                   if (type.equals("nb_basket")) {
-                                                                                       nb_basket_array = res.getJsonArray("results");
-                                                                                       nb_basket_array = nb_basket_array.getJsonArray(0);
-                                                                                       nb_basket = nb_basket_array.getInteger(0);
-                                                                                   }
-                                                                               }
-                                                                           }
-                                                                           JsonObject resultfinal = new JsonObject().put("status", "ok");
-                                                                           if (nb_basket >= 0 && nb_order >= 0) {
-                                                                               resultfinal.put("nb_order", nb_order).put("nb_basket", nb_basket).put("purse_amount",purse_amount);
-                                                                           }
-                                                                           handler.handle(new Either.Right<>(resultfinal));
-                                                                       }
-                                                                   }
-                                                               });
-                                                           }
-                                                       }
-                                                   }
-                ));
+                                        if (type.equals("nb_order")) {
+                                            nb_order_array = res.getJsonArray("results");
+                                            nb_order_array = nb_order_array.getJsonArray(0);
+                                            nb_order = nb_order_array.getInteger(0);
+                                        }
+                                        if (type.equals("nb_basket")) {
+                                            nb_basket_array = res.getJsonArray("results");
+                                            nb_basket_array = nb_basket_array.getJsonArray(0);
+                                            nb_basket = nb_basket_array.getInteger(0);
+                                        }
+                                    }
+                                }
+                                JsonObject resultfinal = new JsonObject().put("status", "ok");
+                                if (nb_basket >= 0 && nb_order >= 0) {
+                                    resultfinal.put("nb_order", nb_order).put("nb_basket", nb_basket).put("purse_amount",purse_amount);
+                                }
+                                handler.handle(new Either.Right<>(resultfinal));
+                            }
+                        }
+                    });
+                }
+            }
+        };
     }
 
     private JsonObject getPurse(Integer idCampaign, String idStructure) {
@@ -182,7 +185,7 @@ public class DefaultProjectService extends SqlCrudService implements ProjectServ
                 "where id_structure = ? AND id_campaign = ?;";
 
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray()
-             .add(idStructure).add(idCampaign);
+                .add(idStructure).add(idCampaign);
 
         return new JsonObject()
                 .put("statement", query)
