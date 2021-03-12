@@ -73,8 +73,8 @@ public class ListLycee extends TabHelper {
 
     @Override
     public void getDatas(Handler<Either<String, JsonArray>> handler) {
-        query = "SELECT oce.price as price," +
-                " oce.tax_amount," +
+        query = "SELECT " +
+                " " +
                 " oce.name as name, " +
                 "oce.id_contract as id_contract," +
                 "SUM(oce.amount) as amount ," +
@@ -82,19 +82,15 @@ public class ListLycee extends TabHelper {
                 "       market.name as market_name," +
                 "       market.reference as market_reference," +
                 "       od.date_creation as creation_bc " +
-                "FROM " + Lystore.lystoreSchema + ".order_client_equipment oce" +
-                "       INNER JOIN "+ Lystore.lystoreSchema +".equipment_type et  " +
-                "               ON oce.id_type = et.id  " +
+                "FROM " + Lystore.lystoreSchema + ".allorders oce" +
                 "       INNER JOIN "+ Lystore.lystoreSchema +".contract market  " +
                 "               ON oce.id_contract = market.id  " +
                 "           LEFT JOIN " + Lystore.lystoreSchema + ".order od " +
                 "               ON oce.id_order = od.id " +
                 "WHERE number_validation = ? ";
-        query += " GROUP BY equipment_key, price, tax_amount, oce.name, oce.id_contract,  oce.id_structure ,market_name, market_reference, creation_bc" +
+        query += " GROUP BY equipment_key, oce.name, oce.id_contract,  oce.id_structure ,market_name, market_reference, creation_bc" +
                 " UNION " +
-                " SELECT opt.price," +
-                " opt.tax_amount," +
-                " opt.name, opt.id_contract," +
+                " SELECT  opt.name, opt.id_contract," +
                 " SUM(opt.amount) as amount " +
                 ", equipment.id_structure, " +
                 "       market_name as market_name," +
@@ -122,7 +118,7 @@ public class ListLycee extends TabHelper {
                 "WHERE number_validation = ? "+
                 ") as opt";
         query += " INNER JOIN lystore.order_client_equipment equipment ON (opt.id_order_client_equipment = equipment.id)" ;
-        query += " GROUP BY opt.name, opt.price, opt.tax_amount, opt.id_contract , equipment.id_structure,market_name, market_reference, creation_bc";
+        query += " GROUP BY opt.name, opt.id_contract , equipment.id_structure,market_name, market_reference, creation_bc";
 
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray();
         params.add(this.numberValidation).add(this.numberValidation);
