@@ -69,6 +69,7 @@ export class OrderRegion implements Order  {
     status:string;
     technical_spec:TechnicalSpec;
     title_id ?: number;
+    id_type: number;
 
     constructor() {
         this.typeOrder = "region";
@@ -107,7 +108,9 @@ export class OrderRegion implements Order  {
                 }),
             id_operation: this.id_operation,
             rank: this.rank -1,
-        }
+            id_type: this.id_type,
+
+    }
     }
 
     createFromOrderClient(order: OrderClient):void {
