@@ -49,7 +49,8 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 "cause_status, " +
                 "number_validation, " +
                 "id_order, " +
-                "id_project) ";
+                "id_project," +
+                "id_type ) ";
 
         query += "SELECT " +
                 "? ," +
@@ -74,7 +75,8 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 "       cause_status, " +
                 "       number_validation, " +
                 "       id_order, " +
-                "       id_project " +
+                "       id_project," +
+                "       ? " +
                 "FROM  " + Lystore.lystoreSchema + ".order_client_equipment " +
                 "WHERE id = ? " +
                 "RETURNING id;";
@@ -95,6 +97,7 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
             params.add(order.getInteger("id_operation"));
         }
         params.add(order.getInteger("id_contract"));
+        params.add(order.getInteger("id_type"));
         params.add(order.getInteger("id_order_client_equipment"));
         Sql.getInstance().prepared(query, params, SqlResult.validUniqueResultHandler(handler));
     }
@@ -111,7 +114,8 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 "owner_name = ? , " +
                 "owner_id = ?, " +
                 "name = ?, " +
-                "equipment_key = ?, " +
+                "equipment_key = ?," +
+                "id_type = ?, " +
                 "cause_status = 'IN PROGRESS', ";
 
         query += order.getInteger("rank") != -1 ? "rank=?," : "rank = NULL, ";
@@ -127,7 +131,8 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 .add(user.getUsername())
                 .add(user.getUserId())
                 .add(order.getString("name"))
-                .add(order.getInteger("equipment_key"));
+                .add(order.getInteger("equipment_key"))
+                .add(order.getInteger("id_type"));
         if (order.getInteger("rank") != -1) {
             params.add(order.getInteger("rank"));
         }
