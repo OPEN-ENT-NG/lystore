@@ -93,8 +93,11 @@
                                     </svg>                        <i>-->
                                     <i>
                                     </i>
-                                </div><span ng-bind=" displayStatus(orderClient)"></span>
-
+                                </div>
+                                <span ng-bind=" displayStatus(orderClient)"></span>
+                            </div>
+                            <div class="right-magnet cell twelve vertical-spacing-twice">
+                                [[orderClient.rejectOrder.comment]]
                             </div>
                             <div class="right-magnet cell twelve vertical-spacing-twice">
                                 <i18n> lystore.orderClient.date.creation </i18n>[[formatDate(orderClient.creation_date)]]

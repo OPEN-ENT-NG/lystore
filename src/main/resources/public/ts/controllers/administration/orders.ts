@@ -2,7 +2,7 @@ import {_, $,idiom as lang,angular, model, ng, template, toasts,moment} from 'en
 import http from "axios";
 import {
     Campaign, Notification, Operation, OrderClient, OrdersClient, orderWaiting, PRIORITY_FIELD, Userbook, Order,
-    Utils
+    Utils, RejectOrders
 } from '../../model';
 import {Mix} from 'entcore-toolkit';
 
@@ -15,6 +15,8 @@ export const orderController = ng.controller('orderController',
         $scope.tableFields = orderWaiting;
         let isPageOrderWaiting = $location.path() === "/order/waiting";
         let isPageOrderSent = $location.path() === "/order/sent";
+
+        $scope.rejectedOrders = new RejectOrders();
 
         if(isPageOrderSent)
             $scope.displayedOrdersSent = $scope.displayedOrders;
@@ -482,16 +484,11 @@ export const orderController = ng.controller('orderController',
             Utils.safeApply($scope);
         };
 
-        $scope.statusRejectedOrder = async (orders: OrderClient[]) => {
-            let ordersToReject = new OrdersClient();
-            ordersToReject.all = Mix.castArrayAs(OrderClient, orders);
-            await ordersToReject.updateStatus('REJECTED');
+        $scope.rejectOrders = async (comment: string) => {
+            await $scope.ordersClient.rejectOrders(comment);
+            await $scope.cancelOrderReject();
+            Utils.safeApply($scope);
         };
-
-        $scope.rejectOrders = (comment: string) => {
-            $scope.ordersClient.testRejectOrders(comment);
-        }
-
 
         $scope.cancelOrderReject = () => {
             $scope.display.lightbox.rejectOrder = false;

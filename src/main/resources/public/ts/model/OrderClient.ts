@@ -15,7 +15,7 @@ import {
     Utils,
     Grade,
     Title,
-    Project, Contracts, ContractTypes, Suppliers, Campaigns, Projects, Titles
+    Project, Contracts, ContractTypes, Suppliers, Campaigns, Projects, Titles, label, Purse
 } from './index';
 import http from 'axios';
 
@@ -405,7 +405,7 @@ export class OrdersClient extends Selection<OrderClient> {
         }
     }
 
-    async testRejectOrders (comment: string) {
+    async rejectOrders (comment: string) {
         this.selected.map(order => {
             order.rejectOrder = new RejectOrder();
             order.rejectOrder.comment =  comment;
@@ -437,11 +437,12 @@ export class OrderOptionClient implements Selectable {
     selected: boolean;
 }
 
-export class RejectOrder {
+export class RejectOrder implements Selectable{
     id: number;
     id_order: number;
     comment: string;
     order_name: string;
+    selected: boolean;
 
     toJson() {
         return {
@@ -450,4 +451,17 @@ export class RejectOrder {
             order_name : this.order_name
         }
     }
+}
+
+export class RejectOrders extends Selection<RejectOrder>{
+
+    constructor() {
+        super([])
+    }
+
+    async sync (idCampaign: number) {
+        let {data} = await http.get(`/lystore/orderClient/rejectComment/${idCampaign}`);
+        this.all = Mix.castArrayAs(RejectOrder, data);
+    }
+
 }

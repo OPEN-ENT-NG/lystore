@@ -1315,5 +1315,12 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 .put("values", params)
                 .put("action", "prepared");
     }
+
+    public void getRejectOrderComment(int idCampaign, Handler<Either<String, JsonArray>> handler) {
+        String query = "SELECT order_reject.id_order, order_reject.comment FROM " + Lystore.lystoreSchema + ".order_reject " +
+                        "INNER JOIN " + Lystore.lystoreSchema + ".order_client_equipment ON order_reject.id_order = order_client_equipment.id " +
+                        "WHERE order_client_equipment.id_campaign = ?;";
+        sql.prepared(query, new JsonArray().add(idCampaign), SqlResult.validResultHandler(handler));
+    }
 }
 

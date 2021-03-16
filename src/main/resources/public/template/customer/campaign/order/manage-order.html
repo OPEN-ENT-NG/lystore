@@ -4,6 +4,7 @@
             <span ng-if="campaign.purse_enabled"><i18n>lystore.orderEquipment.manage.title</i18n></span>
             <span ng-if="!campaign.purse_enabled"><i18n>lystore.requestsEquipment.manage.title</i18n></span>
             <button class="right-magnet" ng-click="exportCSV()"><i18n>lystore.orderEquipment.manage.exportCSV</i18n></button>
+            <button class="right-magnet" ng-click="syncReject(campaign.id)"><i18n>test</i18n></button>
         </h1>
         <div ng-if="campaign.priority_enabled">
             <tabs menus="menu" ng-model="display.list" ng-change="switchView(display.list)"></tabs>

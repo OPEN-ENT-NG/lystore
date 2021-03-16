@@ -3,6 +3,7 @@ package fr.openent.lystore.service;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
@@ -211,4 +212,6 @@ public interface OrderService {
     void listOrderSent(String status, Handler<Either<String, JsonArray>> arrayResponseHandler);
 
     void createRejectOrders(JsonObject rejectOrder, Handler<Either<String, JsonObject>> handler);
+
+    void getRejectOrderComment(int idCampaign, Handler<Either<String, JsonArray>> handler);
 }

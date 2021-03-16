@@ -1202,4 +1202,12 @@ public class OrderController extends ControllerHelper {
                 null,
                 rejectOrder)));
     }
+
+    @Get("/orderClient/rejectComment/:idCampaign")
+    @ApiDoc("Returns comments")
+    @SecuredAction(value="", type = ActionType.AUTHENTICATED)
+    public void getRejectOrderComment(HttpServerRequest request) {
+        Integer idCampaign = Integer.parseInt(request.getParam("idCampaign"));
+        orderService.getRejectOrderComment(idCampaign, arrayResponseHandler(request));
+    }
 }
