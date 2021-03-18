@@ -143,6 +143,7 @@ export class OrderRegion implements Order  {
         this.structure = order.structure;
         this.id_operation = order.id_operation;
         this.equipment = order.equipment;
+        this.id_type = order.equipment.id_type;
     }
 
 

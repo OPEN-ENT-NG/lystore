@@ -309,7 +309,6 @@ GROUP BY
                 .add(updateIdInstructionAdd(operationIds,instructionId))
                 .add(updateOperationOrdersRegionAdd(operationIds))
                 .add(updateOperationOrdersClientAdd(operationIds));
-
         sql.transaction(statements, new Handler<Message<JsonObject>>() {
             @Override
             public void handle(Message<JsonObject> event) {
@@ -336,8 +335,8 @@ GROUP BY
                 "SET status = 'WAITING_FOR_ACCEPTANCE' " +
                 " WHERE id_operation IN " +
                 Sql.listPrepared(operationIds.getList()) +
-                " AND status != 'VALID' OR status != 'DONE' " +
-                " RETURNING id;";
+                " AND (status != 'VALID' OR status != 'DONE') " +
+                " ;";
 
         JsonObject statement = new JsonObject().put("statement", query)
                 .put("values", operationIds)
@@ -350,8 +349,8 @@ GROUP BY
                 "SET status = 'WAITING_FOR_ACCEPTANCE' " +
                 " WHERE id_operation IN " +
                 Sql.listPrepared(operationIds.getList()) +
-                " AND status != 'VALID' OR status != 'DONE' " +
-                " RETURNING id;";
+                " AND (status != 'VALID' OR status != 'DONE') " +
+                " ;";
 
         JsonObject statement = new JsonObject().put("statement", query)
                 .put("values", operationIds)
@@ -361,14 +360,13 @@ GROUP BY
 
     private JsonObject updateIdInstructionAdd(JsonArray operationIds, Integer instructionId) {
         String query = " UPDATE " + Lystore.lystoreSchema + ".operation " +
-                "SET id_instruction = " +
-                instructionId +
+                "SET id_instruction = ?" +
                 " WHERE id IN " +
                 Sql.listPrepared(operationIds.getList()) +
-                " RETURNING id";
+                ";";
 
         JsonObject statement = new JsonObject().put("statement", query)
-                .put("values", operationIds)
+                .put("values", new JsonArray().add(instructionId).addAll(operationIds))
                 .put("action", "prepared");
         return statement;
     }

@@ -112,4 +112,8 @@ FROM   lystore.operation AS o
                ON orders.id_operation = o.id;
 
 
+CREATE INDEX operation_idx ON lystore.operation USING btree (id);
+CREATE INDEX oce_operation_idx ON lystore.order_client_equipment USING btree (id_operation);
+CREATE INDEX ore_operation_idx ON lystore."order-region-equipment" USING btree (id_operation);
+
 
