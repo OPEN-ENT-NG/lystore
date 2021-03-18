@@ -53,6 +53,7 @@ public final class SqlQueryUtils {
                     .put("id", id);
             either = new Either.Right<>(returns);
         } else {
+            LOGGER.info(result);
             LOGGER.error("An error occurred when launching transaction");
             either = new Either.Left<>("");
         }

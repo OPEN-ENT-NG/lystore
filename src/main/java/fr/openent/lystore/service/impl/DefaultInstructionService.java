@@ -285,13 +285,14 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                     for (int i = 0; i < resultsList.size(); i++) {
                         statements.addAll(resultsList.get(i));
                     }
+                    sql.transaction(statements, new Handler<Message<JsonObject>>() {
+                        @Override
+                        public void handle(Message<JsonObject> event) {
+                            handler.handle(SqlQueryUtils.getTransactionHandler(event, id));
+                        }
+
+                    });
                 }
-                sql.transaction(statements, new Handler<Message<JsonObject>>() {
-                    @Override
-                    public void handle(Message<JsonObject> event) {
-                        handler.handle(SqlQueryUtils.getTransactionHandler(event, id));
-                    }
-                });
             }
         });
 
