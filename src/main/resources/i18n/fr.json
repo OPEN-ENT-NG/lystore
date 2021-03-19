@@ -208,6 +208,7 @@
   "lystore.order.text.reject.start": "Vous êtes sur le point d'annuler",
   "lystore.order.text.reject.one.end": " demande. Cette opération est irréversible. Vous pouvez ajouter un commentaire à l'attention des établissements concernés si vous souhaitez motiver l'opération.",
   "lystore.order.text.reject.many.end": "demandes. Cette opération est irréversible. Vous pouvez ajouter un commentaire à l'attention des établissements concernés si vous souhaitez motiver l'opération.",
+  "lystore.reject.orders.confirm": "Les demandes sélectionnées ont bien été refusées.",
   "lystore.project.name": "Nom du projet",
   "the.structure": "l'établissement",
   "lystore.structures.number": "Nb d'établissements",

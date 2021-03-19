@@ -1,4 +1,4 @@
-import {_, idiom as lang, model, moment, notify} from 'entcore';
+import {_, idiom as lang, model, moment, notify, toasts} from 'entcore';
 import {Mix, Selectable, Selection} from 'entcore-toolkit';
 import {
     Campaign,
@@ -418,7 +418,7 @@ export class OrdersClient extends Selection<OrderClient> {
             rejectOrdersJson.push(order.rejectOrder.toJson())
         })
         try{
-            await http.put(`/lystore/orderClient/reject`, {ordersToReject: rejectOrdersJson});
+            return await http.put(`/lystore/orderClient/reject`, {ordersToReject: rejectOrdersJson});
         }catch (e){
             notify.error('lystore.reject.orders.err');
             throw e;

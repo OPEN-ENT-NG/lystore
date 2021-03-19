@@ -653,7 +653,6 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
         }
 
         $scope.syncReject = async (idCampaign) => {
-            console.log("syncReject in");
             await $scope.rejectedOrders.sync(idCampaign);
             $scope.ordersClient.all.map(order => {
                 order.rejectOrder = new RejectOrder()

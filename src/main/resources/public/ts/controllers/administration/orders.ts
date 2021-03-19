@@ -485,8 +485,17 @@ export const orderController = ng.controller('orderController',
         };
 
         $scope.rejectOrders = async (comment: string) => {
-            await $scope.ordersClient.rejectOrders(comment);
+            let {status} = await $scope.ordersClient.rejectOrders(comment);
+            if (status === 200) {
+                for(let i = $scope.ordersClient.selected.length - 1 ; i >= 0 ; i--){
+                    let reject = $scope.ordersClient.selected[i]
+                    let index = $scope.displayedOrders.all.findIndex(oce => oce.id === reject.id )
+                    reject.selected = false ;
+                    $scope.displayedOrders.all.splice(index,1);
+                }
+            }
             await $scope.cancelOrderReject();
+            toasts.confirm('lystore.reject.orders.confirm');
             Utils.safeApply($scope);
         };
 
