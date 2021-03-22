@@ -308,7 +308,8 @@ GROUP BY
         JsonArray statements = new fr.wseduc.webutils.collections.JsonArray()
                 .add(updateIdInstructionAdd(operationIds,instructionId))
                 .add(updateOperationOrdersRegionAdd(operationIds))
-                .add(updateOperationOrdersClientAdd(operationIds));
+                .add(updateOperationOrdersClientAdd(operationIds))
+                ;
         sql.transaction(statements, new Handler<Message<JsonObject>>() {
             @Override
             public void handle(Message<JsonObject> event) {
@@ -335,7 +336,7 @@ GROUP BY
                 "SET status = 'WAITING_FOR_ACCEPTANCE' " +
                 " WHERE id_operation IN " +
                 Sql.listPrepared(operationIds.getList()) +
-                " AND (status != 'VALID' OR status != 'DONE') " +
+                " AND STATUS NOT IN ('VALID', 'DONE', 'SENT') " +
                 " ;";
 
         JsonObject statement = new JsonObject().put("statement", query)
@@ -349,7 +350,7 @@ GROUP BY
                 "SET status = 'WAITING_FOR_ACCEPTANCE' " +
                 " WHERE id_operation IN " +
                 Sql.listPrepared(operationIds.getList()) +
-                " AND (status != 'VALID' OR status != 'DONE') " +
+                " AND STATUS NOT IN ('VALID', 'DONE', 'SENT') " +
                 " ;";
 
         JsonObject statement = new JsonObject().put("statement", query)
