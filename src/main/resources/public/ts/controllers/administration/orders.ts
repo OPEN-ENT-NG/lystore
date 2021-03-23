@@ -493,6 +493,8 @@ export const orderController = ng.controller('orderController',
                     reject.selected = false ;
                     $scope.displayedOrders.all.splice(index,1);
                 }
+            } else {
+                toasts.warning('lystore.reject.orders.err')
             }
             await $scope.cancelOrderReject();
             toasts.confirm('lystore.reject.orders.confirm');

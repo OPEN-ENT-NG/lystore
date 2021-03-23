@@ -1294,7 +1294,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     private JsonObject createRejectOrder(Integer id_order, String comment) {
         String statement = "INSERT INTO " +
                 Lystore.lystoreSchema + " .order_reject(id_order, comment) " +
-                "VALUES (?, ?) RETURNING id";
+                "VALUES (?, ?) RETURNING id;";
 
         JsonArray params = new JsonArray().add(id_order).add(comment);
         return new JsonObject()
