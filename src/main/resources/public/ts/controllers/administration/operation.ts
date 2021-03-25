@@ -107,8 +107,8 @@ export const operationController = ng.controller('operationController',
         $scope.initOperationDate = (operation:Operation) => {
             if(!operation.date_operation) {
                 operation.date_operation = moment().add().format('YYYY-MM-DD');
-            };
-        };
+            }
+        }
 
         $scope.validOperationForm = (operation:Operation) =>{
             if(operation.label !== undefined) {
