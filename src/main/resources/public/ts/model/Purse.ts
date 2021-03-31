@@ -62,6 +62,7 @@ export class Purses extends Selection<Purse> {
         let {data, status} =  await  http.get(`/lystore/campaign/${id_campaign}/purse/check`);
         if(status===201){
             this.all.map(purse => {
+                purse.substraction = 0.00;
                 data.map( back_data =>{
                     if (back_data.id_structure && back_data.id_structure === purse.id_structure){
                         purse.substraction = back_data.substraction;
