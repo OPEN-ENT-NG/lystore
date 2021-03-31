@@ -71,8 +71,8 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
         $scope.projects = new Projects();
         $scope.titles = new Titles();
         $scope.labelOperation = new labels();
-        $scope.equipments.eventer.on('loading::true', $scope.$apply);
-        $scope.equipments.eventer.on('loading::false', $scope.$apply);
+        $scope.equipments.eventer.on('loading::true', () => Utils.safeApply($scope));
+        $scope.equipments.eventer.on('loading::false', () => Utils.safeApply($scope));
         $scope.loadingArray = false;
 
         route({
