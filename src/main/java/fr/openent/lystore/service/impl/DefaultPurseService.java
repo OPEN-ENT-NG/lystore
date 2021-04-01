@@ -249,7 +249,7 @@ public class DefaultPurseService implements PurseService {
                 "    INNER JOIN lystore.purse ON orders.id_structure = purse.id_structure  " +
                 "WHERE  " +
                 "   orders.id_campaign = purse.id_campaign  " +
-                "  AND purse.id_campaign = 37 " +
+                "  AND purse.id_campaign = ? " +
                 "  order by difference; " +
                 "   ";
         Sql.getInstance().prepared(query,new JsonArray().add(id), new DeliveryOptions().setSendTimeout(Lystore.timeout * 1000000000L),SqlResult.validResultHandler(new Handler<Either<String, JsonArray>>() {
