@@ -243,8 +243,8 @@ export const configurationController = ng.controller('configurationController',
             $scope.equipment = new Equipment();
             if ('id' in equipment) {
                 Mix.extend($scope.equipment, equipment);
-                $scope.equipment.eventer.on('loading::true', $scope.$apply);
-                $scope.equipment.eventer.on('loading::false', $scope.$apply);
+                $scope.equipment.eventer.on('loading::true', () => Utils.safeApply($scope));
+                $scope.equipment.eventer.on('loading::false', () => Utils.safeApply($scope));
                 $scope.equipment.sync(equipment.id);
                 $scope.equipment.tags = $scope.equipment.tags.map(
                     (tagId) => _.findWhere($scope.tags.all, {id: tagId})
