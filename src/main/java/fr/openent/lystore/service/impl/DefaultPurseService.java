@@ -212,7 +212,7 @@ public class DefaultPurseService implements PurseService {
     @Override
     public void checkPurses(Integer id, Handler<Either<String, JsonArray>> handler) {
         String query = "   " +
-                "   SELECT initial_amount, amount , initial_amount - (orders.total_order + amount) as substraction , purse.id_structure ,purse.id_campaign " +
+                "   SELECT initial_amount, amount ,initial_amount - (amount + orders.total_order )as difference , orders.total_order,purse.id_structure ,purse.id_campaign " +
                 " " +
                 "FROM  " +
                 "( " +
@@ -223,11 +223,8 @@ public class DefaultPurseService implements PurseService {
                 "        ( " +
                 "            ( " +
                 "                SELECT " +
-                "                CASE WHEN oce.price_proposal is null " +
-                "                and ( " +
-                "                    override_region is null " +
-                "                    or override_region is true " +
-                "                ) THEN 0 WHEN SUM( " +
+                "                CASE WHEN oce.price_proposal is not null " +
+                "              THEN 0 WHEN SUM( " +
                 "                    oco.price + (oco.price * oco.tax_amount / 100) * oco.amount " +
                 "                ) is NULL THEN 0 ELSE SUM( " +
                 "                    ROUND(oco.price + (oco.price * oco.tax_amount / 100) * oco.amount,2) " +
@@ -252,8 +249,9 @@ public class DefaultPurseService implements PurseService {
                 "    INNER JOIN lystore.purse ON orders.id_structure = purse.id_structure  " +
                 "WHERE  " +
                 "   orders.id_campaign = purse.id_campaign  " +
-                "  AND purse.id_campaign = ? " +
-                "  order by substraction; ";
+                "  AND purse.id_campaign = 37 " +
+                "  order by difference; " +
+                "   ";
         Sql.getInstance().prepared(query,new JsonArray().add(id), new DeliveryOptions().setSendTimeout(Lystore.timeout * 1000000000L),SqlResult.validResultHandler(new Handler<Either<String, JsonArray>>() {
             @Override
             public void handle(Either<String, JsonArray> event) {
