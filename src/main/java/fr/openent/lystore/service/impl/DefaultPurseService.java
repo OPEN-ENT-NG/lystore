@@ -211,82 +211,48 @@ public class DefaultPurseService implements PurseService {
 
     @Override
     public void checkPurses(Integer id, Handler<Either<String, JsonArray>> handler) {
-        String query = "WITH values  " +
-                "     AS (SELECT orders.id,  " +
-                "                orders.id_campaign,  " +
-                "                orders.\"price TTC\",  " +
-                "                Round(( (SELECT CASE  " +
-                "                                  WHEN orders.price_proposal IS NOT NULL THEN 0  " +
-                "                                  WHEN orders.override_region IS NULL THEN 0  " +
-                "                                  WHEN Sum(oco.price + ( ( oco.price *  " +
-                "                                                         oco.tax_amount )  " +
-                "                                                         / 100 )  " +
-                "                                                       *  " +
-                "                                                       oco.amount) IS  " +
-                "                                       NULL THEN 0  " +
-                "                                  ELSE Sum(oco.price + ( ( oco.price *  " +
-                "                                                         oco.tax_amount )  " +
-                "                                                         / 100 )  " +
-                "                                                       *  " +
-                "                                                       oco.amount)  " +
-                "                                END  " +
-                "                         FROM    " + Lystore.lystoreSchema + ".order_client_options oco  " +
-                "                         WHERE  oco.id_order_client_equipment = orders.id)  " +
-                "                        + orders.\"price TTC\" ) * orders.amount, 2) AS total,  " +
-                "                orders.id_structure,  " +
-                "                orders.id_operation                                AS  " +
-                "                id_operation  " +
-                "         FROM   ( " +
-                "                 (SELECT oce.id,  " +
-                "                         false AS isregion,  " +
-                "                         CASE  " +
-                "                           WHEN price_proposal IS NULL THEN price +  " +
-                "                           ( price * tax_amount  " +
-                "                             / 100 )  " +
-                "                           ELSE price_proposal  " +
-                "                         END   AS \"price TTC\",  " +
-                "                         amount,  " +
-                "                         creation_date,  " +
-                "                         NULL  AS modification_date,  " +
-                "                         NAME,  " +
-                "                         summary,  " +
-                "                         description,  " +
-                "                         image,  " +
-                "                         status,  " +
-                "                         id_contract,  " +
-                "                         equipment_key,  " +
-                "                         id_campaign,  " +
-                "                         id_structure,  " +
-                "                         cause_status,  " +
-                "                         number_validation,  " +
-                "                         id_order,  " +
-                "                         comment,  " +
-                "                         rank  AS \"prio\",  " +
-                "                         price_proposal,  " +
-                "                         id_project,  " +
-                "                         NULL  AS id_order_client_equipment,  " +
-                "                         program,  " +
-                "                         action,  " +
-                "                         id_operation,  " +
-                "                         override_region  " +
-                "                  FROM    " + Lystore.lystoreSchema + ".order_client_equipment oce)) AS orders  " +
-                "         WHERE  orders.id_campaign = ?)  " +
-                "SELECT Array_to_json(Array_agg(values.*))                               AS  " +
-                "       orders,  " +
-                "       ( purse.initial_amount - ( Sum(values.total ) + purse.amount ) ) AS substraction  " +
-                "       ,  " +
-                "       purse.id_structure,  " +
-                "       purse.id_campaign  " +
-                "FROM    " + Lystore.lystoreSchema + ".purse  " +
-                "       LEFT JOIN values  " +
-                "              ON purse.id_campaign = values.id_campaign  " +
-                "                 AND purse.id_structure = values.id_structure  " +
-                "WHERE  purse.id_campaign = ? " +
-                "GROUP  BY purse.id_structure,  " +
-                "          purse.initial_amount,  " +
-                "          purse.amount,  " +
-                "          purse.id_campaign ";
-        Sql.getInstance().prepared(query,new JsonArray().add(id).add(id), new DeliveryOptions().setSendTimeout(Lystore.timeout * 1000000000L),SqlResult.validResultHandler(new Handler<Either<String, JsonArray>>() {
+        String query = "   " +
+                "   SELECT initial_amount, amount ,initial_amount - (amount + orders.total_order )as substraction , orders.total_order,purse.id_structure ,purse.id_campaign " +
+                " " +
+                "FROM  " +
+                "( " +
+                " SELECT " +
+                "     oce.id_structure, " +
+                "      oce.id_campaign, " +
+                "       SUM( " +
+                "        ( " +
+                "            ( " +
+                "                SELECT " +
+                "                CASE WHEN oce.price_proposal is not null " +
+                "              THEN 0 WHEN SUM( " +
+                "                    oco.price + (oco.price * oco.tax_amount / 100) * oco.amount " +
+                "                ) is NULL THEN 0 ELSE SUM( " +
+                "                    ROUND(oco.price + (oco.price * oco.tax_amount / 100) * oco.amount,2) " +
+                "                ) END " +
+                "                FROM " +
+                "                lystore.order_client_options oco " +
+                "                where " +
+                "                oco.id_order_client_equipment = oce.id " +
+                "            ) + ROUND((oce.price + oce.price * oce.tax_amount /100),2) " +
+                "        ) * oce.amount " +
+                "       ) as total_order " +
+                "       from " +
+                "       lystore.order_client_equipment oce " +
+                "       inner join lystore.purse ON purse.id_campaign = oce.id_campaign " +
+                "       and oce.id_structure = purse.id_structure " +
+                "    group by " +
+                "    oce.id_structure, " +
+                "    oce.id_campaign " +
+                "    order by " +
+                "    id_structure " +
+                "    ) as orders " +
+                "    INNER JOIN lystore.purse ON orders.id_structure = purse.id_structure  " +
+                "WHERE  " +
+                "   orders.id_campaign = purse.id_campaign  " +
+                "  AND purse.id_campaign = ? " +
+                "  order by substraction; " +
+                "   ";
+        Sql.getInstance().prepared(query,new JsonArray().add(id), new DeliveryOptions().setSendTimeout(Lystore.timeout * 1000000000L),SqlResult.validResultHandler(new Handler<Either<String, JsonArray>>() {
             @Override
             public void handle(Either<String, JsonArray> event) {
                 if (event.isRight())
