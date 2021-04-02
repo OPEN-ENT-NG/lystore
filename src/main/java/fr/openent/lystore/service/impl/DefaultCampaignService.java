@@ -70,7 +70,13 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                 for (int i = 0; i < equipments.size(); i++) {
                     object = equipments.getJsonObject(i);
                     campaign = campaignMap.getJsonObject(object.getInteger("id").toString());
-                    campaign.put("nb_equipments", object.getLong("nb_equipments"));
+                    try {
+                        campaign.put("nb_equipments", object.getLong("nb_equipments"));
+                    }catch (NullPointerException e){
+                        LOGGER.info(object);
+                        LOGGER.info(campaign);
+                        LOGGER.info(i);
+                    }
                 }
 
                 JsonArray campaignList = new JsonArray();
