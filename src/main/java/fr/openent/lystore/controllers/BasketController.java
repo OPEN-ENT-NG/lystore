@@ -179,7 +179,7 @@ public class BasketController extends ControllerHelper {
                 basketService.checkAvailabilityEquipment(idCampaign,idStructure,baskets,checkAvailabilityEquipmentHandler);
             } catch (ClassCastException e) {
                 log.info(e.getLocalizedMessage());
-                log.error("An error occurred when casting Basket inform dsqdsqdskqldksmlqkdsmqlkdmslqkdlmskqmlation", e);
+                log.error("An error occurred when casting Basket information", e);
                 renderError(request);
             }catch (Exception e){
                 log.info(e.getLocalizedMessage());
