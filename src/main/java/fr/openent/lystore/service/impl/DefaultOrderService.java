@@ -429,6 +429,21 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
         }));
     }
 
+    @Override
+    public void getFileOrderRegion(String fileId, Handler<Either<String, JsonObject>> handler) {
+        String query = "SELECT * FROM " + Lystore.lystoreSchema + ".order_region_file WHERE id = ?";
+        JsonArray params = new JsonArray()
+                .add(fileId);
+
+        Sql.getInstance().prepared(query, params, SqlResult.validResultHandler(event -> {
+            if (event.isRight() && event.right().getValue().size() > 0) {
+                handler.handle(new Either.Right<>(event.right().getValue().getJsonObject(0)));
+            } else {
+                handler.handle(new Either.Left<>("Not found"));
+            }
+        }));
+    }
+
 
     @Override
     public void listExport(Integer idCampaign, String idStructure, Handler<Either<String, JsonArray>> handler) {
@@ -492,7 +507,15 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
         sql.prepared(query, params, SqlResult.validUniqueResultHandler(handler));
     }
 
+    @Override
+    public void deleteFileFromOrder(String fileId, Handler<Either<String, JsonObject>> handler) {
+        String query = "DELETE FROM " + Lystore.lystoreSchema + ".order_region_file WHERE id = ?";
 
+        JsonArray params = new JsonArray()
+                .add(fileId);
+
+        Sql.getInstance().prepared(query, params, SqlResult.validRowsResultHandler(handler));
+    }
 
 
 

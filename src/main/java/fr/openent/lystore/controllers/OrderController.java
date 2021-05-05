@@ -1059,6 +1059,50 @@ public class OrderController extends ControllerHelper {
         });
     }
 
+    @Get("/order/update/file/:fileId")
+    @ApiDoc("Download specific file")
+    @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+    public void getFileOrderRegion(HttpServerRequest request) {
+        String fileId = request.getParam("fileId");
+        orderService.getFileOrderRegion(fileId, event -> {
+            if (event.isRight()) {
+                storage.sendFile(fileId, event.right().getValue().getString("filename"), request, false, new JsonObject());
+            } else {
+                notFound(request);
+            }
+        });
+    }
+
+    @Delete("/order/update/file/:fileId")
+    @ApiDoc("Delete file from basket")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(ManagerRight.class)
+    public void deleteFileFromOrder(HttpServerRequest request) {
+        String fileId = request.getParam("fileId");
+
+        orderService.deleteFileFromOrder(fileId, event -> {
+            if (event.isRight()) {
+                request.response().setStatusCode(204).end();
+                deleteFile(fileId);
+            } else {
+                renderError(request);
+            }
+        });
+    }
+
+    /**
+     * Delete file from storage based on identifier
+     *
+     * @param fileId File identifier to delete
+     */
+    private void deleteFile(String fileId) {
+        storage.removeFile(fileId, e -> {
+            if (!"ok".equals(e.getString("status"))) {
+                log.error("[Lystore@uploadFile] An error occurred while removing " + fileId + " file.");
+            }
+        });
+    }
+
     @Put("/orders/operation/in-progress/:idOperation")
     @ApiDoc("update operation in orders with status in progress")
     @SecuredAction(value = "", type = ActionType.RESOURCE)

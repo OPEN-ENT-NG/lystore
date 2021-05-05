@@ -23,4 +23,6 @@ public interface OrderRegionService {
 
     void createProject (Integer idProject,  Handler<Either<String, JsonObject>> handler);
 
+    void addFileToOrder(String fileId, String fileName, Handler<Either<String, JsonObject>> handler);
+
 }

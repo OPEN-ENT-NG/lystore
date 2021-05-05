@@ -277,4 +277,15 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
         }
         sql.prepared(query, values, SqlResult.validRowsResultHandler(handler));
     }
+
+    @Override
+    public void addFileToOrder(String fileId, String fileName, Handler<Either<String, JsonObject>> handler) {
+        String query = "INSERT INTO " + Lystore.lystoreSchema + ".order_region_file (id, filename) " +
+                "VALUES (?, ?)";
+        JsonArray params = new JsonArray()
+                .add(fileId)
+                .add(fileName);
+
+        Sql.getInstance().prepared(query, params, SqlResult.validRowsResultHandler(handler));
+    }
 }

@@ -70,7 +70,7 @@ public class Lystore extends BaseServer {
         addController(new ProjectController());
         addController(new OperationController());
         addController(new InstructionController(storage));
-        addController(new OrderRegionController());
+        addController(new OrderRegionController(storage));
         addController(new ExportController(storage));
         addController(new SettingController(eb));
         addController(new LabelOperationController());
