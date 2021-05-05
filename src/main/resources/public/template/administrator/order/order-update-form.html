@@ -170,6 +170,40 @@
 
         <div class="row vertical-spacing-four">
             <label class="two right-padding-form-field cell">
+                <i18n>lystore.basket.file.name</i18n>
+                :
+            </label>
+            <div
+                    class="four cell horizontal-margin"
+                    ng-if="doc.name || doc.title"
+            >
+                [[doc.name || doc.title]]
+            </div>
+
+            <div class="row basket-file-list"
+                 ng-if="orderRegion.files.length > 0">
+                <ul class="four">
+                    <li ng-repeat="file in orderRegion.files" class="twelve basket-file row">
+                        <a class="cell three" ng-click="orderRegion.downloadFile(file)">[[ file.name ||
+                            file.filename ]]</a>
+                        <i class="cell one text-right"
+                           ng-class="{ close: file.status !== 'loading', loading: file.status === 'loading'}"
+                           ng-click="deleteOrderDocument(orderRegion, file)"></i>
+                    </li>
+                </ul>
+            </div>
+
+            <div
+                    class="four cell horizontal-margin"
+            >
+                <a ng-click="openAddDocumentsLightbox(orderParent)">
+                    <i class="attachment" /><i18n>lystore.basket.add-file</i18n>
+                </a>
+            </div>
+        </div>
+
+        <div class="row vertical-spacing-four">
+            <label class="two right-padding-form-field cell">
                 <i18n>comment</i18n>
                 :
             </label>
@@ -179,10 +213,9 @@
             >
                 [[orderParent.comment]]
             </div>
-            <textarea auto-height=""
-                      style="resize: none; height: 62px;"
+            <textarea style="resize: none;"
                       ng-model="orderToUpdate.comment"
-                      class="ng-pristine ng-valid ng-touched cell horizontal-margin"
+                      class="comment ng-pristine ng-valid ng-touched four cell horizontal-margin"
                       ng-class="{'four': orderParent}">
             >
             </textarea>
@@ -191,6 +224,10 @@
         <lightbox on-close="display.lightbox.validOrder = false; "
                   show="display.lightbox.validOrder">
             <container template="validOrder.lightbox"></container>
+        </lightbox>
+        <lightbox show="display.lightbox.addDocuments" on-close="display.lightbox.addDocuments = false">
+            <upload-files end="endUpload"
+                          upload-uri="'/lystore/order/update/file'"></upload-files>
         </lightbox>
         <div class="row">
             <div class="right-magnet">

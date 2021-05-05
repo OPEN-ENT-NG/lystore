@@ -4,6 +4,7 @@ import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
 import fr.openent.lystore.security.ManagerRight;
+import fr.openent.lystore.security.PostBasketFileRight;
 import fr.openent.lystore.service.OrderRegionService;
 import fr.openent.lystore.service.impl.DefaultOrderRegionService;
 import fr.openent.lystore.service.impl.DefaultOrderService;
@@ -19,6 +20,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 
@@ -29,14 +31,16 @@ public class OrderRegionController extends BaseController {
 
 
     private OrderRegionService orderRegionService;
+    private Storage storage;
 
     private static final Logger LOGGER = LoggerFactory.getLogger (DefaultOrderService.class);
 
     public static final String UTF8_BOM = "\uFEFF";
 
 
-    public OrderRegionController() {
+    public OrderRegionController(Storage storage) {
         this.orderRegionService = new DefaultOrderRegionService("equipment");
+        this.storage = storage;
 
     }
 
@@ -176,5 +180,46 @@ public class OrderRegionController extends BaseController {
                 Actions.UPDATE.toString(),
                 idOperation.toString(),
                 new JsonObject().put("ids", idsOrders))));
+    }
+
+    @Post("/order/update/file")
+    @ApiDoc("Upload a file for a specific cart")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(ManagerRight.class)
+    public void uploadFile(HttpServerRequest request) {
+        storage.writeUploadFile(request, entries -> {
+            if (!"ok".equals(entries.getString("status"))) {
+                renderError(request);
+                return;
+            }
+            try {
+                String fileId = entries.getString("_id");
+                String filename = entries.getJsonObject("metadata").getString("filename");
+                orderRegionService.addFileToOrder(fileId, filename, event -> {
+                    if (event.isRight()) {
+                        JsonObject response = new JsonObject()
+                                .put("id", fileId)
+                                .put("filename", filename);
+                        request.response().setStatusCode(201).putHeader("Content-Type", "application/json").end(response.toString());
+                    } else {
+                        deleteFile(fileId);
+                        renderError(request);
+                    }
+                });
+            } catch (NumberFormatException e) {
+                renderError(request);
+            }
+        });
+    }/**
+     * Delete file from storage based on identifier
+     *
+     * @param fileId File identifier to delete
+     */
+    private void deleteFile(String fileId) {
+        storage.removeFile(fileId, e -> {
+            if (!"ok".equals(e.getString("status"))) {
+                log.error("[Lystore@uploadFile] An error occurred while removing " + fileId + " file.");
+            }
+        });
     }
 }

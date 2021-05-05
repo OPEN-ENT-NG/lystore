@@ -46,7 +46,7 @@ export class OrderRegion implements Order  {
 
     contract_name?: string;
     description:string;
-    files: string;
+    files?: any;
     id_campaign:number;
     id_contract:number;
     id_orderClient: number;
@@ -186,6 +186,18 @@ export class OrderRegion implements Order  {
             notify.error('lystore.admin.order.update.err');
             throw e;
         }
+    }
+
+    async deleteDocument(file) {
+        try {
+            await http.delete(`/lystore/order/update/file/${file.id}`);
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    downloadFile(file) {
+        window.open(`/lystore/order/update/file/${file.id}`);
     }
 }
 
