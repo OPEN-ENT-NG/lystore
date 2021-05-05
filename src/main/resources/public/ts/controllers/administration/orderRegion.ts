@@ -10,7 +10,7 @@ import {
     Structures,
     Titles,
     Utils,
-    Equipments, ContractType, ContractTypes, Contracts
+    Equipments, ContractType, ContractTypes, Contracts, Order, Basket
 } from "../../model";
 
 declare let window: any;
@@ -24,6 +24,7 @@ export const orderRegionController = ng.controller('orderRegionController',
         $scope.display = {
             lightbox: {
                 validOrder: false,
+                addDocuments: false,
             },
         };
         $scope.translate = (key: string):string => lang.translate(key);
@@ -323,5 +324,36 @@ export const orderRegionController = ng.controller('orderRegionController',
             }
             Utils.safeApply($scope);
         }
+
+        $scope.openAddDocumentsLightbox = (orderRegion: OrderRegion) => {
+            $scope.order = JSON.parse(JSON.stringify(orderRegion));
+            $scope.files = [];
+            $scope.display.lightbox.addDocuments = true;
+            Utils.safeApply($scope);
+        }
+
+        $scope.endUpload = (files) => {
+            $scope.orderRegion.files = $scope.orderRegion.files || [];
+            for (let i = 0; i < files.length; i++) {
+                $scope.orderRegion.files.push(files[i]);
+            }
+            $scope.display.lightbox.addDocuments = false;
+            Utils.safeApply($scope);
+        };
+
+        $scope.deleteOrderDocument = async (orderRegion: OrderRegion, file) => {
+            try {
+                file.status = 'loading';
+                Utils.safeApply($scope);
+                await orderRegion.deleteDocument(file);
+                orderRegion.files = _.reject(orderRegion.files, (doc) => doc.id === file.id);
+                toasts.confirm('lystore.basket.file.delete.success');
+            } catch (err) {
+                toasts.warning('lystore.basket.file.delete.error');
+                delete file.status;
+            } finally {
+                Utils.safeApply($scope);
+            }
+        };
     }
     ]);

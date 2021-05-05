@@ -1,5 +1,6 @@
 import {_, ng} from 'entcore';
 import http from 'axios';
+import {Utils} from "../model";
 
 export const uploadFiles = ng.directive("uploadFiles", function () {
     return {
@@ -70,7 +71,7 @@ export const uploadFiles = ng.directive("uploadFiles", function () {
             };
 
             $scope.endUpload = () => {
-                $scope.$apply();
+                Utils.safeApply($scope);
                 setTimeout(function () {
                     $scope.$parent.$eval(attributes.ngModel);
                     $scope.end($scope.upload.documents);
