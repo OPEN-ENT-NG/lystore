@@ -183,7 +183,7 @@ public class OrderRegionController extends BaseController {
     }
 
     @Post("/order/update/file")
-    @ApiDoc("Upload a file for a specific cart")
+    @ApiDoc("Upload a file for a specific order")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(ManagerRight.class)
     public void uploadFile(HttpServerRequest request) {
