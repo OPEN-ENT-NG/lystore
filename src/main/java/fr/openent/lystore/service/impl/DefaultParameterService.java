@@ -45,7 +45,7 @@ public class DefaultParameterService  implements ParameterService {
     @Override
     public void createLystoreGroupToStructure(JsonObject body, Handler<Either<String, JsonObject>> handler) {
         String query = "MATCH (s:Structure {id:{structureId}}) " +
-                "OPTIONAL MATCH (s)<-[:DEPENDS]-(g:ManualGroup{name: {groupName} })" +
+                "OPTIONAL MATCH (s)<-[:DEPENDS]-(g:ManualGroup{name: {groupName}})" +
                 " RETURN g.id as groupId";
 
         JsonObject creationParams = new JsonObject()
@@ -58,43 +58,59 @@ public class DefaultParameterService  implements ParameterService {
                     }
 //
                     JsonObject creationResult = either.right().getValue();
+                    log.info(either.right().getValue());
                     if (!(null == creationResult.getValue("groupId"))) {
                         handler.handle(new Either.Right<>(new JsonObject()));
                         return;
                     }
 
                     body.put("groupDisplayName", LystoreGroupName);
+//                    .put("lockDelete",true); //A CHANGER
+//            body.put("lockDelete",true);
                     JsonObject action = new JsonObject()
                             .put("action", "manual-create-group")
                             .put("structureId", body.getString("structureId"))
                             .put("group", body);
+                    log.info(body);
+
                     eb.send("entcore.feeder", action, (Handler<AsyncResult<Message<JsonObject>>>) createGarResult -> {
                         if (createGarResult.failed()) {
                             handler.handle(new Either.Left<>("Failed to create lystore group"));
                             return;
                         }
-                String groupId = createGarResult.result().body()
-                        .getJsonArray("results")
-                        .getJsonArray(0)
-                        .getJsonObject(0).getString("id");
+                        String groupId = createGarResult.result().body()
+                                .getJsonArray("results")
+                                .getJsonArray(0)
+                                .getJsonObject(0).getString("id");
+                        String groupLockQuery =  "MAtch (g:Group {id:{groupId}}) set g.lockDelete = true return g";
 
-                String queryRole = "MATCH (a:Application)-[]->(ac:Action)<-[]-(r:Role)" +
-                        " WHERE a.name = {linkName} RETURN r.id as id";
+                        JsonObject paramsLock = new JsonObject()
+                                .put("groupId", groupId);
+                        Neo4j.getInstance().execute(groupLockQuery, paramsLock, Neo4jResult.validUniqueResultHandler(result ->
+                                {
+                                    if(result.isRight())
+                                        log.info("group locked success");
+                                    else
+                                        log.error(result.left().getValue());
+                                })
+                        );
+                        String queryRole = "MATCH (a:Application)-[]->(ac:Action)<-[]-(r:Role)" +
+                                " WHERE a.name = {linkName} RETURN r.id as id";
 
-                Neo4j.getInstance().execute(queryRole, new JsonObject().put("linkName", ""),
-                        Neo4jResult.validUniqueResultHandler(linkResult -> {
-                            if (linkResult.isLeft()) {
-                                handler.handle(new Either.Left<>("Failed to fetch role id"));
-                            }
-                            String roleId = linkResult.right().getValue().getString("id");
-                            String queryLink = "MATCH (r:Role), (g:Group) " +
-                                    "WHERE r.id = {roleId} and g.id = {groupId} " +
-                                    "CREATE UNIQUE (g)-[:AUTHORIZED]->(r) ";
-                            JsonObject params = new JsonObject()
-                                    .put("groupId", groupId)
-                                    .put("roleId", roleId);
-                            Neo4j.getInstance().execute(queryLink, params, Neo4jResult.validUniqueResultHandler(handler));
-                        }));
+                        Neo4j.getInstance().execute(queryRole, new JsonObject().put("linkName", ""),
+                                Neo4jResult.validUniqueResultHandler(linkResult -> {
+                                    if (linkResult.isLeft()) {
+                                        handler.handle(new Either.Left<>("Failed to fetch role id"));
+                                    }
+                                    String roleId = linkResult.right().getValue().getString("id");
+                                    String queryLink = "MATCH (r:Role), (g:Group) " +
+                                            "WHERE r.id = {roleId} and g.id = {groupId}" +
+                                            "CREATE UNIQUE (g)-[:AUTHORIZED]->(r)" ;
+                                    JsonObject params = new JsonObject()
+                                            .put("groupId", groupId)
+                                            .put("roleId", roleId);
+                                    Neo4j.getInstance().execute(queryLink, params, Neo4jResult.validUniqueResultHandler(handler));
+                                }));
                     });
                 }
         ));
