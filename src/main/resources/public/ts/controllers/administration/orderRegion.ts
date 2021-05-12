@@ -12,6 +12,7 @@ import {
     Utils,
     Equipments, ContractType, ContractTypes, Contracts, Order, Basket
 } from "../../model";
+import http from "axios";
 
 declare let window: any;
 export const orderRegionController = ng.controller('orderRegionController',
@@ -61,6 +62,7 @@ export const orderRegionController = ng.controller('orderRegionController',
                 let orderRegionCreate = new OrderRegion();
                 orderRegionCreate.createFromOrderClient($scope.orderToUpdate);
                 orderRegionCreate.id_operation = operation.id;
+                orderRegionCreate.files = $scope.orderRegion.files;
                 orderRegionCreate.equipment_key = $scope.orderToUpdate.equipment_key;
                 orderRegionCreate.technical_spec = $scope.orderToUpdate.equipment.technical_specs;
                 orderRegionCreate.id_contract = $scope.orderToUpdate.equipment.id_contract;
@@ -97,8 +99,18 @@ export const orderRegionController = ng.controller('orderRegionController',
             else
                 window.history.back();
         };
+
+         $scope.deleteOrderRegionFile = async () => {
+            try {
+                await http.delete(`/lystore/order/update`);
+            } catch (err) {
+                throw err;
+            }
+        }
+
         $scope.updateOrderConfirm = async ():Promise<void> => {
             await $scope.selectOperationForOrder();
+            await $scope.deleteOrderRegionFile();
         };
 
         $scope.updateLinkedOrderConfirm = async ():Promise<void> => {
