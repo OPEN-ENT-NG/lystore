@@ -535,6 +535,16 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
         Sql.getInstance().prepared(query, params, SqlResult.validRowsResultHandler(handler));
     }
 
+    @Override
+    public void deleteOrderRegionFile(Handler<Either<String, JsonObject>> handler){
+        String query =
+                "DELETE FROM " + Lystore.lystoreSchema + ".order_region_file " +
+                        "WHERE id_order_region_equipment IS NULL;";
+
+        JsonArray params = new JsonArray();
+        Sql.getInstance().prepared(query, params, SqlResult.validRowsResultHandler(handler));
+    }
+
 
 
     @Override

@@ -1073,6 +1073,20 @@ public class OrderController extends ControllerHelper {
         });
     }
 
+    @Delete("/order/update")
+    @ApiDoc("delete files unaffiliated with an order-region-equipment id")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(ManagerRight.class)
+    public void deleteOrderRegionFile(final HttpServerRequest request) {
+        orderService.deleteOrderRegionFile(event-> {
+            if(event.isRight()){
+                request.response().setStatusCode(204).end();
+            } else {
+                renderError(request);
+            }
+        });
+    }
+
     @Delete("/order/update/file/:fileId")
     @ApiDoc("Delete file from basket")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
