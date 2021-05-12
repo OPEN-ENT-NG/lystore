@@ -165,6 +165,8 @@ public interface OrderService {
 
     void deleteFileFromOrder(String fileId, Handler<Either<String, JsonObject>> handler);
 
+    void deleteOrderRegionFile(Handler<Either<String, JsonObject>> handler);
+
     void updatePriceProposal(Integer id, Double price_proposal, Handler<Either<String, JsonObject>> eitherHandler);
 
     /**

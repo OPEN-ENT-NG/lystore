@@ -2,11 +2,14 @@ package fr.openent.lystore.service.impl;
 
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.service.OrderRegionService;
+import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.JULLogDelegate;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.service.impl.SqlCrudService;
@@ -14,20 +17,48 @@ import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.UserInfos;
 
+import java.util.List;
+
 public class DefaultOrderRegionService extends SqlCrudService implements OrderRegionService {
 
     public DefaultOrderRegionService(String table) {
-        super(table);
+        super(table);;
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultOrderRegionService.class);
+
     @Override
-    public void setOrderRegion(JsonObject order, UserInfos user, Handler<Either<String, JsonObject>> handler) {
-        String query = "";
-        JsonArray params = new JsonArray();
-        query = "" +
+    public void setOrderRegion(JsonObject orderRegion, UserInfos user, Handler<Either<String, JsonObject>> handler) {
+        String getIdQuery = "SELECT nextval('" + Lystore.lystoreSchema + ".order-region-equipment_id_seq') as id";
+        sql.raw(getIdQuery, SqlResult.validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
+            @Override
+            public void handle(Either<String, JsonObject> event) {
+                try {
+                    final Number id = event.right().getValue().getInteger("id");
+                    JsonArray statements = new JsonArray()
+                            .add(setOrderRegionStatement(id, orderRegion, user))
+                            .add(updateIdOrderRegionEquipment(id, orderRegion.getJsonArray("files")));
+
+                    sql.transaction(statements, new Handler<Message<JsonObject>>() {
+                        @Override
+                        public void handle(Message<JsonObject> event) {
+                            handler.handle(SqlQueryUtils.getTransactionHandler(event, id));
+                        }
+                    });
+                } catch (ClassCastException e){
+                    LOGGER.error("An error occurred when casting ids", e);
+                    handler.handle(new Either.Left<String, JsonObject>(""));
+                }
+            }
+        }));
+    }
+
+    private JsonObject setOrderRegionStatement(Number id, JsonObject order, UserInfos user) {
+        String statement = "";
+        statement = "" +
                 "INSERT INTO  " + Lystore.lystoreSchema + ".\"order-region-equipment\" AS ore " +
-                "(price, " +
+                "(id, " +
+                "price, " +
                 "amount, " +
                 "creation_date, " +
                 "owner_name, " +
@@ -37,8 +68,8 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 "comment, " +
                 "id_order_client_equipment, " +
                 "rank, ";
-        query += order.containsKey("id_operation") ? "id_operation, " : "";
-        query += "status, " +
+        statement += order.containsKey("id_operation") ? "id_operation, " : "";
+        statement += "status, " +
                 "id_campaign, " +
                 "id_structure, " +
                 "summary, " +
@@ -52,7 +83,8 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 "id_project," +
                 "id_type ) ";
 
-        query += "SELECT " +
+        statement += "SELECT " +
+                "? ," +
                 "? ," +
                 "? ," +
                 "? ," +
@@ -62,9 +94,9 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 "? ," +
                 "? ," +
                 "? ,";
-        query += order.getInteger("rank") != -1 ? "?, " : "NULL, ";
-        query += order.containsKey("id_operation") ? "?, " : "";
-        query += " 'IN PROGRESS', " +
+        statement += order.getInteger("rank") != -1 ? "?, " : "NULL, ";
+        statement += order.containsKey("id_operation") ? "?, " : "";
+        statement += " 'IN PROGRESS', " +
                 "       id_campaign, " +
                 "       id_structure, " +
                 "       summary, " +
@@ -81,7 +113,9 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 "WHERE id = ? " +
                 "RETURNING id;";
 
-        params.add(order.getDouble("price"))
+        JsonArray params = new JsonArray()
+                .add(id)
+                .add(order.getDouble("price"))
                 .add(order.getInteger("amount"))
                 .add(order.getString("creation_date"))
                 .add(user.getUsername())
@@ -99,7 +133,28 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
         params.add(order.getInteger("id_contract"));
         params.add(order.getInteger("id_type"));
         params.add(order.getInteger("id_order_client_equipment"));
-        Sql.getInstance().prepared(query, params, SqlResult.validUniqueResultHandler(handler));
+
+        return new JsonObject()
+                .put("statement", statement)
+                .put("values", params)
+                .put("action", "prepared");
+    }
+
+    private JsonObject updateIdOrderRegionEquipment(Number id, JsonArray files) {
+
+        String statement = "UPDATE " + Lystore.lystoreSchema + ".order_region_file " +
+                "SET id_order_region_equipment = ? " +
+                "WHERE id IN  " + Sql.listPrepared(files) + ";";
+
+        JsonArray params = new JsonArray().add(id);
+        for(Object file : files){
+           JsonObject fileJO = (JsonObject)file;
+           params.add(fileJO.getString("id"));
+        }
+        return new JsonObject()
+                .put("statement", statement)
+                .put("values", params)
+                .put("action", "prepared");
     }
 
     public void updateOrderRegion(JsonObject order, int idOrder, UserInfos user, Handler<Either<String, JsonObject>> handler) {
