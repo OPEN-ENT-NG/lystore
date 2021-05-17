@@ -661,12 +661,12 @@ public class ExtractionOrder extends TabHelper {
                 "      AND orders.override_region is false " +
                 "  ) as options_names,  " +
                 "  ( " +
-                "    SELECT  " +
-                "      SUM( " +
+                "     SELECT  " +
+                "      ROUND(SUM( " +
                 "        oco.price + ( " +
                 "          (oco.price * oco.tax_amount) / 100 " +
-                "        ) * oco.amount * orders.amount " +
-                "      )  " +
+                "        ) * oco.amount  " +
+                "      ) * orders.amount , 2 ) " +
                 "    FROM  " +
                 "      " +  Lystore.lystoreSchema + ".order_client_options oco  " +
                 "    WHERE  " +
