@@ -19,27 +19,6 @@
             <div class="three cell twelve-mobile">
                 <h3>[[campaign.name]]</h3>
                 <p ng-bind-html="campaign.description"></p>
-                <div class = "small-text bold-black-h3">
-                    <div ng-if="campaign.end_date">
-                        <h3>
-                            <i18n>campaign.automatic.dates</i18n>
-                        </h3>
-                        <h3>
-                            <i18n>from</i18n>
-                            <span ng-bind="formatDate(campaign.start_date, 'DD/MM/YYYY')"></span>
-                            <i18n>to</i18n>
-                            <span ng-bind="formatDate(campaign.end_date, 'DD/MM/YYYY')"></span>
-                        </h3>
-                    </div>
-                    <div ng-if="!campaign.end_date && campaign.start_date">
-                        <h3>
-                            <i18n>campaign.automatic.dates.no.end</i18n>
-                            <span ng-bind="formatDate(campaign.start_date, 'DD/MM/YYYY')"></span>
-                        </h3>
-                    </div>
-
-
-                </div>
                 <br/>
                 <div class="small-text" ng-if="campaign.purse_enabled">
                     <i18n>lystore.campaign.amount</i18n>
@@ -55,7 +34,7 @@
                     <i18n>lystore.campaign.titles.manage</i18n>
                 </button>
             </div>
-            <div class="twelve-mobile row-mobile cell">
+            <div class="twelve-mobile five row-mobile cell">
                 <ul class="colored status-bar cell row">
                     <li tooltip="[[lang.translate('lystore.order.waiting')]]" class="large"><i class="validated-status"></i><span>[[campaign.nb_orders_waiting]]</span></li>
                     <li tooltip="[[lang.translate('lystore.order.valid')]]" class="large"><i class="validated-status"></i><span>[[campaign.nb_orders_valid]]</span></li>
@@ -64,11 +43,30 @@
             </div>
 
         </div>
-        <div class="row" workflow="lystore.administrator">
-            <div class="right-magnet">
-                <span class="horizontal-spacing cell"><i18n>lystore.campaign.accessibility</i18n></span>
-                <switch-toggle ng-model="campaign.accessible" ng-change="updateAccessibility(campaign)"
-                               class="cell"></switch-toggle>
+        <div class="right-magnet cell" >
+            <div class="">
+                <div class = "small-text bold-black-h3">
+                    <div ng-if="campaign.end_date">
+                        <h3>
+                            <i18n>campaign.automatic.dates</i18n>
+                            <i18n>from</i18n>
+                            <span ng-bind="formatDate(campaign.start_date, 'DD/MM/YYYY')"></span>
+                            <i18n>to</i18n>
+                            <span ng-bind="formatDate(campaign.end_date, 'DD/MM/YYYY')"></span>
+                        </h3>
+                    </div>
+                    <div ng-if="!campaign.end_date && campaign.start_date">
+                        <h3>
+                            <i18n>campaign.automatic.dates.no.end</i18n>
+                            <span ng-bind="formatDate(campaign.start_date, 'DD/MM/YYYY')"></span>
+                        </h3>
+                    </div>
+                </div>
+                <div workflow="lystore.administrator" style="float: right; padding: 0; margin-top: 10px;">
+                    <span class="horizontal-spacing cell"><i18n>lystore.campaign.accessibility</i18n></span>
+                    <switch-toggle ng-model="campaign.accessible" ng-change="updateAccessibility(campaign)"
+                                   class="cell"></switch-toggle>
+                </div>
             </div>
         </div>
     </article>
