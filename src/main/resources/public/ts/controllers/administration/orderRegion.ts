@@ -22,10 +22,12 @@ export const orderRegionController = ng.controller('orderRegionController',
         $scope.structure_groups = new StructureGroups();
         $scope.structuresToDisplay = new Structures();
         $scope.titles = new Titles();
+        $scope.orderRegion.files = new Array();
         $scope.display = {
             lightbox: {
                 validOrder: false,
                 addDocuments: false,
+                addDocumentsRegion : false,
             },
         };
         $scope.translate = (key: string):string => lang.translate(key);
@@ -337,6 +339,14 @@ export const orderRegionController = ng.controller('orderRegionController',
             $scope.order = JSON.parse(JSON.stringify(orderRegion));
             $scope.files = [];
             $scope.display.lightbox.addDocuments = true;
+            Utils.safeApply($scope);
+        }
+
+        $scope.openAddDocumentsRegionLightbox = (orderRegion : OrderRegion) => {
+            $scope.order = orderRegion;
+            $scope.files = [];
+            $scope.display.lightbox.addDocumentsRegion = true;
+            template.open('addDocuments.lightbox', 'administrator/orderRegion/order-region-add-files');
             Utils.safeApply($scope);
         }
 
