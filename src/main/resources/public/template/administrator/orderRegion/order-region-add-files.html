@@ -1,0 +1,59 @@
+<div class="upload-files">
+    <div class="row">
+        <h1>
+            <i18n>lystore.basket.add-file</i18n>
+        </h1>
+        <h2>
+            <i18n>lystore.orderRegion-documents</i18n>
+        </h2>
+        <div ng-if="orderRegion.files.length === 0">
+            <i18n>lystore.basket.no-file</i18n>
+        </div>
+        <div class="row basket-file-list"
+             ng-if="orderRegion.files.length > 0">
+            <ul class="four">
+                <li ng-repeat="file in orderRegion.files" class="twelve basket-file row">
+                    <a class="cell three" ng-click="orderRegion.downloadFile(file)">[[ file.name ||
+                        file.filename ]]</a>
+                    <i class="cell one text-right"
+                       ng-class="{ close: file.status !== 'loading', loading: file.status === 'loading'}"
+                       ng-click="deleteOrderDocument(orderRegion, file)"></i>
+                </li>
+            </ul>
+        </div>
+        <h2>
+            <i18n>lystore.orderRegion-new-documents</i18n>
+        </h2>
+        <div class="drop-zone import-files" ng-hide="upload.loading">
+            <article class="drop flex-row align-center">
+                <i class="two cloud-upload"></i>
+                <div class="ten help">
+                    <em>
+                        <i18n>medialibrary.drop.help2</i18n>
+                    </em>
+                </div>
+            </article>
+            <article class="default flex-row align-center absolute-position">
+                <div class="three select-file">
+                    <div class="hidden-content">
+                        <input type="file" class="file-input" multiple files-input-change="importFiles()"
+                               ng-model="files"/>
+                    </div>
+                    <button class="file-button no-margin" translate content="library.file.choose"></button>
+                </div>
+                <i class="two cloud-upload"></i>
+                <div class="seven help">
+                    <em>
+                        <i18n>medialibrary.drop.help</i18n>
+                    </em>
+                </div>
+            </article>
+
+        </div>
+    </div>
+    <div class="row" ng-if="end">
+        <button class="right-magnet" ng-click="endUpload()" type="button">
+            <i18n>lystore.end</i18n>
+        </button>
+    </div>
+</div>
