@@ -533,18 +533,32 @@ export const configurationController = ng.controller('configurationController',
             Utils.safeApply($scope);
         };
 
-        $scope.updateAccessibility = (campaign : Campaign) =>{
+        $scope.updateAccessibility = async (campaign: Campaign) => {
             $scope.automaticCampaign = campaign;
-            if(campaign.automatic_close){
+            if (campaign.automatic_close) {
                 template.open('campaign.lightbox.automaticCampaign', 'administrator/campaign/campaign-change-manual');
                 $scope.display.lightbox.automaticCampaign = true;
-            }else{
-                campaign.updateAccessibility()
+            } else {
+                $scope.loadingArray = true;
+                Utils.safeApply($scope);
+                await campaign.updateAccessibility();
+                await $scope.campaigns.sync();
+                $scope.allCampaignSelected = false;
+                $scope.loadingArray = false;
+
+                Utils.safeApply($scope);
             }
         }
-        $scope.confirmManualChange = () =>{
+        $scope.confirmManualChange = async () => {
             $scope.display.lightbox.automaticCampaign = false;
-            $scope.automaticCampaign.updateAccessibility()
+            $scope.loadingArray = true;
+            Utils.safeApply($scope);
+            $scope.automaticCampaign.updateAccessibility();
+            await $scope.campaigns.sync();
+            $scope.allCampaignSelected = false;
+            $scope.loadingArray = false;
+
+            Utils.safeApply($scope);
         }
         $scope.cancelManualChange = () =>{
             $scope.display.lightbox.automaticCampaign = false;

@@ -3,7 +3,11 @@
     <input type="button" ng-click="openCampaignForm()" class="right-magnet twelve-mobile"
            i18n-value="lystore.campaigns.add"/>
 </div>
-<div class="twelve cell manage-campaign campaign-list"  workflow="lystore.manager">
+<div class="loading-bar" ng-class="{loading: loadingArray}"></div>
+<div ng-show="loadingArray">
+    <h1><i18n>lystore.loading</i18n></h1>
+</div>
+<div ng-show="!loadingArray" class="twelve cell manage-campaign campaign-list"  workflow="lystore.manager">
     <article class="twelve cell " ng-repeat="campaign in campaigns.all track by $index ">
         <div class="row">
             <div class="twelve cell" workflow="lystore.administrator">
