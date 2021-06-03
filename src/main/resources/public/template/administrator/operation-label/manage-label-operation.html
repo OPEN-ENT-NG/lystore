@@ -74,7 +74,7 @@
                 <td >[[label.label]]</td>
                 <td >[[formatDate(label.start_date)]]</td>
                 <td >[[formatDate(label.end_date)]]</td>
-                <td ><i class="edit color-orange"  ng-click="openLabelForm('edit', label)"></i></td>
+                <td ><i class="edit"  ng-class="{'color-orange' : label.is_used === 0}" ng-click="openLabelForm('edit', label)"  ng-disabled="label.is_used > 0"></i></td>
                 <td ><i class="trash" ng-class="{'color-orange' : label.is_used === 0}" ng-disabled="label.is_used > 0" ng-click="openLightboxTrashLabel(label)"></i></td>
 
             </tr>
