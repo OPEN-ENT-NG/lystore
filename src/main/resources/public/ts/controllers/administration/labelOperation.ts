@@ -19,15 +19,17 @@ export const labelOperationController = ng.controller('labelOperationController'
 
 
         $scope.openLabelForm = (action: string, labelToHandle:label) => {
-            if(labelToHandle.is_used < 1){
-                if(action === 'create'){
-                    $scope.newLabel = new label();
-                } else if (action === 'edit'){
-                    $scope.newLabel = Object.assign(new label(), labelToHandle);
-                }
+            if(action === 'create'){
+                $scope.newLabel = new label();
                 $scope.display.lightbox.label = true;
                 template.open('label.lightbox', 'administrator/operation-label/label-form');
                 Utils.safeApply($scope);
+            } else
+            if(labelToHandle.is_used < 1 && action === 'edit'){
+                    $scope.newLabel = Object.assign(new label(), labelToHandle);
+                    $scope.display.lightbox.label = true;
+                    template.open('label.lightbox', 'administrator/operation-label/label-form');
+                    Utils.safeApply($scope);
             }
         };
 
