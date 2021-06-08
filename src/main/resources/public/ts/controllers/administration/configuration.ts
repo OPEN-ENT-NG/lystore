@@ -462,7 +462,8 @@ export const configurationController = ng.controller('configurationController',
 
         $scope.checkGapDates = (campaign: Campaign) =>{
             return !campaign.automatic_close
-                || (moment(campaign.end_date).diff(moment(campaign.max_date),'days') > 0)
+                ||(moment(moment(campaign.end_date).format('YYYY-MM-DD'),"YYYY-MM-DD")
+                    .diff(moment(moment(campaign.max_date).format('YYYY-MM-DD'),"YYYY-MM-DD"),'days') >= 0)
             && (moment(campaign.min_date).diff(moment(campaign.start_date),'days') >= 0)
         }
         $scope.isValidDates =  (campaign: Campaign) => {
