@@ -1,4 +1,4 @@
-import {_, idiom as lang, ng, notify, template, toasts} from 'entcore';
+    import {_, idiom as lang, ng, notify, template, toasts} from 'entcore';
 import {
     Notification,
     Operation,

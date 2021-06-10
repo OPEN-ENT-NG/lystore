@@ -64,7 +64,7 @@
                     <!--p ng-bind="calculatePriceOfBasket(basket , 2, true) | currency"></p-->
                 </div>
                 <div class="right-magnet flexbox vertical-spacing-twice">
-                    <div tooltip="[[orderClient.status]]"
+                    <div tooltip="[[orderClient.status]] [[order.cp_number]]"
                          class="[[orderClient.status]] status-circle  cell row">
 
 <!--                        <img src="/lystore/public/img/scss/check-all.svg" type="image/svg+xml" fill="white" />-->
@@ -74,7 +74,7 @@
                         </svg>                        <i>-->
                         <i>
                         </i>
-                    </div><span ng-bind=" lang.translate(orderClient.status)"></span>
+                    </div><span ng-bind=" lang.translate(orderClient.status) [[order.cp_number]]"></span>
 
                 </div>
                 <div class="right-magnet cell twelve vertical-spacing-twice">
