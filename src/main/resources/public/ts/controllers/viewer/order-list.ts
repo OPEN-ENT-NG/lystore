@@ -1,4 +1,4 @@
-import {_, moment, ng, template, toasts} from 'entcore';
+import {_, moment, ng, idiom as lang, template, toasts} from 'entcore';
 import {Notification, OrderClient, OrdersClient, PRIORITY_FIELD, Project, Projects, Utils} from '../../model';
 
 
@@ -30,6 +30,12 @@ export const orderPersonnelController = ng.controller('orderPersonnelController'
             window.location = `/lystore/orders/export/${idCampaign}/${idStructure}`;
         };
 
+        $scope.displayStatus = (orderClient : OrderClient) =>{
+            if(orderClient.cp_number)
+                return lang.translate(orderClient.status) + ' Rapport ' + orderClient.cp_number
+            else
+                return lang.translate(orderClient.status)
+        }
         $scope.hasAProposalPrice = (orderClient: OrderClient) => {
 
             return (orderClient.price_proposal);

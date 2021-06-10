@@ -38,25 +38,94 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     @Override
     public void listOrder(Integer idCampaign, String idStructure, Handler<Either<String, JsonArray>> handler) {
         JsonArray values = new fr.wseduc.webutils.collections.JsonArray();
-        String query = "SELECT oe.id as id, oe.comment, oe.price_proposal,prj.preference as preference, prj.id as id_project, oe.id_project, oe.price, oe.tax_amount, oe.amount,oe.creation_date, oe.id_campaign," +
-                " oe.id_structure, oe.name, oe.summary, oe.image, oe.status, oe.id_contract, oe.rank," +
-                " array_to_json(array_agg(order_opts)) as options, to_json(prj.*) as project,to_json(tt.*) as title," +
-                " c.name as name_supplier, array_to_json(array_agg(DISTINCT order_file.*)) as files  " +
-                "FROM "+ Lystore.lystoreSchema + ".order_client_equipment  oe " +
-                "LEFT JOIN "+ Lystore.lystoreSchema + ".order_client_options order_opts ON " +
-                "oe.id = order_opts.id_order_client_equipment " +
-                "INNER JOIN lystore.project as prj ON oe.id_project = prj.id " +
-                "INNER JOIN " + Lystore.lystoreSchema + ".title as tt ON tt.id = prj.id_title " +
-                "LEFT JOIN " + Lystore.lystoreSchema + ".order_file ON oe.id = order_file.id_order_client_equipment " +
-                "LEFT JOIN " + Lystore.lystoreSchema + ".campaign ON oe.id_campaign = campaign.id " +
-                "INNER JOIN (SELECT supplier.name, contract.id FROM " + Lystore.lystoreSchema + ".supplier INNER JOIN "
-                + Lystore.lystoreSchema + ".contract ON contract.id_supplier = supplier.id) c " +
-                "ON oe.id_contract = c.id WHERE id_campaign = ? AND id_structure = ? " +
-                "GROUP BY (prj.id , oe.id, tt.id, c.name,prj.preference,campaign.priority_enabled) " +
-                "ORDER BY CASE WHEN campaign.priority_enabled = false " +
-                "THEN oe.creation_date END ASC, " +
-                "CASE WHEN campaign.priority_enabled = true "+
-                "THEN preference END ASC";
+        String query = "SELECT " +
+                "   oe.id as id, " +
+                "   oe.comment, " +
+                "   oe.price_proposal, " +
+                "   prj.preference as preference, " +
+                "   prj.id as id_project, " +
+                "   oe.id_project, " +
+                "   oe.price, " +
+                "   oe.tax_amount, " +
+                "   oe.amount, " +
+                "   oe.creation_date, " +
+                "   oe.id_campaign, " +
+                "   oe.id_structure, " +
+                "   oe.name, " +
+                "   oe.summary, " +
+                "   oe.image, " +
+                "   oe.status, " +
+                "   oe.id_contract, " +
+                "   oe.rank, " +
+                "   array_to_json(array_agg(order_opts)) as options, " +
+                "   to_json(prj.*) as project, " +
+                "   to_json(tt.*) as title, " +
+                "   c.name as name_supplier, " +
+                "   operation_instruction.cp_number, " +
+                "   array_to_json(array_agg(DISTINCT order_file.*)) as files  " +
+                "FROM " +
+                "    " + Lystore.lystoreSchema + ".order_client_equipment oe  " +
+                "   LEFT JOIN " +
+                "       " + Lystore.lystoreSchema + ".order_client_options order_opts  " +
+                "      ON oe.id = order_opts.id_order_client_equipment  " +
+                "   INNER JOIN " +
+                "       " + Lystore.lystoreSchema + ".project as prj  " +
+                "      ON oe.id_project = prj.id  " +
+                "   INNER JOIN " +
+                "       " + Lystore.lystoreSchema + ".title as tt  " +
+                "      ON tt.id = prj.id_title  " +
+                "   LEFT JOIN " +
+                "       " + Lystore.lystoreSchema + ".order_file  " +
+                "      ON oe.id = order_file.id_order_client_equipment  " +
+                "   LEFT JOIN " +
+                "       " + Lystore.lystoreSchema + ".campaign  " +
+                "      ON oe.id_campaign = campaign.id  " +
+                "  LEFT JOIN  " +
+                "      (  " +
+                "         SELECT  " +
+                "            operation.id,  " +
+                "            cp_number   " +
+                "         FROM  " +
+                "             " + Lystore.lystoreSchema + ".operation   " +
+                "            INNER JOIN  " +
+                "                " + Lystore.lystoreSchema + ".instruction   " +
+                "               on operation.id_instruction = instruction.id  " +
+                "      )  " +
+                "      as operation_instruction   " +
+                "      on oe.id_operation = operation_instruction.id  " +
+                "   INNER JOIN " +
+                "      ( " +
+                "         SELECT " +
+                "            supplier.name, " +
+                "            contract.id  " +
+                "         FROM " +
+                "             " + Lystore.lystoreSchema + ".supplier  " +
+                "            INNER JOIN " +
+                "                " + Lystore.lystoreSchema + ".contract  " +
+                "               ON contract.id_supplier = supplier.id " +
+                "      ) " +
+                "      c  " +
+                "      ON oe.id_contract = c.id  " +
+                "WHERE " +
+                "   id_campaign = ? " +
+                "   AND id_structure =  ? " +
+                "GROUP BY " +
+                "(prj.id , oe.id, tt.id, c.name, prj.preference, operation_instruction.cp_number,campaign.priority_enabled )  " +
+                "ORDER BY " +
+                "   CASE " +
+                "      WHEN " +
+                "         campaign.priority_enabled = false  " +
+                "      THEN " +
+                "         oe.creation_date  " +
+                "   END " +
+                "   ASC,  " +
+                "   CASE " +
+                "      WHEN " +
+                "         campaign.priority_enabled = true  " +
+                "      THEN " +
+                "         preference  " +
+                "   END " +
+                "   ASC";
 
         values.add(idCampaign).add(idStructure);
 

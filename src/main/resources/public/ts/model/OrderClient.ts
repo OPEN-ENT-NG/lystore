@@ -27,6 +27,7 @@ export class OrderClient implements Order  {
     contract: Contract;
     contract_type: ContractType;
     creation_date: Date;
+    cp_number ?:number;
     equipment: Equipment;
     equipment_key:number;
     id?: number;
