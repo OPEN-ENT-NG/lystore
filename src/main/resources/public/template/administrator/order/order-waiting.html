@@ -125,6 +125,9 @@
               show="display.lightbox.validOrder">
         <container template="validOrder.lightbox"></container>
     </lightbox>
+    <lightbox show="display.lightbox.rejectOrder">
+        <container template="rejectOrder.lightbox"></container>
+    </lightbox>
     <parameter-table ng-change="savePreference()" ng-model="tableFields">
     </parameter-table>
     <section class="toggle-buttons" ng-class="{ hide: ordersClient.selected.length === 0 }">
@@ -136,6 +139,9 @@
                 <button ng-click="updateOrder(ordersClient.selected[0])"
                         ng-show=" ordersClient.selected.length ===  1">
                     <i18n>modify</i18n>
+                </button>
+                <button ng-click="openConfirmationRejectOrder()">
+                    <i18n>lystore.order.operation.reject</i18n>
                 </button>
                 <button ng-click="exportCSV()" >
                     <i18n>lystore.logs.csv.export</i18n>

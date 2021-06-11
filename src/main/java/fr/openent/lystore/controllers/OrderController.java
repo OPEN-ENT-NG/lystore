@@ -1189,4 +1189,25 @@ public class OrderController extends ControllerHelper {
         Integer idOrder = Integer.parseInt(request.getParam("id"));
         orderService.getOneOrderClient(idOrder,"WAITING" ,defaultResponseHandler(request));
     }
+
+    @Put("/orderClient/reject")
+    @ApiDoc("reject orders")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(ManagerRight.class)
+    public void createRejectOrders(final HttpServerRequest request) {
+        RequestUtils.bodyToJson(request, rejectOrder -> orderService.createRejectOrders(rejectOrder, Logging.defaultResponseHandler(eb,
+                request,
+                Contexts.ORDER.toString(),
+                Actions.REJECT.toString(),
+                null,
+                rejectOrder)));
+    }
+
+    @Get("/orderClient/rejectComment/:idCampaign")
+    @ApiDoc("Returns comments")
+    @SecuredAction(value="", type = ActionType.AUTHENTICATED)
+    public void getRejectOrderComment(HttpServerRequest request) {
+        Integer idCampaign = Integer.parseInt(request.getParam("idCampaign"));
+        orderService.getRejectOrderComment(idCampaign, arrayResponseHandler(request));
+    }
 }

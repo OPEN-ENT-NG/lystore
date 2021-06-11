@@ -1,4 +1,4 @@
-import {_, idiom as lang, model, moment, notify} from 'entcore';
+import {_, idiom as lang, model, moment, notify, toasts} from 'entcore';
 import {Mix, Selectable, Selection} from 'entcore-toolkit';
 import {
     Campaign,
@@ -15,7 +15,7 @@ import {
     Utils,
     Grade,
     Title,
-    Project, Contracts, ContractTypes, Suppliers, Campaigns, Projects, Titles
+    Project, Contracts, ContractTypes, Suppliers, Campaigns, Projects, Titles, label, Purse
 } from './index';
 import http from 'axios';
 
@@ -75,6 +75,7 @@ export class OrderClient implements Order  {
     image:string;
     status:string;
     technical_spec:TechnicalSpec;
+    rejectOrder?: RejectOrder;
 
     constructor() {
         this.typeOrder= "client";
@@ -403,6 +404,26 @@ export class OrdersClient extends Selection<OrderClient> {
             throw e;
         }
     }
+
+    async rejectOrders (comment: string) {
+        this.selected.map(order => {
+            order.rejectOrder = new RejectOrder();
+            order.rejectOrder.comment =  comment;
+            order.rejectOrder.id_order =  order.id;
+            order.rejectOrder.order_name = order.name;
+        })
+
+        let rejectOrdersJson = [];
+        this.selected.forEach(order => {
+            rejectOrdersJson.push(order.rejectOrder.toJson())
+        })
+        try{
+            return await http.put(`/lystore/orderClient/reject`, {ordersToReject: rejectOrdersJson});
+        }catch (e){
+            notify.error('lystore.reject.orders.err');
+            throw e;
+        }
+    }
 }
 
 export class OrderOptionClient implements Selectable {
@@ -414,4 +435,33 @@ export class OrderOptionClient implements Selectable {
     required: boolean;
     id_order_client_equipment: number;
     selected: boolean;
+}
+
+export class RejectOrder implements Selectable{
+    id: number;
+    id_order: number;
+    comment: string;
+    order_name: string;
+    selected: boolean;
+
+    toJson() {
+        return {
+            id_order : this.id_order,
+            comment : this.comment,
+            order_name : this.order_name
+        }
+    }
+}
+
+export class RejectOrders extends Selection<RejectOrder>{
+
+    constructor() {
+        super([])
+    }
+
+    async sync (idCampaign: number) {
+        let {data} = await http.get(`/lystore/orderClient/rejectComment/${idCampaign}`);
+        this.all = Mix.castArrayAs(RejectOrder, data);
+    }
+
 }

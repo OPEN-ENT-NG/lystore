@@ -21,7 +21,7 @@ import {
     OrderRegion,
     OrdersClient, OrderUtils,
     PRIORITY_FIELD,
-    Programs, Projects,
+    Programs, Projects, RejectOrder, RejectOrders,
     StructureGroups,
     Structures,
     Supplier,
@@ -70,6 +70,7 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
         $scope.ub = new Userbook();
         $scope.projects = new Projects();
         $scope.titles = new Titles();
+        $scope.rejectedOrders = new RejectOrders();
         $scope.labelOperation = new labels();
         $scope.equipments.eventer.on('loading::true', () => Utils.safeApply($scope));
         $scope.equipments.eventer.on('loading::false', () => Utils.safeApply($scope));
@@ -231,6 +232,7 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                 $scope.current.structure
                     ? await $scope.ordersClient.sync(null, [],[],[], [],[],[],[],idCampaign, $scope.current.structure.id)
                     : null;
+                $scope.syncReject(idCampaign);
                 if(!$scope.campaign.id) {
                     await $scope.campaigns.sync($scope.current.structure.id);
                     $scope.campaigns.all.forEach(campaign => {
@@ -431,6 +433,7 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
         };
 
         $scope.initOperation = async (onlylist?:boolean ) =>{
+            $scope.labelOperation = new labels();
             await $scope.labelOperation.sync();
             await $scope.operations.sync(onlylist);
         };
@@ -648,4 +651,13 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                 return lang.translate("no.date");
             }
         }
+
+        $scope.syncReject = async (idCampaign) => {
+            await $scope.rejectedOrders.sync(idCampaign);
+            $scope.ordersClient.all.map(order => {
+                order.rejectOrder = new RejectOrder()
+                order.rejectOrder = $scope.rejectedOrders.all.find(reject => reject.id_order === order.id)
+            });
+            Utils.safeApply($scope);
+        };
     }]);

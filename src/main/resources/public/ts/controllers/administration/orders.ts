@@ -2,7 +2,7 @@ import {_, $,idiom as lang,angular, model, ng, template, toasts,moment} from 'en
 import http from "axios";
 import {
     Campaign, Notification, Operation, OrderClient, OrdersClient, orderWaiting, PRIORITY_FIELD, Userbook, Order,
-    Utils
+    Utils, RejectOrders
 } from '../../model';
 import {Mix} from 'entcore-toolkit';
 
@@ -15,6 +15,8 @@ export const orderController = ng.controller('orderController',
         $scope.tableFields = orderWaiting;
         let isPageOrderWaiting = $location.path() === "/order/waiting";
         let isPageOrderSent = $location.path() === "/order/sent";
+
+        $scope.rejectedOrders = new RejectOrders();
 
         if(isPageOrderSent)
             $scope.displayedOrdersSent = $scope.displayedOrders;
@@ -106,6 +108,7 @@ export const orderController = ng.controller('orderController',
                 deleteOrder : false,
                 sendOrder : false,
                 validOrder : false,
+                rejectOrder : false,
             },
             generation: {
                 type: 'ORDER'
@@ -473,6 +476,35 @@ export const orderController = ng.controller('orderController',
             // await $scope.getOrderWaitingFiltered($scope.campaign);
             template.open('validOrder.lightbox', 'administrator/order/order-valid-add-operation');
             $scope.operationId= operation.id;
+        };
+
+        $scope.openConfirmationRejectOrder = () => {
+            $scope.display.lightbox.rejectOrder = true;
+            template.open('rejectOrder.lightbox', 'administrator/order/order-reject-operation');
+            Utils.safeApply($scope);
+        };
+
+        $scope.rejectOrders = async (comment: string) => {
+            let {status} = await $scope.ordersClient.rejectOrders(comment);
+            if (status === 200) {
+                for(let i = $scope.ordersClient.selected.length - 1 ; i >= 0 ; i--){
+                    let reject = $scope.ordersClient.selected[i]
+                    let index = $scope.displayedOrders.all.findIndex(oce => oce.id === reject.id )
+                    reject.selected = false ;
+                    $scope.displayedOrders.all.splice(index,1);
+                }
+            } else {
+                toasts.warning('lystore.reject.orders.err')
+            }
+            await $scope.cancelOrderReject();
+            toasts.confirm('lystore.reject.orders.confirm');
+            Utils.safeApply($scope);
+        };
+
+        $scope.cancelOrderReject = () => {
+            $scope.display.lightbox.rejectOrder = false;
+            template.close('rejectOrder.lightbox');
+            Utils.safeApply($scope);
         };
 
         $scope.inProgressOrders = async (orders: OrderClient[]) => {
