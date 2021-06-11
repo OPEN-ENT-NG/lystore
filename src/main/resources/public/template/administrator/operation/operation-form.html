@@ -23,8 +23,8 @@
                 <!--                     ng-options="LabelOperation.id as LabelOperation.label for LabelOperation in labelOperation.all" required>-->
                 <!--            </select>-->
             </label>
-            <div class="twelve cell" style="margin-top: 10px;">
-                <date-picker i18n-placeholder="lystore.instruction.date.place_holder"   ng-model="operation.date_operation" ng-disaled>
+            <div class="twelve cell" ng-init="initOperationDate(operation)" style="margin-top: 10px;">
+                <date-picker ng-model="operation.date_operation" ng-disaled>
                 </date-picker>
             </div>
 
