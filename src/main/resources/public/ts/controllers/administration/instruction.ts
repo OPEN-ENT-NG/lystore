@@ -1,5 +1,5 @@
 // @ts-ignore
-import {_, ng, template, toasts} from 'entcore';
+import {_, moment, ng, template, toasts} from 'entcore';
 import {Instruction, Notification, Operation, Utils} from "../../model";
 
 
@@ -28,6 +28,13 @@ export const instructionController = ng.controller('instructionController',
         $scope.formatDate = (date) => {
             return Utils.formatDate(date)
         };
+
+        $scope.initInstructionDate = (instruction: Instruction) => {
+            if(!instruction.date_cp){
+                instruction.date_cp = moment().add().format('YYYY-MM-DD');
+            };
+        };
+
         $scope.getYearFromStr = (str) =>{
             return str.substr(0,4);
         }
