@@ -1,5 +1,14 @@
 import {_, moment, ng, idiom as lang, template, toasts} from 'entcore';
-import {Notification, OrderClient, OrdersClient, PRIORITY_FIELD, Project, Projects, Utils} from '../../model';
+import {
+    Notification,
+    OrderClient,
+    OrdersClient,
+    PRIORITY_FIELD,
+    Project,
+    Projects, RejectOrder,
+    RejectOrders,
+    Utils
+} from '../../model';
 
 
 declare let window: any;
@@ -62,7 +71,6 @@ export const orderPersonnelController = ng.controller('orderPersonnelController'
             }
             orderClient.updateComment();
         };
-
 
         $scope.displayLightboxDelete = (orderEquipments: OrdersClient) => {
             template.open('orderClient.delete', 'customer/campaign/order/delete-confirmation');
@@ -132,7 +140,6 @@ export const orderPersonnelController = ng.controller('orderPersonnelController'
             else
                 return false;
         };
-
 
         $scope.displayLightboxProjectDelete = (project: Project) => {
             template.open('orderClient.deleteProject', 'customer/campaign/order/delete-project-confirmation');
