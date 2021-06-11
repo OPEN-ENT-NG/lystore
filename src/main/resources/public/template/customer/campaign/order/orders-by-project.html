@@ -96,8 +96,11 @@
                                 </div>
                                 <span ng-bind=" displayStatus(orderClient)"></span>
                             </div>
-                            <div class="right-magnet cell twelve vertical-spacing-twice">
-                                [[orderClient.rejectOrder.comment]]
+                            <div ng-if="orderClient.rejectOrder.comment" class="right-magnet cell twelve vertical-spacing-twice">
+                                <label>
+                                    <i18n>reject.comment.label</i18n>
+                                </label>
+                                "[[orderClient.rejectOrder.comment]]"
                             </div>
                             <div class="right-magnet cell twelve vertical-spacing-twice">
                                 <i18n> lystore.orderClient.date.creation </i18n>[[formatDate(orderClient.creation_date)]]
