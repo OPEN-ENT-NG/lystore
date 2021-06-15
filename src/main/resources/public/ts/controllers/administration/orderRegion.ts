@@ -348,7 +348,7 @@ export const orderRegionController = ng.controller('orderRegionController',
 
         $scope.openAddDocumentsRegionLightbox = (orderRegion : OrderRegion) => {
             $scope.order = orderRegion;
-            $scope.files = [];
+            // $scope.files = [];
             $scope.display.lightbox.addDocumentsRegion = true;
             template.open('addDocuments.lightbox', 'administrator/orderRegion/order-region-add-files');
             Utils.safeApply($scope);
@@ -361,6 +361,33 @@ export const orderRegionController = ng.controller('orderRegionController',
             }
             $scope.display.lightbox.addDocuments = false;
             Utils.safeApply($scope);
+        };
+
+        $scope.uploadFile = async (file) => {
+            file.status = 'loading';
+            let formData = new FormData();
+            $scope.uploadUri = "/lystore/order/upload/file";
+            formData.append("file", file, file.name);
+            try {
+                const {data} = await http.post($scope.uploadUri, formData, {'headers': {'Content-Type': 'multipart/form-data'}});
+                file.id = data.id;
+                file.status = 'loaded';
+            } catch (err) {
+                file.status = 'failed';
+            }
+            $scope.$apply();
+        };
+
+        $scope.importFiles = (files) => {
+            let file: File;
+            if (files === undefined || files.length === 0) return;
+            Utils.safeApply($scope);
+
+            for (let i = 0; i < files.length; i++) {
+                file = files[i];
+                $scope.orderRegion.files.push(file);
+                $scope.uploadFile(file);
+            }
         };
 
         $scope.deleteOrderDocument = async (orderRegion: OrderRegion, file) => {
