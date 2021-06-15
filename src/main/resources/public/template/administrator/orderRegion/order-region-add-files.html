@@ -11,11 +11,11 @@
         </div>
         <div class="row basket-file-list"
              ng-if="orderRegion.files.length > 0">
-            <ul class="four">
-                <li ng-repeat="file in orderRegion.files" class="twelve basket-file row">
-                    <a class="cell three" ng-click="orderRegion.downloadFile(file)">[[ file.name ||
+            <ul>
+                <li ng-repeat="file in orderRegion.files" class="twelve row">
+                    <a class="row eleven" ng-click="orderRegion.downloadFile(file)">[[ file.name ||
                         file.filename ]]</a>
-                    <i class="cell one text-right"
+                    <i class="row one text-right"
                        ng-class="{ close: file.status !== 'loading', loading: file.status === 'loading'}"
                        ng-click="deleteOrderDocument(orderRegion, file)"></i>
                 </li>
@@ -36,7 +36,7 @@
             <article class="default flex-row align-center absolute-position">
                 <div class="three select-file">
                     <div class="hidden-content">
-                        <input type="file" class="file-input" multiple files-input-change="importFiles()"
+                        <input type="file" class="file-input" multiple files-input-change="importFiles(files)"
                                ng-model="files"/>
                     </div>
                     <button class="file-button no-margin" translate content="library.file.choose"></button>

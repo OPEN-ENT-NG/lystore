@@ -25,4 +25,6 @@ public interface OrderRegionService {
 
     void addFileToOrder(String fileId, String fileName, Handler<Either<String, JsonObject>> handler);
 
+    void getFileOrderRegion(String fileId, Handler<Either<String, JsonObject>> handler);
+
 }
