@@ -343,4 +343,19 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
 
         Sql.getInstance().prepared(query, params, SqlResult.validRowsResultHandler(handler));
     }
+
+    @Override
+    public void getFileOrderRegion(String fileId, Handler<Either<String, JsonObject>> handler) {
+        String query = "SELECT * FROM " + Lystore.lystoreSchema + ".order_region_file WHERE id = ?";
+        JsonArray params = new JsonArray()
+                .add(fileId);
+
+        Sql.getInstance().prepared(query, params, SqlResult.validResultHandler(event -> {
+            if (event.isRight() && event.right().getValue().size() > 0) {
+                handler.handle(new Either.Right<>(event.right().getValue().getJsonObject(0)));
+            } else {
+                handler.handle(new Either.Left<>("Not found"));
+            }
+        }));
+    }
 }

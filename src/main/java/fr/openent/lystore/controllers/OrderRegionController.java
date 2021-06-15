@@ -182,7 +182,7 @@ public class OrderRegionController extends BaseController {
                 new JsonObject().put("ids", idsOrders))));
     }
 
-    @Post("/order/update/file")
+    @Post("/order/upload/file")
     @ApiDoc("Upload a file for a specific order")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(ManagerRight.class)
@@ -219,6 +219,20 @@ public class OrderRegionController extends BaseController {
         storage.removeFile(fileId, e -> {
             if (!"ok".equals(e.getString("status"))) {
                 log.error("[Lystore@uploadFile] An error occurred while removing " + fileId + " file.");
+            }
+        });
+    }
+
+    @Get("/order/region/create/file/:fileId")
+    @ApiDoc("Download specific file")
+    @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+    public void getFileOrderRegion(HttpServerRequest request) {
+        String fileId = request.getParam("fileId");
+        orderRegionService.getFileOrderRegion(fileId, event -> {
+            if (event.isRight()) {
+                storage.sendFile(fileId, event.right().getValue().getString("filename"), request, false, new JsonObject());
+            } else {
+                notFound(request);
             }
         });
     }
