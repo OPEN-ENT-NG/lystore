@@ -98,7 +98,8 @@
             <button ng-click="exportOrders()" >
                 <i18n>lystore.export.orders.campaign</i18n>
             </button>
-            <button ng-click="openCampaignsDeletion()"><i18n>delete</i18n></button>
+            <button ng-disabled="!canDeleteCampaigns()"
+                    ng-click="openCampaignsDeletion()"><i18n>delete</i18n></button>
         </div>
     </div>
 </section>

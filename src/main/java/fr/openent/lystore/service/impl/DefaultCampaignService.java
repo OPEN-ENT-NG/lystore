@@ -30,12 +30,14 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
         Future<JsonArray> campaignFuture = Future.future();
         Future<JsonArray> equipmentFuture = Future.future();
         Future<JsonArray> purseFuture = Future.future();
+        Future<JsonArray> basketFuture = Future.future();
         Future<JsonArray> orderFuture = Future.future();
 
-        CompositeFuture.all(campaignFuture, equipmentFuture, purseFuture, orderFuture).setHandler(event -> {
+        CompositeFuture.all(campaignFuture, equipmentFuture, purseFuture, orderFuture,basketFuture).setHandler(event -> {
             if (event.succeeded()) {
                 JsonArray campaigns = campaignFuture.result();
                 JsonArray equipments = equipmentFuture.result();
+                JsonArray baskets = basketFuture.result();
                 JsonArray purses = purseFuture.result();
                 JsonArray orders = orderFuture.result();
 
@@ -43,7 +45,8 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                 JsonObject object, campaign;
                 for (int i = 0; i < campaigns.size(); i++) {
                     object = campaigns.getJsonObject(i);
-                    object.put("nb_orders_waiting", 0).put("nb_orders_valid", 0).put("nb_orders_sent", 0);
+                    object.put("nb_orders_waiting", 0).put("nb_orders_valid", 0).put("nb_orders_sent", 0)
+                            .put("nb_orders", 0).put("nb_baskets",0);
                     campaignMap.put(object.getInteger("id").toString(), object);
                 }
 
@@ -61,6 +64,7 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                     object = orders.getJsonObject(i);
                     try {
                         campaign = campaignMap.getJsonObject(object.getInteger("id_campaign").toString());
+                        campaign.put("nb_orders",object.getLong("count") + campaign.getLong("nb_orders"));
                         campaign.put("nb_orders_" + object.getString("status").toLowerCase(), object.getLong("count"));
                     }catch (NullPointerException e){
                         log.warn("An order is present on this structure but the structure is not linked to the campaign");
@@ -72,6 +76,15 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                     campaign = campaignMap.getJsonObject(object.getInteger("id").toString());
                     try {
                         campaign.put("nb_equipments", object.getLong("nb_equipments"));
+                    }catch (NullPointerException e){
+                        log.info("The campaign reffered doesn't exist anymore id_campaign " + object.getInteger("id"));
+                    }
+                }
+                for (int i = 0; i < baskets.size(); i++) {
+                    object = baskets.getJsonObject(i);
+                    campaign = campaignMap.getJsonObject(object.getInteger("id").toString());
+                    try {
+                        campaign.put("nb_baskets", object.getLong("nb_baskets"));
                     }catch (NullPointerException e){
                         log.info("The campaign reffered doesn't exist anymore id_campaign " + object.getInteger("id"));
                     }
@@ -91,8 +104,17 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
 
         getCampaignsInfo(handlerFuture(campaignFuture));
         getCampaignEquipmentCount(handlerFuture(equipmentFuture));
+        getBasketCount(handlerFuture(basketFuture));
         getCampaignsPurses(handlerFuture(purseFuture));
         getCampaignOrderStatusCount(handlerFuture(orderFuture));
+    }
+
+    private void getBasketCount(Handler<Either<String, JsonArray>> handler) {
+        String query = "SELECT campaign.id, COUNT(DISTINCT basket_equipment.id) as nb_baskets " +
+                "FROM " + Lystore.lystoreSchema + ".campaign " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".basket_equipment ON (campaign.id = basket_equipment.id_campaign) " +
+                "GROUP BY campaign.id";
+        Sql.getInstance().prepared(query, new JsonArray(), SqlResult.validResultHandler(handler));
     }
 
     private Handler<Either<String, JsonArray>> handlerFuture(Future<JsonArray> future) {
@@ -107,7 +129,7 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
     }
 
     private void getCampaignEquipmentCount(Handler<Either<String, JsonArray>> handler) {
-        String query = "SELECT campaign.id, COUNT(DISTINCT rel_equipment_tag.id_equipment) as nbquipments " +
+        String query = "SELECT campaign.id, COUNT(DISTINCT rel_equipment_tag.id_equipment) as nb_equipments " +
                 "FROM " + Lystore.lystoreSchema + ".campaign " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".rel_group_campaign ON (campaign.id = rel_group_campaign.id_campaign) " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".tag ON (rel_group_campaign.id_tag = tag.id) " +
