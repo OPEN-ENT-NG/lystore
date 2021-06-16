@@ -17,9 +17,11 @@ export class Campaign implements Selectable  {
     initial_purse_amount?: number;
     nb_structures: number;
     nb_equipments: number;
+    nb_orders: number;
     purses?: Purses;
     titles: Titles;
     nb_panier?: number;
+    nb_baskets?: number;
     purse_enabled: boolean;
     priority_enabled: boolean;
     priority_field: null|PRIORITY_FIELD;
