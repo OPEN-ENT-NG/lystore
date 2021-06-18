@@ -286,6 +286,7 @@ export const orderRegionController = ng.controller('orderRegionController',
                             orderRegionTemp.amount = row.amount;
                             orderRegionTemp.price = row.price;
                             orderRegionTemp.name = row.equipment.name;
+                            orderRegionTemp.files = $scope.orderRegion.files;
                             orderRegionTemp.technical_spec = row.equipment.technical_specs;
                             orderRegionTemp.id_contract = row.equipment.id_contract;
                             orderRegionTemp.id_type = row.equipment.id_type;
@@ -310,6 +311,7 @@ export const orderRegionController = ng.controller('orderRegionController',
                         orderRegionTemp.amount = row.amount;
                         orderRegionTemp.price = row.price;
                         orderRegionTemp.name = row.equipment.name;
+                        orderRegionTemp.files = $scope.orderRegion.files;
                         orderRegionTemp.technical_spec = row.equipment.technical_specs;
                         orderRegionTemp.id_contract = row.equipment.id_contract;
                         orderRegionTemp.name_structure = row.structure.name;
@@ -332,6 +334,7 @@ export const orderRegionController = ng.controller('orderRegionController',
             else {
                 notify.error('lystore.admin.order.create.err');
             }
+            await $scope.deleteOrderRegionFile();
             Utils.safeApply($scope);
         }
 
@@ -344,7 +347,7 @@ export const orderRegionController = ng.controller('orderRegionController',
 
         $scope.openAddDocumentsRegionLightbox = (orderRegion : OrderRegion) => {
             $scope.order = orderRegion;
-            // $scope.files = [];
+            $scope.files = [];
             $scope.display.lightbox.addDocumentsRegion = true;
             template.open('addDocuments.lightbox', 'administrator/orderRegion/order-region-add-files');
             Utils.safeApply($scope);
@@ -356,6 +359,7 @@ export const orderRegionController = ng.controller('orderRegionController',
                 $scope.orderRegion.files.push(files[i]);
             }
             $scope.display.lightbox.addDocuments = false;
+            $scope.display.lightbox.addDocumentsRegion = false;
             Utils.safeApply($scope);
         };
 
@@ -383,6 +387,7 @@ export const orderRegionController = ng.controller('orderRegionController',
                 file = files[i];
                 $scope.orderRegion.files.push(file);
                 $scope.uploadFile(file);
+                $scope.nbFiles += 1;
             }
         };
 
