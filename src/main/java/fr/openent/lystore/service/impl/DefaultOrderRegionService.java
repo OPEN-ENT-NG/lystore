@@ -218,25 +218,50 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
 
     }
 
-    @Override
     public void createOrdersRegion(JsonObject order, UserInfos user, Number id_project, Handler<Either<String, JsonObject>> handler) {
-        JsonArray params;
-        String queryOrderRegionEquipment = "" +
+        String getIdQuery = "SELECT nextval('" + Lystore.lystoreSchema + ".order-region-equipment_id_seq') as id";
+        sql.raw(getIdQuery, SqlResult.validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
+            @Override
+            public void handle(Either<String, JsonObject> event) {
+                try {
+                    final Number id = event.right().getValue().getInteger("id");
+                    JsonArray statements = new JsonArray()
+                            .add(createOrderRegionStatement(id, order, user, id_project))
+                            .add(updateIdOrderRegionEquipment(id, order.getJsonArray("files")));
+
+                    sql.transaction(statements, new Handler<Message<JsonObject>>() {
+                        @Override
+                        public void handle(Message<JsonObject> event) {
+                            handler.handle(SqlQueryUtils.getTransactionHandler(event, id));
+                        }
+                    });
+                } catch(ClassCastException e) {
+                    LOGGER.error("An error occurred when casting ids", e);
+                    handler.handle(new Either.Left<String, JsonObject>(""));
+                }
+            }
+        }));
+    }
+
+    private JsonObject createOrderRegionStatement(Number id, JsonObject order, UserInfos user, Number id_project) {
+        String statement = "";
+        statement = "" +
                 " INSERT INTO lystore.\"order-region-equipment\" ";
 
         if (order.getInteger("rank") != -1) {
-            queryOrderRegionEquipment += " ( price, amount, creation_date,  owner_name, owner_id, name, summary, description, image," +
+            statement += " ( id, price, amount, creation_date,  owner_name, owner_id, name, summary, description, image," +
                     " technical_spec, status, id_contract, equipment_key, id_campaign, id_structure," +
                     " comment,  id_project,  id_operation, id_type, rank) " +
                     "  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ? ) RETURNING id ; ";
         } else {
-            queryOrderRegionEquipment += " ( price, amount, creation_date,  owner_name, owner_id, name, summary, description, image," +
+            statement += " ( id, price, amount, creation_date,  owner_name, owner_id, name, summary, description, image," +
                     " technical_spec, status, id_contract, equipment_key, id_campaign, id_structure," +
                     " comment,  id_project,  id_operation, id_type) " +
                     "  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ) RETURNING id ; ";
         }
 
-        params = new fr.wseduc.webutils.collections.JsonArray()
+        JsonArray params = new JsonArray()
+                .add(id)
                 .add(order.getDouble("price"))
                 .add(order.getInteger("amount"))
                 .add(order.getString("creation_date"))
@@ -259,7 +284,11 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
         if (order.getInteger("rank") != -1) {
             params.add(order.getInteger("rank"));
         }
-        Sql.getInstance().prepared(queryOrderRegionEquipment, params, SqlResult.validUniqueResultHandler(handler));
+
+        return new JsonObject()
+                .put("statement", statement)
+                .put("values", params)
+                .put("action", "prepared");
     }
 
     public void createProject( Integer id_title, Handler<Either<String, JsonObject>> handler) {
