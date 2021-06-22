@@ -178,14 +178,12 @@
                         <a ng-click="openAddDocumentsRegionLightbox(orderRegion)" ng-if="orderRegion.files.length === 0">
                             <i18n>lystore.orderRegion-add-file</i18n>
                         </a>
-                        <span ng-show="nbFiles"></span>
-                    </td>
-                    <td class="one">
                         <a ng-click="openAddDocumentsRegionLightbox(orderRegion)" ng-if="orderRegion.files.length > 0">
                             <i18n>lystore.orderRegion-manage-file</i18n>
                         </a>
-                        <span ng-show="nbFiles"></span>
+                        <span>([[nbFiles]])</span>
                     </td>
+
                     <td class="one">
                         <i class="plus" ng-click="duplicateRow($index)"></i>
                     </td>
@@ -205,7 +203,7 @@
 
         <!--<input type="button" class="right-magnet cancel" ng-click="cancelCreation()" i18n-value="cancel"/>-->
     </form>
-    <lightbox show="display.lightbox.addDocumentsRegion" on-close="endUpload(files)">
+    <lightbox show="display.lightbox.addDocumentsRegion" on-close="endUpload()">
         <container template="addDocuments.lightbox"></container>
     </lightbox>
 </div>
