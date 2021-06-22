@@ -23,6 +23,7 @@ export const orderRegionController = ng.controller('orderRegionController',
         $scope.structuresToDisplay = new Structures();
         $scope.titles = new Titles();
         $scope.orderRegion.files = new Array();
+        $scope.nbFiles = 0;
         $scope.display = {
             lightbox: {
                 validOrder: false,
@@ -346,17 +347,17 @@ export const orderRegionController = ng.controller('orderRegionController',
         }
 
         $scope.openAddDocumentsRegionLightbox = (orderRegion : OrderRegion) => {
-            $scope.order = orderRegion;
+            $scope.order = JSON.parse(JSON.stringify(orderRegion));
             $scope.files = [];
             $scope.display.lightbox.addDocumentsRegion = true;
             template.open('addDocuments.lightbox', 'administrator/orderRegion/order-region-add-files');
             Utils.safeApply($scope);
         }
 
-        $scope.endUpload = (files) => {
+        $scope.endUpload = () => {
             $scope.orderRegion.files = $scope.orderRegion.files || [];
-            for (let i = 0; i < files.length; i++) {
-                $scope.orderRegion.files.push(files[i]);
+            for (let i = 0; i < $scope.orderRegion.files.length; i++) {
+                $scope.orderRegion.files.push($scope.files[i]);
             }
             $scope.display.lightbox.addDocuments = false;
             $scope.display.lightbox.addDocumentsRegion = false;
@@ -375,10 +376,10 @@ export const orderRegionController = ng.controller('orderRegionController',
             } catch (err) {
                 file.status = 'failed';
             }
-            $scope.$apply();
+            Utils.safeApply($scope);
         };
 
-        $scope.importFiles = (files) => {
+        $scope.importFiles = (files = $scope.files) => {
             let file: File;
             if (files === undefined || files.length === 0) return;
             Utils.safeApply($scope);
@@ -397,6 +398,7 @@ export const orderRegionController = ng.controller('orderRegionController',
                 Utils.safeApply($scope);
                 await orderRegion.deleteDocument(file);
                 orderRegion.files = _.reject(orderRegion.files, (doc) => doc.id === file.id);
+                $scope.nbFiles -= 1;
                 toasts.confirm('lystore.basket.file.delete.success');
             } catch (err) {
                 toasts.warning('lystore.basket.file.delete.error');
