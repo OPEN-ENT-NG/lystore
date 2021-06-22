@@ -307,9 +307,9 @@ GROUP BY
     public  void addInstructionId(Integer instructionId, JsonArray operationIds, Handler<Either<String, JsonObject>> handler){
 log.info("add la");
         JsonArray statements = new fr.wseduc.webutils.collections.JsonArray()
-                .add(updateIdInstructionAdd(operationIds,instructionId))
-                .add(updateOperationOrdersRegionAdd(operationIds))
-                .add(updateOperationOrdersClientAdd(operationIds));
+                .add(updateIdInstructionAdd(operationIds,instructionId));
+                //.add(updateOperationOrdersRegionAdd(operationIds))
+                //.add(updateOperationOrdersClientAdd(operationIds));
 
         sql.transaction(statements, new Handler<Message<JsonObject>>() {
             @Override
