@@ -1,6 +1,6 @@
 import {Mix, Selectable, Selection} from 'entcore-toolkit';
 import http from 'axios';
-import {moment, notify, toasts} from "entcore";
+import {_, moment, notify, toasts} from "entcore";
 // @ts-ignore
 import {Utils} from "./Utils";
 import {Instruction} from "./instruction";
@@ -146,7 +146,7 @@ export class Operations extends Selection<Operation> {
                 operation.instruction
                     ? operation.instruction = JSON.parse(operation.instruction.toString())
                     : operation.instruction = null;
-                operation.date_cp = operation.date_cp !== null && operation.instruction ? moment(operation.instruction.date_cp) : null;
+                operation.date_cp = operation.date_cp !== null && !_.isEmpty(operation.instruction) ? moment(operation.instruction.date_cp) : null;
                 operation.date_operation = operation.date_operation !== null ? moment(operation.date_operation) : null;
                 operation.label.toString() !== 'null' && operation.label !== null ?
                     operation.label = Mix.castAs(label, JSON.parse(operation.label.toString()))
