@@ -360,7 +360,7 @@ export const orderRegionController = ng.controller('orderRegionController',
 
         $scope.endUpload = () => {
             $scope.orderRegion.files = $scope.orderRegion.files || [];
-            for (let i = 0; i < $scope.orderRegion.files.length; i++) {
+            for (let i = 0; i < $scope.files.length; i++) {
                 $scope.orderRegion.files.push($scope.files[i]);
             }
             $scope.display.lightbox.addDocuments = false;
@@ -383,13 +383,14 @@ export const orderRegionController = ng.controller('orderRegionController',
             Utils.safeApply($scope);
         };
 
-        $scope.importFiles = (files = $scope.files) => {
+        $scope.importFiles = (files) => {
             let file: File;
-            if (files === undefined || files.length === 0) return;
+            $scope.files = files;
+            if ($scope.files === undefined || $scope.files.length === 0) return;
             Utils.safeApply($scope);
 
-            for (let i = 0; i < files.length; i++) {
-                file = files[i];
+            for (let i = 0; i < $scope.files.length; i++) {
+                file = $scope.files[i];
                 $scope.orderRegion.files.push(file);
                 $scope.uploadFile(file);
                 $scope.nbFiles += 1;
@@ -402,9 +403,11 @@ export const orderRegionController = ng.controller('orderRegionController',
                 Utils.safeApply($scope);
                 await orderRegion.deleteDocument(file);
                 orderRegion.files = _.reject(orderRegion.files, (doc) => doc.id === file.id);
+                $scope.files = _.reject($scope.files, (doc) => doc.id === file.id);
                 $scope.nbFiles -= 1;
                 toasts.confirm('lystore.basket.file.delete.success');
             } catch (err) {
+                $scope.nbFiles += 1;
                 toasts.warning('lystore.basket.file.delete.error');
                 delete file.status;
             } finally {

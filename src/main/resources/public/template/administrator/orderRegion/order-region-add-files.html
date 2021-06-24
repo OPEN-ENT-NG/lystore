@@ -3,27 +3,26 @@
         <h1>
             <i18n>lystore.basket.add-file</i18n>
         </h1>
-        <h2>
+        <h3>
             <i18n>lystore.orderRegion-documents</i18n>
-        </h2>
+        </h3>
         <div ng-if="orderRegion.files.length === 0">
             <i18n>lystore.basket.no-file</i18n>
         </div>
-        <div class="row basket-file-list"
+        <div class="row color-list"
              ng-if="orderRegion.files.length > 0">
-            <ul>
-                <li ng-repeat="file in orderRegion.files" class="twelve row">
-                    <a class="row eleven" ng-click="orderRegion.downloadFile(file)">[[ file.name ||
-                        file.filename ]]</a>
-                    <i class="row one text-right"
-                       ng-class="{ close: file.status !== 'loading', loading: file.status === 'loading'}"
-                       ng-click="deleteOrderDocument(orderRegion, file)"></i>
-                </li>
-            </ul>
+
+            <li ng-repeat="file in orderRegion.files" class="twelve row">
+                <a class="eleven" ng-click="orderRegion.downloadFile(file)">[[ file.name ||
+                    file.filename ]]</a>
+                <i class="one text-right"
+                   ng-class="{ close: file.status !== 'loading', loading: file.status === 'loading'}"
+                   ng-click="deleteOrderDocument(orderRegion, file)"></i>
+            </li>
         </div>
-        <h2>
+        <h3>
             <i18n>lystore.orderRegion-new-documents</i18n>
-        </h2>
+        </h3>
         <div class="drop-zone import-files" ng-hide="upload.loading">
             <article class="drop flex-row align-center">
                 <i class="two cloud-upload"></i>
