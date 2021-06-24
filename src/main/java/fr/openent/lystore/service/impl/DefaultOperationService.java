@@ -376,7 +376,7 @@ log.info("add la");
     private JsonObject updateOperationOrdersRegionRemove(JsonArray operationIds) {
         String query = " UPDATE " + Lystore.lystoreSchema + ".\"order-region-equipment\" " +
                 "SET status = 'IN PROGRESS' " +
-                " WHERE id_operation IN AND " +
+                " WHERE id_operation IN " +
                 Sql.listPrepared(operationIds.getList()) +
                 " RETURNING id";
 
