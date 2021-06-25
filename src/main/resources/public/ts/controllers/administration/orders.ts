@@ -139,6 +139,24 @@ export const orderController = ng.controller('orderController',
             });
             return json;
         };
+
+        $scope.addOrderFilter = async (event?) => {
+            if (event && (event.which === 13 || event.keyCode === 13) && event.target.value.trim() !== '') {
+                if(!_.contains($scope.order.filters, event.target.value)){
+                    $scope.order.filters = [...$scope.order.filters, event.target.value];
+                }
+                event.target.value = '';
+                await $scope.sync();
+                Utils.safeApply($scope);
+            }
+        };
+
+        $scope.dropOrderFilter = async (filter: string) => {
+            $scope.order.filters = $scope.order.filters.filter( filterWord => filterWord !== filter);
+            await $scope.sync();
+            Utils.safeApply($scope);
+        };
+
         $scope.addFilter = (filterWord: string, event?) => {
             if (event && (event.which === 13 || event.keyCode === 13 )) {
                 $scope.addFilterWords(filterWord);

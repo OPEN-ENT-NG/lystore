@@ -153,9 +153,11 @@ public class OrderController extends ControllerHelper {
             } else {
                 if(status.equals("SENT"))
                 {
-                    orderService.listOrderSent(status, arrayResponseHandler(request));
+                    List<String> queries = request.params().getAll("q");
+                    orderService.listOrderSent(status, queries, arrayResponseHandler(request));
                 }else {
-                    orderService.listOrder(status, arrayResponseHandler(request));
+                    List<String> queries = request.params().getAll("q");
+                    orderService.listOrder(status, queries, arrayResponseHandler(request));
                 }
             }
         } else {
