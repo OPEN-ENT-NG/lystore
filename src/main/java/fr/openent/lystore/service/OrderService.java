@@ -25,9 +25,10 @@ public interface OrderService {
     /**
      * Get the list of all orders
      * @param status order status to retrieve
+     * @param queries
      * @param handler Function handler returning data
      */
-    void listOrder(String status, Handler<Either<String, JsonArray>> handler);
+    void listOrder(String status, List<String> queries, Handler<Either<String, JsonArray>> handler);
     /**
      * Valid order ( change status to 'VALID', add validation number to the order,
      * then send mail to Agents )
@@ -83,7 +84,7 @@ public interface OrderService {
      * @param ids List containing ids
      * @param handler Function handler returning data
      */
-    void sendOrders(List<Integer> ids, Handler<Either<String, JsonObject>> handler);
+    void sendOrders(List<Integer> ids, List<String> filters, Handler<Either<String, JsonObject>> handler);
 
     /**
      * Update status order
@@ -103,7 +104,7 @@ public interface OrderService {
      * @param ids order ids
      * @param handler Function handler returning data
      */
-    void listOrders(List<Integer> ids, Handler<Either<String, JsonArray>> handler);
+    void listOrders(List<Integer> ids, List<String> filters, Handler<Either<String, JsonArray>> handler);
 
     /**
      * Get structure ids based on provided order ids
@@ -209,7 +210,7 @@ public interface OrderService {
 
     void getOrderBCParams(JsonArray validationNumbers, Handler<Either<String, JsonObject>> handler);
 
-    void listOrderSent(String status, Handler<Either<String, JsonArray>> arrayResponseHandler);
+    void listOrderSent(String status, List<String> filters, Handler<Either<String, JsonArray>> arrayResponseHandler);
 
     void createRejectOrders(JsonObject rejectOrder, Handler<Either<String, JsonObject>> handler);
 

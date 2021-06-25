@@ -17,15 +17,15 @@
                 <input  class="row"
                         type="text"
                         ng-model="search.filterWord"
-                        ng-keydown="addFilter(search.filterWord, $event)"
+                        ng-keydown="addOrderFilter($event)"
                         i18n-placeholder="add.a.filter" />
 
-                <i class="search flex-row" ng-click="addFilter(search.filterWord)"></i>
+                <i class="search flex-row" ng-click="addOrderFilter($event)"></i>
             </div>
             <div class="row horizontal-spacing">
                 <div class="select-blocks">
                     <div ng-repeat="filterWord in search.filterWords"
-                         ng-click="pullFilterWord(filterWord)"
+                         ng-click="dropLabelFilter(filter)"
                          class="labels-in-ligne">
                         <div > [[ filterWord ]] </div>
                     </div>

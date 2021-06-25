@@ -135,7 +135,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     }
 
     @Override
-    public  void listOrder(String status, Handler<Either<String, JsonArray>> handler){
+    public  void listOrder(String status, List<String> filters, Handler<Either<String, JsonArray>> handler){
 //        String query2 = "SELECT oce.id, oce.price, oce.tax_amount, oce.amount, oce.creation_date, oce.id_campaign, oce.id_structure, oce.name, oce.summary, oce.description," +
 //                " oce.image, oce.technical_spec, oce.status, oce.id_contract, oce.equipment_key," +
 //                " oce.cause_status, oce.number_validation, oce.id_order, oce.comment, oce.price_proposal, oce.id_project, oce.rank, oce.program, oce.action, " +
@@ -216,8 +216,33 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
         sql.prepared(query, new fr.wseduc.webutils.collections.JsonArray().add(status), SqlResult.validResultHandler(handler));
     }
 
+    private String getTextFilter(List<String> filters) {
+        String filter = "", q;
+        if (filters.size() > 0) {
+            filter = "WHERE ";
+            for (int i = 0; i < filters.size(); i++) {
+                q = filters.get(i);
+                if (i > 0) {
+                    filter += "AND ";
+                }
+
+                filter += "(LOWER(order.structure.uai) ~ LOWER(?) OR LOWER(order.structure.name) ~ LOWER(?) OR LOWER(order.structure.city) ~ LOWER(?) OR LOWER(order.campaign.name) ~ LOWER(?) OR LOWER(order.project.title.name) ~ LOWER(?)) ";
+            }
+        }
+
+        return filter;
+    }
+
     @Override
-    public void listOrders(List<Integer> ids, Handler<Either<String, JsonArray>> handler) {
+    public void listOrders(List<Integer> ids, List<String> filters, Handler<Either<String, JsonArray>> handler) {
+
+        JsonArray params = new fr.wseduc.webutils.collections.JsonArray();
+
+        if (!filters.isEmpty()) {
+            for (String filter : filters) {
+                params.add(filter).add(filter).add(filter).add(filter);
+            }
+        }
 
         String query = "SELECT oce.* , prj.id as id_project ,prj.preference as preference , oce.price * oce.amount as total_price , " +
                 "to_json(contract.*) contract ,to_json(supplier.*) supplier, " +
@@ -232,9 +257,9 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "INNER JOIN lystore.title as tt ON tt.id = prj.id_title " +
                 "INNER JOIN lystore.grade as gr ON gr.id = prj.id_grade " +
                 "INNER JOIN "+ Lystore.lystoreSchema + ".campaign ON oce.id_campaign = campaign.id " +
+                getTextFilter(filters) +
                 "WHERE oce.id in "+ Sql.listPrepared(ids.toArray()) +
                 " GROUP BY (prj.preference, prj.id , oce.id, tt.id, gr.id, contract.id, supplier.id, campaign.id) ORDER BY prj.preference, oce.id_project DESC; ";
-        JsonArray params = new fr.wseduc.webutils.collections.JsonArray();
 
         for (Integer id : ids) {
             params.add( id);
@@ -574,9 +599,9 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     }
 
     @Override
-    public void sendOrders(List<Integer> ids,final Handler<Either<String, JsonObject>> handler){
+    public void sendOrders(List<Integer> ids, List<String> filters, final Handler<Either<String, JsonObject>> handler){
 
-        this.listOrders(ids, new Handler<Either<String, JsonArray>>() {
+        this.listOrders(ids, filters, new Handler<Either<String, JsonArray>>() {
             @Override
             public void handle(Either<String, JsonArray> event) {
                 if (event.isRight()) {
@@ -1225,7 +1250,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     }
 
     @Override
-    public void listOrderSent(String status, Handler<Either<String, JsonArray>> handler) {
+    public void listOrderSent(String status, List<String> filters, Handler<Either<String, JsonArray>> handler) {
         String query = "SELECT oce.id, oce.price, oce.tax_amount, oce.amount, oce.creation_date, oce.id_campaign, oce.id_structure, oce.name, oce.summary, oce.description," +
                 " oce.image, oce.technical_spec, oce.status, oce.id_contract, oce.equipment_key," +
                 " array_to_json(array_agg(DISTINCT order_file.*)) as files , " +
@@ -1254,6 +1279,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "LEFT JOIN lystore.order_client_options oco " +
                 "ON oco.id_order_client_equipment = oce.id " +
                 " LEFT JOIN " + Lystore.lystoreSchema + ".order_file ON oce.id = order_file.id_order_client_equipment " +
+                getTextFilter(filters) +
                 " WHERE oce.status = ?" +
                 "GROUP  BY oce.id, " +
                 "    oce.id_project, " +
