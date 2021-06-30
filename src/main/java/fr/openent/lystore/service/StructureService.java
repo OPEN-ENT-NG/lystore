@@ -10,7 +10,7 @@ public interface StructureService {
      * list all Structures in database
      * @param handler function handler returning data
      */
-    void getStructures(Handler<Either<String,JsonArray>> handler);
+    void  getStructures(Handler<Either<String,JsonArray>> handler);
 
     void getStructureTypes(Handler<Either<String,JsonArray>> handler);
 

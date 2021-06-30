@@ -151,12 +151,11 @@ public class OrderController extends ControllerHelper {
                     }
                 });
             } else {
+                List<String> queries = request.params().getAll("q");
                 if(status.equals("SENT"))
                 {
-                    List<String> queries = request.params().getAll("q");
                     orderService.listOrderSent(status, queries, arrayResponseHandler(request));
                 }else {
-                    List<String> queries = request.params().getAll("q");
                     orderService.listOrder(status, queries, arrayResponseHandler(request));
                 }
             }

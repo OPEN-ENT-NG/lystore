@@ -373,7 +373,6 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                 $scope.loadingArray = true;
                 template.close('administrator-main');
                 template.close('operation-main');
-                console.log($scope.operations)
                 if($scope.operations.all.length < 1){
                     $scope.operations = new Operations();
                     await $scope.operations.sync();

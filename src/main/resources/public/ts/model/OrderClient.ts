@@ -211,7 +211,8 @@ export class OrdersClient extends Selection<OrderClient> {
                 this.all = Mix.castArrayAs(OrderClient, data);
                 this.syncWithIdsCampaignAndStructure(idCampaign, idStructure);
             } else {
-                const { data } = await http.get(  `/lystore/orders?status=${status}`);
+                const queriesFilter = Utils.formatGetParameters({q: this.filters});
+                const { data } = await http.get(  `/lystore/orders?status=${status}&${queriesFilter}`);
                 this.all = Mix.castArrayAs(OrderClient, data);
                 this.all.map((order: OrderClient) => {
                     order.contract = contracts.all.find(c => c.id === order.id_contract);
