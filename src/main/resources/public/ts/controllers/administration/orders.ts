@@ -141,19 +141,28 @@ export const orderController = ng.controller('orderController',
         };
 
         $scope.addOrderFilter = async (event?) => {
+
             if (event && (event.which === 13 || event.keyCode === 13) && event.target.value.trim() !== '') {
-                if(!_.contains($scope.order.filters, event.target.value)){
-                    $scope.order.filters = [...$scope.order.filters, event.target.value];
+                if(!_.contains($scope.ordersClient.filters, event.target.value)){
+                    $scope.ordersClient.filters = [...$scope.ordersClient.filters, event.target.value];
                 }
                 event.target.value = '';
-                await $scope.sync();
+                $scope.loadingArray = true;
+                Utils.safeApply($scope);
+                await $scope.syncOrders('WAITING');
+                $scope.displayedOrders.all =  $scope.displayedOrders.all.filter( order => order.id_campaign === $scope.campaign.id || $scope.campaign.id === -1);
+                $scope.loadingArray = false;
                 Utils.safeApply($scope);
             }
         };
 
         $scope.dropOrderFilter = async (filter: string) => {
-            $scope.order.filters = $scope.order.filters.filter( filterWord => filterWord !== filter);
-            await $scope.sync();
+            $scope.loadingArray = true;
+            Utils.safeApply($scope);
+            $scope.ordersClient.filters = $scope.ordersClient.filters.filter( filterWord => filterWord !== filter);
+            await $scope.syncOrders('WAITING');
+            $scope.displayedOrders.all =  $scope.displayedOrders.all.filter( order => order.id_campaign === $scope.campaign.id || $scope.campaign.id === -1);
+            $scope.loadingArray = false;
             Utils.safeApply($scope);
         };
 
@@ -165,10 +174,10 @@ export const orderController = ng.controller('orderController',
         };
 
         $scope.switchAllOrders = () => {
-            $scope.displayedOrders.all.map((order) => order.selected = $scope.allOrdersSelected);
+            $scope.ordersClient.all.map((order) => order.selected = $scope.allOrdersSelected);
         };
 
-        $scope.getSelectedOrders = () => $scope.displayedOrders.selected;
+        $scope.getSelectedOrders = () => $scope.ordersClient.selected;
 
         $scope.getStructureGroupsList = (structureGroups : any): string => {
             try{
@@ -261,7 +270,6 @@ export const orderController = ng.controller('orderController',
                     order.selected = false;
                 }
             );
-
         };
 
         $scope.windUpOrders = async (orders: OrderClient[]) => {

@@ -10,6 +10,7 @@ import fr.wseduc.webutils.email.EmailSender;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -19,7 +20,12 @@ import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.UserInfos;
 
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 public class DefaultOrderService extends SqlCrudService implements OrderService {
 
@@ -205,7 +211,9 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "LEFT JOIN lystore.order_client_options oco " +
                 "ON oco.id_order_client_equipment = oce.id " +
                 " LEFT JOIN " + Lystore.lystoreSchema + ".order_file ON oce.id = order_file.id_order_client_equipment " +
-                " WHERE oce.status = ?" +
+                " WHERE oce.status = ?  " +
+//                getTextFilter(filters) +
+
                 "GROUP  BY oce.id, " +
                 "    oce.id_project, " +
                 "    oce.id_structure, " +
@@ -213,20 +221,84 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 " ORDER by id DESC " +
 //                " LIMIT 50 OFFSET 50" +
                 " ;";
-        sql.prepared(query, new fr.wseduc.webutils.collections.JsonArray().add(status), SqlResult.validResultHandler(handler));
+        JsonArray params = new JsonArray() .add(status);
+//        if (!filters.isEmpty()) {
+//            for (String filter : filters) {
+//                params.add(filter).add(filter).add(filter).add(filter).add(filter);
+//            }
+//        }
+//        sql.prepared(query, params, SqlResult.validResultHandler(handler));
+        if (!filters.isEmpty()) {
+            sql.prepared(query, params, SqlResult.validResultHandler(new Handler<Either<String, JsonArray>>() {
+                @Override
+                public void handle(Either<String, JsonArray> event) {
+                    structureService.getStructures(new Handler<Either<String, JsonArray>>() {
+                        @Override
+                        public void handle(Either<String, JsonArray> eventStructure) {
+                            JsonArray orders = event.right().getValue();
+                            JsonArray structures = eventStructure.right().getValue();
+                            for(int i = 0 ; i < orders.size();i++ ){
+                                JsonObject order = orders.getJsonObject(i);
+                                List<JsonObject> setStruct =    structures.stream()
+                                        .map(JsonObject.class::cast)
+                                        .filter(structure -> structure.getString("id").equals(order.getString("id_structure")))
+                                        .collect(Collectors.toList());
+
+                                order.put("uai",setStruct.get(0).getString("uai"));
+                                order.put("department",setStruct.get(0).getString("department"));
+                                order.put("name_etab",setStruct.get(0).getString("name"));
+                                order.put("academy",setStruct.get(0).getString("academy"));
+                                order.put("type_etab",setStruct.get(0).getString("type_etab"));
+                            }
+                            for(int i = 0 ; i < orders.size();i++ ) {
+                                JsonObject order = orders.getJsonObject(i);
+                                List<String> keys = new ArrayList<>(order.fieldNames());
+                                boolean thisFilter = false, isFiltered = true;
+                                
+                                for(String filter : filters){
+                                    thisFilter = false;
+                                    for(String key : keys){
+                                            if(order.getValue(key) != null) {
+                                                thisFilter = thisFilter || order.getValue(key).toString().toLowerCase().contains(filter.toLowerCase());
+                                            }
+                                        }
+                                        isFiltered = isFiltered && thisFilter;
+                                }
+                                order.put("isFiltered",isFiltered);
+                            }
+                            orders = new JsonArray(orders.stream()
+                                    .map(JsonObject.class::cast)
+                                    .filter(order -> order.getBoolean("isFiltered"))
+                                    .collect(Collectors.toList()));
+                            handler.handle(new Either.Right<>(orders));
+                        }
+                    });
+                }
+            }));
+        }else{
+            sql.prepared(query, params, SqlResult.validResultHandler(handler));
+        }
     }
 
+    //inutile en sql car groupe + neo
     private String getTextFilter(List<String> filters) {
         String filter = "", q;
         if (filters.size() > 0) {
-            filter = "WHERE ";
+            filter = " AND ";
             for (int i = 0; i < filters.size(); i++) {
                 q = filters.get(i);
                 if (i > 0) {
-                    filter += "AND ";
+                    filter += " AND ";
                 }
+//SELECT oce.id, oce.price, oce.tax_amount, oce.amount, oce.creation_date, oce.id_campaign, oce.id_structure, oce.name, oce.summary, oce.description," +
+//                " oce.image, oce.technical_spec, oce.status, oce.id_contract, oce.equipment_key," +
+//                " array_to_json(array_agg(DISTINCT order_file.*)) as files , " +
+//                " array_to_json(array_agg( DISTINCT oco.*)) as options," +
+//                " oce.cause_status, oce.number_validation, oce.id_order, oce.comment, oce.price_proposal, oce.id_project, oce.rank, oce.program," +
+//                " oce.action, array_to_json(array_agg( distinct structure_group.name)) as structure_groups, " +
+//                " oce.id_operation, oce.override_region, oce.id_type,  " +
 
-                filter += "(LOWER(order.structure.uai) ~ LOWER(?) OR LOWER(order.structure.name) ~ LOWER(?) OR LOWER(order.structure.city) ~ LOWER(?) OR LOWER(order.campaign.name) ~ LOWER(?) OR LOWER(order.project.title.name) ~ LOWER(?)) ";
+                filter += "(LOWER(oce.program) ~ LOWER(?) OR LOWER(oce.opitons) ~ LOWER(?) OR LOWER(oce.name) ~ LOWER(?) OR LOWER(oce.summary) ~ LOWER(?) OR LOWER(oce.description) ~ LOWER(?)) ";
             }
         }
 
@@ -237,12 +309,6 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     public void listOrders(List<Integer> ids, List<String> filters, Handler<Either<String, JsonArray>> handler) {
 
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray();
-
-        if (!filters.isEmpty()) {
-            for (String filter : filters) {
-                params.add(filter).add(filter).add(filter).add(filter);
-            }
-        }
 
         String query = "SELECT oce.* , prj.id as id_project ,prj.preference as preference , oce.price * oce.amount as total_price , " +
                 "to_json(contract.*) contract ,to_json(supplier.*) supplier, " +
@@ -257,7 +323,6 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "INNER JOIN lystore.title as tt ON tt.id = prj.id_title " +
                 "INNER JOIN lystore.grade as gr ON gr.id = prj.id_grade " +
                 "INNER JOIN "+ Lystore.lystoreSchema + ".campaign ON oce.id_campaign = campaign.id " +
-                getTextFilter(filters) +
                 "WHERE oce.id in "+ Sql.listPrepared(ids.toArray()) +
                 " GROUP BY (prj.preference, prj.id , oce.id, tt.id, gr.id, contract.id, supplier.id, campaign.id) ORDER BY prj.preference, oce.id_project DESC; ";
 
@@ -1309,12 +1374,12 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     }
 
     private void handleRejectOrders(Number id, JsonArray statements, Handler<Either<String, JsonObject>> handler) {
-          sql.transaction(statements, new Handler<Message<JsonObject>>() {
-                @Override
-                public void handle(Message<JsonObject> event) {
-                    handler.handle(SqlQueryUtils.getTransactionHandler(event, id));
-                }
-          });
+        sql.transaction(statements, new Handler<Message<JsonObject>>() {
+            @Override
+            public void handle(Message<JsonObject> event) {
+                handler.handle(SqlQueryUtils.getTransactionHandler(event, id));
+            }
+        });
     }
 
     private JsonObject createRejectOrder(Integer id_order, String comment) {
@@ -1344,8 +1409,8 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
 
     public void getRejectOrderComment(int idCampaign, Handler<Either<String, JsonArray>> handler) {
         String query = "SELECT order_reject.id_order, order_reject.comment FROM " + Lystore.lystoreSchema + ".order_reject " +
-                        "INNER JOIN " + Lystore.lystoreSchema + ".order_client_equipment ON order_reject.id_order = order_client_equipment.id " +
-                        "WHERE order_client_equipment.id_campaign = ?;";
+                "INNER JOIN " + Lystore.lystoreSchema + ".order_client_equipment ON order_reject.id_order = order_client_equipment.id " +
+                "WHERE order_client_equipment.id_campaign = ?;";
         sql.prepared(query, new JsonArray().add(idCampaign), SqlResult.validResultHandler(handler));
     }
 }
