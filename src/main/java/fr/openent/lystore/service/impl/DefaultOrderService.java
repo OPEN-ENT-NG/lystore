@@ -226,68 +226,6 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
         }
     }
 
-    private Handler<Either<String, JsonArray>> filterOrders(List<String> filters, String status, Handler<Either<String, JsonArray>> handler) {
-        return new Handler<Either<String, JsonArray>>() {
-            @Override
-            public void handle(Either<String, JsonArray> event) {
-                structureService.getStructures(new Handler<Either<String, JsonArray>>() {
-                    @Override
-                    public void handle(Either<String, JsonArray> eventStructure) {
-                        JsonArray orders = event.right().getValue();
-                        JsonArray structures = eventStructure.right().getValue();
-                        for(int i = 0 ; i < orders.size();i++ ){
-                            JsonObject order = orders.getJsonObject(i);
-                            List<JsonObject> setStruct =    structures.stream()
-                                    .map(JsonObject.class::cast)
-                                    .filter(structure -> structure.getString("id").equals(order.getString("id_structure")))
-                                    .collect(Collectors.toList());
-
-                            order.put("uai",setStruct.get(0).getString("uai"));
-                            order.put("department",setStruct.get(0).getString("department"));
-                            order.put("name_etab",setStruct.get(0).getString("name"));
-                            order.put("academy",setStruct.get(0).getString("academy"));
-                            order.put("type_etab",setStruct.get(0).getString("type_etab"));
-                            while(order.getString("name_etab").contains("  ")){
-                                order.put("name_etab",order.getString("name_etab").replaceAll(" {2}", " "));
-                            }
-                        }
-                        for(int i = 0 ; i < orders.size();i++ ) {
-                            JsonObject order = orders.getJsonObject(i);
-                            List<String> keys = new ArrayList<>(order.fieldNames());
-                            boolean thisFilter = false, isFiltered = true;
-
-                            for(String filter : filters){
-                                thisFilter = false;
-                                if(status.equals("WAITING")) {
-                                    for (String key : keys) {
-                                        if (order.getValue(key) != null) {
-                                            thisFilter = thisFilter || order.getValue(key).toString().toLowerCase().contains(filter.toLowerCase());
-                                        }
-                                    }
-                                }
-                                else{
-                                    thisFilter = thisFilter || order.getValue("type_etab").toString().toLowerCase().contains(filter.toLowerCase());
-                                    thisFilter = thisFilter || order.getValue("order_number").toString().toLowerCase().contains(filter.toLowerCase());
-                                    thisFilter = thisFilter || order.getValue("uai").toString().toLowerCase().contains(filter.toLowerCase());
-                                    thisFilter = thisFilter || order.getValue("contract_name").toString().toLowerCase().contains(filter.toLowerCase());
-                                    thisFilter = thisFilter || order.getValue("supplier_name").toString().toLowerCase().contains(filter.toLowerCase());
-                                    thisFilter = thisFilter || order.getValue("amount").toString().toLowerCase().contains(filter.toLowerCase());
-                                    thisFilter = thisFilter || order.getValue("total").toString().toLowerCase().contains(filter.toLowerCase());
-                                }
-                                isFiltered = isFiltered && thisFilter;
-                            }
-                            order.put("isFiltered",isFiltered);
-                        }
-                        orders = new JsonArray(orders.stream()
-                                .map(JsonObject.class::cast)
-                                .filter(order -> order.getBoolean("isFiltered"))
-                                .collect(Collectors.toList()));
-                        handler.handle(new Either.Right<>(orders));
-                    }
-                });
-            }
-        };
-    }
 
     //inutile en sql car groupe + neo
     private String getTextFilter(List<String> filters) {
@@ -1361,9 +1299,8 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "    oce.id_structure, " +
                 "    oce.id_contract," +
                 "   ord.order_number, supplier.name ," +
-                 " contract.name " +
+                " contract.name " +
                 " ORDER by id DESC " +
-                " LIMIT 10 " +
                 " ;";
         JsonArray params = new JsonArray().add(status);
         if (!filters.isEmpty()) {
@@ -1429,6 +1366,96 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "INNER JOIN " + Lystore.lystoreSchema + ".order_client_equipment ON order_reject.id_order = order_client_equipment.id " +
                 "WHERE order_client_equipment.id_campaign = ?;";
         sql.prepared(query, new JsonArray().add(idCampaign), SqlResult.validResultHandler(handler));
+    }
+    private Handler<Either<String, JsonArray>> filterOrders(List<String> filters, String status, Handler<Either<String, JsonArray>> handler) {
+        return new Handler<Either<String, JsonArray>>() {
+            @Override
+            public void handle(Either<String, JsonArray> event) {
+                structureService.getStructures(new Handler<Either<String, JsonArray>>() {
+                    @Override
+                    public void handle(Either<String, JsonArray> eventStructure) {
+                        JsonArray orders = event.right().getValue();
+                        JsonArray structures = eventStructure.right().getValue();
+                        for(int i = 0 ; i < orders.size();i++ ){
+                            JsonObject order = orders.getJsonObject(i);
+                            List<JsonObject> setStruct =    structures.stream()
+                                    .map(JsonObject.class::cast)
+                                    .filter(structure -> structure.getString("id").equals(order.getString("id_structure")))
+                                    .collect(Collectors.toList());
+
+                            order.put("uai",setStruct.get(0).getString("uai"));
+                            order.put("department",setStruct.get(0).getString("department"));
+                            order.put("name_etab",setStruct.get(0).getString("name"));
+                            order.put("academy",setStruct.get(0).getString("academy"));
+                            order.put("type_etab",setStruct.get(0).getString("type_etab"));
+                            while(order.getString("name_etab").contains("  ")){
+                                order.put("name_etab",order.getString("name_etab").replaceAll(" {2}", " "));
+                            }
+                        }
+                        for(int i = 0 ; i < orders.size();i++ ) {
+                            JsonObject order = orders.getJsonObject(i);
+                            List<String> keys = new ArrayList<>(order.fieldNames());
+                            boolean thisFilter = false, isFiltered = true;
+
+                            for(String filter : filters){
+                                thisFilter = false;
+                                if(status.equals("WAITING")) {
+                                    for (String key : keys) {
+                                        if (order.getValue(key) != null) {
+                                            thisFilter = thisFilter || order.getValue(key).toString().toLowerCase().contains(filter.toLowerCase());
+                                        }
+                                    }
+                                }
+                                else{
+                                    thisFilter = thisFilter || order.getValue("type_etab").toString().toLowerCase().contains(filter.toLowerCase());
+                                    thisFilter = thisFilter || order.getValue("order_number").toString().toLowerCase().contains(filter.toLowerCase());
+                                    thisFilter = thisFilter || order.getValue("uai").toString().toLowerCase().contains(filter.toLowerCase());
+                                    thisFilter = thisFilter || order.getValue("contract_name").toString().toLowerCase().contains(filter.toLowerCase());
+                                    thisFilter = thisFilter || order.getValue("supplier_name").toString().toLowerCase().contains(filter.toLowerCase());
+                                    thisFilter = thisFilter || order.getValue("amount").toString().toLowerCase().contains(filter.toLowerCase());
+                                    thisFilter = thisFilter || order.getValue("total").toString().toLowerCase().contains(filter.toLowerCase());
+                                }
+                                isFiltered = isFiltered && thisFilter;
+                            }
+                            order.put("isFiltered",isFiltered);
+                        }
+                        orders = new JsonArray(orders.stream()
+                                .map(JsonObject.class::cast)
+                                .filter(order -> order.getBoolean("isFiltered"))
+                                .collect(Collectors.toList()));
+                        handler.handle(new Either.Right<>(orders));
+                    }
+                });
+            }
+        };
+    }
+
+    @Override
+    public JsonArray filterValidOrders(JsonArray orders, List<String> filters) {
+        for(int i = 0 ; i < orders.size();i++ ) {
+            JsonObject order = orders.getJsonObject(i);
+            boolean isFiltered = true;
+
+            for(String filter : filters){
+                boolean thisFilter = false;
+                thisFilter = thisFilter || order.getValue("number_validation").toString().toLowerCase().contains(filter.toLowerCase());
+                thisFilter = thisFilter || order.getValue("contract_name").toString().toLowerCase().contains(filter.toLowerCase());
+                thisFilter = thisFilter || order.getValue("supplier_name").toString().toLowerCase().contains(filter.toLowerCase());
+                if(order.containsKey("label_program") && order.getValue("label_program") != null)
+                    thisFilter = thisFilter || order.getValue("label_program").toString().toLowerCase().contains(filter.toLowerCase());
+                if(order.containsKey("order_number") && order.getValue("order_number") != null)
+                    thisFilter = thisFilter || order.getValue("order_number").toString().toLowerCase().contains(filter.toLowerCase());
+                thisFilter = thisFilter || order.getValue("price").toString().toLowerCase().contains(filter.toLowerCase());
+                thisFilter = thisFilter || order.getValue("structure_count").toString().toLowerCase().contains(filter.toLowerCase());
+                isFiltered = isFiltered && thisFilter;
+            }
+            order.put("isFiltered",isFiltered);
+        }
+        orders = new JsonArray(orders.stream()
+                .map(JsonObject.class::cast)
+                .filter(order -> order.getBoolean("isFiltered"))
+                .collect(Collectors.toList()));
+        return orders;
     }
 }
 
