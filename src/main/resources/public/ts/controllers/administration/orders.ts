@@ -143,14 +143,18 @@ export const orderController = ng.controller('orderController',
         $scope.addOrderFilter = async (event?) => {
 
             if (event && (event.which === 13 || event.keyCode === 13) && event.target.value.trim() !== '') {
-                if(!_.contains($scope.ordersClient.filters, event.target.value)){
+                if (!_.contains($scope.ordersClient.filters, event.target.value)) {
                     $scope.ordersClient.filters = [...$scope.ordersClient.filters, event.target.value];
                 }
                 event.target.value = '';
                 $scope.loadingArray = true;
                 Utils.safeApply($scope);
-                await $scope.syncOrders('WAITING');
-                $scope.displayedOrders.all =  $scope.displayedOrders.all.filter( order => order.id_campaign === $scope.campaign.id || $scope.campaign.id === -1);
+                if (isPageOrderWaiting) {
+                    await $scope.syncOrders('WAITING');
+                    $scope.displayedOrders.all = $scope.displayedOrders.all.filter(order => order.id_campaign === $scope.campaign.id || $scope.campaign.id === -1);
+                }
+                if(isPageOrderSent)
+                    await $scope.syncOrders('SENT');
                 $scope.loadingArray = false;
                 Utils.safeApply($scope);
             }
@@ -160,8 +164,12 @@ export const orderController = ng.controller('orderController',
             $scope.loadingArray = true;
             Utils.safeApply($scope);
             $scope.ordersClient.filters = $scope.ordersClient.filters.filter( filterWord => filterWord !== filter);
-            await $scope.syncOrders('WAITING');
-            $scope.displayedOrders.all =  $scope.displayedOrders.all.filter( order => order.id_campaign === $scope.campaign.id || $scope.campaign.id === -1);
+            if (isPageOrderWaiting) {
+                await $scope.syncOrders('WAITING');
+                $scope.displayedOrders.all = $scope.displayedOrders.all.filter(order => order.id_campaign === $scope.campaign.id || $scope.campaign.id === -1);
+            }
+            if(isPageOrderSent)
+                await $scope.syncOrders('SENT');
             $scope.loadingArray = false;
             Utils.safeApply($scope);
         };

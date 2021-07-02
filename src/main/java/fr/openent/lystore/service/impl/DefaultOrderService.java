@@ -10,7 +10,6 @@ import fr.wseduc.webutils.email.EmailSender;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -21,10 +20,7 @@ import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.UserInfos;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 public class DefaultOrderService extends SqlCrudService implements OrderService {
@@ -221,63 +217,76 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 " ORDER by id DESC " +
 //                " LIMIT 50 OFFSET 50" +
                 " ;";
-        JsonArray params = new JsonArray() .add(status);
-//        if (!filters.isEmpty()) {
-//            for (String filter : filters) {
-//                params.add(filter).add(filter).add(filter).add(filter).add(filter);
-//            }
-//        }
-//        sql.prepared(query, params, SqlResult.validResultHandler(handler));
-        if (!filters.isEmpty()) {
-            sql.prepared(query, params, SqlResult.validResultHandler(new Handler<Either<String, JsonArray>>() {
-                @Override
-                public void handle(Either<String, JsonArray> event) {
-                    structureService.getStructures(new Handler<Either<String, JsonArray>>() {
-                        @Override
-                        public void handle(Either<String, JsonArray> eventStructure) {
-                            JsonArray orders = event.right().getValue();
-                            JsonArray structures = eventStructure.right().getValue();
-                            for(int i = 0 ; i < orders.size();i++ ){
-                                JsonObject order = orders.getJsonObject(i);
-                                List<JsonObject> setStruct =    structures.stream()
-                                        .map(JsonObject.class::cast)
-                                        .filter(structure -> structure.getString("id").equals(order.getString("id_structure")))
-                                        .collect(Collectors.toList());
+        JsonArray params = new JsonArray().add(status);
 
-                                order.put("uai",setStruct.get(0).getString("uai"));
-                                order.put("department",setStruct.get(0).getString("department"));
-                                order.put("name_etab",setStruct.get(0).getString("name"));
-                                order.put("academy",setStruct.get(0).getString("academy"));
-                                order.put("type_etab",setStruct.get(0).getString("type_etab"));
-                            }
-                            for(int i = 0 ; i < orders.size();i++ ) {
-                                JsonObject order = orders.getJsonObject(i);
-                                List<String> keys = new ArrayList<>(order.fieldNames());
-                                boolean thisFilter = false, isFiltered = true;
-                                
-                                for(String filter : filters){
-                                    thisFilter = false;
-                                    for(String key : keys){
-                                            if(order.getValue(key) != null) {
-                                                thisFilter = thisFilter || order.getValue(key).toString().toLowerCase().contains(filter.toLowerCase());
-                                            }
-                                        }
-                                        isFiltered = isFiltered && thisFilter;
-                                }
-                                order.put("isFiltered",isFiltered);
-                            }
-                            orders = new JsonArray(orders.stream()
-                                    .map(JsonObject.class::cast)
-                                    .filter(order -> order.getBoolean("isFiltered"))
-                                    .collect(Collectors.toList()));
-                            handler.handle(new Either.Right<>(orders));
-                        }
-                    });
-                }
-            }));
+        if (!filters.isEmpty()) {
+            sql.prepared(query, params, SqlResult.validResultHandler(filterOrders(filters,  status , handler)));
         }else{
             sql.prepared(query, params, SqlResult.validResultHandler(handler));
         }
+    }
+
+    private Handler<Either<String, JsonArray>> filterOrders(List<String> filters, String status, Handler<Either<String, JsonArray>> handler) {
+        return new Handler<Either<String, JsonArray>>() {
+            @Override
+            public void handle(Either<String, JsonArray> event) {
+                structureService.getStructures(new Handler<Either<String, JsonArray>>() {
+                    @Override
+                    public void handle(Either<String, JsonArray> eventStructure) {
+                        JsonArray orders = event.right().getValue();
+                        JsonArray structures = eventStructure.right().getValue();
+                        for(int i = 0 ; i < orders.size();i++ ){
+                            JsonObject order = orders.getJsonObject(i);
+                            List<JsonObject> setStruct =    structures.stream()
+                                    .map(JsonObject.class::cast)
+                                    .filter(structure -> structure.getString("id").equals(order.getString("id_structure")))
+                                    .collect(Collectors.toList());
+
+                            order.put("uai",setStruct.get(0).getString("uai"));
+                            order.put("department",setStruct.get(0).getString("department"));
+                            order.put("name_etab",setStruct.get(0).getString("name"));
+                            order.put("academy",setStruct.get(0).getString("academy"));
+                            order.put("type_etab",setStruct.get(0).getString("type_etab"));
+                            while(order.getString("name_etab").contains("  ")){
+                                order.put("name_etab",order.getString("name_etab").replaceAll(" {2}", " "));
+                            }
+                        }
+                        for(int i = 0 ; i < orders.size();i++ ) {
+                            JsonObject order = orders.getJsonObject(i);
+                            List<String> keys = new ArrayList<>(order.fieldNames());
+                            boolean thisFilter = false, isFiltered = true;
+
+                            for(String filter : filters){
+                                thisFilter = false;
+                                if(status.equals("WAITING")) {
+                                    for (String key : keys) {
+                                        if (order.getValue(key) != null) {
+                                            thisFilter = thisFilter || order.getValue(key).toString().toLowerCase().contains(filter.toLowerCase());
+                                        }
+                                    }
+                                }
+                                else{
+                                    thisFilter = thisFilter || order.getValue("type_etab").toString().toLowerCase().contains(filter.toLowerCase());
+                                    thisFilter = thisFilter || order.getValue("order_number").toString().toLowerCase().contains(filter.toLowerCase());
+                                    thisFilter = thisFilter || order.getValue("uai").toString().toLowerCase().contains(filter.toLowerCase());
+                                    thisFilter = thisFilter || order.getValue("contract_name").toString().toLowerCase().contains(filter.toLowerCase());
+                                    thisFilter = thisFilter || order.getValue("supplier_name").toString().toLowerCase().contains(filter.toLowerCase());
+                                    thisFilter = thisFilter || order.getValue("amount").toString().toLowerCase().contains(filter.toLowerCase());
+                                    thisFilter = thisFilter || order.getValue("total").toString().toLowerCase().contains(filter.toLowerCase());
+                                }
+                                isFiltered = isFiltered && thisFilter;
+                            }
+                            order.put("isFiltered",isFiltered);
+                        }
+                        orders = new JsonArray(orders.stream()
+                                .map(JsonObject.class::cast)
+                                .filter(order -> order.getBoolean("isFiltered"))
+                                .collect(Collectors.toList()));
+                        handler.handle(new Either.Right<>(orders));
+                    }
+                });
+            }
+        };
     }
 
     //inutile en sql car groupe + neo
@@ -1317,7 +1326,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     @Override
     public void listOrderSent(String status, List<String> filters, Handler<Either<String, JsonArray>> handler) {
         String query = "SELECT oce.id, oce.price, oce.tax_amount, oce.amount, oce.creation_date, oce.id_campaign, oce.id_structure, oce.name, oce.summary, oce.description," +
-                " oce.image, oce.technical_spec, oce.status, oce.id_contract, oce.equipment_key," +
+                " oce.image, oce.technical_spec, oce.status, oce.id_contract, oce.equipment_key, contract.name as contract_name, supplier.name as supplier_name," +
                 " array_to_json(array_agg(DISTINCT order_file.*)) as files , " +
                 " array_to_json(array_agg( DISTINCT oco.*)) as options," +
                 " oce.cause_status, oce.number_validation, oce.id_order, oce.comment, oce.price_proposal, oce.id_project, oce.rank, oce.program," +
@@ -1340,20 +1349,28 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "INNER JOIN lystore.rel_group_structure ON (oce.id_structure = rel_group_structure.id_structure) " +
                 "INNER JOIN lystore.structure_group ON (rel_group_structure.id_structure_group = structure_group.id " +
                 "AND rel_group_campaign.id_structure_group = structure_group.id) " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".contract on contract.id =  oce.id_contract "+
+                "INNER JOIN " + Lystore.lystoreSchema + ".supplier on supplier.id =  contract.id_supplier  "+
                 "INNER JOIN lystore.order ord on oce.id_order = ord.id " +
                 "LEFT JOIN lystore.order_client_options oco " +
                 "ON oco.id_order_client_equipment = oce.id " +
                 " LEFT JOIN " + Lystore.lystoreSchema + ".order_file ON oce.id = order_file.id_order_client_equipment " +
-                getTextFilter(filters) +
                 " WHERE oce.status = ?" +
                 "GROUP  BY oce.id, " +
                 "    oce.id_project, " +
                 "    oce.id_structure, " +
                 "    oce.id_contract," +
-                "   ord.order_number " +
+                "   ord.order_number, supplier.name ," +
+                 " contract.name " +
                 " ORDER by id DESC " +
+                " LIMIT 10 " +
                 " ;";
-        sql.prepared(query, new fr.wseduc.webutils.collections.JsonArray().add(status), SqlResult.validResultHandler(handler));
+        JsonArray params = new JsonArray().add(status);
+        if (!filters.isEmpty()) {
+            sql.prepared(query, params, SqlResult.validResultHandler(filterOrders(filters, status, handler)));
+        }else{
+            sql.prepared(query, params, SqlResult.validResultHandler(handler));
+        }
 
     }
 
