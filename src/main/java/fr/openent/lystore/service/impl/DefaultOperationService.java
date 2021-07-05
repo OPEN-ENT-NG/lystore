@@ -127,7 +127,7 @@ GROUP BY
                 "    WHERE  " +
                 "      oce.override_region IS false  " +
                 "      AND  oce.status IN ('IN PROGRESS','VALID','DONE') " +
-                "  ) order_summary ON order_summary.id_operation = operation.id  " +
+                "  ) order_summary ON order_summary.id_operation = operation.id " +
                 "GROUP BY  " +
                 "  (operation.id, label.*) ";
 //        Sql.getInstance().prepared(queryOperation, params, SqlResult.validResultHandler(handler));

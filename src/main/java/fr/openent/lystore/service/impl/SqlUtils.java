@@ -158,32 +158,21 @@ public final class SqlUtils {
      */
     public static void getCountOrderInOperation(JsonArray idsOperations, Handler<Either<String, JsonArray>> handler) {
         try {
-            JsonArray idsOperationsMergeTwoArray = SqlQueryUtils.multiplyArray(2, idsOperations);
-            String status = "IN PROGRESS";
             String queryGetTotalOperation = "" +
                     "SELECT id,  " +
                     "       SUM(nb_orders) AS nb_orders  " +
                     "FROM  " +
-                    "  (SELECT oce.id_operation AS id,  " +
-                    "   oce.id AS c,  " +
+                    "  (SELECT id_operation AS id,  " +
+                    "   orders.id AS c,  " +
                     "          count(*) AS nb_orders  " +
-                    "   FROM    " + Lystore.lystoreSchema + ".order_client_equipment AS oce  " +
-                    "   WHERE oce.id_operation IN " +
+                    "   FROM    " + Lystore.lystoreSchema + ".allOrders AS orders  " +
+                    "   WHERE orders.id_operation IN " +
                     Sql.listPrepared(idsOperations.getList()) + " " +
-                    "     AND oce.status = '" + status + "'  " +
-                    "     AND oce.override_region = FALSE  " +
-                    "   GROUP BY (oce.id_operation, c)  " +
-                    "   UNION  " +
-                    "   SELECT ore.id_operation AS id,  " +
-                    "   ore.id AS r,  " +
-                    "                COUNT (*) AS nb_orders  " +
-                    "   FROM    " + Lystore.lystoreSchema + ".\"order-region-equipment\" AS ore  " +
-                    "   WHERE ore.id_operation IN " +
-                    Sql.listPrepared(idsOperations.getList()) + " " +
-                    "   GROUP BY (ore.id_operation, r)) AS OPERATION  " +
+                    "     AND orders.override_region is not true  " +
+                    "   GROUP BY (orders.id_operation, c)) AS OPERATION  " +
                     "GROUP BY (operation.id)";
 
-            Sql.getInstance().prepared(queryGetTotalOperation, idsOperationsMergeTwoArray, SqlResult.validResultHandler(handler));
+            Sql.getInstance().prepared(queryGetTotalOperation, idsOperations, SqlResult.validResultHandler(handler));
         } catch (Exception e) {
             LOGGER.error("Error in SqlUtils ->", e);
         }
