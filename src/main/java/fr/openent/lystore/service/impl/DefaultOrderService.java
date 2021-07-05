@@ -1351,6 +1351,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                                     }
                                 }
                                 else{
+                                    try{
                                     thisFilter = thisFilter || order.getValue("type_etab").toString().toLowerCase().contains(filter.toLowerCase());
                                     thisFilter = thisFilter || order.getValue("order_number").toString().toLowerCase().contains(filter.toLowerCase());
                                     thisFilter = thisFilter || order.getValue("uai").toString().toLowerCase().contains(filter.toLowerCase());
@@ -1358,6 +1359,10 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                                     thisFilter = thisFilter || order.getValue("supplier_name").toString().toLowerCase().contains(filter.toLowerCase());
                                     thisFilter = thisFilter || order.getValue("amount").toString().toLowerCase().contains(filter.toLowerCase());
                                     thisFilter = thisFilter || order.getValue("total").toString().toLowerCase().contains(filter.toLowerCase());
+                                }catch (NullPointerException e){
+                                        log.info("LYSTORE " + e.getMessage());
+                                        log.info(order);
+                                    }
                                 }
                                 isFiltered = isFiltered && thisFilter;
                             }
