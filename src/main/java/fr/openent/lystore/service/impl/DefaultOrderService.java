@@ -138,51 +138,11 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
 
     @Override
     public  void listOrder(String status, List<String> filters, Handler<Either<String, JsonArray>> handler){
-//        String query2 = "SELECT oce.id, oce.price, oce.tax_amount, oce.amount, oce.creation_date, oce.id_campaign, oce.id_structure, oce.name, oce.summary, oce.description," +
-//                " oce.image, oce.technical_spec, oce.status, oce.id_contract, oce.equipment_key," +
-//                " oce.cause_status, oce.number_validation, oce.id_order, oce.comment, oce.price_proposal, oce.id_project, oce.rank, oce.program, oce.action, " +
-//                " oce.id_operation, oce.override_region, oce.id_type, prj.id as id_project,prj.preference as preference , to_json(contract.*) contract,  to_json(ct.*) contract_type " +
-//                ",to_json(supplier.*) supplier, " +
-//                "to_json(campaign.* ) campaign,  array_to_json(array_agg( DISTINCT oco.*)) as options, " +
-//                "array_to_json(array_agg( distinct structure_group.name)) as structure_groups,to_json(prj.*) as project," +
-//                " to_json(  tt.*) as title," +
-////                " lystore.order.order_number ," +
-//                "             ROUND((( SELECT CASE          " +
-//                "            WHEN oce.price_proposal IS NOT NULL THEN 0     " +
-//                "            WHEN oce.override_region IS NULL THEN 0 " +
-//                "            WHEN SUM(oco.price + ((oco.price * oco.tax_amount) /100) * oco.amount) IS NULL THEN 0         " +
-//                "            ELSE SUM(oco.price + ((oco.price * oco.tax_amount) /100) * oco.amount)         " +
-//                "            END           " +
-//                "             FROM   " + Lystore.lystoreSchema + ".order_client_options oco  " +
-//                "              where oco.id_order_client_equipment = oce.id " +
-//                "             ) + oce.price + oce.price * oce.tax_amount/100 " +
-//                "              ) * oce.amount   ,2 ) " +
-//                "             as Total "+
-////                " array_to_json(array_agg(DISTINCT order_file.*)) as files " +
-//                "FROM lystore.order_client_equipment oce " +
-//                "LEFT JOIN lystore.order_client_options oco " +
-//                "ON oco.id_order_client_equipment = oce.id " +
-//                "LEFT JOIN lystore.contract ON oce.id_contract = contract.id " +
-//                "Inner join lystore.contract_type ct ON ct.id = contract.id_contract_type "+
-//                "INNER JOIN lystore.supplier ON contract.id_supplier = supplier.id " +
-//                "INNER JOIN lystore.campaign ON oce.id_campaign = campaign.id " +
-//                "INNER JOIN lystore.project as prj ON oce.id_project = prj.id " +
-//                "INNER JOIN lystore.title as tt ON tt.id = prj.id_title " +
-//                "INNER JOIN lystore.rel_group_campaign ON (oce.id_campaign = rel_group_campaign.id_campaign) " +
-//                "INNER JOIN lystore.rel_group_structure ON (oce.id_structure = rel_group_structure.id_structure) " +
-//                "INNER JOIN lystore.structure_group ON (rel_group_structure.id_structure_group = structure_group.id " +
-//                "AND rel_group_campaign.id_structure_group = structure_group.id) " +
-////                "LEFT OUTER JOIN lystore.order ON (oce.id_order = lystore.order.id) " +
-////                " LEFT JOIN " + Lystore.lystoreSchema + ".order_file ON oce.id = order_file.id_order_client_equipment " +
-//                " WHERE oce.status = ? " +
-//                " GROUP BY (prj.preference, prj.id , oce.id, contract.id, ct.id, supplier.id, campaign.id, tt.id" +
-////                ",lystore.order.order_number" +
-//                ")" +
-//                " ORDER BY oce.id_project DESC "
-////              +  " LIMIT 50 OFFSET 50;"
-//                ;
+
         String query = "SELECT oce.id, oce.price, oce.tax_amount, oce.amount, oce.creation_date, oce.id_campaign, oce.id_structure, oce.name, oce.summary, oce.description," +
-                " oce.image, oce.technical_spec, oce.status, oce.id_contract, oce.equipment_key," +
+                " oce.image, oce.technical_spec, oce.status, oce.id_contract, oce.equipment_key,title.name as project_name," +
+                " project.description as project_description,project.room as project_room, project.building as project_building ,contract_type.name as contract_type_name, " +
+                " " +
                 " array_to_json(array_agg(DISTINCT order_file.*)) as files , " +
                 " array_to_json(array_agg( DISTINCT oco.*)) as options," +
                 " oce.cause_status, oce.number_validation, oce.id_order, oce.comment, oce.price_proposal, oce.id_project, oce.rank, oce.program," +
@@ -200,6 +160,10 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "              ) * oce.amount   ,2 ) " +
                 "             as Total "+
                 " FROM lystore.order_client_equipment oce " +
+                "INNER JOIN lystore.project ON (oce.id_project = project.id) " +
+                "INNER JOIN lystore.title ON (project.id_title = title.id) " +
+                "INNER JOIN lystore.contract ON (oce.id_contract = contract.id) " +
+                "INNER JOIN lystore.contract_type ON (contract.id_contract_type = contract_type.id) " +
                 "INNER JOIN lystore.rel_group_campaign ON (oce.id_campaign = rel_group_campaign.id_campaign) " +
                 "INNER JOIN lystore.rel_group_structure ON (oce.id_structure = rel_group_structure.id_structure) " +
                 "INNER JOIN lystore.structure_group ON (rel_group_structure.id_structure_group = structure_group.id " +
@@ -208,12 +172,16 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "ON oco.id_order_client_equipment = oce.id " +
                 " LEFT JOIN " + Lystore.lystoreSchema + ".order_file ON oce.id = order_file.id_order_client_equipment " +
                 " WHERE oce.status = ?  " +
-//                getTextFilter(filters) +
 
                 "GROUP  BY oce.id, " +
                 "    oce.id_project, " +
                 "    oce.id_structure, " +
-                "    oce.id_contract" +
+                "    oce.id_contract," +
+                "   project_description, " +
+                "project_room , " +
+                "project_building," +
+                "   contract_type_name, " +
+                "   title.name" +
                 " ORDER by id DESC" +
 //                " LIMIT 50 OFFSET 50" +
                 " ;";
@@ -226,31 +194,6 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
         }
     }
 
-
-    //inutile en sql car groupe + neo
-    private String getTextFilter(List<String> filters) {
-        String filter = "", q;
-        if (filters.size() > 0) {
-            filter = " AND ";
-            for (int i = 0; i < filters.size(); i++) {
-                q = filters.get(i);
-                if (i > 0) {
-                    filter += " AND ";
-                }
-//SELECT oce.id, oce.price, oce.tax_amount, oce.amount, oce.creation_date, oce.id_campaign, oce.id_structure, oce.name, oce.summary, oce.description," +
-//                " oce.image, oce.technical_spec, oce.status, oce.id_contract, oce.equipment_key," +
-//                " array_to_json(array_agg(DISTINCT order_file.*)) as files , " +
-//                " array_to_json(array_agg( DISTINCT oco.*)) as options," +
-//                " oce.cause_status, oce.number_validation, oce.id_order, oce.comment, oce.price_proposal, oce.id_project, oce.rank, oce.program," +
-//                " oce.action, array_to_json(array_agg( distinct structure_group.name)) as structure_groups, " +
-//                " oce.id_operation, oce.override_region, oce.id_type,  " +
-
-                filter += "(LOWER(oce.program) ~ LOWER(?) OR LOWER(oce.opitons) ~ LOWER(?) OR LOWER(oce.name) ~ LOWER(?) OR LOWER(oce.summary) ~ LOWER(?) OR LOWER(oce.description) ~ LOWER(?)) ";
-            }
-        }
-
-        return filter;
-    }
 
     @Override
     public void listOrders(List<Integer> ids, List<String> filters, Handler<Either<String, JsonArray>> handler) {

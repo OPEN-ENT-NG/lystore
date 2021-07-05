@@ -79,11 +79,11 @@
                     <td ng-if="tableFields[6].display"> <div class="tabElem">[[order.structure.academy]]</div></td>
                     <td ng-if="tableFields[7].display"> <div class="tabElem"> [[order.campaign.name]]</div></td>
                     <td ng-if="tableFields[8].display"> <div class="tabElem">[[getStructureGroupsList(order.structure_groups)]]</div></td>
-                    <td ng-if="tableFields[9].display"> <div class="tabElem">[[order.project.title.name.toString() ]]</div></td>
+                    <td ng-if="tableFields[9].display"> <div class="tabElem">[[order.project_name]]</div></td>
                     <td ng-if="tableFields[10].display"> <div ng-init="tableFields[19].fullDisplay = false"
                                                               class="tabElem"
                                                               ng-class="{ellipsis:!tableFields[19].fullDisplay}"
-                                                              ng-click="tableFields[19].fullDisplay = !tableFields[19].fullDisplay">[[order.project.description || '-']]</div></td>
+                                                              ng-click="tableFields[19].fullDisplay = !tableFields[19].fullDisplay">[[order.project_description || '-']]</div></td>
 
                     <td ng-if="tableFields[11].display"> <div class="smallTabElem"> [[order.rankOrder]]</div></td>
                     <td ng-if="tableFields[12].display"> <div class="tabElem"> [[order.name]]</div></td>
@@ -105,10 +105,10 @@
                                                               class="tabElem"
                                                               ng-class="{ellipsis:!tableFields[7].fullDisplay}"
                                                               ng-click="tableFields[7].fullDisplay = !tableFields[7].fullDisplay"> [[order.comment || '-']]</div></td>
-                    <td ng-if="tableFields[19].display"> <div class="smallTabElem">[[order.project.room || '-']]</div></td>
-                    <td ng-if="tableFields[20].display"> <div class="smallTabElem">[[order.project.building || '-']]</div></td>
+                    <td ng-if="tableFields[19].display"> <div class="smallTabElem">[[order.project_room || '-']]</div></td>
+                    <td ng-if="tableFields[20].display"> <div class="smallTabElem">[[order.project_building || '-']]</div></td>
                     <td ng-if="tableFields[21].display"> <div class="tabElem">[[order.contract.name]]</div></td>
-                    <td ng-if="tableFields[22].display"> <div class="tabElem"> [[order.contract_type.name]]</div></td>
+                    <td ng-if="tableFields[22].display"> <div class="tabElem"> [[order.contract_type_name]]</div></td>
                     <td ng-if="tableFields[23].display"> <div class="tabElem">[[order.program]]</div></td>
 
                 </tr>
