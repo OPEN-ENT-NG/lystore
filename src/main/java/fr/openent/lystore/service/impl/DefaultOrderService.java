@@ -214,7 +214,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "    oce.id_project, " +
                 "    oce.id_structure, " +
                 "    oce.id_contract" +
-                " ORDER by id DESC " +
+                " ORDER by id DESC" +
 //                " LIMIT 50 OFFSET 50" +
                 " ;";
         JsonArray params = new JsonArray().add(status);
@@ -1387,6 +1387,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                             order.put("department",setStruct.get(0).getString("department"));
                             order.put("name_etab",setStruct.get(0).getString("name"));
                             order.put("academy",setStruct.get(0).getString("academy"));
+                            order.put("city",setStruct.get(0).getString("city"));
                             order.put("type_etab",setStruct.get(0).getString("type_etab"));
                             while(order.getString("name_etab").contains("  ")){
                                 order.put("name_etab",order.getString("name_etab").replaceAll(" {2}", " "));
