@@ -219,6 +219,7 @@ export class OrdersClient extends Selection<OrderClient> {
                     order.contract_type = contractTypes.all.find(c => c.id === order.contract.id_contract_type);
                     order.supplier = suppliers.all.find(s => s.id === order.contract.id_supplier);
                     order.campaign = campaigns.all.find(c => c.id === order.id_campaign);
+                    //plus utile pour le waiting
                     order.project = projects.all.find(p => p.id === order.id_project);
                     try {
                         order.title = titles.all.find(t => t.id === order.project.id_title);
