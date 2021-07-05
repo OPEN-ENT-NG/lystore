@@ -169,9 +169,11 @@ export const orderController = ng.controller('orderController',
             if (isPageOrderWaiting) {
                 await $scope.syncOrders('WAITING');
                 $scope.displayedOrders.all = $scope.displayedOrders.all.filter(order => order.id_campaign === $scope.campaign.id || $scope.campaign.id === -1);
-            }
-            if(isPageOrderSent)
+            }else if(isPageOrderSent)
                 await $scope.syncOrders('SENT');
+            else {
+                await $scope.syncOrders('VALID');
+            }
             $scope.loadingArray = false;
             Utils.safeApply($scope);
         };
