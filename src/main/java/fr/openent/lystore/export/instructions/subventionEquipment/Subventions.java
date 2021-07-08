@@ -89,7 +89,7 @@ public class Subventions extends TabHelper {
 
     }
     @Override
-    protected void fillPage(Map<String, JsonObject> structures){
+    protected void fillPage(JsonArray structures){
         setStructuresFromDatas(structures);
         setTitle();
         writeArray();

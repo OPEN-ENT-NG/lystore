@@ -15,8 +15,9 @@ public class LinesBudget extends TabHelper {
     private ArrayList<Integer> codes = new ArrayList<>();
     private int arraylength = 5;
     private int lineNumber = 1;
-    public LinesBudget(Workbook workbook, JsonObject instruction) {
+    public LinesBudget(Workbook workbook, JsonObject instruction, Map<String, JsonObject> structuresMap) {
         super(workbook, instruction, "Lignes Budgetaires");
+        this.structures = structuresMap;
     }
 
     @Override
@@ -29,6 +30,7 @@ public class LinesBudget extends TabHelper {
     @Override
     protected void initDatas(Handler<Either<String, Boolean>> handler) {
         ArrayList structuresId = new ArrayList<>();
+        //TODO voir si encore utile
         for (int i = 0; i < datas.size(); i++) {
             JsonObject data = datas.getJsonObject(i);
             JsonArray actions = new JsonArray(data.getString("actions"));
@@ -39,12 +41,14 @@ public class LinesBudget extends TabHelper {
 
             }
         }
-        getStructures(new JsonArray(structuresId), getStructureHandler(structuresId,handler));
+
+        fillPage(structures);
+        HandleCatchResult(false, "", new JsonArray(structuresId), handler);
     }
 
 
     @Override
-    protected  void fillPage(JsonArray structures){
+    protected  void fillPage(Map<String, JsonObject>  structures){
         setStructures(structures);
         setLabels();
         setArray(datas);

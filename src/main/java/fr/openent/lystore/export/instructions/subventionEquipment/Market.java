@@ -85,7 +85,7 @@ public class Market extends TabHelper {
     }
 
     @Override
-    protected void fillPage(Map<String, JsonObject> structures){
+    protected void fillPage(JsonArray structures){
         setStructures(structures);
         setTitle();
         writeArray();

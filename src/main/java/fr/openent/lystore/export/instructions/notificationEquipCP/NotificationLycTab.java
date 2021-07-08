@@ -32,19 +32,13 @@ public class NotificationLycTab extends TabHelper {
 
     /**
      * open the tab or create it if it doesn't exists
-     *
-     * @param wb
+     *  @param wb
      * @param instruction
+     * @param structuresMap
      */
-    public NotificationLycTab(Workbook wb, JsonObject instruction) {
+    public NotificationLycTab(Workbook wb, JsonObject instruction, Map<String, JsonObject> structuresMap) {
         super(wb, instruction, "NOTIFICATION POUR LES LYCEES");
-    }
-
-    @Override
-    public void create(Handler<Either<String, Boolean>> handler) {
-        log.info("[NotificationsLycTab] create");
-        excel.setDefaultFont();
-        getDatas(event -> handleDatasDefault(event, handler));
+        this.structures = structuresMap;
     }
 
     @Override
@@ -60,39 +54,12 @@ public class NotificationLycTab extends TabHelper {
             }
         }
 
-        getStructures(new JsonArray(structuresId), getStructureHandler(structuresId,handler));
-
-
-//        getStructures(new JsonArray(structuresId), new Handler<Either<String, JsonArray>>() {
-//            @Override
-//            public void handle(Either<String, JsonArray> repStructures) {
-//                boolean errorCatch= false;
-//                if (repStructures.isRight()) {
-//                    try {
-//                        JsonArray structures = repStructures.right().getValue();
-//                        if (datas.isEmpty()) {
-//                            handler.handle(new Either.Left<>("No data in database"));
-//                        } else {
-//                        }
-//                    }catch (Exception e){
-//                        logger.error("["+ e.getClass() +"] "+ e.getMessage() + " Notification");
-//                        errorCatch = true;
-//                    }
-//                    if(errorCatch)
-//                        handler.handle(new Either.Left<>("Error when writting files"));
-//                    else
-//                        handler.handle(new Either.Right<>(true));
-//                } else {
-//                    handler.handle(new Either.Left<>("Error when casting neo"));
-//
-//                }
-//            }
-//        });
-
+        fillPage(structures);
+        HandleCatchResult(false, "", new JsonArray(structuresId), handler);
     }
 
     @Override
-    protected void fillPage(JsonArray structures){
+    protected void fillPage(Map<String, JsonObject>  structures){
         setStructuresFromDatas(structures);
         datas = sortByUai(datas);
         writeArray();

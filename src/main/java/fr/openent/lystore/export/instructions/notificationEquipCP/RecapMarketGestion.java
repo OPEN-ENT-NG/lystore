@@ -39,15 +39,12 @@ public class RecapMarketGestion extends TabHelper {
 
     private int lineNumber = 0;
 
-    public RecapMarketGestion(Workbook wb, JsonObject instruction) {
+    public RecapMarketGestion(Workbook wb, JsonObject instruction, Map<String, JsonObject> structuresMap) {
         super(wb, instruction, "RECAP MARCHES GESTIONNAIRE");
+        this.structures = structuresMap;
     }
 
-    @Override
-    public void create(Handler<Either<String, Boolean>> handler) {
-        excel.setDefaultFont();
-        getDatas(event -> handleDatasDefault(event, handler));
-    }
+
 
     @Override
     protected void initDatas(Handler<Either<String, Boolean>> handler) {
@@ -62,38 +59,12 @@ public class RecapMarketGestion extends TabHelper {
 
             }
         }
-        getStructures(new JsonArray(structuresId), getStructureHandler(structuresId,handler));
-
-//        getStructures(new JsonArray(structuresId), new Handler<Either<String, JsonArray>>() {
-//            @Override
-//            public void handle(Either<String, JsonArray> repStructures) {
-//                boolean errorCatch= false;
-//                if (repStructures.isRight()) {
-//                    try {
-//                        JsonArray structures = repStructures.right().getValue();
-//                        if (datas.isEmpty()) {
-//                            handler.handle(new Either.Left<>("No data in database"));
-//                        } else {
-//                        }
-//                    }catch (Exception e){
-//                        errorCatch = true;
-//                        logger.error( "["+ e.getClass() +"] "+ e.getMessage()+" Recap");
-//                    }
-//                    if(errorCatch)
-//                        handler.handle(new Either.Left<>("Error when writting files"));
-//                    else
-//                        handler.handle(new Either.Right<>(true));
-//                } else {
-//                    log.error("[RecapMarketGestion] getStructuresLeft");
-//                    handler.handle(new Either.Left<>("Error when casting neo"));
-//
-//                }
-//            }
-//        });
+        fillPage(structures);
+        HandleCatchResult(false, "", new JsonArray(structuresId), handler);
     }
 
     @Override
-    protected  void fillPage(JsonArray structures){
+    protected  void fillPage(Map<String, JsonObject> structures){
         setStructures(structures);
         writeArray();
     }

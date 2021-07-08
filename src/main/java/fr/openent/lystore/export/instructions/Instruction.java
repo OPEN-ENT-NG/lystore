@@ -165,17 +165,7 @@ public class Instruction extends ExportObject {
                             .compose(Recap-> new AnnexeDelibTab(workbook, instruction, type,structuresMap).create())
                             .compose(recapMarket ->  new RecapMarket(workbook, instruction, type,structuresMap).create())
                             .compose(v -> new VerifBudgetTab(workbook, instruction, type,structuresMap).create())
-                            .onSuccess( event -> {
-                                        try {
-                                            ByteArrayOutputStream fileOut = new ByteArrayOutputStream();
-                                            workbook.write(fileOut);
-                                            Buffer buff = new BufferImpl();
-                                            buff.appendBytes(fileOut.toByteArray());
-                                            handler.handle(new Either.Right<>(buff));
-                                        } catch (IOException e) {
-                                            handler.handle(new Either.Left<>(e.getMessage()));
-                                        }
-                                    }
+                            .onSuccess(getFinalHandler(handler, workbook)
                             ).onFailure(failure ->{
                         handler.handle(new Either.Left<>("Error when resolving futures : " + failure.getMessage()));
                     });
@@ -187,6 +177,20 @@ public class Instruction extends ExportObject {
                     handler.handle(new Either.Left<>(f.getMessage()));
                 }
         );
+    }
+
+    private Handler<Boolean> getFinalHandler(Handler<Either<String, Buffer>> handler, Workbook workbook) {
+        return event -> {
+            try {
+                ByteArrayOutputStream fileOut = new ByteArrayOutputStream();
+                workbook.write(fileOut);
+                Buffer buff = new BufferImpl();
+                buff.appendBytes(fileOut.toByteArray());
+                handler.handle(new Either.Right<>(buff));
+            } catch (IOException e) {
+                handler.handle(new Either.Left<>(e.getMessage()));
+            }
+        };
     }
 
     public void exportSubvention(Handler<Either<String, Buffer>> handler) {
@@ -272,37 +276,45 @@ public class Instruction extends ExportObject {
         }
 
 
-        Sql.getInstance().prepared(operationsIdQuery, new JsonArray().add(this.id).add(this.id), SqlResult.validUniqueResultHandler(either -> {
-            if (either.isLeft()) {
-                ExportHelper.catchError(exportService, idFile, "Error when getting sql datas ");
-                handler.handle(new Either.Left<>("Error when getting sql datas "));
-            } else {
+        getStructures().onSuccess(structures ->
+                Sql.getInstance().prepared(operationsIdQuery, new JsonArray().add(this.id).add(this.id), SqlResult.validUniqueResultHandler(either -> {
+                    if (either.isLeft()) {
+                        ExportHelper.catchError(exportService, idFile, "Error when getting sql datas ");
+                        handler.handle(new Either.Left<>("Error when getting sql datas "));
+                    } else {
+                        Map<String,JsonObject> structuresMap  = new HashMap<>();
+                        for(int i = 0 ; i < structures.size() ; i ++){
+                            structuresMap.put(structures.getJsonObject(i).getString("id"),structures.getJsonObject(i));
+                        }
+                        JsonObject instruction = either.right().getValue();
+                        String operationStr = "operations";
+                        if (!instruction.containsKey(operationStr)) {
+                            ExportHelper.catchError(exportService, idFile, "Error when getting operations");
+                            handler.handle(new Either.Left<>("Error when getting operations"));
+                        } else {
+                            instruction.put(operationStr, new JsonArray(instruction.getString(operationStr)));
 
-                JsonObject instruction = either.right().getValue();
-                String operationStr = "operations";
-                if (!instruction.containsKey(operationStr)) {
-                    ExportHelper.catchError(exportService, idFile, "Error when getting operations");
-                    handler.handle(new Either.Left<>("Error when getting operations"));
-                } else {
-                    instruction.put(operationStr, new JsonArray(instruction.getString(operationStr)));
-
-                    Workbook workbook = new XSSFWorkbook();
-                    List<Future> futures = new ArrayList<>();
-                    Future<Boolean> LinesBudgetFuture = Future.future();
-                    Future<Boolean> RecapMarketGestionFuture = Future.future();
-                    Future<Boolean> NotifcationLyceeFuture = Future.future();
-
-                    futures.add(LinesBudgetFuture);
-                    futures.add(RecapMarketGestionFuture);
-                    futures.add(NotifcationLyceeFuture);
-
-                    futureHandler(handler, workbook, futures);
-                    new NotificationLycTab(workbook, instruction).create(getHandler(NotifcationLyceeFuture));
-                    new RecapMarketGestion(workbook, instruction).create(getHandler(RecapMarketGestionFuture));
-                    new LinesBudget(workbook, instruction).create(getHandler(LinesBudgetFuture));
-                }
-            }
-        }));
+                            Workbook workbook = new XSSFWorkbook();
+//                    List<Future> futures = new ArrayList<>();
+//                    Future<Boolean> LinesBudgetFuture = Future.future();
+//                    Future<Boolean> RecapMarketGestionFuture = Future.future();
+//                    Future<Boolean> NotifcationLyceeFuture = Future.future();
+//
+//                    futures.add(LinesBudgetFuture);
+//                    futures.add(RecapMarketGestionFuture);
+//                    futures.add(NotifcationLyceeFuture);
+//
+//                    futureHandler(handler, workbook, futures);
+                            new NotificationLycTab(workbook, instruction,structuresMap).create()
+                                    .compose(RM -> new RecapMarketGestion(workbook, instruction,structuresMap).create())
+                                    .compose(LB ->  new LinesBudget(workbook, instruction,structuresMap).create())
+                                    .onSuccess(getFinalHandler(handler, workbook)
+                                    ).onFailure(failure ->{
+                                handler.handle(new Either.Left<>("Error when resolving futures : " + failure.getMessage()));
+                            });
+                        }
+                    }
+                })));
     }
 
     public void exportIris(Handler<Either<String, Buffer>> handler) {
