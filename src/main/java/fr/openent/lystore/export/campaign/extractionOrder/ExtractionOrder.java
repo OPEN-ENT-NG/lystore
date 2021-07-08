@@ -3,7 +3,6 @@ package fr.openent.lystore.export.campaign.extractionOrder;
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.export.ExportLystoreWorker;
 import fr.openent.lystore.export.TabHelper;
-import fr.openent.lystore.export.helpers.ExportHelper;
 import fr.openent.lystore.model.*;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.CompositeFuture;
@@ -16,7 +15,6 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 

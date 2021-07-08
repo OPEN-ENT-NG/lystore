@@ -1,15 +1,21 @@
 package fr.openent.lystore.export;
 
+import fr.openent.lystore.model.Project;
 import fr.openent.lystore.service.ExportService;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.buffer.impl.BufferImpl;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.apache.poi.ss.usermodel.Workbook;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.neo4j.Neo4jResult;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -51,4 +57,29 @@ public class ExportObject {
             }
         };
     }
+
+    protected Future<JsonArray> getStructures() {
+        Promise<JsonArray> promise = Promise.promise();
+        String query = "" +
+                "MATCH (s:Structure) " +
+                "RETURN " +
+                "s.id as id," +
+                " s.UAI as uai," +
+                " s.name as name," +
+                " s.address + ' ,' + s.zipCode +' ' + s.city as address,  " +
+                "s.zipCode as zipCode," +
+                " s.city as city," +
+                " s.type as type," +
+                " s.phone as phone";
+        Neo4j.getInstance().execute(query, new JsonObject(), Neo4jResult.validResultHandler(h->{
+            if(h.isRight()){
+                promise.complete(h.right().getValue());
+            }else{
+                promise.fail(h.left().getValue());
+            }
+        }));
+        return promise.future();
+    }
+
+
 }

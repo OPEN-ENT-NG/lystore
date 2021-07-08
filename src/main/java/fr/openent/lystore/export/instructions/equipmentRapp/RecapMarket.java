@@ -3,8 +3,11 @@ package fr.openent.lystore.export.instructions.equipmentRapp;
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.export.TabHelper;
 import fr.openent.lystore.export.helpers.ExcelHelper;
+import fr.openent.lystore.model.Project;
 import fr.wseduc.webutils.Either;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -12,6 +15,7 @@ import org.apache.poi.ss.util.CellRangeAddress;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Map;
 
 public class RecapMarket extends TabHelper {
     JsonArray operations;
@@ -20,43 +24,43 @@ public class RecapMarket extends TabHelper {
 
     /**
      * open the tab or create it if it doesn't exists
-     *
-     * @param wb
+     *  @param wb
      * @param instruction
      * @param type
+     * @param structuresMap
      */
-    public RecapMarket(Workbook wb, JsonObject instruction, String type) {
+    public RecapMarket(Workbook wb, JsonObject instruction, String type,  Map<String,JsonObject> structuresMap) {
         super(wb, instruction, "Récapitulatif par marché ");
         this.type = type;
         this.programMarket = new JsonObject();
     }
 
     @Override
-    public void create(Handler<Either<String, Boolean>> handler) {
+    public Future<Boolean> create() {
+        Promise<Boolean> promise = Promise.promise();
 
         excel.setDefaultFont();
         getDatas(event -> {
             try{
                 if (event.isLeft()) {
-                    log.error("Failed to retrieve programs");
-                    handler.handle(new Either.Left<>("Failed to retrieve programs"));
+                    promise.fail("Failed to retrieve programs");
                 } else {
                     if (checkEmpty()) {
-                        handler.handle(new Either.Right<>(true));
+                        promise.complete(true);
                     } else {
                         JsonArray programs = event.right().getValue();
                         setArray(programs);
-                        handler.handle(new Either.Right<>(true));
+                        promise.complete(true);
                     }
                 }
             }catch(Exception e)
             {
                 logger.error(e.getMessage());
                 logger.error(e.getStackTrace());
-                handler.handle(new Either.Left<>("Failed to retrieve programs"));
+                promise.fail("Failed to retrieve programs");
             }
         });
-
+        return promise.future();
     }
 
 
@@ -81,17 +85,17 @@ public class RecapMarket extends TabHelper {
             if (actions.isEmpty()) continue;
             for (int j = 0; j < actions.size(); j++) { // datas of the array
                 try{
-                JsonObject action = actions.getJsonObject(j);
-                //get the key to insert the data
-                String key = action.getString("market") + " - " + action.getString("program") + " - " + action.getString("code");
-                if (programMarket.containsKey(key)) {
-                    if (!oldkey.equals(key)) {
-                        oldTotal = 0.d;
+                    JsonObject action = actions.getJsonObject(j);
+                    //get the key to insert the data
+                    String key = action.getString("market") + " - " + action.getString("program") + " - " + action.getString("code");
+                    if (programMarket.containsKey(key)) {
+                        if (!oldkey.equals(key)) {
+                            oldTotal = 0.d;
+                        }
+                        oldkey = key;
+                        oldTotal += safeGetDouble(action, "total", "RecapMarket");
+                        excel.insertCellTabDouble(1 + programMarket.getInteger(key), i + 9, oldTotal);
                     }
-                    oldkey = key;
-                    oldTotal += safeGetDouble(action, "total", "RecapMarket");
-                    excel.insertCellTabDouble(1 + programMarket.getInteger(key), i + 9, oldTotal);
-                }
                 }catch (NullPointerException e){
                     log.error("@LystoreWorker["+ this.getClass() +"] error in second for loop data : \n" + actions.getJsonObject(j));
                     throw e;
@@ -114,8 +118,6 @@ public class RecapMarket extends TabHelper {
         for (int i = 0; i <= datas.size(); i++) {
             excel.setTotalY(1, programMarket.size(), 9 + i, programMarket.size() + 1);
         }
-
-
     }
 
     @Override

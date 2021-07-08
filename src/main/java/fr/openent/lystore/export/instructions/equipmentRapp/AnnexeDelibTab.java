@@ -11,6 +11,7 @@ import org.apache.poi.ss.util.CellRangeAddress;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Map;
 
 public class AnnexeDelibTab extends TabHelper {
     private String type;
@@ -18,20 +19,15 @@ public class AnnexeDelibTab extends TabHelper {
 
     /**
      * open the tab or create it if it doesn't exists
-     *
-     * @param wb
+     *  @param wb
      * @param instruction
+     * @param structuresMap
      */
-    public AnnexeDelibTab(Workbook wb, JsonObject instruction, String type) {
+    public AnnexeDelibTab(Workbook wb, JsonObject instruction, String type,  Map<String,JsonObject> structuresMap) {
         super(wb, instruction, "ANNEXE DELIB");
         this.type = type;
+        this.structures = structuresMap;
         programMarket = new JsonObject();
-    }
-
-    @Override
-    public void create(Handler<Either<String, Boolean>> handler) {
-        excel.setDefaultFont();
-        getDatas(event -> handleDatasDefault(event, handler));
     }
 
     @Override
@@ -43,11 +39,12 @@ public class AnnexeDelibTab extends TabHelper {
                 structuresId.add(structuresId.size(), data.getString("id_structure"));
 
         }
-        getStructures(new JsonArray(structuresId),getStructureHandler(structuresId,handler));
+        fillPage(structures);
+        HandleCatchResult(false, "", new JsonArray(structuresId), handler);
     }
 
     @Override
-    protected void fillPage(JsonArray structures){
+    protected void fillPage(Map<String, JsonObject> structures){
         setStructuresFromDatas(structures);
         setArray(datas);
     }

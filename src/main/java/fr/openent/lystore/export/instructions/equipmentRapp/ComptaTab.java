@@ -4,34 +4,28 @@ import fr.openent.lystore.Lystore;
 import fr.openent.lystore.export.TabHelper;
 import fr.openent.lystore.service.StructureService;
 import fr.wseduc.webutils.Either;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class ComptaTab extends TabHelper {
     private String type;
     private int yProgramLabel = 0;
     private StructureService structureService;
 
-    public ComptaTab(Workbook workbook, JsonObject instruction, String type) {
+    public ComptaTab(Workbook workbook, JsonObject instruction, String type, Map<String,JsonObject> structuresMap) {
         super(workbook, instruction, "COMPTA du rapport  " + type);
         this.type = type;
+        this.structures = structuresMap;
         excel.setDefaultFont();
     }
 
-
-    @Override
-    public void create(Handler<Either<String, Boolean>> handler) {
-        excel.setDefaultFont();
-        getDatas(event -> handleDatasDefault(event, handler));
-    }
 
     @Override
     protected void initDatas(Handler<Either<String, Boolean>> handler) {
@@ -46,11 +40,12 @@ public class ComptaTab extends TabHelper {
 
             }
         }
-        getStructures(new JsonArray(structuresId), getStructureHandler(structuresId,handler));
+        fillPage(structures);
+        HandleCatchResult(false, "", new JsonArray(structuresId), handler);
     }
 
     @Override
-    protected void fillPage(JsonArray structures){
+    protected void fillPage(Map<String, JsonObject> structures){
         setStructures(structures);
         setLabels();
     }
@@ -58,8 +53,11 @@ public class ComptaTab extends TabHelper {
 
     @Override
     protected void setLabels() {
+        log.info("setLabels");
         int initYProgramLabel = 2;
         for (int i = 0; i < datas.size(); i++) {
+            log.info("first looop");
+
             JsonObject programLabel = new JsonObject();
             //creating label
             int columnTotal = 4;
@@ -78,68 +76,69 @@ public class ComptaTab extends TabHelper {
 //
             actions = sort(actions);
             for (int j = 0; j < actions.size(); j++) {
+                log.info("second looop");
                 try{
-                JsonObject action = actions.getJsonObject(j);
-                if (!action.getString("campaign").equals(campaign)) {
-                    if (j != 0) {
-                        setTotal(programLabel.size() + 4, initYProgramLabel);
+                    JsonObject action = actions.getJsonObject(j);
+                    if (!action.getString("campaign").equals(campaign)) {
+                        if (j != 0) {
+                            setTotal(programLabel.size() + 4, initYProgramLabel);
+                        }
+                        campaign = action.getString("campaign");
+                        yProgramLabel += 2;
+                        setCampaign(campaign, yProgramLabel);
+                        yProgramLabel += 2;
+                        initYProgramLabel = yProgramLabel;
+                        yProgramLabel += 2;
+                        if (arrayLength - 4 < columnTotal) {
+                            arrayLength += columnTotal;
+                        }
+                        columnTotal = 4;
+                        idPassed = new JsonObject();
+                        programLabel = new JsonObject();
                     }
-                    campaign = action.getString("campaign");
-                    yProgramLabel += 2;
-                    setCampaign(campaign, yProgramLabel);
-                    yProgramLabel += 2;
-                    initYProgramLabel = yProgramLabel;
-                    yProgramLabel += 2;
-                    if (arrayLength - 4 < columnTotal) {
-                        arrayLength += columnTotal;
+                    key = action.getString("program") + " - " + action.getString("code");
+                    if (!programLabel.containsKey(key)) {
+                        programLabel.put(key, programLabel.size());
+                        excel.insertHeader(4 + programLabel.getInteger(key), initYProgramLabel,
+                                action.getString("program"));
+                        excel.insertHeader(4 + programLabel.getInteger(key), initYProgramLabel + 1,
+                                action.getString("code"));
                     }
-                    columnTotal = 4;
-                    idPassed = new JsonObject();
-                    programLabel = new JsonObject();
-                }
-                key = action.getString("program") + " - " + action.getString("code");
-                if (!programLabel.containsKey(key)) {
-                    programLabel.put(key, programLabel.size());
-                    excel.insertHeader(4 + programLabel.getInteger(key), initYProgramLabel,
-                            action.getString("program"));
-                    excel.insertHeader(4 + programLabel.getInteger(key), initYProgramLabel + 1,
-                            action.getString("code"));
-                }
 
 
-                if (!checkIdPassed(idPassed, action.getString("id_structure"))) {
-                    columnTotal = 4;
-                    idPassed.put(action.getString("id_structure"), true);
+                    if (!checkIdPassed(idPassed, action.getString("id_structure"))) {
+                        columnTotal = 4;
+                        idPassed.put(action.getString("id_structure"), true);
 
-                    try {
-                        excel.insertLabel(0, yProgramLabel, action.getString("zipCode").substring(0, 2));
+                        try {
+                            excel.insertLabel(0, yProgramLabel, action.getString("zipCode").substring(0, 2));
 
-                    } catch (NullPointerException e) {
-                        excel.insertLabel(0, yProgramLabel, action.getString("zipCode"));
-                    }
-                    excel.insertLabel(1, yProgramLabel, action.getString("city"));
-                    excel.insertLabel(2, yProgramLabel, action.getString("nameEtab"));
-                    excel.insertLabel(3, yProgramLabel, action.getString("uai"));
+                        } catch (NullPointerException e) {
+                            excel.insertLabel(0, yProgramLabel, action.getString("zipCode"));
+                        }
+                        excel.insertLabel(1, yProgramLabel, action.getString("city"));
+                        excel.insertLabel(2, yProgramLabel, action.getString("nameEtab"));
+                        excel.insertLabel(3, yProgramLabel, action.getString("uai"));
 
-                    oldTotal = 0.d;
-                    oldkey = key;
-
-                    oldTotal += safeGetDouble(action, "total", "ComptaTab");
-                    excel.insertCellTabDouble(4 + programLabel.getInteger(key),
-                            yProgramLabel, oldTotal);
-                } else {
-                    yProgramLabel--;
-                    if (!oldkey.equals(key)) {
                         oldTotal = 0.d;
-                    }
-                    oldkey = key;
-                    oldTotal += safeGetDouble(action, "total", "ComptaTab");
-                    excel.insertCellTabDouble(4 + programLabel.getInteger(action.getString("program") + " - " + action.getString("code")), yProgramLabel
-                            , oldTotal);
-                }
+                        oldkey = key;
 
-                columnTotal++;
-                yProgramLabel++;
+                        oldTotal += safeGetDouble(action, "total", "ComptaTab");
+                        excel.insertCellTabDouble(4 + programLabel.getInteger(key),
+                                yProgramLabel, oldTotal);
+                    } else {
+                        yProgramLabel--;
+                        if (!oldkey.equals(key)) {
+                            oldTotal = 0.d;
+                        }
+                        oldkey = key;
+                        oldTotal += safeGetDouble(action, "total", "ComptaTab");
+                        excel.insertCellTabDouble(4 + programLabel.getInteger(action.getString("program") + " - " + action.getString("code")), yProgramLabel
+                                , oldTotal);
+                    }
+
+                    columnTotal++;
+                    yProgramLabel++;
                 }catch (NullPointerException e){
                     log.error("@LystoreWorker["+ this.getClass() +"] error in second for loop data : \n" + actions.getJsonObject(j));
                     throw e;
@@ -150,7 +149,8 @@ public class ComptaTab extends TabHelper {
             }
             setTotal(programLabel.size() + 4, initYProgramLabel);
             yProgramLabel += 2;
-            if(i <= 1) {
+            if(i < 1) {
+                log.info("autosize");
                 excel.autoSize(arrayLength);
             }
         }
@@ -192,6 +192,7 @@ public class ComptaTab extends TabHelper {
     }
 
     private void setCampaign(String campaign, int y) {
+        log.info("setCampaign");
         CellRangeAddress merge = new CellRangeAddress(y, y, 0, 6);
         sheet.addMergedRegion(merge);
         excel.setRegionHeader(merge, sheet);
@@ -199,6 +200,7 @@ public class ComptaTab extends TabHelper {
     }
 
     private void setTitle(int currentY, JsonObject operation) {
+        log.info("setTitle");
         CellRangeAddress merge = new CellRangeAddress(currentY, currentY, 0, 6);
         sheet.addMergedRegion(merge);
         excel.setRegionHeader(merge, sheet);
@@ -206,6 +208,7 @@ public class ComptaTab extends TabHelper {
     }
 
     private void setTotal(int nbTotaux, int initYProgramLabel) {
+        log.info("setTotal");
         excel.fillTab(4, nbTotaux, initYProgramLabel + 2, yProgramLabel);
         excel.insertHeader(3, yProgramLabel, excel.totalLabel);
         for (int nbTotal = 4; nbTotal < nbTotaux; nbTotal++) {

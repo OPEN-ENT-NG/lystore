@@ -4,34 +4,24 @@ import fr.openent.lystore.Lystore;
 import fr.openent.lystore.export.TabHelper;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 
 public class ListForTextTab extends TabHelper {
     private String type;
     private int yProgramLabel = 1;
 
-    public ListForTextTab(Workbook workbook, JsonObject instruction, String type) {
+    public ListForTextTab(Workbook workbook, JsonObject instruction, String type,  Map<String,JsonObject> structuresMap) {
         super(workbook, instruction, "liste pour texte du RAPPORT " + type);
         this.type = type;
+        this.structures = structuresMap;
         excel.setDefaultFont();
     }
 
-
-    @Override
-    public void create(Handler<Either<String, Boolean>> handler) {
-        excel.setDefaultFont();
-        getDatas(event -> handleDatasDefault(event, handler));
-
-    }
 
     @Override
     protected void initDatas(Handler<Either<String, Boolean>> handler) {
@@ -46,13 +36,13 @@ public class ListForTextTab extends TabHelper {
 
             }
         }
-        getStructures(new JsonArray(structuresId), getStructureHandler(structuresId,handler));
-
+        fillPage(structures);
+        HandleCatchResult(false, "", new JsonArray(structuresId), handler);
 
     }
 
     @Override
-    protected void fillPage(JsonArray structures){
+    protected void fillPage(Map<String, JsonObject> structures){
         setStructures(structures);
         setLabels();
     }

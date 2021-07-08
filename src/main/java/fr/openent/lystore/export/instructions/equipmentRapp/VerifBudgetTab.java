@@ -4,7 +4,6 @@ import fr.openent.lystore.Lystore;
 import fr.openent.lystore.export.TabHelper;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -12,6 +11,7 @@ import org.apache.poi.ss.util.CellRangeAddress;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Map;
 
 public class VerifBudgetTab extends TabHelper {
     private int currentY = 0, programY = 0;
@@ -20,22 +20,17 @@ public class VerifBudgetTab extends TabHelper {
 
     /**
      * open the tab or create it if it doesn't exists
-     *
-     * @param wb
+     *  @param wb
      * @param instruction
      * @param type
+     * @param structuresMap
      */
-    public VerifBudgetTab(Workbook wb, JsonObject instruction, String type) {
+    public VerifBudgetTab(Workbook wb, JsonObject instruction, String type,  Map<String,JsonObject> structuresMap) {
         super(wb, instruction, "Vérification ligne budgétaire");
         this.type = type;
+        this.structures = structuresMap;
     }
 
-    @Override
-    public void create(Handler<Either<String, Boolean>> handler) {
-              excel.setDefaultFont();
-              getDatas(event -> handleDatasDefault(event, handler));
-
-    }
 
     @Override
     protected void initDatas(Handler<Either<String, Boolean>> handler) {
@@ -50,12 +45,12 @@ public class VerifBudgetTab extends TabHelper {
 
             }
         }
-
-        getStructures(new JsonArray(structuresId), getStructureHandler(structuresId,handler));
+        fillPage(structures);
+        HandleCatchResult(false, "", new JsonArray(structuresId), handler);
     }
 
     @Override
-    protected void fillPage(JsonArray structures){
+    protected void fillPage(Map<String, JsonObject> structures){
         setStructures(structures);
         setArray(datas);
     }

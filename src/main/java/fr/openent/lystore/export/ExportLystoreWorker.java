@@ -46,6 +46,7 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
     @Override
     public void handle(Message<JsonObject> eventMessage) {
         eventMessage.reply(new JsonObject().put("status", "ok"));
+
         if (isSleeping) {
             logger.info("Calling Worker");
             isSleeping = false;
@@ -73,6 +74,7 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
             @Override
             public void handle(Either<String, JsonObject> event) {
                 if(event.isRight()){
+                    int time  = 1080;
                     new java.util.Timer().schedule(
                             new java.util.TimerTask() {
                                 @Override
@@ -83,7 +85,7 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
                                     }
                                 }
                             },
-                            360*1000
+                            time * 1000
                     );
                     JsonObject waitingOrder = event.right().getValue();
                     chooseExport( waitingOrder,exportHandler);

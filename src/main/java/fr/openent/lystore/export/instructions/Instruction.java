@@ -18,6 +18,7 @@ import fr.wseduc.webutils.data.FileResolver;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
+import io.vertx.core.buffer.impl.BufferImpl;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -27,10 +28,13 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 
+import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Instruction extends ExportObject {
     private final String operationsIdQuery = "WITH operations AS (" +
@@ -97,7 +101,7 @@ public class Instruction extends ExportObject {
                         new CMDTab(workbook, instruction).create(getHandler(CMDfuture));
                         new FonctionnementTab(workbook, instruction).create(getHandler(Fonctionnementfuture));
                         new RecapEPLETab(workbook, instruction).create(getHandler(RecapEPLEfuture));
-                       new RecapImputationBud(workbook, instruction).create(getHandler(RecapImputationBudfuture));
+                        new RecapImputationBud(workbook, instruction).create(getHandler(RecapImputationBudfuture));
                     } catch (IOException e) {
                         ExportHelper.catchError(exportService, idFile, "Xlsx Failed to read template");
                         handler.handle(new Either.Left<>("Xlsx Failed to read template"));
@@ -116,7 +120,8 @@ public class Instruction extends ExportObject {
         }
 
 
-        Sql.getInstance().prepared(operationsIdQuery, new JsonArray().add(this.id).add(this.id), SqlResult.validUniqueResultHandler(either -> {
+//appel néo
+        getStructures().onSuccess(structures -> Sql.getInstance().prepared(operationsIdQuery, new JsonArray().add(this.id).add(this.id), SqlResult.validUniqueResultHandler(either -> {
             if (either.isLeft()) {
                 ExportHelper.catchError(exportService, idFile, "Error when getting sql datas ");
                 handler.handle(new Either.Left<>("Error when getting sql datas "));
@@ -124,40 +129,64 @@ public class Instruction extends ExportObject {
 
                 JsonObject instruction = either.right().getValue();
                 String operationStr = "operations";
+                Map<String,JsonObject> structuresMap  = new HashMap<>();
+                for(int i = 0 ; i < structures.size() ; i ++){
+                    structuresMap.put(structures.getJsonObject(i).getString("id"),structures.getJsonObject(i));
+                }
                 if (!instruction.containsKey(operationStr)) {
                     ExportHelper.catchError(exportService, idFile, "Error when getting operations");
                     handler.handle(new Either.Left<>("Error when getting operations"));
                 } else {
+                    Boolean failed = false;
                     instruction.put(operationStr, new JsonArray(instruction.getString(operationStr)));
 
+
                     Workbook workbook = new XSSFWorkbook();
-                    List<Future> futures = new ArrayList<>();
-                    Future<Boolean> ListForTextFuture = Future.future();
-                    Future<Boolean> RecapFuture = Future.future();
-                    Future<Boolean> ComptaFuture = Future.future();
-                    Future<Boolean> AnnexeDelibFuture = Future.future();
-                    Future<Boolean> RecapMarketFuture = Future.future();
-                    Future<Boolean> VerifBudgetFuture = Future.future();
-                    futures.add(ComptaFuture);
-                    futures.add(ListForTextFuture);
-                    futures.add(RecapFuture);
-                    futures.add(AnnexeDelibFuture);
-                    futures.add(RecapMarketFuture);
-                    futures.add(VerifBudgetFuture);
+//                    List<Future> futures = new ArrayList<>();
+//                    Future<Boolean> ListForTextFuture = Future.future();
+//                    Future<Boolean> RecapFuture = Future.future();
+//                    Future<Boolean> ComptaFuture = Future.future();
+//                    Future<Boolean> AnnexeDelibFuture = Future.future();
+//                    Future<Boolean> RecapMarketFuture = Future.future();
+//                    Future<Boolean> VerifBudgetFuture = Future.future();
+//
+//                    futures.add(ComptaFuture);
+//                    futures.add(ListForTextFuture);
+//                    futures.add(RecapFuture);
+//                    futures.add(AnnexeDelibFuture);
+//                    futures.add(RecapMarketFuture);
+//                    futures.add(VerifBudgetFuture);
 
-                    futureHandler(handler, workbook, futures);
+//                    futureHandler(handler, workbook, futures);
 
-                    new ComptaTab(workbook, instruction, type).create(getHandler(ComptaFuture));
-                    new ListForTextTab(workbook, instruction, type).create(getHandler(ListForTextFuture));
-                    new RecapTab(workbook, instruction, type).create(getHandler(RecapFuture));
-                    new AnnexeDelibTab(workbook, instruction, type).create(getHandler(AnnexeDelibFuture));
-                    new RecapMarket(workbook, instruction, type).create(getHandler(RecapMarketFuture));
-                    new VerifBudgetTab(workbook, instruction, type).create(getHandler(VerifBudgetFuture));
+                    new ComptaTab(workbook, instruction, type,structuresMap).create()
+                            .compose(l->new  ListForTextTab(workbook, instruction, type,structuresMap).create())
+                            .compose(listForText -> new RecapTab(workbook, instruction, type,structuresMap).create())
+                            .compose(Recap-> new AnnexeDelibTab(workbook, instruction, type,structuresMap).create())
+                            .compose(recapMarket ->  new RecapMarket(workbook, instruction, type,structuresMap).create())
+                            .compose(v -> new VerifBudgetTab(workbook, instruction, type,structuresMap).create())
+                            .onSuccess( event -> {
+                                        try {
+                                            ByteArrayOutputStream fileOut = new ByteArrayOutputStream();
+                                            workbook.write(fileOut);
+                                            Buffer buff = new BufferImpl();
+                                            buff.appendBytes(fileOut.toByteArray());
+                                            handler.handle(new Either.Right<>(buff));
+                                        } catch (IOException e) {
+                                            handler.handle(new Either.Left<>(e.getMessage()));
+                                        }
+                                    }
+                            ).onFailure(failure ->{
+                        handler.handle(new Either.Left<>("Error when resolving futures : " + failure.getMessage()));
+                    });
+
+
                 }
             }
-        }));
-
-
+        }))).onFailure( f->{
+                    handler.handle(new Either.Left<>(f.getMessage()));
+                }
+        );
     }
 
     public void exportSubvention(Handler<Either<String, Buffer>> handler) {
@@ -171,7 +200,7 @@ public class Instruction extends ExportObject {
                 handler.handle(new Either.Left<>("Error when getting sql datas for subvention"));
             } else {
 
-               JsonObject instruction = eitherInstruction.right().getValue();
+                JsonObject instruction = eitherInstruction.right().getValue();
                 String operationStr = "operations";
                 if (!instruction.containsKey(operationStr)) {
                     log.error("Error when getting operations");

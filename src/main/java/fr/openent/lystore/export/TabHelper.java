@@ -7,7 +7,9 @@ import fr.wseduc.webutils.Either;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -54,6 +56,7 @@ public abstract class TabHelper {
     protected final int LIMIT_ATTEMPTS_CREATION = 3;
     protected final String EMPTY = "";
     protected int attemptNumber = 0;
+    protected Map<String,JsonObject> structures;
     /**
      * Format : H-code
      */
@@ -98,8 +101,20 @@ public abstract class TabHelper {
     public void startTimer(Handler<Either<String,Boolean>> handler){
 
     }
+    public  Future<Boolean> create(){
+        excel.setDefaultFont();
+        Promise<Boolean> promise = Promise.promise();
+        getDatas(event -> handleDatasDefault(event, l -> {
+                    if(l.isRight())
+                        promise.complete(true);
+                    else
+                        promise.fail(l.left().getValue());
+                })
+        );
+        return promise.future();
+    };
 
-    public abstract void create(Handler<Either<String, Boolean>> handler);
+    public void create(Handler<Either<String, Boolean>> handler){};
 
     /**
      * retrieve datas to insert into the page
@@ -350,6 +365,39 @@ public abstract class TabHelper {
         return sortedJsonArray;
 
     }
+    protected void setStructuresFromDatas( Map<String,JsonObject>  structures) {
+        JsonArray actions;
+        JsonObject  structure;
+        LocalDateTime test = LocalDateTime.now();
+        DateTimeFormatter formatter  = DateTimeFormatter.ofPattern("hh:mm:ss");
+        log.info("@LystoreWorker["+ this.getClass() +"] END " +   test.format(formatter) +" STRUCTURES GET FROM NEO "+ structures.size());
+        for (int i = 0; i < datas.size(); i++) {
+            JsonObject data = datas.getJsonObject(i);
+            initEmptyStructures(data);
+            if(data.containsKey("actions"))
+                actions = new JsonArray(data.getString("actions"));
+            else
+                actions =new JsonArray();
+            getElemsStructure(structures,data);
+            data.put("actionsJO", actions);
+        }
+    }
+
+    protected  void getElemsStructure( Map<String,JsonObject> structuresMap,JsonObject data){
+        JsonObject  structure;
+            structure = structuresMap.get(data.getString("id_structure"));
+                if(structure.getString("name") != null){
+                    data.put("nameEtab", structure.getString("name"));
+                }
+                putDataIfNotNull("uai",data, structure);
+                putDataIfNotNull("city",data, structure);
+                    putDataIfNotNull("type",data, structure);
+                putDataIfNotNull("address",data, structure);
+                putDataIfNotNull("academy",data, structure);
+                putDataIfNotNull("zipCode",data, structure);
+                putDataIfNotNull("phone",data, structure);
+    }
+
     protected void setStructuresFromDatas(JsonArray structures) {
         JsonArray actions;
         JsonObject  structure;
@@ -379,7 +427,7 @@ public abstract class TabHelper {
                 }
                 putDataIfNotNull("uai",data, structure);
                 putDataIfNotNull("city",data, structure);
-                    putDataIfNotNull("type",data, structure);
+                putDataIfNotNull("type",data, structure);
                 putDataIfNotNull("address",data, structure);
                 putDataIfNotNull("academy",data, structure);
                 putDataIfNotNull("zipCode",data, structure);
@@ -425,6 +473,23 @@ public abstract class TabHelper {
         }
     }
 
+    protected void setStructures( Map<String,JsonObject> structuresMap) {
+        LocalDateTime test = LocalDateTime.now();
+        DateTimeFormatter formatter  = DateTimeFormatter.ofPattern("hh:mm:ss");
+        log.info("@LystoreWorker["+ this.getClass() +"] END " +   test.format(formatter) +" STRUCTURES GET FROM NEO "+ structures.size());
+        JsonArray actions;
+        for (int i = 0; i < datas.size(); i++) {
+            JsonObject data = datas.getJsonObject(i);
+            actions = new JsonArray(data.getString("actions"));
+            for (int k = 0; k < actions.size(); k++) {
+                JsonObject action = actions.getJsonObject(k);
+                initEmptyStructures(action);
+                getElemsStructure(structuresMap,action);
+            }
+            data.put("actionsJO", actions);
+        }
+    }
+
 
 
     protected String makeCellWithoutNull ( String valueGet){
@@ -450,23 +515,48 @@ public abstract class TabHelper {
      * @param ids
      * @param handler
      */
-    //TODO next improve : make futures for each structs
     protected void getStructures(JsonArray ids, Handler<Either<String, JsonArray>> handler)  {
         LocalDateTime test = LocalDateTime.now();
-        List<Future> futures = new ArrayList<>();
+        List<Future> futuresOld = new ArrayList<>();
         DateTimeFormatter formatter  = DateTimeFormatter.ofPattern("hh:mm:ss");
         log.info("@LystoreWorker["+ this.getClass() +"] START " +   test.format(formatter) + " Array structures id to send SIZE : " + ids.size());
 
 
         for(int i = 0 ; i < ids.size();i++){
             Future<JsonArray> future = Future.future();
-            futures.add(future);
+            futuresOld.add(future);
         }
-        futureHandler(handler,futures);
+        futureHandler(handler,futuresOld);
         for(int i = 0 ; i < ids.size();i++){
             String id = ids.getString(i);
-            getStructure(id,getHandler(futures.get(i)));
+            getStructure(id,getHandler(futuresOld.get(i)));
         }
+
+
+
+//        List<Future<JsonObject>> futures = new ArrayList<>();
+//        Promise<JsonObject> init = Promise.promise();
+//        Future<JsonObject>  current = init.future();
+//        for (int i = 0 ; i<ids.size(); i++){
+//            int indice = i;
+//            current = current.compose( v ->{
+//                Future<JsonObject> next = getStructure(ids.getString(indice));
+//                futures.add(next);
+//                return  next;
+//            });
+//        }
+//        current.onSuccess(l ->{
+//            List<JsonObject> structures = new ArrayList<>();
+//            for(Future<JsonObject> future : futures){
+//                structures.add(future.result());
+//            }
+//          handler.handle(new Either.Right(new JsonArray(structures)));
+////
+//        }).onFailure(f->{
+//            handler.handle(new Either.Left("Error when resolving futures "));
+//        });
+//
+//        init.complete();
 
 //        String query = "" +
 //                "MATCH (s:Structure) " +
@@ -518,6 +608,66 @@ public abstract class TabHelper {
 //            getStructure(id, handler);
 //        }
     }
+
+    private Future<JsonObject> getStructure(String id) {
+    Promise<JsonObject> promise = Promise.promise();
+        String query = "" +
+                "MATCH (s:Structure) " +
+                "WHERE s.id = {id} " +
+                "RETURN " +
+                "s.id as id," +
+                " s.UAI as uai," +
+                " s.name as name," +
+                " s.academy as academy ," +
+                " s.address + ' ,' + s.zipCode +' ' + s.city as address,  " +
+                "s.zipCode as zipCode," +
+                " s.city as city," +
+                " s.type as type," +
+                " s.phone as phone";
+        try {
+            Neo4j.getInstance().execute(query, new JsonObject().put("id", id), Neo4jResult.validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
+                @Override
+                public void handle(Either<String, JsonObject> event) {
+                    if(event.isRight()){
+                        promise.complete(event.right().getValue());
+                    }else {
+                        promise.fail(event.left().getValue());
+                    }
+                }
+            }));
+        }catch (Exception e){
+            logger.error( "@LystoreWorker["+ e.getClass() +"] " + e.getMessage() +" tabHelper");
+            getStructure(id);
+        }
+        return promise.future();
+    }
+//
+//    private void getStructure(String id, Handler<Either<String, JsonObject>> handler) {
+//
+//        String query = "" +
+//                "MATCH (s:Structure) " +
+//                "WHERE s.id = {id} " +
+//                "RETURN " +
+//                "s.id as id," +
+//                " s.UAI as uai," +
+//                " s.name as name," +
+//                " s.academy as academy ," +
+//                " s.address + ' ,' + s.zipCode +' ' + s.city as address,  " +
+//                "s.zipCode as zipCode," +
+//                " s.city as city," +
+//                " s.type as type," +
+//                " s.phone as phone";
+//        try {
+//            Neo4j.getInstance().execute(query, new JsonObject().put("id", id), Neo4jResult.validUniqueResultHandler(handler));
+//        }catch (Exception e){
+//            logger.error( "@LystoreWorker["+ e.getClass() +"] " + e.getMessage() +" tabHelper");
+//            getStructure(id,handler);
+//        }
+////        catch (NullPointerException e){
+////            logger.error( "@LystoreWorker["+ e.getClass() +"] " + e.getMessage() +" tabHelper");
+////            getStructure(id, handler);
+////        }
+//    }
     protected Handler<Either<String, JsonArray>> getHandler(Future<JsonArray> future) {
         return event -> {
             if (event.isRight()) {
@@ -533,9 +683,13 @@ public abstract class TabHelper {
      *
      * Method called when all the data are init to write an excel Page
      */
+    protected  void fillPage(Map<String, JsonObject> structures){
+
+    }
     protected  void fillPage(JsonArray structures){
 
     }
+
 
 
     protected Handler<Either<String, JsonArray>> getStructureHandler(JsonArray structuresId, Handler<Either<String, Boolean>> handler) {

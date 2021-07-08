@@ -11,6 +11,7 @@ import io.vertx.core.json.JsonObject;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class Subventions extends TabHelper {
     private StructureService structureService;
@@ -88,7 +89,7 @@ public class Subventions extends TabHelper {
 
     }
     @Override
-    protected void fillPage(JsonArray structures){
+    protected void fillPage(Map<String, JsonObject> structures){
         setStructuresFromDatas(structures);
         setTitle();
         writeArray();
