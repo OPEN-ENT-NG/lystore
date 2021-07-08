@@ -139,6 +139,45 @@ export const orderController = ng.controller('orderController',
             });
             return json;
         };
+
+        $scope.addOrderFilter = async (event?) => {
+
+            if (event && (event.which === 13 || event.keyCode === 13) && event.target.value.trim() !== '') {
+                if (!_.contains($scope.ordersClient.filters, event.target.value)) {
+                    $scope.ordersClient.filters = [...$scope.ordersClient.filters, event.target.value];
+                }
+                event.target.value = '';
+                $scope.loadingArray = true;
+                Utils.safeApply($scope);
+                if (isPageOrderWaiting) {
+                    await $scope.syncOrders('WAITING');
+                    $scope.displayedOrders.all = $scope.displayedOrders.all.filter(order => order.id_campaign === $scope.campaign.id || $scope.campaign.id === -1);
+                }else if(isPageOrderSent)
+                    await $scope.syncOrders('SENT');
+                else{
+                    await $scope.syncOrders('VALID');
+                }
+                $scope.loadingArray = false;
+                Utils.safeApply($scope);
+            }
+        };
+
+        $scope.dropOrderFilter = async (filter: string) => {
+            $scope.loadingArray = true;
+            Utils.safeApply($scope);
+            $scope.ordersClient.filters = $scope.ordersClient.filters.filter( filterWord => filterWord !== filter);
+            if (isPageOrderWaiting) {
+                await $scope.syncOrders('WAITING');
+                $scope.displayedOrders.all = $scope.displayedOrders.all.filter(order => order.id_campaign === $scope.campaign.id || $scope.campaign.id === -1);
+            }else if(isPageOrderSent)
+                await $scope.syncOrders('SENT');
+            else {
+                await $scope.syncOrders('VALID');
+            }
+            $scope.loadingArray = false;
+            Utils.safeApply($scope);
+        };
+
         $scope.addFilter = (filterWord: string, event?) => {
             if (event && (event.which === 13 || event.keyCode === 13 )) {
                 $scope.addFilterWords(filterWord);
@@ -147,10 +186,10 @@ export const orderController = ng.controller('orderController',
         };
 
         $scope.switchAllOrders = () => {
-            $scope.displayedOrders.all.map((order) => order.selected = $scope.allOrdersSelected);
+            $scope.ordersClient.all.map((order) => order.selected = $scope.allOrdersSelected);
         };
 
-        $scope.getSelectedOrders = () => $scope.displayedOrders.selected;
+        $scope.getSelectedOrders = () => $scope.ordersClient.selected;
 
         $scope.getStructureGroupsList = (structureGroups : any): string => {
             try{
@@ -243,7 +282,6 @@ export const orderController = ng.controller('orderController',
                     order.selected = false;
                 }
             );
-
         };
 
         $scope.windUpOrders = async (orders: OrderClient[]) => {

@@ -211,13 +211,15 @@ export class OrdersClient extends Selection<OrderClient> {
                 this.all = Mix.castArrayAs(OrderClient, data);
                 this.syncWithIdsCampaignAndStructure(idCampaign, idStructure);
             } else {
-                const { data } = await http.get(  `/lystore/orders?status=${status}`);
+                const queriesFilter = Utils.formatGetParameters({q: this.filters});
+                const { data } = await http.get(  `/lystore/orders?status=${status}&${queriesFilter}`);
                 this.all = Mix.castArrayAs(OrderClient, data);
                 this.all.map((order: OrderClient) => {
                     order.contract = contracts.all.find(c => c.id === order.id_contract);
                     order.contract_type = contractTypes.all.find(c => c.id === order.contract.id_contract_type);
                     order.supplier = suppliers.all.find(s => s.id === order.contract.id_supplier);
                     order.campaign = campaigns.all.find(c => c.id === order.id_campaign);
+                    //plus utile pour le waiting
                     order.project = projects.all.find(p => p.id === order.id_project);
                     try {
                         order.title = titles.all.find(t => t.id === order.project.id_title);

@@ -139,7 +139,8 @@ public class OrderController extends ControllerHelper {
                                                             roundWith2Decimals(getTotalOrder(mapNumberEquipments.getJsonArray(order.getString("number_validation")))))
                                                             .replace(".", ","));
                                         }
-                                        renderJson(request, orders);
+                                        List<String> queries = request.params().getAll("q");
+                                        renderJson(request, orderService.filterValidOrders(orders,queries));
                                     } else {
                                         badRequest(request);
                                     }
@@ -148,14 +149,16 @@ public class OrderController extends ControllerHelper {
                         } else {
                             badRequest(request);
                         }
+
                     }
                 });
             } else {
+                List<String> queries = request.params().getAll("q");
                 if(status.equals("SENT"))
                 {
-                    orderService.listOrderSent(status, arrayResponseHandler(request));
+                    orderService.listOrderSent(status, queries, arrayResponseHandler(request));
                 }else {
-                    orderService.listOrder(status, arrayResponseHandler(request));
+                    orderService.listOrder(status, queries, arrayResponseHandler(request));
                 }
             }
         } else {
