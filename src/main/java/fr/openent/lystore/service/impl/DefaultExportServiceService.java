@@ -152,6 +152,24 @@ public class DefaultExportServiceService implements ExportService {
         }
     }
 
+    public void updateWhenErrorTimeout (String idExport, Handler<Either<String, Boolean>> handler){
+        try{
+            mongo.updateExport(idExport,"ERROR", "", new Handler<String>() {
+                @Override
+                public void handle(String event) {
+                    if(event.equals("mongoinsertfailed"))
+                        handler.handle(new Either.Left<>("Error when inserting mongo"));
+                    else{
+                        log.info("EXPORT TIMED OUT ");
+                        handler.handle(new Either.Right<>(true));
+                    }
+
+                }
+            });
+        } catch (Exception error){
+            log.error("error when update ERROR in export" + error);
+        }
+    }
     public void updateWhenSuccess (String fileId, String idExport, Handler<Either<String, Boolean>> handler) {
         try {
             log.info("SUCCESS");

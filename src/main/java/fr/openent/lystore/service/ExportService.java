@@ -26,4 +26,6 @@ public interface ExportService {
 
 
     void getWaitingExport(Handler<Either<String, JsonObject>> handler);
+
+    void updateWhenErrorTimeout(String idFile,  Handler<Either<String, Boolean>> handler);
 }

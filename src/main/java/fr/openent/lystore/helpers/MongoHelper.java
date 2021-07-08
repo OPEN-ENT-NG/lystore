@@ -36,28 +36,28 @@ public class MongoHelper extends MongoDbCrudService {
             final JsonObject matches = new JsonObject().put("_id", idExport);
             mongo.findOne(this.collection, matches , result -> {
                 if ("ok".equals(result.body().getString(STATUS))) {
-
                     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy/MM/dd HH:mm:ss");
                     LocalDateTime now = LocalDateTime.now();
-
                     JsonObject exportProperties = result.body().getJsonObject("result");
-                    exportProperties.put("updated",dtf.format(now));
-                    exportProperties.put(STATUS,status);
-                    exportProperties.put("NbIterationsLeft",exportProperties.getInteger("NbIterationsLeft")-1);
-
-                    if(!fileId.isEmpty())
-                        exportProperties.put("fileId",fileId);
-
-                    mongo.save(collection, exportProperties, new Handler<Message<JsonObject>>() {
-                        @Override
-                        public void handle(Message<JsonObject> event) {
-                            if(!event.body().getString("status").equals("ok")) {
-                                handler.handle("mongoinsertfailed");
-                            }else {
-                                handler.handle("ok");
+                    if(exportProperties != null && exportProperties.containsKey(STATUS) && !exportProperties.getString(STATUS).equals("SUCCESS")) {
+                        exportProperties.put("updated", dtf.format(now));
+                        exportProperties.put(STATUS, status);
+                        exportProperties.put("NbIterationsLeft", exportProperties.getInteger("NbIterationsLeft") - 1);
+                        if (!fileId.isEmpty())
+                            exportProperties.put("fileId", fileId);
+                        mongo.save(collection, exportProperties, new Handler<Message<JsonObject>>() {
+                            @Override
+                            public void handle(Message<JsonObject> event) {
+                                if (!event.body().getString("status").equals("ok")) {
+                                    handler.handle("mongoinsertfailed");
+                                } else {
+                                    handler.handle("ok");
+                                }
                             }
-                        }
-                    });
+                        });
+                    }else{
+                        handler.handle("ok");
+                    }
                 }
             });
         } catch (Exception e) {

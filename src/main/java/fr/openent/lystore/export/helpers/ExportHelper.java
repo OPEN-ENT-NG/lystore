@@ -64,7 +64,10 @@ public class ExportHelper {
 
         log.error("Error for create file export excel :\n" + errorCatchTextOutput);
     }
-
+    public static void catchErrorTimeout(ExportService exportService, String idFile, String errorCatchTextOutput) {
+        exportService.updateWhenErrorTimeout(idFile, makeError -> {
+        });
+    }
     private static String getDate() {
         java.util.Date date = Calendar.getInstance().getTime();
         DateFormat formatter = new SimpleDateFormat("dd/MM/yyyy");

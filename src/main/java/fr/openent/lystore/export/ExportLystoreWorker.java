@@ -27,6 +27,7 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
     private String idNewFile;
     private boolean isWorking = false;
     private boolean isSleeping = true;
+
     private final String XLSXHEADER= "application/vnd.ms-excel";
     private final String PDFHEADER = "application/pdf";
     private CampaignExport campaign;
@@ -56,20 +57,34 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
 
 
     private void processExport(){
-
+        isWorking = true;
         Handler<Either<String,Boolean>> exportHandler = event -> {
             logger.info("exportHandler");
             if (event.isRight()) {
+                isWorking = false;
                 logger.info("export to Waiting");
                 processExport();
             } else {
                 ExportHelper.catchError(exportService, idNewFile, "error when creating xlsx " + event.left().getValue());
             }
         };
+
         exportService.getWaitingExport(new Handler<Either<String, JsonObject>>() {
             @Override
             public void handle(Either<String, JsonObject> event) {
                 if(event.isRight()){
+                    new java.util.Timer().schedule(
+                            new java.util.TimerTask() {
+                                @Override
+                                public void run() {
+                                    if(isWorking) {
+                                        ExportHelper.catchErrorTimeout(exportService, idNewFile, "error when creating xlsx : Timed out");
+                                        processExport();
+                                    }
+                                }
+                            },
+                            360*1000
+                    );
                     JsonObject waitingOrder = event.right().getValue();
                     chooseExport( waitingOrder,exportHandler);
                 }else{
@@ -114,6 +129,7 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
             string_object_id = body.getString("object_id");
 
         }
+        logger.info("Export Type : " + action);
         switch (action) {
             case ExportTypes.EQUIPMENT_INSTRUCTION:
                 exportEquipment(

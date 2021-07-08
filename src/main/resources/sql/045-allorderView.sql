@@ -58,7 +58,7 @@ Create View lystore.allOrders  as
                                 id_project,
                                 NULL AS id_order_client_equipment,
                                 program,
-                                action,
+                                action,²
                                 id_operation,
                                 override_region
                          FROM   lystore.order_client_equipment oce);
