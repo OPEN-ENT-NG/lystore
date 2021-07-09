@@ -4,14 +4,16 @@ import fr.openent.lystore.Lystore;
 import io.vertx.core.json.JsonObject;
 import org.apache.poi.ss.usermodel.Workbook;
 
+import java.util.Map;
+
 public class CMRTab extends Investissement {
 
     /**
      * Format : H-code
      */
 
-    public CMRTab(Workbook wb, JsonObject instruction) {
-        super(wb, instruction, TabName.CMR.toString());
+    public CMRTab(Workbook wb, JsonObject instruction, Map<String, JsonObject> structuresMap) {
+        super(wb, instruction, TabName.CMR.toString(), structuresMap);
         query = "       With values as  (             " +
                 "     SELECT  orders.id ,orders.\"price TTC\",  " +
                 "             ROUND((( SELECT CASE          " +

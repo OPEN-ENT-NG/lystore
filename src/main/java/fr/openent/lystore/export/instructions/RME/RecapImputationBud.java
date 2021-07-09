@@ -10,14 +10,16 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 
+import java.util.Map;
+
 public class RecapImputationBud extends TabHelper {
     private final int xTab = 0;
     private final int yTab = 7;
     private int nbToMerge = 1;
 
-    public RecapImputationBud(Workbook workbook, JsonObject instruction) {
+    public RecapImputationBud(Workbook workbook, JsonObject instruction, Map<String, JsonObject> structuresMap) {
 
-        super(workbook, instruction, TabName.IMPUTATION_BUDG.toString());
+        super(workbook, instruction, TabName.IMPUTATION_BUDG.toString(),structuresMap);
         excel.setDefaultFont();
         excel.setInstructionNumber(makeCellWithoutNull(instruction.getString("cp_number")));
     }

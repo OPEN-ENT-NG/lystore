@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+//TODO METTRE LE ON FAILURE POUR LES STRUCTURES
 public class Instruction extends ExportObject {
     private final String operationsIdQuery = "WITH operations AS (" +
             "SELECT operation.id, label_operation.label, operation.id_instruction " +
@@ -63,7 +64,7 @@ public class Instruction extends ExportObject {
         }
 
 
-        Sql.getInstance().prepared(operationsIdQuery, new JsonArray().add(this.id).add(this.id), SqlResult.validUniqueResultHandler(either -> {
+        getStructures().onSuccess(structures ->  Sql.getInstance().prepared(operationsIdQuery, new JsonArray().add(this.id).add(this.id), SqlResult.validUniqueResultHandler(either -> {
             if (either.isLeft()) {
                 ExportHelper.catchError(exportService, idFile, "Error when getting sql datas ");
                 handler.handle(new Either.Left<>("Error when getting sql datas "));
@@ -77,38 +78,50 @@ public class Instruction extends ExportObject {
                 } else {
                     instruction.put(operationStr, new JsonArray(instruction.getString(operationStr)));
                     String path = FileResolver.absolutePath("public/template/excel/templateInvestissement.xlsx");
+                    Map<String, JsonObject> structuresMap = getStructureMap(structures);
 
                     try {
                         FileInputStream templateInputStream = new FileInputStream(path);
                         Workbook workbook = new XSSFWorkbook(templateInputStream);
-                        List<Future> futures = new ArrayList<>();
-                        Future<Boolean> lyceeFuture = Future.future();
-                        Future<Boolean> CMRFuture = Future.future();
-                        Future<Boolean> CMDfuture = Future.future();
-                        Future<Boolean> Fonctionnementfuture = Future.future();
-                        Future<Boolean> RecapEPLEfuture = Future.future();
-                        Future<Boolean> RecapImputationBudfuture = Future.future();
-                        futures.add(lyceeFuture);
-                        futures.add(CMRFuture);
-                        futures.add(CMDfuture);
-                        futures.add(Fonctionnementfuture);
-                        futures.add(RecapEPLEfuture);
-                        futures.add(RecapImputationBudfuture);
-                        futureHandler(handler, workbook, futures);
+//                        List<Future> futures = new ArrayList<>();
+//                        Future<Boolean> lyceeFuture = Future.future();
+//                        Future<Boolean> CMRFuture = Future.future();
+//                        Future<Boolean> CMDfuture = Future.future();
+//                        Future<Boolean> Fonctionnementfuture = Future.future();
+//                        Future<Boolean> RecapEPLEfuture = Future.future();
+//                        Future<Boolean> RecapImputationBudfuture = Future.future();
+//                        futures.add(lyceeFuture);
+//                        futures.add(CMRFuture);
+//                        futures.add(CMDfuture);
+//                        futures.add(Fonctionnementfuture);
+//                        futures.add(RecapEPLEfuture);
+//                        futures.add(RecapImputationBudfuture);
+//                        futureHandler(handler, workbook, futures);
+//
+//                        new LyceeTab(workbook, instruction).create(getHandler(lyceeFuture));
+//                        new CMRTab(workbook, instruction).create(getHandler(CMRFuture));
+//                        new CMDTab(workbook, instruction).create(getHandler(CMDfuture));
+//                        new FonctionnementTab(workbook, instruction).create(getHandler(Fonctionnementfuture));
+//                        new RecapEPLETab(workbook, instruction).create(getHandler(RecapEPLEfuture));
+//                        new RecapImputationBud(workbook, instruction).create(getHandler(RecapImputationBudfuture));
+                        new LyceeTab(workbook, instruction,structuresMap).create()
+                                .compose(v ->  new CMRTab(workbook, instruction,structuresMap).create())
+                                .compose(v->  new CMDTab(workbook, instruction,structuresMap).create())
+                                .compose(v ->  new FonctionnementTab(workbook, instruction,structuresMap).create())
+                                .compose(v ->   new RecapEPLETab(workbook, instruction,structuresMap).create())
+                                .compose(v ->    new RecapImputationBud(workbook, instruction,structuresMap).create())
+                                .onSuccess(getFinalHandler(handler, workbook)
+                                ).onFailure(failure ->{
+                            handler.handle(new Either.Left<>("Error when resolving futures : " + failure.getMessage()));
+                        });
 
-                        new LyceeTab(workbook, instruction).create(getHandler(lyceeFuture));
-                        new CMRTab(workbook, instruction).create(getHandler(CMRFuture));
-                        new CMDTab(workbook, instruction).create(getHandler(CMDfuture));
-                        new FonctionnementTab(workbook, instruction).create(getHandler(Fonctionnementfuture));
-                        new RecapEPLETab(workbook, instruction).create(getHandler(RecapEPLEfuture));
-                        new RecapImputationBud(workbook, instruction).create(getHandler(RecapImputationBudfuture));
                     } catch (IOException e) {
                         ExportHelper.catchError(exportService, idFile, "Xlsx Failed to read template");
                         handler.handle(new Either.Left<>("Xlsx Failed to read template"));
                     }
                 }
             }
-        }));
+        })));
 
 
     }
@@ -129,10 +142,7 @@ public class Instruction extends ExportObject {
 
                 JsonObject instruction = either.right().getValue();
                 String operationStr = "operations";
-                Map<String,JsonObject> structuresMap  = new HashMap<>();
-                for(int i = 0 ; i < structures.size() ; i ++){
-                    structuresMap.put(structures.getJsonObject(i).getString("id"),structures.getJsonObject(i));
-                }
+                Map<String, JsonObject> structuresMap = getStructureMap(structures);
                 if (!instruction.containsKey(operationStr)) {
                     ExportHelper.catchError(exportService, idFile, "Error when getting operations");
                     handler.handle(new Either.Left<>("Error when getting operations"));
@@ -169,14 +179,20 @@ public class Instruction extends ExportObject {
                             ).onFailure(failure ->{
                         handler.handle(new Either.Left<>("Error when resolving futures : " + failure.getMessage()));
                     });
-
-
                 }
             }
         }))).onFailure( f->{
                     handler.handle(new Either.Left<>(f.getMessage()));
                 }
         );
+    }
+
+    private Map<String, JsonObject> getStructureMap(JsonArray structures) {
+        Map<String, JsonObject> structuresMap = new HashMap<>();
+        for (int i = 0; i < structures.size(); i++) {
+            structuresMap.put(structures.getJsonObject(i).getString("id"), structures.getJsonObject(i));
+        }
+        return structuresMap;
     }
 
     private Handler<Boolean> getFinalHandler(Handler<Either<String, Buffer>> handler, Workbook workbook) {
@@ -282,10 +298,7 @@ public class Instruction extends ExportObject {
                         ExportHelper.catchError(exportService, idFile, "Error when getting sql datas ");
                         handler.handle(new Either.Left<>("Error when getting sql datas "));
                     } else {
-                        Map<String,JsonObject> structuresMap  = new HashMap<>();
-                        for(int i = 0 ; i < structures.size() ; i ++){
-                            structuresMap.put(structures.getJsonObject(i).getString("id"),structures.getJsonObject(i));
-                        }
+                        Map<String, JsonObject> structuresMap = getStructureMap(structures);
                         JsonObject instruction = either.right().getValue();
                         String operationStr = "operations";
                         if (!instruction.containsKey(operationStr)) {

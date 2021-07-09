@@ -4,14 +4,16 @@ import fr.openent.lystore.Lystore;
 import io.vertx.core.json.JsonObject;
 import org.apache.poi.ss.usermodel.Workbook;
 
+import java.util.Map;
+
 public class FonctionnementTab extends Investissement {
 
     /**
      * Format : H-code
      */
 
-    public FonctionnementTab(Workbook wb, JsonObject instruction) {
-        super(wb, instruction, TabName.FONCTIONNEMENT.toString());
+    public FonctionnementTab(Workbook wb, JsonObject instruction, Map<String, JsonObject> structuresMap) {
+        super(wb, instruction, TabName.FONCTIONNEMENT.toString(), structuresMap);
         query = "       With values as  (             " +
                 "     SELECT  orders.id ,orders.\"price TTC\",  " +
                 "             ROUND((( SELECT CASE          " +

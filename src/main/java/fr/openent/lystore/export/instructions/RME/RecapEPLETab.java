@@ -5,7 +5,9 @@ import fr.openent.lystore.export.TabHelper;
 import fr.openent.lystore.service.StructureService;
 import fr.openent.lystore.service.impl.DefaultStructureService;
 import fr.wseduc.webutils.Either;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.poi.ss.usermodel.Row;
@@ -40,20 +42,20 @@ public class RecapEPLETab extends TabHelper {
     private int nbLine = 0;
     private String totalLabelInt = "";
 
-    public RecapEPLETab(Workbook workbook, JsonObject instruction) {
-        super(workbook, instruction, TabName.EPLE.toString());
-        structuresId = new ArrayList<>();
+    public RecapEPLETab(Workbook workbook, JsonObject instruction, Map<String, JsonObject> structuresMap) {
+        super(workbook, instruction, TabName.EPLE.toString(),structuresMap);
         structureService = new DefaultStructureService(Lystore.lystoreSchema);
     }
 
     @Override
-    public void create(Handler<Either<String, Boolean>> handler) {
+    public Future<Boolean> create() {
+        Promise<Boolean> promise = Promise.promise();
         excel.setDefaultFont();
         excel.setInstructionNumber(makeCellWithoutNull(instruction.getString("cp_number")));
         getDatas(event -> {
             try {
                 if (event.isLeft()) {
-                    handler.handle(new Either.Left<>("Failed to retrieve  datas"));
+                    promise.fail("Failed to retrieve  datas");
                     return;
                 }
                 if (checkEmpty()) {
@@ -61,32 +63,39 @@ public class RecapEPLETab extends TabHelper {
                     sheet.removeRow(row);
                     row = sheet.getRow(3);
                     sheet.removeRow(row);
-                    handler.handle(new Either.Right<>(true));
+                   promise.complete(true);
                 } else {
-                    getAndSetDatas(handler);
+                    getAndSetDatas(promise);
                 }
             }catch(Exception e){
                 logger.error(e.getMessage());
                 logger.error(e.getStackTrace());
-                handler.handle(new Either.Left<>("error when creating excel"));
+                promise.fail("error when creating excel");
             }
         });
+        return promise.future();
     }
 
-    private void getAndSetDatas(Handler<Either<String, Boolean>> handler) {
+    private void getAndSetDatas(Promise<Boolean> promise) {
         JsonObject program;
         for (int i = 0; i <  datas.size(); i++) {
             program =  datas.getJsonObject(i);
             makeCellWithoutNull( program.getString("comment"));
-            if (!structuresId.contains(program.getString(id_structureStr)))
-                structuresId.add(structuresId.size(), program.getString(id_structureStr));
         }
-        log.info("Array structures id to send SIZE : " + structuresId.size());
-        getStructures(new JsonArray(structuresId), getStructureHandler(structuresId,handler));
+        fillPage(structures);
+        HandleCatchResult(false, "", new JsonArray(), new Handler<Either<String, Boolean>>() {
+            @Override
+            public void handle(Either<String, Boolean> event) {
+                if(event.isRight())
+                    promise.complete(true);
+                else
+                    promise.fail("errorWhen Handle Cacht result");
+            }
+        });
     }
     @Override
-    protected void fillPage(JsonArray structures){
-        setStructuresFromDatas(structures);
+    protected void fillPage(Map<String, JsonObject> structuresMap){
+        setStructuresFromDatas(structuresMap);
         setTab();
     }
     private void setTab() {

@@ -98,6 +98,21 @@ public abstract class TabHelper {
         log.info("Initialize tab : " + TabName);
     }
 
+    public TabHelper(Workbook wb, JsonObject instruction, String TabName, Map<String, JsonObject> structuresMap) {
+        this.wb = wb;
+        this.tabx = new JsonObject();
+        this.taby = new JsonArray();
+        this.instruction = instruction;
+        this.sheet = wb.getSheet(TabName);
+        if (wb.getSheetIndex(this.sheet) == -1) {
+            this.sheet = wb.createSheet(TabName);
+        }
+        this.excel = new ExcelHelper(wb, sheet);
+        priceTab = new ArrayList<ArrayList<Double>>();
+        log.info("Initialize tab : " + TabName);
+        this.structures = structuresMap;
+    }
+
     public void startTimer(Handler<Either<String,Boolean>> handler){
 
     }
