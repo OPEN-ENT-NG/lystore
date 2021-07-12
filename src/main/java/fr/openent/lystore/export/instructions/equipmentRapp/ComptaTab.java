@@ -28,10 +28,6 @@ public class ComptaTab extends TabHelper {
 
     @Override
     protected void initDatas(Handler<Either<String, Boolean>> handler) {
-        for (int i = 0; i < datas.size(); i++) {
-            JsonObject data = datas.getJsonObject(i);
-            JsonArray actions = new JsonArray(data.getString("actions"));
-        }
         fillPage(structures);
         HandleCatchResult(false, "", new JsonArray(), handler);
     }
