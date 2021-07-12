@@ -398,7 +398,6 @@ public abstract class TabHelper {
     }
     protected void setStructuresFromDatas( Map<String,JsonObject>  structures) {
         JsonArray actions;
-        JsonObject  structure;
         LocalDateTime test = LocalDateTime.now();
         DateTimeFormatter formatter  = DateTimeFormatter.ofPattern("hh:mm:ss");
         log.info("@LystoreWorker["+ this.getClass() +"] END " +   test.format(formatter) +" STRUCTURES GET FROM NEO "+ structures.size());
