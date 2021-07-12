@@ -28,68 +28,22 @@ public class Subventions extends TabHelper {
     Double totalSubv = 0.d;
 
 
-    public Subventions(Workbook workbook, JsonObject instruction, boolean isCMR) {
-        super(workbook, instruction, (isCMR) ? "ANN. 1RAPPORT CMR Subventions" : "ANN. 1 RAPPORT PUB. subventions");
+    public Subventions(Workbook workbook, JsonObject instruction, boolean isCMR, Map<String, JsonObject> structuresMap) {
+        super(workbook, instruction, (isCMR) ? "ANN. 1RAPPORT CMR Subventions" : "ANN. 1 RAPPORT PUB. subventions",structuresMap);
         structureService = new DefaultStructureService(Lystore.lystoreSchema);
         this.isCMR = isCMR;
     }
 
-    @Override
-    public void create(Handler<Either<String, Boolean>> handler) {
-        excel.setDefaultFont();
-        getDatas(event -> handleDatasDefault(event, handler));
-    }
 
 
     @Override
     protected void initDatas(Handler<Either<String, Boolean>> handler) {
-        ArrayList structuresId = new ArrayList<>();
-        for (int i = 0; i < datas.size(); i++) {
-            JsonObject data = datas.getJsonObject(i);
-            JsonArray actions = new JsonArray(data.getString("actions"));
-            for (int j = 0; j < actions.size(); j++) {
-                JsonObject action = actions.getJsonObject(j);
-                if(!structuresId.contains(action.getString("id_structure")))
-                    structuresId.add(structuresId.size(), action.getString("id_structure"));
-
-            }
-        }
-        getStructures(new JsonArray(structuresId), getStructureHandler(structuresId,handler));
-
-//        getStructures(new JsonArray(structuresId), new Handler<Either<String, JsonArray>>() {
-//            @Override
-//            public void handle(Either<String, JsonArray> repStructures) {
-//
-//                boolean errorCatch= false;
-//                if (repStructures.isRight()) {
-//                    try {
-//                        JsonArray structures = repStructures.right().getValue();
-//                        log.info("Structures Get size : "  +structures.size());
-//
-//                        if (datas.isEmpty()) {
-//                            handler.handle(new Either.Left<>("No data in database"));
-//                        } else {
-//
-//                        }
-//                    }catch (Exception e){
-//                        errorCatch = true;
-//                    }
-//                    if(errorCatch)
-//                        handler.handle(new Either.Left<>("Error when writting files"));
-//                    else
-//                        handler.handle(new Either.Right<>(true));
-//                } else {
-//                    handler.handle(new Either.Left<>("Error when casting neo"));
-//
-//                }
-//            }
-//
-//
-//        });
-
+        fillPage(structures);
+        HandleCatchResult(false, "", new JsonArray(), handler);
     }
+
     @Override
-    protected void fillPage(JsonArray structures){
+    protected void fillPage(Map<String, JsonObject> structures){
         setStructuresFromDatas(structures);
         setTitle();
         writeArray();
