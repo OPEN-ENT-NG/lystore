@@ -97,6 +97,19 @@ public abstract class TabHelper {
         priceTab = new ArrayList<ArrayList<Double>>();
         log.info("Initialize tab : " + TabName);
     }
+    public TabHelper(Workbook wb, String TabName, Map<String, JsonObject> structuresMap) {
+        this.wb = wb;
+        this.tabx = new JsonObject();
+        this.taby = new JsonArray();
+        this.sheet = wb.getSheet(TabName);
+        if (wb.getSheetIndex(this.sheet) == -1) {
+            this.sheet = wb.createSheet(TabName);
+        }
+        this.excel = new ExcelHelper(wb, sheet);
+        priceTab = new ArrayList<ArrayList<Double>>();
+        this.structures = structuresMap;
+        log.info("Initialize tab : " + TabName);
+    }
 
     public TabHelper(Workbook wb, JsonObject instruction, String TabName, Map<String, JsonObject> structuresMap) {
         this.wb = wb;
@@ -335,6 +348,9 @@ public abstract class TabHelper {
             result = Double.parseDouble(jo.getString(key).replaceAll(",", "."));
         }
         return  result;
+    }
+
+    protected void fillPage() {
     }
 
     protected void initDatas(Handler<Either<String, Boolean>> handler) {

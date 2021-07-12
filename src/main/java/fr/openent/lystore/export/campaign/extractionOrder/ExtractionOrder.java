@@ -21,18 +21,15 @@ import java.util.*;
 public class ExtractionOrder extends TabHelper {
     List<Integer> ids_campaigns;
     List<Order> orders = new ArrayList<>();
-    public ExtractionOrder(Workbook workbook, List<Integer> ids ) {
-        super(workbook,"Extraction");
+    public ExtractionOrder(Workbook workbook, List<Integer> ids, Map<String, JsonObject> structuresMap) {
+        super(workbook,"Extraction",structuresMap);
         ids_campaigns = ids;
     }
 
-    public void create(Handler<Either<String, Boolean>> handler) {
-        excel.setDefaultFont();
-        getDatas(event -> handleDatasDefault(event, handler));
-    }
+
 
     @Override
-    protected  void fillPage(JsonArray structures){
+    protected  void fillPage(Map<String,JsonObject> structures){
         setStructuresFromDatas(structures);
         datas = sortByUai(datas);
         setLabels();
@@ -549,13 +546,8 @@ public class ExtractionOrder extends TabHelper {
 
     @Override
     protected void initDatas(Handler<Either<String, Boolean>> handler) {
-        ArrayList<String> structuresId = new ArrayList<>();
-        for (int i = 0; i < datas.size(); i++) {
-            JsonObject data = datas.getJsonObject(i);
-            if(!structuresId.contains(data.getString("id_structure")))
-                structuresId.add(structuresId.size(), data.getString("id_structure"));
-        }
-        getStructures(new JsonArray(structuresId),getStructureHandler(structuresId,handler));
+        fillPage(structures);
+        HandleCatchResult(false, "", new JsonArray(), handler);
     }
     @Override
     public void getDatas(Handler<Either<String, JsonArray>> handler) {

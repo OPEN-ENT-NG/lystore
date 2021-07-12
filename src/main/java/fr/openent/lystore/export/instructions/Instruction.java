@@ -169,27 +169,7 @@ public class Instruction extends ExportObject {
         );
     }
 
-    private Map<String, JsonObject> getStructureMap(JsonArray structures) {
-        Map<String, JsonObject> structuresMap = new HashMap<>();
-        for (int i = 0; i < structures.size(); i++) {
-            structuresMap.put(structures.getJsonObject(i).getString("id"), structures.getJsonObject(i));
-        }
-        return structuresMap;
-    }
 
-    private Handler<Boolean> getFinalHandler(Handler<Either<String, Buffer>> handler, Workbook workbook) {
-        return event -> {
-            try {
-                ByteArrayOutputStream fileOut = new ByteArrayOutputStream();
-                workbook.write(fileOut);
-                Buffer buff = new BufferImpl();
-                buff.appendBytes(fileOut.toByteArray());
-                handler.handle(new Either.Right<>(buff));
-            } catch (IOException e) {
-                handler.handle(new Either.Left<>(e.getMessage()));
-            }
-        };
-    }
 
     public void exportSubvention(Handler<Either<String, Buffer>> handler) {
         if (this.id == null) {
