@@ -121,7 +121,9 @@ public class Instruction extends ExportObject {
                     }
                 }
             }
-        })));
+        }))).onFailure( f->{
+            handler.handle(new Either.Left<>(f.getMessage()+ " getting neo"));
+        });
 
 
     }
@@ -164,7 +166,7 @@ public class Instruction extends ExportObject {
                 }
             }
         }))).onFailure( f->{
-                    handler.handle(new Either.Left<>(f.getMessage()));
+                    handler.handle(new Either.Left<>(f.getMessage()+ " getting neo"));
                 }
         );
     }
@@ -202,7 +204,9 @@ public class Instruction extends ExportObject {
                     });
                 }
             }
-        })));
+        }))).onFailure( f->{
+            handler.handle(new Either.Left<>(f.getMessage()+ " getting neo"));
+        });
 
 
     }
@@ -281,7 +285,9 @@ public class Instruction extends ExportObject {
                             });
                         }
                     }
-                })));
+                }))).onFailure( f->{
+            handler.handle(new Either.Left<>(f.getMessage()+ " getting neo"));
+        });
     }
 
     public void exportIris(Handler<Either<String, Buffer>> handler) {
@@ -313,7 +319,9 @@ public class Instruction extends ExportObject {
 
                 }
             }
-        })));
+        }))).onFailure( f->{
+            handler.handle(new Either.Left<>(f.getMessage()+ " getting neo"));
+        });
 
     }
 

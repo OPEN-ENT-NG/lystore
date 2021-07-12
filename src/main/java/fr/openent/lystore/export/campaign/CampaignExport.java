@@ -57,8 +57,9 @@ public class CampaignExport extends ExportObject {
                     handler.handle(new Either.Left<>("Error when resolving futures : " + failure.getMessage()));
                 });
 
+            }).onFailure( f->{
+                handler.handle(new Either.Left<>(f.getMessage()+ " getting neo"));
             });
-
         }
     }
 
