@@ -20,28 +20,16 @@ public class ComptaTab extends TabHelper {
     private StructureService structureService;
 
     public ComptaTab(Workbook workbook, JsonObject instruction, String type, Map<String,JsonObject> structuresMap) {
-        super(workbook, instruction, "COMPTA du rapport  " + type);
+        super(workbook, instruction, "COMPTA du rapport  " + type,structuresMap);
         this.type = type;
-        this.structures = structuresMap;
         excel.setDefaultFont();
     }
 
 
     @Override
     protected void initDatas(Handler<Either<String, Boolean>> handler) {
-        ArrayList structuresId = new ArrayList();
-        for (int i = 0; i < datas.size(); i++) {
-            JsonObject data = datas.getJsonObject(i);
-            JsonArray actions = new JsonArray(data.getString("actions"));
-            for (int j = 0; j < actions.size(); j++) {
-                JsonObject action = actions.getJsonObject(j);
-                if(!structuresId.contains(action.getString("id_structure")))
-                    structuresId.add(structuresId.size(), action.getString("id_structure"));
-
-            }
-        }
         fillPage(structures);
-        HandleCatchResult(false, "", new JsonArray(structuresId), handler);
+        HandleCatchResult(false, "", new JsonArray(), handler);
     }
 
     @Override

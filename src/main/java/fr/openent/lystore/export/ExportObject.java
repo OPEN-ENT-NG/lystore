@@ -19,7 +19,9 @@ import org.entcore.common.neo4j.Neo4jResult;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ExportObject {
     protected String idFile;
@@ -80,6 +82,27 @@ public class ExportObject {
         }));
         return promise.future();
     }
+    protected Map<String, JsonObject> getStructureMap(JsonArray structures) {
+        Map<String, JsonObject> structuresMap = new HashMap<>();
+        for (int i = 0; i < structures.size(); i++) {
+            structuresMap.put(structures.getJsonObject(i).getString("id"), structures.getJsonObject(i));
+        }
+        return structuresMap;
+    }
 
+
+    protected Handler<Boolean> getFinalHandler(Handler<Either<String, Buffer>> handler, Workbook workbook) {
+        return event -> {
+            try {
+                ByteArrayOutputStream fileOut = new ByteArrayOutputStream();
+                workbook.write(fileOut);
+                Buffer buff = new BufferImpl();
+                buff.appendBytes(fileOut.toByteArray());
+                handler.handle(new Either.Right<>(buff));
+            } catch (IOException e) {
+                handler.handle(new Either.Left<>(e.getMessage()));
+            }
+        };
+    }
 
 }

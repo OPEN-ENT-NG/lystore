@@ -35,38 +35,18 @@ public class IrisTab extends TabHelper {
     private final String QPVIDENT = "qpvident";
     private final String CPVIDENT = "cvident";
 
-    public IrisTab(Workbook wb, JsonObject instruction) {
-        super(wb, instruction, "IRIS");
+    public IrisTab(Workbook wb, JsonObject instruction, Map<String, JsonObject> structuresMap) {
+        super(wb, instruction, "IRIS",structuresMap);
     }
-
-    @Override
-    public void create(Handler<Either<String, Boolean>> handler) {
-        excel.setDefaultFont();
-        getDatas(event -> handleDatasDefault(event, handler));
-    }
-
-
-
 
     @Override
     public void initDatas(Handler<Either<String, Boolean>> handler) {
-
-        ArrayList structuresId = new ArrayList<>();
-        for (int i = 0; i < datas.size(); i++) {
-            JsonObject data = datas.getJsonObject(i);
-            if(!structuresId.contains(data.getString("id_structure")))
-                structuresId.add(structuresId.size(), data.getString("id_structure"));
-        }
-
-        try {
-            getStructures(new JsonArray(structuresId), getStructureHandler(structuresId,handler));
-        }catch (Exception e){
-            initDatas(handler);
-        }
+        fillPage(structures);
+        HandleCatchResult(false, "", new JsonArray(), handler);
     }
 
     @Override
-    protected void fillPage(JsonArray structures){
+    protected void fillPage(Map<String, JsonObject> structuresMap){
         setStructuresFromDatas(structures);
         setArray(datas);
     }

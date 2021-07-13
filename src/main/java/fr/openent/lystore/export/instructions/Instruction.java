@@ -63,7 +63,7 @@ public class Instruction extends ExportObject {
         }
 
 
-        Sql.getInstance().prepared(operationsIdQuery, new JsonArray().add(this.id).add(this.id), SqlResult.validUniqueResultHandler(either -> {
+        getStructures().onSuccess(structures ->  Sql.getInstance().prepared(operationsIdQuery, new JsonArray().add(this.id).add(this.id), SqlResult.validUniqueResultHandler(either -> {
             if (either.isLeft()) {
                 ExportHelper.catchError(exportService, idFile, "Error when getting sql datas ");
                 handler.handle(new Either.Left<>("Error when getting sql datas "));
@@ -77,38 +77,52 @@ public class Instruction extends ExportObject {
                 } else {
                     instruction.put(operationStr, new JsonArray(instruction.getString(operationStr)));
                     String path = FileResolver.absolutePath("public/template/excel/templateInvestissement.xlsx");
+                    Map<String, JsonObject> structuresMap = getStructureMap(structures);
 
                     try {
                         FileInputStream templateInputStream = new FileInputStream(path);
                         Workbook workbook = new XSSFWorkbook(templateInputStream);
-                        List<Future> futures = new ArrayList<>();
-                        Future<Boolean> lyceeFuture = Future.future();
-                        Future<Boolean> CMRFuture = Future.future();
-                        Future<Boolean> CMDfuture = Future.future();
-                        Future<Boolean> Fonctionnementfuture = Future.future();
-                        Future<Boolean> RecapEPLEfuture = Future.future();
-                        Future<Boolean> RecapImputationBudfuture = Future.future();
-                        futures.add(lyceeFuture);
-                        futures.add(CMRFuture);
-                        futures.add(CMDfuture);
-                        futures.add(Fonctionnementfuture);
-                        futures.add(RecapEPLEfuture);
-                        futures.add(RecapImputationBudfuture);
-                        futureHandler(handler, workbook, futures);
+//                        List<Future> futures = new ArrayList<>();
+//                        Future<Boolean> lyceeFuture = Future.future();
+//                        Future<Boolean> CMRFuture = Future.future();
+//                        Future<Boolean> CMDfuture = Future.future();
+//                        Future<Boolean> Fonctionnementfuture = Future.future();
+//                        Future<Boolean> RecapEPLEfuture = Future.future();
+//                        Future<Boolean> RecapImputationBudfuture = Future.future();
+//                        futures.add(lyceeFuture);
+//                        futures.add(CMRFuture);
+//                        futures.add(CMDfuture);
+//                        futures.add(Fonctionnementfuture);
+//                        futures.add(RecapEPLEfuture);
+//                        futures.add(RecapImputationBudfuture);
+//                        futureHandler(handler, workbook, futures);
+//
+//                        new LyceeTab(workbook, instruction).create(getHandler(lyceeFuture));
+//                        new CMRTab(workbook, instruction).create(getHandler(CMRFuture));
+//                        new CMDTab(workbook, instruction).create(getHandler(CMDfuture));
+//                        new FonctionnementTab(workbook, instruction).create(getHandler(Fonctionnementfuture));
+//                        new RecapEPLETab(workbook, instruction).create(getHandler(RecapEPLEfuture));
+//                        new RecapImputationBud(workbook, instruction).create(getHandler(RecapImputationBudfuture));
+                        new LyceeTab(workbook, instruction,structuresMap).create()
+                                .compose(v ->  new CMRTab(workbook, instruction,structuresMap).create())
+                                .compose(v->  new CMDTab(workbook, instruction,structuresMap).create())
+                                .compose(v ->  new FonctionnementTab(workbook, instruction,structuresMap).create())
+                                .compose(v ->   new RecapEPLETab(workbook, instruction,structuresMap).create())
+                                .compose(v ->    new RecapImputationBud(workbook, instruction,structuresMap).create())
+                                .onSuccess(getFinalHandler(handler, workbook)
+                                ).onFailure(failure ->{
+                            handler.handle(new Either.Left<>("Error when resolving futures : " + failure.getMessage()));
+                        });
 
-                        new LyceeTab(workbook, instruction).create(getHandler(lyceeFuture));
-                        new CMRTab(workbook, instruction).create(getHandler(CMRFuture));
-                        new CMDTab(workbook, instruction).create(getHandler(CMDfuture));
-                        new FonctionnementTab(workbook, instruction).create(getHandler(Fonctionnementfuture));
-                        new RecapEPLETab(workbook, instruction).create(getHandler(RecapEPLEfuture));
-                        new RecapImputationBud(workbook, instruction).create(getHandler(RecapImputationBudfuture));
                     } catch (IOException e) {
                         ExportHelper.catchError(exportService, idFile, "Xlsx Failed to read template");
                         handler.handle(new Either.Left<>("Xlsx Failed to read template"));
                     }
                 }
             }
-        }));
+        }))).onFailure( f->{
+            handler.handle(new Either.Left<>(f.getMessage()+ " getting neo"));
+        });
 
 
     }
@@ -120,7 +134,6 @@ public class Instruction extends ExportObject {
         }
 
 
-//appel néo
         getStructures().onSuccess(structures -> Sql.getInstance().prepared(operationsIdQuery, new JsonArray().add(this.id).add(this.id), SqlResult.validUniqueResultHandler(either -> {
             if (either.isLeft()) {
                 ExportHelper.catchError(exportService, idFile, "Error when getting sql datas ");
@@ -129,10 +142,7 @@ public class Instruction extends ExportObject {
 
                 JsonObject instruction = either.right().getValue();
                 String operationStr = "operations";
-                Map<String,JsonObject> structuresMap  = new HashMap<>();
-                for(int i = 0 ; i < structures.size() ; i ++){
-                    structuresMap.put(structures.getJsonObject(i).getString("id"),structures.getJsonObject(i));
-                }
+                Map<String, JsonObject> structuresMap = getStructureMap(structures);
                 if (!instruction.containsKey(operationStr)) {
                     ExportHelper.catchError(exportService, idFile, "Error when getting operations");
                     handler.handle(new Either.Left<>("Error when getting operations"));
@@ -142,23 +152,6 @@ public class Instruction extends ExportObject {
 
 
                     Workbook workbook = new XSSFWorkbook();
-//                    List<Future> futures = new ArrayList<>();
-//                    Future<Boolean> ListForTextFuture = Future.future();
-//                    Future<Boolean> RecapFuture = Future.future();
-//                    Future<Boolean> ComptaFuture = Future.future();
-//                    Future<Boolean> AnnexeDelibFuture = Future.future();
-//                    Future<Boolean> RecapMarketFuture = Future.future();
-//                    Future<Boolean> VerifBudgetFuture = Future.future();
-//
-//                    futures.add(ComptaFuture);
-//                    futures.add(ListForTextFuture);
-//                    futures.add(RecapFuture);
-//                    futures.add(AnnexeDelibFuture);
-//                    futures.add(RecapMarketFuture);
-//                    futures.add(VerifBudgetFuture);
-
-//                    futureHandler(handler, workbook, futures);
-
                     new ComptaTab(workbook, instruction, type,structuresMap).create()
                             .compose(l->new  ListForTextTab(workbook, instruction, type,structuresMap).create())
                             .compose(listForText -> new RecapTab(workbook, instruction, type,structuresMap).create())
@@ -169,41 +162,27 @@ public class Instruction extends ExportObject {
                             ).onFailure(failure ->{
                         handler.handle(new Either.Left<>("Error when resolving futures : " + failure.getMessage()));
                     });
-
-
                 }
             }
         }))).onFailure( f->{
-                    handler.handle(new Either.Left<>(f.getMessage()));
+                    handler.handle(new Either.Left<>(f.getMessage()+ " getting neo"));
                 }
         );
     }
 
-    private Handler<Boolean> getFinalHandler(Handler<Either<String, Buffer>> handler, Workbook workbook) {
-        return event -> {
-            try {
-                ByteArrayOutputStream fileOut = new ByteArrayOutputStream();
-                workbook.write(fileOut);
-                Buffer buff = new BufferImpl();
-                buff.appendBytes(fileOut.toByteArray());
-                handler.handle(new Either.Right<>(buff));
-            } catch (IOException e) {
-                handler.handle(new Either.Left<>(e.getMessage()));
-            }
-        };
-    }
+
 
     public void exportSubvention(Handler<Either<String, Buffer>> handler) {
         if (this.id == null) {
             log.error("Instruction identifier is not nullable");
             handler.handle(new Either.Left<>("Instruction identifier is not nullable"));
         }
-        Sql.getInstance().prepared(operationsIdQuery, new JsonArray().add(this.id).add(this.id), SqlResult.validUniqueResultHandler(eitherInstruction -> {
+        getStructures().onSuccess(structures -> Sql.getInstance().prepared(operationsIdQuery, new JsonArray().add(this.id).add(this.id), SqlResult.validUniqueResultHandler(eitherInstruction -> {
             if (eitherInstruction.isLeft()) {
                 log.error("Error when getting sql datas for subvention");
                 handler.handle(new Either.Left<>("Error when getting sql datas for subvention"));
             } else {
-
+                Map<String, JsonObject> structuresMap = getStructureMap(structures);
                 JsonObject instruction = eitherInstruction.right().getValue();
                 String operationStr = "operations";
                 if (!instruction.containsKey(operationStr)) {
@@ -213,26 +192,20 @@ public class Instruction extends ExportObject {
                     instruction.put(operationStr, new JsonArray(instruction.getString(operationStr)));
 
                     Workbook workbook = new XSSFWorkbook();
-                    List<Future> futures = new ArrayList<>();
-                    Future<Boolean> CmrSubventions = Future.future();
-                    Future<Boolean> PublicsSubventionsFuture = Future.future();
-                    Future<Boolean> CmrMarchés = Future.future();
-                    Future<Boolean> PublicsMarchésFuture = Future.future();
 
-                    futures.add(CmrSubventions);
-                    futures.add(PublicsSubventionsFuture);
-                    futures.add(CmrMarchés);
-                    futures.add(PublicsMarchésFuture);
-
-                    futureHandler(handler, workbook, futures);
-
-                    new Subventions(workbook, instruction, true).create(getHandler(CmrSubventions));
-                    new Subventions(workbook, instruction, false).create(getHandler(PublicsSubventionsFuture));
-                    new Market(workbook, instruction, true).create(getHandler(CmrMarchés));
-                    new Market(workbook, instruction, false).create(getHandler(PublicsMarchésFuture));
+                    new Subventions(workbook, instruction, true,structuresMap).create()
+                            .compose(l-> new Subventions(workbook, instruction, false,structuresMap).create())
+                            .compose(listForText -> new Market(workbook, instruction, true,structuresMap).create())
+                            .compose(Recap->   new Market(workbook, instruction, false,structuresMap).create())
+                            .onSuccess(getFinalHandler(handler, workbook)
+                            ).onFailure(failure ->{
+                        handler.handle(new Either.Left<>("Error when resolving futures : " + failure.getMessage()));
+                    });
                 }
             }
-        }));
+        }))).onFailure( f->{
+            handler.handle(new Either.Left<>(f.getMessage()+ " getting neo"));
+        });
 
 
     }
@@ -242,7 +215,7 @@ public class Instruction extends ExportObject {
             ExportHelper.catchError(exportService, idFile, "Instruction identifier is not nullable");
             handler.handle(new Either.Left<>("Instruction identifier is not nullable"));
         }
-        Sql.getInstance().prepared(operationsIdQuery, new JsonArray().add(this.id).add(this.id), SqlResult.validUniqueResultHandler(eitherInstruction -> {
+        getStructures().onSuccess(structures ->  Sql.getInstance().prepared(operationsIdQuery, new JsonArray().add(this.id).add(this.id), SqlResult.validUniqueResultHandler(eitherInstruction -> {
             if (eitherInstruction.isLeft()) {
                 ExportHelper.catchError(exportService, idFile, "Error when getting sql datas ");
                 handler.handle(new Either.Left<>("Error when getting sql datas "));
@@ -254,7 +227,7 @@ public class Instruction extends ExportObject {
                     handler.handle(new Either.Left<>("Error when getting operations"));
                 } else {
                     instruction.put(operationStr, new JsonArray(instruction.getString(operationStr)));
-
+                    Map<String, JsonObject> structuresMap = getStructureMap(structures);
                     Workbook workbook = new XSSFWorkbook();
                     List<Future> futures = new ArrayList<>();
                     Future<Boolean> PublipostageFuture = Future.future();
@@ -263,10 +236,12 @@ public class Instruction extends ExportObject {
 
                     futureHandler(handler, workbook, futures);
 
-                    new Publipostage(workbook, instruction).create(getHandler(PublipostageFuture));
+                    new Publipostage(workbook, instruction,structuresMap).create(getHandler(PublipostageFuture));
                 }
             }
-        }));
+        }))).onFailure(f->{
+            handler.handle(new Either.Left<>(f.getMessage()+ " getting neo"));
+        });
     }
 
     public void exportNotficationCp(Handler<Either<String, Buffer>> handler) {
@@ -282,10 +257,7 @@ public class Instruction extends ExportObject {
                         ExportHelper.catchError(exportService, idFile, "Error when getting sql datas ");
                         handler.handle(new Either.Left<>("Error when getting sql datas "));
                     } else {
-                        Map<String,JsonObject> structuresMap  = new HashMap<>();
-                        for(int i = 0 ; i < structures.size() ; i ++){
-                            structuresMap.put(structures.getJsonObject(i).getString("id"),structures.getJsonObject(i));
-                        }
+                        Map<String, JsonObject> structuresMap = getStructureMap(structures);
                         JsonObject instruction = either.right().getValue();
                         String operationStr = "operations";
                         if (!instruction.containsKey(operationStr)) {
@@ -314,7 +286,9 @@ public class Instruction extends ExportObject {
                             });
                         }
                     }
-                })));
+                }))).onFailure( f->{
+            handler.handle(new Either.Left<>(f.getMessage()+ " getting neo"));
+        });
     }
 
     public void exportIris(Handler<Either<String, Buffer>> handler) {
@@ -322,12 +296,12 @@ public class Instruction extends ExportObject {
             ExportHelper.catchError(exportService, idFile, "Instruction identifier is not nullable");
             handler.handle(new Either.Left<>("Instruction identifier is not nullable"));
         }
-        Sql.getInstance().prepared(operationsIdQuery, new JsonArray().add(this.id).add(this.id), SqlResult.validUniqueResultHandler(either -> {
+        getStructures().onSuccess(structures ->Sql.getInstance().prepared(operationsIdQuery, new JsonArray().add(this.id).add(this.id), SqlResult.validUniqueResultHandler(either -> {
             if (either.isLeft()) {
                 ExportHelper.catchError(exportService, idFile, "Error when getting sql datas ");
                 handler.handle(new Either.Left<>("Error when getting sql datas "));
             } else {
-
+                Map<String, JsonObject> structuresMap = getStructureMap(structures);
                 JsonObject instruction = either.right().getValue();
                 String operationStr = "operations";
                 if (!instruction.containsKey(operationStr)) {
@@ -337,16 +311,18 @@ public class Instruction extends ExportObject {
                     instruction.put(operationStr, new JsonArray(instruction.getString(operationStr)));
 
                     Workbook workbook = new XSSFWorkbook();
-                    List<Future> futures = new ArrayList<>();
-                    Future<Boolean> IrisFuture = Future.future();
 
-                    futures.add(IrisFuture);
-                    futureHandler(handler, workbook, futures);
-                    new IrisTab(workbook, instruction).create(getHandler(IrisFuture));
+                    new IrisTab(workbook, instruction,structuresMap).create()
+                            .onSuccess(getFinalHandler(handler, workbook))
+                            .onFailure(failure ->{
+                                handler.handle(new Either.Left<>("Error when resolving futures : " + failure.getMessage()));
+                            });;
 
                 }
             }
-        }));
+        }))).onFailure( f->{
+            handler.handle(new Either.Left<>(f.getMessage()+ " getting neo"));
+        });
 
     }
 

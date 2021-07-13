@@ -18,19 +18,14 @@ import java.util.*;
 public class RecapStructOrder  extends TabHelper {
     List<Integer> ids_campaigns;
     ArrayList<Campaign> campaigns = new ArrayList<>();
-    public RecapStructOrder(Workbook workbook, List<Integer> ids) {
+    public RecapStructOrder(Workbook workbook, List<Integer> ids, Map<String, JsonObject> structuresMap) {
         super(workbook,"Récap_Extraction");
         ids_campaigns = ids;
     }
 
-    @Override
-    public void create(Handler<Either<String, Boolean>> handler) {
-        excel.setDefaultFont();
-        getDatas(event -> handleDatasDefault(event, handler));
-    }
 
     @Override
-    protected  void fillPage(JsonArray structures){
+    protected  void fillPage(){
         initObjects();
         setLabels();
         setDatas();
@@ -94,7 +89,7 @@ public class RecapStructOrder  extends TabHelper {
         boolean errorCatch = false;
         String errorSTR = "" ;
         try {
-            fillPage(new JsonArray());
+            fillPage();
         }catch (Exception e){
             errorCatch = true;
             errorSTR = e.getMessage();

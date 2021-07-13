@@ -6,18 +6,21 @@ import fr.openent.lystore.service.StructureService;
 import fr.openent.lystore.service.impl.DefaultStructureService;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
+import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 
+import java.util.Map;
+
 public class Publipostage extends TabHelper {
     private StructureService structureService;
     private int lengthGlobalCols = 7;
     private int lengthGlobalRows = 1;
-    public Publipostage(Workbook workbook, JsonObject instruction) {
-        super(workbook, instruction, "Publipostage");
+    public Publipostage(Workbook workbook, JsonObject instruction, Map<String, JsonObject> structuresMap) {
+        super(workbook, instruction, "Publipostage",structuresMap);
         structureService = new DefaultStructureService(Lystore.lystoreSchema);
     }
 
@@ -46,14 +49,13 @@ public class Publipostage extends TabHelper {
 
     @Override
     protected void initDatas(Handler<Either<String, Boolean>> handler) {
-        JsonArray structuresId = new JsonArray();
         for (int i = 0; i < datas.size(); i++) {
             JsonObject data = datas.getJsonObject(i);
-            if(data.containsKey("id_structure")){
-                structuresId.add(data.getString("id_structure"));
-            }
+            getElemsStructure(structures,data);
         }
-        getStructures(structuresId, getStructureHandler(structuresId,handler));
+        datas = sortByCity(datas,true);
+        fillPage(datas);
+        HandleCatchResult(false, "", new JsonArray(), handler);
     }
     @Override
     protected void fillPage(JsonArray structures){
@@ -86,7 +88,7 @@ public class Publipostage extends TabHelper {
             JsonArray contentsBody = new JsonArray()
                     .add(makeCellWithoutNull(this.instruction.getString("cp_number"))) //Instruction cp number
                     .add(makeCellWithoutNull(structure.getString("uai"))) //structure UAI
-                    .add(makeCellWithoutNull(structure.getString("name")))  //structure nom courant
+                    .add(makeCellWithoutNull(structure.getString("nameEtab")))  //structure nom courant
                     .add(makeCellWithoutNull(structure.getString("city"))) //structure commune
                     .add(makeCellWithoutNull(structure.getString("address"))) //structure adresse
                     .add(makeCellWithoutNull(structure.getString("zipCode"))) //structure CP
@@ -111,19 +113,10 @@ public class Publipostage extends TabHelper {
     @Override
     public void getDatas(Handler<Either<String, JsonArray>> handler) {
         query = "" +
-                "SELECT " +
+                "SELECT DISTINCT " +
                 "orders.id_structure,  " +
                 "orders.id_operation  " +
-                "FROM (  " +
-                "        (SELECT id_structure,  " +
-                "                id_operation,  " +
-                "                NULL AS override_region  " +
-                "         FROM   " + Lystore.lystoreSchema + ".\"order-region-equipment\" ore)  " +
-                "      UNION  " +
-                "        (SELECT id_structure,  " +
-                "                id_operation,  " +
-                "                override_region  " +
-                "         FROM   " + Lystore.lystoreSchema + ".order_client_equipment oce)) AS orders  " +
+                "FROM "+ Lystore.lystoreSchema +".allorders AS orders  " +
                 "INNER JOIN   " + Lystore.lystoreSchema + ".operation ON (orders.id_operation = operation.id  " +
                 "                                 AND (orders.override_region != TRUE  " +
                 "                                      OR orders.override_region IS NULL))  " +
@@ -132,13 +125,6 @@ public class Publipostage extends TabHelper {
                 "                                   AND instruction.id = ? )  " +
                 "LEFT JOIN   " + Lystore.lystoreSchema + ".specific_structures ON orders.id_structure = specific_structures.id";
 
-        Sql.getInstance().prepared(query, new JsonArray().add(instruction.getInteger("id")), SqlResult.validResultHandler(resultRequest -> {
-            if (resultRequest.isLeft()) {
-                handler.handle(resultRequest.left());
-            } else {
-                datas = resultRequest.right().getValue();
-                handler.handle(new Either.Right<>(datas));
-            }
-        }));
+        sqlHandler(handler, new JsonArray().add(instruction.getInteger("id")));
     }
 }

@@ -23,6 +23,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class ValidOrders extends ExportObject {
     private String bcNumber;
@@ -62,69 +63,70 @@ public class ValidOrders extends ExportObject {
             ExportHelper.catchError(exportService, idFile, "number validation is not nullable");
             handler.handle(new Either.Left<>("number validation is not nullable"));
         }
-        Workbook workbook = new XSSFWorkbook();
-        List<Future> futures = new ArrayList<>();
-        Future<Boolean> ListLyceeFuture = Future.future();
-        Future<Boolean> RecapListLyceeFuture = Future.future();
+        getStructures().onSuccess(structures -> {
+            Map<String, JsonObject> structuresMap = getStructureMap(structures);
+            Workbook workbook = new XSSFWorkbook();
+            new ListLycee(workbook, this.numberValidation,structuresMap).create()
+                    .compose(c -> new ListLycWithPrice(workbook,this.numberValidation,structuresMap).create())
+                    .onSuccess(getFinalHandler(handler, workbook)
+                    ).onFailure(failure ->{
+                handler.handle(new Either.Left<>("Error when resolving futures : " + failure.getMessage()));
+            }).onFailure( f->{
+                handler.handle(new Either.Left<>(f.getMessage()+ " getting neo"));
+            });
 
-        futures.add(ListLyceeFuture);
-        futures.add(RecapListLyceeFuture);
-        futureHandler(handler, workbook, futures);
-        new ListLycee(workbook, this.numberValidation).create(getHandler(ListLyceeFuture));
-        new ListLycWithPrice(workbook, this.numberValidation).create(getHandler(RecapListLyceeFuture));
-
+        });
     }
 
 
 
 
-
-    public void exportBC(Handler<Either<String, Buffer>> handler) {
-        if (this.params == null || this.params.isEmpty()) {
-            ExportHelper.catchError(exportService, idFile, "number validations is not nullable");
-            handler.handle(new Either.Left<>("number validations is not nullable"));
-        }else{
-            new BCExport(eb,vertx,config).create(params.getJsonArray("numberValidations"),handler);
-        }
-    }
-
-
-
-
-
-    public void exportBCDuringValidation(Handler<Either<String, Buffer>> handler) {
-        if (this.params == null || this.params.isEmpty()) {
-            ExportHelper.catchError(exportService, idFile, "number validations is not nullable");
-            handler.handle(new Either.Left<>("number validations is not nullable"));
-        }else{
-            new BCExportDuringValidation(eb,vertx,config).create(params,handler);
+        public void exportBC(Handler<Either<String, Buffer>> handler) {
+            if (this.params == null || this.params.isEmpty()) {
+                ExportHelper.catchError(exportService, idFile, "number validations is not nullable");
+                handler.handle(new Either.Left<>("number validations is not nullable"));
+            }else{
+                new BCExport(eb,vertx,config).create(params.getJsonArray("numberValidations"),handler);
+            }
         }
 
-    }
-    public void exportBCAfterValidationByStructures(Handler<Either<String, Buffer>> handler) {
 
-        if (this.bcNumber == null || this.bcNumber.isEmpty()) {
 
-            ExportHelper.catchError(exportService, idFile, "number validations is not nullable");
-            handler.handle(new Either.Left<>("number validations is not nullable"));
-        }else{
-            new BCExportAfterValidationStructure(eb,vertx,config).create(bcNumber,handler);
+
+
+        public void exportBCDuringValidation(Handler<Either<String, Buffer>> handler) {
+            if (this.params == null || this.params.isEmpty()) {
+                ExportHelper.catchError(exportService, idFile, "number validations is not nullable");
+                handler.handle(new Either.Left<>("number validations is not nullable"));
+            }else{
+                new BCExportDuringValidation(eb,vertx,config).create(params,handler);
+            }
+
+        }
+        public void exportBCAfterValidationByStructures(Handler<Either<String, Buffer>> handler) {
+
+            if (this.bcNumber == null || this.bcNumber.isEmpty()) {
+
+                ExportHelper.catchError(exportService, idFile, "number validations is not nullable");
+                handler.handle(new Either.Left<>("number validations is not nullable"));
+            }else{
+                new BCExportAfterValidationStructure(eb,vertx,config).create(bcNumber,handler);
+            }
+        }
+        public void exportBCBeforeValidationByStructures(Handler<Either<String, Buffer>> handler) {
+            if (this.params == null || this.params.isEmpty()) {
+                ExportHelper.catchError(exportService, idFile, "number validations is not nullable");
+                handler.handle(new Either.Left<>("number validations is not nullable"));
+            }else{
+                new BCExportBeforeValidationStructure(eb,vertx,config).create(params.getJsonArray("numberValidations"),handler);
+            }
+        }
+        public void exportBCAfterValidation(Handler<Either<String, Buffer>> handler) {
+            if (this.bcNumber == null || this.bcNumber.isEmpty()) {
+                ExportHelper.catchError(exportService, idFile, "number validations is not nullable");
+                handler.handle(new Either.Left<>("number validations is not nullable"));
+            }else{
+                new BCExportAfterValidation(eb,vertx,config).create(bcNumber,handler);
+            }
         }
     }
-    public void exportBCBeforeValidationByStructures(Handler<Either<String, Buffer>> handler) {
-        if (this.params == null || this.params.isEmpty()) {
-            ExportHelper.catchError(exportService, idFile, "number validations is not nullable");
-            handler.handle(new Either.Left<>("number validations is not nullable"));
-        }else{
-            new BCExportBeforeValidationStructure(eb,vertx,config).create(params.getJsonArray("numberValidations"),handler);
-        }
-    }
-    public void exportBCAfterValidation(Handler<Either<String, Buffer>> handler) {
-        if (this.bcNumber == null || this.bcNumber.isEmpty()) {
-            ExportHelper.catchError(exportService, idFile, "number validations is not nullable");
-            handler.handle(new Either.Left<>("number validations is not nullable"));
-        }else{
-            new BCExportAfterValidation(eb,vertx,config).create(bcNumber,handler);
-        }
-    }
-}

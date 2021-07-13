@@ -5,6 +5,7 @@ import fr.openent.lystore.export.ExportObject;
 import fr.openent.lystore.export.campaign.extractionOrder.ExtractionOrder;
 import fr.openent.lystore.export.campaign.extractionOrder.RecapStructOrder;
 import fr.openent.lystore.export.helpers.ExportHelper;
+import fr.openent.lystore.export.instructions.notificationEquipCP.LinesBudget;
 import fr.openent.lystore.service.ExportService;
 import fr.openent.lystore.service.SupplierService;
 import fr.openent.lystore.service.impl.DefaultSupplierService;
@@ -20,6 +21,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 public class CampaignExport extends ExportObject {
     private JsonObject params;
@@ -46,16 +48,18 @@ public class CampaignExport extends ExportObject {
             handler.handle(new Either.Left<>("Instruction identifier is not nullable"));
         }else{
             Workbook workbook = new XSSFWorkbook();
-            List<Future> futures = new ArrayList<>();
-            Future<Boolean> ExtractionFuture = Future.future();
-            Future<Boolean> RecapListFuture = Future.future();
+            getStructures().onSuccess( structures -> {
+                Map<String, JsonObject> structuresMap = getStructureMap(structures);
+                new ExtractionOrder(workbook, this.ids,structuresMap).create()
+                        .compose(LB ->  new RecapStructOrder(workbook, this.ids,structuresMap).create())
+                        .onSuccess(getFinalHandler(handler, workbook)
+                        ).onFailure(failure ->{
+                    handler.handle(new Either.Left<>("Error when resolving futures : " + failure.getMessage()));
+                });
 
-            futures.add(ExtractionFuture);
-            futures.add(RecapListFuture);
-            futureHandler(handler, workbook, futures);
-            new ExtractionOrder(workbook, this.ids).create(getHandler(ExtractionFuture));
-            new RecapStructOrder(workbook, this.ids).create(getHandler(RecapListFuture));
-
+            }).onFailure( f->{
+                handler.handle(new Either.Left<>(f.getMessage()+ " getting neo"));
+            });
         }
     }
 

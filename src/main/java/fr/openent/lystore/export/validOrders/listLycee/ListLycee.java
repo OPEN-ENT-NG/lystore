@@ -9,11 +9,12 @@ import io.vertx.core.json.JsonObject;
 import org.apache.poi.ss.usermodel.Workbook;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public class ListLycee extends TabHelper {
     private String numberValidation;
-    public ListLycee(Workbook workbook, String numberValidation) {
-        super(workbook,"Sommaire Commande");
+    public ListLycee(Workbook workbook, String numberValidation, Map<String, JsonObject> structuresMap) {
+        super(workbook,"Sommaire Commande",structuresMap);
         this.numberValidation = numberValidation;
     }
 
@@ -26,45 +27,9 @@ public class ListLycee extends TabHelper {
 
     @Override
     protected void initDatas(Handler<Either<String, Boolean>> handler) {
-
-        ArrayList structuresId = new ArrayList<>();
-        for (int i = 0; i < datas.size(); i++) {
-            JsonObject data = datas.getJsonObject(i);
-            if(!structuresId.contains(data.getString("id_structure")))
-                structuresId.add(structuresId.size(), data.getString("id_structure"));
-
-        }
-        getStructures(new JsonArray(structuresId), new Handler<Either<String, JsonArray>>() {
-            @Override
-            public void handle(Either<String, JsonArray> repStructures) {
-//
-                boolean errorCatch= false;
-                if (repStructures.isRight()) {
-                    try {
-                        JsonArray structures = repStructures.right().getValue();
-                        setStructuresFromDatas(structures);
-                        if (datas.isEmpty()) {
-                            handler.handle(new Either.Left<>("No data in database"));
-                        } else {
-                            datas = sortByCity(datas, false);
-                            writeArray(handler);
-                        }
-                    }catch (Exception e){
-                        errorCatch = true;
-                    }
-                    if(errorCatch)
-                        handler.handle(new Either.Left<>("Error when writting files"));
-                    else
-                        handler.handle(new Either.Right<>(true));
-                } else {
-                    handler.handle(new Either.Left<>("Error when casting neo"));
-//
-
-                }
-            }
-//
-//
-        });
+        setStructuresFromDatas(structures);
+        writeArray(handler);
+        handler.handle(new Either.Right<>(true));
 
     }
 

@@ -2,7 +2,9 @@ package fr.openent.lystore.export.instructions.RME;
 
 import fr.openent.lystore.export.TabHelper;
 import fr.wseduc.webutils.Either;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.poi.ss.usermodel.Row;
@@ -10,25 +12,27 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.util.CellRangeAddress;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 public abstract class Investissement extends TabHelper {
 
     JsonArray operations;
     private String actionStr = "actions";
-    public Investissement(Workbook wb, JsonObject instruction, String TabName) {
-        super(wb, instruction, TabName);
+    public Investissement(Workbook wb, JsonObject instruction, String TabName, Map<String, JsonObject> structuresMap) {
+        super(wb, instruction, TabName,  structuresMap);
     }
 
 
     @Override
-    public void create(Handler<Either<String, Boolean>> handler) {
+    public Future<Boolean> create() {
+        Promise<Boolean> promise = Promise.promise();
         excel.setDefaultFont();
         excel.setInstructionNumber(makeCellWithoutNull(instruction.getString("cp_number")));
         getDatas(event -> {
             try{
                 if (event.isLeft()) {
                     log.error("Failed to retrieve programs");
-                    handler.handle(new Either.Left<>("Failed to retrieve programs"));
+                    promise.fail("Failed to retrieve programs");
                 } else {
                     if (checkEmpty()) {
                         Row row = sheet.getRow(1);
@@ -41,28 +45,29 @@ public abstract class Investissement extends TabHelper {
                         sheet.removeRow(row);
                         row = sheet.getRow(8);
                         sheet.removeRow(row);
-                        handler.handle(new Either.Right<>(true));
+                        promise.complete(true);
                     } else {
                         //Delete tab if empty
                         try{
                             setLabels();
                             setArray(datas);
-                            handler.handle(new Either.Right<>(true));
+                            promise.complete(true);
 
                         }catch(Exception ee){
                             logger.error(ee.getMessage());
                             logger.error(ee.getStackTrace());
-                            handler.handle(new Either.Left<>("error when creating excel"));
+                            promise.fail("error when creating excel");
+
                         }
                     }
                 }
             }catch(Exception e){
                 logger.error(e.getMessage());
                 logger.error(e.getStackTrace());
-                handler.handle(new Either.Left<>("error when creating excel"));
+                promise.fail("error when creating excel");
             }
         });
-
+        return promise.future();
     }
 
 
