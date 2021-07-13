@@ -15,7 +15,7 @@ import {
     Tag,
     TechnicalSpec,
     Utils,
-    PRIORITY_FIELD
+    PRIORITY_FIELD, Campaigns
 } from '../../model';
 
 export const configurationController = ng.controller('configurationController',
@@ -454,12 +454,13 @@ export const configurationController = ng.controller('configurationController',
         };
 
         $scope.hasBaskets = () =>{
-            let canDelete = true
+            let canDelete = false
             $scope.campaigns.selected.forEach(c =>{
-                canDelete = c.nb_baskets !== 0 && canDelete;
+                canDelete = c.nb_baskets !== 0 || canDelete;
             })
             return canDelete
         }
+
         $scope.checkTags = () =>{
             return _.every(_.where($scope.structureGroups.all, {selected: true}), (structureGroup) => {
                 return structureGroup.tags.length > 0;
