@@ -391,7 +391,7 @@ public abstract class TabHelper {
         }
         catch(NullPointerException e){
             log.error("error in sorting by uai " + values);
-           throw e;
+            throw e;
         }
         return sortedJsonArray;
 
@@ -415,17 +415,17 @@ public abstract class TabHelper {
 
     protected  void getElemsStructure( Map<String,JsonObject> structuresMap,JsonObject data){
         JsonObject  structure;
-            structure = structuresMap.get(data.getString("id_structure"));
-                if(structure.getString("name") != null){
-                    data.put("nameEtab", structure.getString("name"));
-                }
-                putDataIfNotNull("uai",data, structure);
-                putDataIfNotNull("city",data, structure);
-                    putDataIfNotNull("type",data, structure);
-                putDataIfNotNull("address",data, structure);
-                putDataIfNotNull("academy",data, structure);
-                putDataIfNotNull("zipCode",data, structure);
-                putDataIfNotNull("phone",data, structure);
+        structure = structuresMap.get(data.getString("id_structure"));
+        if(structure.getString("name") != null){
+            data.put("nameEtab", structure.getString("name"));
+        }
+        putDataIfNotNull("uai",data, structure);
+        putDataIfNotNull("city",data, structure);
+        putDataIfNotNull("type",data, structure);
+        putDataIfNotNull("address",data, structure);
+        putDataIfNotNull("academy",data, structure);
+        putDataIfNotNull("zipCode",data, structure);
+        putDataIfNotNull("phone",data, structure);
     }
 
     protected void setStructuresFromDatas(JsonArray structures) {
@@ -530,9 +530,9 @@ public abstract class TabHelper {
             if (event.succeeded()) {
                 JsonArray results =new JsonArray();
                 List<JsonArray> resultsList = event.result().list();
-               for(int i = 0 ; i < resultsList.size();i++){
-                  results.add(resultsList.get(i).getJsonObject(0));
-               }
+                for(int i = 0 ; i < resultsList.size();i++){
+                    results.add(resultsList.get(i).getJsonObject(0));
+                }
                 handler.handle(new Either.Right(results));
 
             } else {
@@ -640,7 +640,7 @@ public abstract class TabHelper {
     }
 
     private Future<JsonObject> getStructure(String id) {
-    Promise<JsonObject> promise = Promise.promise();
+        Promise<JsonObject> promise = Promise.promise();
         String query = "" +
                 "MATCH (s:Structure) " +
                 "WHERE s.id = {id} " +
@@ -671,7 +671,7 @@ public abstract class TabHelper {
         }
         return promise.future();
     }
-//
+    //
 //    private void getStructure(String id, Handler<Either<String, JsonObject>> handler) {
 //
 //        String query = "" +

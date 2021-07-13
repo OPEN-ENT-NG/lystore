@@ -216,7 +216,7 @@ public class Instruction extends ExportObject {
             ExportHelper.catchError(exportService, idFile, "Instruction identifier is not nullable");
             handler.handle(new Either.Left<>("Instruction identifier is not nullable"));
         }
-        Sql.getInstance().prepared(operationsIdQuery, new JsonArray().add(this.id).add(this.id), SqlResult.validUniqueResultHandler(eitherInstruction -> {
+        getStructures().onSuccess(structures ->  Sql.getInstance().prepared(operationsIdQuery, new JsonArray().add(this.id).add(this.id), SqlResult.validUniqueResultHandler(eitherInstruction -> {
             if (eitherInstruction.isLeft()) {
                 ExportHelper.catchError(exportService, idFile, "Error when getting sql datas ");
                 handler.handle(new Either.Left<>("Error when getting sql datas "));
@@ -228,7 +228,7 @@ public class Instruction extends ExportObject {
                     handler.handle(new Either.Left<>("Error when getting operations"));
                 } else {
                     instruction.put(operationStr, new JsonArray(instruction.getString(operationStr)));
-
+                    Map<String, JsonObject> structuresMap = getStructureMap(structures);
                     Workbook workbook = new XSSFWorkbook();
                     List<Future> futures = new ArrayList<>();
                     Future<Boolean> PublipostageFuture = Future.future();
@@ -237,10 +237,12 @@ public class Instruction extends ExportObject {
 
                     futureHandler(handler, workbook, futures);
 
-                    new Publipostage(workbook, instruction).create(getHandler(PublipostageFuture));
+                    new Publipostage(workbook, instruction,structuresMap).create(getHandler(PublipostageFuture));
                 }
             }
-        }));
+        }))).onFailure(f->{
+            handler.handle(new Either.Left<>(f.getMessage()+ " getting neo"));
+        });
     }
 
     public void exportNotficationCp(Handler<Either<String, Buffer>> handler) {
