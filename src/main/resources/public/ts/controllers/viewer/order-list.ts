@@ -40,11 +40,12 @@ export const orderPersonnelController = ng.controller('orderPersonnelController'
         };
 
         $scope.displayStatus = (orderClient : OrderClient) =>{
-            if(orderClient.cp_number)
-                return lang.translate(orderClient.status) + ' Rapport ' + orderClient.cp_number
-            else
                 return lang.translate(orderClient.status)
         }
+        $scope.displayInstruction =(orderClient : OrderClient) =>{
+            return  " : Rapport " + orderClient.cp_number;
+        }
+
         $scope.hasAProposalPrice = (orderClient: OrderClient) => {
 
             return (orderClient.price_proposal);
