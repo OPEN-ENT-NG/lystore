@@ -3,7 +3,9 @@ package fr.openent.lystore.export.instructions.RME;
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.export.TabHelper;
 import fr.wseduc.webutils.Either;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.poi.ss.usermodel.Row;
@@ -23,13 +25,15 @@ public class RecapImputationBud extends TabHelper {
         excel.setDefaultFont();
         excel.setInstructionNumber(makeCellWithoutNull(instruction.getString("cp_number")));
     }
-
     @Override
-    public void create(Handler<Either<String, Boolean>> handler) {
+    public Future<Boolean> create() {
+        Promise<Boolean> promise = Promise.promise();
+        excel.setDefaultFont();
+        excel.setInstructionNumber(makeCellWithoutNull(instruction.getString("cp_number")));
         getDatas(event -> {
             try{
                 if (event.isLeft()) {
-                    handler.handle(new Either.Left<>("Failed to retrieve datas"));
+                    promise.fail("Failed to retrieve datas");
                     return;
                 }
                 if (checkEmpty()) {
@@ -39,18 +43,20 @@ public class RecapImputationBud extends TabHelper {
                     sheet.removeRow(row);
                     row = sheet.getRow(6);
                     sheet.removeRow(row);
-                    handler.handle(new Either.Right<>(true));
+                    promise.complete(true);
                 } else {
                     setArray(datas);
-                    handler.handle(new Either.Right<>(true));
+                    promise.complete(true);
                 }
             }catch(Exception e){
                 logger.error(e.getMessage());
                 logger.error(e.getStackTrace());
-                handler.handle(new Either.Left<>("error when creating excel"));
+                promise.fail("error when creating excel");
             }
         });
+        return promise.future();
     }
+
     @Override
     protected void setArray(JsonArray datas) {
         JsonObject program;
@@ -84,7 +90,7 @@ public class RecapImputationBud extends TabHelper {
             oldSection = section;
 
         } else {
-                excel.insertHeader(xTab, y, section);
+            excel.insertHeader(xTab, y, section);
             nbToMerge++;
         }
         return oldSection;
@@ -316,7 +322,7 @@ public class RecapImputationBud extends TabHelper {
                 "   program_name, " +
                 "   action_code";
 
-       sqlHandler(handler);
+        sqlHandler(handler);
     }
 
 }
