@@ -15,7 +15,7 @@ import {
     Tag,
     TechnicalSpec,
     Utils,
-    PRIORITY_FIELD
+    PRIORITY_FIELD, Campaigns
 } from '../../model';
 
 export const configurationController = ng.controller('configurationController',
@@ -420,7 +420,7 @@ export const configurationController = ng.controller('configurationController',
             Utils.safeApply($scope);
         };
         $scope.exportOrders = async  ()=>{
-           await $scope.campaigns.exportOrders($scope.campaigns.selected);
+            await $scope.campaigns.exportOrders($scope.campaigns.selected);
             $scope.campaigns.selected.map(c => c.selected = false);
             Utils.safeApply($scope);
             // await campaign.exportOrders();
@@ -445,9 +445,24 @@ export const configurationController = ng.controller('configurationController',
             template.open('campaign.lightbox', 'administrator/campaign/campaign-delete-validation');
             $scope.display.lightbox.campaign = true;
         };
+        $scope.canDeleteCampaigns = () => {
+            let canDelete = true
+            $scope.campaigns.selected.forEach(c =>{
+                canDelete = c.nb_orders === 0 && canDelete;
+            })
+            return canDelete
+        };
+
+        $scope.hasBaskets = () =>{
+            let canDelete = false
+            $scope.campaigns.selected.forEach(c =>{
+                canDelete = c.nb_baskets !== 0 || canDelete;
+            })
+            return canDelete
+        }
 
         $scope.checkTags = () =>{
-           return _.every(_.where($scope.structureGroups.all, {selected: true}), (structureGroup) => {
+            return _.every(_.where($scope.structureGroups.all, {selected: true}), (structureGroup) => {
                 return structureGroup.tags.length > 0;
             })
         };
@@ -462,12 +477,12 @@ export const configurationController = ng.controller('configurationController',
 
         $scope.checkGapDates = (campaign: Campaign) =>{
             return !campaign.automatic_close
-                ||
-                (moment(campaign.max_date)._isValid && moment(campaign.min_date)._isValid )
+            ||
+            (moment(campaign.max_date)._isValid && moment(campaign.min_date)._isValid )
                 ?
                 (moment(moment(campaign.end_date).format('YYYY-MM-DD'),"YYYY-MM-DD")
                     .diff(moment(moment(campaign.max_date).format('YYYY-MM-DD'),"YYYY-MM-DD"),'days') >= 0)
-            && (moment(campaign.min_date).diff(moment(campaign.start_date),'days') >= 0)
+                && (moment(campaign.min_date).diff(moment(campaign.start_date),'days') >= 0)
                 :
                 true
         }
@@ -478,8 +493,8 @@ export const configurationController = ng.controller('configurationController',
 
         $scope.validCampaignForm = (campaign: Campaign) => {
             return $scope.checkNamesAndTags(campaign)
-            && $scope.isValidDates(campaign)  && $scope.checkGapDates(campaign)
-             ;
+                && $scope.isValidDates(campaign)  && $scope.checkGapDates(campaign)
+                ;
 
         };
 

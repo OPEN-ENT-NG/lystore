@@ -618,5 +618,8 @@
   "lystore.parameter.update.error": "Erreur lors de la création/suppréssion du groupe manuel",
   "lystore.order.market.number": "Numéro de marché",
   "lystore.order.market.name" : "Nom du marché",
-  "reject.comment.label": "Raison du refus  :"
+  "reject.comment.label": "Raison du refus  :",
+  "campaign.basket.alert": "Des paniers sont présents sur ces campagnes :",
+  "lystore.campaign.delete.message": "Vous allez supprimer les campagnes suivantes :",
+  "campaign.delete.avert": "Après suppression des campagnes les paniers seront également supprimés"
 }
