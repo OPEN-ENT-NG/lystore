@@ -162,7 +162,8 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
 
     private void getCampaignOrderStatusCount(Handler<Either<String, JsonArray>> handler) {
         String query = "SELECT count(*), id_campaign, status " +
-                "FROM " + Lystore.lystoreSchema + ".order_client_equipment " +
+                "FROM " + Lystore.lystoreSchema + ".allorders " +
+                "WHERE override_region is not true " +
                 "GROUP BY id_campaign, status;";
 
         Sql.getInstance().prepared(query, new JsonArray(), SqlResult.validResultHandler(handler));
