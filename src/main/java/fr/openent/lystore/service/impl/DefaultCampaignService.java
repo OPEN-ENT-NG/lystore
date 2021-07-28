@@ -65,7 +65,13 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                     try {
                         campaign = campaignMap.getJsonObject(object.getInteger("id_campaign").toString());
                         campaign.put("nb_orders",object.getLong("count") + campaign.getLong("nb_orders"));
-                        campaign.put("nb_orders_" + object.getString("status").toLowerCase(), object.getLong("count"));
+                        String status =  object.getString("status").toLowerCase();
+                        if(!status.equals("done")&& !status.equals("valid") && !status.equals("sent")) {
+                            campaign.put("nb_orders_waiting", object.getLong("count"));
+                        }
+                        else
+                            campaign.put("nb_orders_" + status , object.getLong("count"));
+
                     }catch (NullPointerException e){
                         log.warn("An order is present on this structure but the structure is not linked to the campaign");
                     }
