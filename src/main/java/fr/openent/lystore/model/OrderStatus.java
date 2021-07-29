@@ -2,6 +2,7 @@ package fr.openent.lystore.model;
 
 public enum OrderStatus {
     VALID("Validée "),
+    REJECTED("Refusée "),
     IN_PROGRESS("En cours de traitement"),
     WAITING("Transmise"),
     DONE("Clôturée"),
