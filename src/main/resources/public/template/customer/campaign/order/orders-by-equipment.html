@@ -75,7 +75,7 @@
                         <i>
                         </i>
                     </div>
-                    <span ng-bind=" displayStatus(orderClient)"></span>
+                    <span ng-bind=" displayStatus(orderClient)"></span><b> <span ng-show="orderClient.cp_number" ng-bind="displayInstruction(orderClient)"></span></b>
                 </div>
                 <div  ng-if="orderClient.rejectOrder.comment"  class="right-magnet cell twelve vertical-spacing-twice">
                    <label>
