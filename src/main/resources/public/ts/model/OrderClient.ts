@@ -151,9 +151,9 @@ export class OrderClient implements Order  {
         }
     }
 
-    async getOneOrderClient(id:number, structures:Structures, status:string):Promise<Order>{
+    async getOneOrderClient(id:number, structures:Structures):Promise<Order>{
         try{
-            const {data} = await http.get(`/lystore/orderClient/${id}/order/${status}`);
+            const {data} = await http.get(`/lystore/orderClient/${id}/order/`);
             return new Order(Object.assign(data, {typeOrder:"client"}), structures);
         } catch (e) {
             notify.error('lystore.admin.order.get.err');

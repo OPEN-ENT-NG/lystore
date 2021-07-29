@@ -322,7 +322,7 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                 let idOrder = parseInt(params.idOrder);
                 $scope.fromWaiting = true;
                 await $scope.initOrderStructures();
-                $scope.orderToUpdate = await $scope.orderClient.getOneOrderClient(idOrder, $scope.structures.all, "waiting");
+                $scope.orderToUpdate = await $scope.orderClient.getOneOrderClient(idOrder, $scope.structures.all);
                 await $scope.equipments.syncAll($scope.orderToUpdate.campaign.id);
                 $scope.loadingArray = false;
 
@@ -335,9 +335,9 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                 template.open('administrator-main', 'administrator/order/order-update-form');
                 let idOrder = parseInt(params.idOrder);
                 await $scope.initOrderStructures();
-                $scope.orderToUpdate = params.typeOrder === 'client' ?
-                    await $scope.orderClient.getOneOrderClient(idOrder, $scope.structures.all, "progress") :
-                    await $scope.orderRegion.getOneOrderRegion(idOrder, $scope.structures.all);
+                $scope.orderToUpdate = params.typeOrder === 'client'
+                    ? await $scope.orderClient.getOneOrderClient(idOrder, $scope.structures.all)
+                    : await $scope.orderRegion.getOneOrderRegion(idOrder, $scope.structures.all);
                 await $scope.equipments.syncAll($scope.orderToUpdate.campaign.id);
                 $scope.orderToUpdate.equipment = $scope.equipments.all.find(findElement => findElement.id === $scope.orderToUpdate.equipment_key);
                 if(params.typeOrder === 'client'){
