@@ -66,8 +66,8 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                         campaign = campaignMap.getJsonObject(object.getInteger("id_campaign").toString());
                         campaign.put("nb_orders",object.getLong("count") + campaign.getLong("nb_orders"));
                         String status =  object.getString("status").toLowerCase();
-                        if(!status.equals("done")&& !status.equals("valid") && !status.equals("sent")) {
-                            campaign.put("nb_orders_waiting", object.getLong("count"));
+                        if(!status.equals("done") && !status.equals("rejected") && !status.equals("valid") && !status.equals("sent")) {
+                            campaign.put("nb_orders_waiting", campaign.getLong("nb_orders_waiting") + object.getLong("count"));
                         }
                         else
                             campaign.put("nb_orders_" + status , object.getLong("count"));
