@@ -176,13 +176,13 @@
                         <span class="textarea-region-comment" role="textbox" ng-model="row.comment" contenteditable></span>
                     </td>
                     <td class="one">
-                        <a ng-click="openAddDocumentsRegionLightbox(orderRegion)" ng-if="orderRegion.files.length === 0">
+                        <a ng-click="openAddDocumentsRegionLightbox(row)" ng-if="orderToCreate.rows[$index].files.length === 0">
                             <i18n>lystore.orderRegion-add-file</i18n>
                         </a>
-                        <a ng-click="openAddDocumentsRegionLightbox(orderRegion)" ng-if="orderRegion.files.length > 0">
+                        <a ng-click="openAddDocumentsRegionLightbox(row)" ng-if="orderToCreate.rows[$index].files.length > 0">
                             <i18n>lystore.orderRegion-manage-file</i18n>
                         </a>
-                        <span>([[nbFiles]])</span>
+                        <span>([[orderToCreate.rows[$index].files.length]])</span>
                     </td>
 
                     <td class="one">
@@ -204,7 +204,7 @@
 
         <!--<input type="button" class="right-magnet cancel" ng-click="cancelCreation()" i18n-value="cancel"/>-->
     </form>
-    <lightbox show="display.lightbox.addDocumentsRegion" on-close="endUpload()">
+    <lightbox show="display.lightbox.addDocumentsRegion" on-close="endUploadCreate()">
         <container template="addDocuments.lightbox"></container>
     </lightbox>
 </div>

@@ -13,6 +13,7 @@ import {
     Equipments, ContractType, ContractTypes, Contracts, Order, Basket
 } from "../../model";
 import http from "axios";
+    import {statementsFilesService} from "../../services/fileOrder";
 
 declare let window: any;
 export const orderRegionController = ng.controller('orderRegionController',
@@ -23,7 +24,6 @@ export const orderRegionController = ng.controller('orderRegionController',
         $scope.structuresToDisplay = new Structures();
         $scope.titles = new Titles();
         $scope.orderRegion.files = new Array();
-        $scope.nbFiles = 0;
         $scope.display = {
             lightbox: {
                 validOrder: false,
@@ -174,6 +174,7 @@ export const orderRegionController = ng.controller('orderRegionController',
                 structure: undefined,
                 price: undefined,
                 amount: undefined,
+                files: [],
                 comment: "",
                 display: {
                     struct: false
@@ -203,6 +204,8 @@ export const orderRegionController = ng.controller('orderRegionController',
             }
             //duplicate contracttypes
             row.ct_enabled =  $scope.orderToCreate.rows[index].ct_enabled;
+
+            row.files = $scope.orderToCreate.rows[index].files;
 
             $scope.orderToCreate.rows[index].contracts.all.forEach(ct=>{
                 row.contracts.all.push(ct);
@@ -269,6 +272,7 @@ export const orderRegionController = ng.controller('orderRegionController',
             row.price = undefined;
             row.amount = undefined;
             row.comment ="";
+            row.files = [];
             row.structure = undefined;
             Utils.safeApply($scope);
         };
@@ -281,6 +285,7 @@ export const orderRegionController = ng.controller('orderRegionController',
                     if (row.structure instanceof StructureGroup) {
                         row.structure.structures.map(s => {
                             let orderRegionTemp = new OrderRegion();
+                            statementsFilesService.create()
                             orderRegionTemp.id_campaign = $scope.orderToCreate.campaign.id;
                             orderRegionTemp.id_structure = s;
                             orderRegionTemp.title_id = $scope.orderToCreate.project;
@@ -291,7 +296,7 @@ export const orderRegionController = ng.controller('orderRegionController',
                             orderRegionTemp.amount = row.amount;
                             orderRegionTemp.price = row.price;
                             orderRegionTemp.name = row.equipment.name;
-                            orderRegionTemp.files = $scope.orderRegion.files;
+                            orderRegionTemp.files = row.files;
                             orderRegionTemp.technical_spec = row.equipment.technical_specs;
                             orderRegionTemp.id_contract = row.equipment.id_contract;
                             orderRegionTemp.id_type = row.equipment.id_type;
@@ -316,7 +321,7 @@ export const orderRegionController = ng.controller('orderRegionController',
                         orderRegionTemp.amount = row.amount;
                         orderRegionTemp.price = row.price;
                         orderRegionTemp.name = row.equipment.name;
-                        orderRegionTemp.files = $scope.orderRegion.files;
+                        orderRegionTemp.files = row.files;
                         orderRegionTemp.technical_spec = row.equipment.technical_specs;
                         orderRegionTemp.id_contract = row.equipment.id_contract;
                         orderRegionTemp.name_structure = row.structure.name;
@@ -350,21 +355,12 @@ export const orderRegionController = ng.controller('orderRegionController',
             Utils.safeApply($scope);
         }
 
-        $scope.openAddDocumentsRegionLightbox = (orderRegion : OrderRegion) => {
-            $scope.order = JSON.parse(JSON.stringify(orderRegion));
-            $scope.files = [];
-            $scope.display.lightbox.addDocumentsRegion = true;
-            template.open('addDocuments.lightbox', 'administrator/orderRegion/order-region-add-files');
-            Utils.safeApply($scope);
-        }
-
         $scope.endUpload = () => {
             $scope.orderRegion.files = $scope.orderRegion.files || [];
             for (let i = 0; i < $scope.files.length; i++) {
                 $scope.orderRegion.files.push($scope.files[i]);
             }
             $scope.display.lightbox.addDocuments = false;
-            $scope.display.lightbox.addDocumentsRegion = false;
             Utils.safeApply($scope);
         };
 
@@ -392,8 +388,7 @@ export const orderRegionController = ng.controller('orderRegionController',
             for (let i = 0; i < $scope.files.length; i++) {
                 file = $scope.files[i];
                 $scope.orderRegion.files.push(file);
-                $scope.uploadFile(file);
-                $scope.nbFiles += 1;
+                //$scope.uploadFile(file);
             }
         };
 
@@ -404,10 +399,59 @@ export const orderRegionController = ng.controller('orderRegionController',
                 await orderRegion.deleteDocument(file);
                 orderRegion.files = _.reject(orderRegion.files, (doc) => doc.id === file.id);
                 $scope.files = _.reject($scope.files, (doc) => doc.id === file.id);
-                $scope.nbFiles -= 1;
                 toasts.confirm('lystore.basket.file.delete.success');
             } catch (err) {
-                $scope.nbFiles += 1;
+                toasts.warning('lystore.basket.file.delete.error');
+                delete file.status;
+            } finally {
+                Utils.safeApply($scope);
+            }
+        };
+
+        $scope.openAddDocumentsRegionLightbox = (row:any) => {
+            $scope.orderTemp = row;
+            $scope.display.lightbox.addDocumentsRegion = true;
+            template.open('addDocuments.lightbox', 'administrator/orderRegion/order-region-add-files');
+            Utils.safeApply($scope);
+        }
+
+        $scope.endUploadCreate = () => {
+            $scope.display.lightbox.addDocumentsRegion = false;
+            Utils.safeApply($scope);
+        };
+
+        // $scope.uploadFileCreate = async (file) => {
+        //     file.status = 'loading';
+        //     let formData = new FormData();
+        //     $scope.uploadUri = "/lystore/order/upload/file";
+        //     formData.append("file", file, file.name);
+        //     try {
+        //         const {data} = await http.post($scope.uploadUri, formData, {'headers': {'Content-Type': 'multipart/form-data'}});
+        //         file.id = data.id;
+        //         file.status = 'loaded';
+        //     } catch (err) {
+        //         file.status = 'failed';
+        //     }
+        //     Utils.safeApply($scope);
+        // };
+
+        $scope.importFilesCreate = (files) => {
+            Array.from(files).forEach(file => {
+                $scope.orderTemp.files.push(file);
+                //$scope.uploadFileCreate(file);
+            });
+            if ($scope.orderTemp.files === undefined || $scope.orderTemp.files.length === 0) return;
+            Utils.safeApply($scope);
+        };
+
+        $scope.deleteOrderDocumentCreate = async (file, $index) => {
+            try {
+                file.status = 'loading';
+                Utils.safeApply($scope);
+                //await orderRegion.deleteDocument(file);
+                $scope.orderTemp.files.splice($index,1);
+                toasts.confirm('lystore.basket.file.delete.success');
+            } catch (err) {
                 toasts.warning('lystore.basket.file.delete.error');
                 delete file.status;
             } finally {
