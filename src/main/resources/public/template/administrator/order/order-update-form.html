@@ -177,7 +177,7 @@
                     class="four cell horizontal-margin"
                     ng-if="file.name || file.filename"
             >
-                [[file.name || file.filename]]
+                [[orderParent.file.name || orderParent.file.filename]]
             </div>
 
             <div class="row basket-file-list"
@@ -193,9 +193,7 @@
                 </ul>
             </div>
 
-            <div
-                    class="four cell horizontal-margin"
-            >
+            <div class="four cell horizontal-margin">
                 <a ng-click="openAddDocumentsLightbox(orderParent)">
                     <i class="attachment" /><i18n>lystore.basket.add-file</i18n>
                 </a>
