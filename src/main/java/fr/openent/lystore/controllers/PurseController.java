@@ -36,6 +36,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.DecimalFormat;
 import java.util.UUID;
 
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.arrayResponseHandler;
@@ -427,7 +428,7 @@ public class PurseController extends ControllerHelper {
                     for (int i = 0; i < uais.size(); i++) {
                         uai = uais.getJsonObject(i);
                         values.put(uai.getString("uai"),
-                                exportValues.getInteger(uai.getString("id")));
+                               exportValues.getDouble(uai.getString("id")));
                     }
                     launchExport(values, request);
                 } else {
@@ -473,8 +474,10 @@ public class PurseController extends ControllerHelper {
      * @param amount Structure purse amount
      * @return CSV Line
      */
+    //a déplacer hors du controller
     private static String getCSVLine(String uai, Number amount) {
-        return uai + ";" + amount + "\n";
+        DecimalFormat df = new DecimalFormat("####0.00");
+        return uai + ";" + df.format(amount) + "\n";
     }
 
     /**
