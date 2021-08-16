@@ -284,10 +284,13 @@ export const orderController = ng.controller('orderController',
             );
         };
 
-        $scope.windUpOrders = async (orders: OrderClient[]) => {
+        $scope.windUpOrders = async (orders: Order[]) => {
             let ordersToWindUp  = new OrdersClient();
             // console.log($scope.displayedOrders.all);
             ordersToWindUp.all = Mix.castArrayAs(OrderClient, orders);
+            orders.forEach(order =>{
+                console.log(order.override_region);
+            })
             let { status } = await ordersToWindUp.updateStatus('DONE');
             if (status === 200) {
                 toasts.confirm('lystore.windUp.notif');

@@ -70,6 +70,7 @@ export class OrderRegion implements Order  {
     technical_spec:TechnicalSpec;
     title_id ?: number;
     id_type: number;
+    override_region: boolean;
 
     constructor() {
         this.typeOrder = "region";

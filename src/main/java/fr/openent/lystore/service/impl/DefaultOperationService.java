@@ -332,6 +332,8 @@ GROUP BY
         });
     }
     private JsonObject updateOperationOrdersRegionAdd(JsonArray operationIds) {
+        log.info("2 ");
+
         String query = " UPDATE " + Lystore.lystoreSchema + ".\"order-region-equipment\" " +
                 "SET status = 'WAITING_FOR_ACCEPTANCE' " +
                 " WHERE id_operation IN " +
@@ -346,6 +348,7 @@ GROUP BY
     }
 
     private JsonObject updateOperationOrdersClientAdd(JsonArray operationIds) {
+        log.info("1 ");
         String query = " UPDATE " + Lystore.lystoreSchema + ".order_client_equipment " +
                 "SET status = 'WAITING_FOR_ACCEPTANCE' " +
                 " WHERE id_operation IN " +

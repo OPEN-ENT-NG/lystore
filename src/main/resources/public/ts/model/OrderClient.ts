@@ -76,6 +76,7 @@ export class OrderClient implements Order  {
     status:string;
     technical_spec:TechnicalSpec;
     rejectOrder?: RejectOrder;
+    override_region: boolean;
 
     constructor() {
         this.typeOrder= "client";
@@ -285,7 +286,7 @@ export class OrdersClient extends Selection<OrderClient> {
         }
         order.id_supplier = order.supplier.id;
         order.rank = order.rank ? parseInt(order.rank.toString()) : null ;
-        if (this.id_project_use != order.project.id)this.makeProjects(order);
+        // if (this.id_project_use != order.project.id)this.makeProjects(order);
         order.creation_date = moment(order.creation_date).format('L');
         order.options.toString() !== '[null]' && order.options !== null ?
             order.options = Mix.castArrayAs( OrderOptionClient, JSON.parse(order.options.toString()))
@@ -293,7 +294,7 @@ export class OrdersClient extends Selection<OrderClient> {
         order.priceUnitedTTC = order.price_proposal ?
             parseFloat(( order.price_proposal).toString()):
             parseFloat((OrderUtils.calculatePriceTTC(2, order) as number).toString());
-        order.priceTotalTTC = this.choosePriceTotal(order);
+        // order.priceTotalTTC = this.choosePriceTotal(order);
         if( order.campaign.orderPriorityEnable()){
             order.rankOrder = order.rank + 1;
         } else if (order.campaign.projectPriorityEnable()){
@@ -313,12 +314,14 @@ export class OrdersClient extends Selection<OrderClient> {
         const ids = status === 'SENT'
             ? _.pluck(this.all, 'number_validation')
             : _.pluck(this.all, 'id');
-
+        const override_region = _.pluck(this.all,"override_region")
+        console.log(override_region)
         const supplierId = status === 'SENT'
             ? _.pluck(this.all, 'supplierid')[0]
             : this.supplier.id;
         return {
             ids,
+            override_region,
             status : status,
             bc_number: this.bc_number || null,
             engagement_number: this.engagement_number || null,

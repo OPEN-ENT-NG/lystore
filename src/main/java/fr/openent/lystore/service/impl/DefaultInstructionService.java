@@ -243,7 +243,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 "INNER join  " +  Lystore.lystoreSchema + ".contract_type on contract.id_contract_type = contract_type.id " +
                 "INNER JOIN  " +  Lystore.lystoreSchema + ".operation on operation.id = orders.id_operation " +
                 "INNER JOIN  " +  Lystore.lystoreSchema + ".instruction on instruction.id = operation.id_instruction and instruction.id = ? " +
-                "WHERE code != '236' and override_region is null or false " +
+                "WHERE code != '236'    AND (override_region IS NULL OR override_region IS false) " +
                 "order by id_contract " +
                 " ";
         Map<Integer,JsonArray> mapMarket = new HashMap<>();
@@ -277,6 +277,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
             Future<JsonArray> future = Future.future();
             futures.add(future);
         }
+        log.info("PLOOOOOOOOOOOOOOP ");
         CompositeFuture.all(futures).setHandler(new Handler<AsyncResult<CompositeFuture>>() {
             @Override
             public void handle(AsyncResult<CompositeFuture> event) {
@@ -314,8 +315,12 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                     for (Object o : orders) {
                         JsonArray order = (JsonArray) o;
                         if (order.getString(2).equals("REGION")) {
+                            log.info("plop");
+
                             statements.add(getUpdateOrdersStatementRegion(order.getInteger(0), numberOrder));
                         } else {
+                            log.info("plep");
+
                             statements.add(getUpdateOrdersStatementClient(order.getInteger(0), numberOrder));
                         }
                     }

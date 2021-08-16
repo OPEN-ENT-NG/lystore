@@ -64,6 +64,7 @@ export class Order implements OrderImp{
     tax_amount: number;
     title:Title;
     typeOrder:string;
+    override_region: boolean;
 
     constructor(order: Order, structures:Structures){
         this.amount  = order.amount? parseInt(order.amount.toString()) : null;

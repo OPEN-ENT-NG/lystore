@@ -434,6 +434,7 @@ public class OrderController extends ControllerHelper {
                                 public void handle(Either<String, JsonObject> event) {
                                     if (event.isRight()) {
                                         //TODO DECOMMENTER
+                                        log.info("HANDLE");
 //                                        logSendingOrder(numberValidations,request);
                                         ExportHelper.makeExport(request,eb,exportService,Lystore.ORDERSSENT,  Lystore.PDF,ExportTypes.BC_DURING_VALIDATION, "_BC");
                                     } else {
@@ -941,13 +942,15 @@ public class OrderController extends ControllerHelper {
                         params.add(id.toString());
                     }
                     List<Integer> ids = SqlQueryUtils.getIntegerIds(params);
-                    orderService.windUpOrders(ids, Logging.defaultResponsesHandler(eb,
+                    JsonArray override_region = orders.getJsonArray("override_region");
+                    orderService.windUpOrders(ids,
+                            override_region,
+                            Logging.defaultResponsesHandler(eb,
                             request,
                             Contexts.ORDER.toString(),
                             Actions.UPDATE.toString(),
                             params,
                             null)
-
                     );
                 } catch (ClassCastException e) {
                     log.error("An error occurred when casting order id", e);

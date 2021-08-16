@@ -67,9 +67,10 @@ public interface OrderService {
     /**
      * Wind up orders
      * @param ids List containing ids
+     * @param override_region
      * @param handler Function handler returning data
      **/
-    void windUpOrders(List<Integer> ids, Handler<Either<String, JsonObject>> handler);
+    void windUpOrders(List<Integer> ids, JsonArray override_region, Handler<Either<String, JsonObject>> handler);
 
     /**
      * get params for the exportCsvOrdersSelected
