@@ -43,7 +43,6 @@ public class ExportHelper {
     public static void catchError(ExportService exportService, String idFile, Exception errorCatch) {
         exportService.updateWhenError(idFile, makeError -> {
             if (makeError.isLeft()) {
-                log.info("1");
 
                 log.error("Error for create file export excel " + makeError.left()+ " " + errorCatch.getMessage());
             }
@@ -53,7 +52,6 @@ public class ExportHelper {
     public static void catchError(ExportService exportService, String idFile, String errorCatchTextOutput) {
         exportService.updateWhenError(idFile, makeError -> {
             if (makeError.isLeft()) {
-                log.info("2");
                 log.error("Error for create file export excel " + makeError.left().getValue() + errorCatchTextOutput);
             }
         });

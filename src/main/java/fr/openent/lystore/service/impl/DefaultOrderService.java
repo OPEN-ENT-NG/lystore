@@ -561,7 +561,6 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
 
     @Override
     public  void windUpOrders(List<Integer> ids, JsonArray override_region, Handler<Either<String, JsonObject>> handler){
-//        JsonObject statement = getUpdateStatusStatement(ids, "DONE");
         JsonArray statements = new JsonArray();
         for(int i = 0 ; i < ids.size() ; i++){
             Integer id = ids.get(i);
@@ -569,10 +568,6 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
             log.info(id + " " + override);
             statements.add(getUpdateORderDoneStatus(id,override));
         }
-        log.info(statements);
-//        sql.prepared(statement.getString("statement"),
-//                statement.getJsonArray("values"),
-//                SqlResult.validUniqueResultHandler(handler));
         sql.transaction(statements, new Handler<Message<JsonObject>>() {
             @Override
             public void handle(Message<JsonObject> event) {

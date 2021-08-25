@@ -558,7 +558,9 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
         };
 
         $scope.initOrders = async (status) => {
-            if(status === 'WAITING' || status === 'SENT'){
+            if($scope.suppliers.all === undefined  || $scope.suppliers.all.length === 0)
+                await $scope.suppliers.sync();
+            if(status === 'WAITING' || status === 'SENT' ){
                 if( ($scope.projects.status && $scope.projects.status !== status  )
                     || ( $scope.projects.all === undefined || $scope.projects.all.length === 0 ))
                     await $scope.projects.sync(status);
@@ -568,8 +570,6 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                     await  $scope.campaigns.sync();
                 if($scope.contractTypes.all === undefined  || $scope.contractTypes.all.length === 0)
                     await $scope.contractTypes.sync();
-                if($scope.suppliers.all === undefined  || $scope.suppliers.all.length === 0)
-                    await $scope.suppliers.sync();
                 if($scope.titles.all === undefined  || $scope.titles.all.length === 0)
                     await $scope.titles.sync();
             }
@@ -589,7 +589,7 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
 
         $scope.initOrdersForPreview = async (orders: OrderClient[]) => {
             $scope.orderToSend = new OrdersClient(Mix.castAs(Supplier, orders[0].supplier));
-            $scope.orderToSend.all = Mix.castArrayAs(OrderClient, orders);
+            $scope.orderToSend.all = Mix.castArrayAs(Order, orders);
             $scope.orderToSend.preview = await $scope.orderToSend.getPreviewData();
             $scope.orderToSend.preview.index = 0;
         };

@@ -277,7 +277,6 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
             Future<JsonArray> future = Future.future();
             futures.add(future);
         }
-        log.info("PLOOOOOOOOOOOOOOP ");
         CompositeFuture.all(futures).setHandler(new Handler<AsyncResult<CompositeFuture>>() {
             @Override
             public void handle(AsyncResult<CompositeFuture> event) {
@@ -315,12 +314,8 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                     for (Object o : orders) {
                         JsonArray order = (JsonArray) o;
                         if (order.getString(2).equals("REGION")) {
-                            log.info("plop");
-
                             statements.add(getUpdateOrdersStatementRegion(order.getInteger(0), numberOrder));
                         } else {
-                            log.info("plep");
-
                             statements.add(getUpdateOrdersStatementClient(order.getInteger(0), numberOrder));
                         }
                     }
@@ -341,7 +336,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                         Lystore.lystoreSchema + ".\"order-region-equipment\" " +
                         "SET " +
                         "  status = 'VALID', number_validation = ? " +
-                        "where id = ? ;";
+                        "where id = ?  AND STATUS NOT IN ('VALID', 'DONE', 'SENT');";
 
 
         JsonArray params = new JsonArray().add(numberOrder).add(id);
@@ -357,7 +352,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                         Lystore.lystoreSchema + ".order_client_equipment " +
                         "SET " +
                         "  status = 'VALID', number_validation = ? " +
-                        "where id = ? ;";
+                        "where id = ? AND STATUS NOT IN ('VALID', 'DONE', 'SENT');";
 
 
         JsonArray params = new JsonArray().add(numberOrder).add(id);
