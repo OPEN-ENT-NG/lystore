@@ -321,7 +321,7 @@ export const orderController = ng.controller('orderController',
 
         $scope.disableCancelValidation = (orders: OrderClient[]) => {
             return _.where(orders, { status : 'SENT' }).length > 0
-                || orders.find(order => order.id_operation !== null)  !== undefined ;
+                || orders.find(order => order.has_operation)  !== undefined ;
         };
 
         $scope.prepareSendOrder = async (orders: OrderClient[]) => {
