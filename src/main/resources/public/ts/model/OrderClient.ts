@@ -78,6 +78,7 @@ export class OrderClient implements Order  {
     rejectOrder?: RejectOrder;
     override_region: boolean;
     supplierid: any;
+    has_operation: boolean;
 
     constructor() {
         this.typeOrder= "client";

@@ -597,7 +597,7 @@
   "lystore.campaign.delete": "Supprimer la(es) campagne(s): ",
   "lystore.cp.adopted": "CP Adopté",
   "lystore.export.cp.adopted.title": "Adoption du CP",
-  "lystore.export.cp.adopted.text": "Etes-vous sur de vouloir valider le CP? Cette action n est pas reversible",
+  "lystore.export.cp.adopted.text": "Êtes-vous sur de vouloir valider le CP? Cette action n est pas reversible",
   "lystore.instruction.cp_adopted": "Adoption CP",
   "campaign.automatic.manual.change": "Vous allez modifier la date d'ouverture ou de fermeture de la Campagne. Voulez-vous continuer ?",
   "campaign.automatic.dates": "Campagne ouverte",

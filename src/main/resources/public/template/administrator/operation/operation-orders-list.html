@@ -72,14 +72,19 @@
 <section class="toggle-buttons" ng-class="{ hide: !isOrderOperationSelected() }">
     <div class="toggle">
         <div class="row">
-            <button ng-if="oneOrderSelected()"
+            <button ng-if="oneOrderSelected() "
+                    ng-disabled="!checkStatus(getSelectedOrder())"
                     ng-click="insertOrderRegion(getSelectedOrder())">
                 <i18n>lystore.order.update</i18n>
             </button>
-            <button ng-click="selectOperationForOrder()">
+            <button
+                    ng-disabled="!checkStatus(getSelectedOrder())"
+                    ng-click="selectOperationForOrder()">
             <i18n>lystore.operation.order.move</i18n>
         </button>
-            <button ng-click="dropOrdersOperation(getSelectedOrders())">
+            <button
+                    ng-disabled="!checkStatus(getSelectedOrder())"
+                    ng-click="dropOrdersOperation(getSelectedOrders())">
             <i18n>delete</i18n>
         </button>
         </div>
