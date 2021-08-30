@@ -95,9 +95,10 @@ public class DefaultParameterService  implements ParameterService {
                                 })
                         );
                         String queryRole = "MATCH (r:Role)" +
-                                " WHERE r.name = {linkName} RETURN r.id as id";
+                                " WHERE r.distributions = {linkName} RETURN r.id as id";
 
-                        Neo4j.getInstance().execute(queryRole, new JsonObject().put("linkName", "Lystore - Personnel établissement"),
+                        JsonArray arrayRole = new JsonArray().add("Admin Lystore");
+                        Neo4j.getInstance().execute(queryRole, new JsonObject().put("linkName",arrayRole),
                                 Neo4jResult.validUniqueResultHandler(linkResult -> {
                                     if (linkResult.isLeft()) {
                                         handler.handle(new Either.Left<>("Failed to fetch role id"));
