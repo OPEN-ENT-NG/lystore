@@ -73,17 +73,17 @@
     <div class="toggle">
         <div class="row">
             <button ng-if="oneOrderSelected() "
-                    ng-disabled="!checkStatus(getSelectedOrder())"
+                    ng-disabled="!checkStatusAndCode(getSelectedOrder())"
                     ng-click="insertOrderRegion(getSelectedOrder())">
                 <i18n>lystore.order.update</i18n>
             </button>
             <button
-                    ng-disabled="!checkStatus(getSelectedOrder())"
+                    ng-disabled="!checkStatusAndCode(getSelectedOrder())"
                     ng-click="selectOperationForOrder()">
             <i18n>lystore.operation.order.move</i18n>
         </button>
             <button
-                    ng-disabled="!checkStatus(getSelectedOrder())"
+                    ng-disabled="!checkStatusAndCode(getSelectedOrder())"
                     ng-click="dropOrdersOperation(getSelectedOrders())">
             <i18n>delete</i18n>
         </button>

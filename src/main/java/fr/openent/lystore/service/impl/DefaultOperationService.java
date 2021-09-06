@@ -332,8 +332,6 @@ GROUP BY
         });
     }
     private JsonObject updateOperationOrdersRegionAdd(JsonArray operationIds) {
-        log.info("2 ");
-
         String query = " UPDATE " + Lystore.lystoreSchema + ".\"order-region-equipment\" " +
                 "SET status = 'WAITING_FOR_ACCEPTANCE' " +
                 " WHERE id_operation IN " +
@@ -348,7 +346,6 @@ GROUP BY
     }
 
     private JsonObject updateOperationOrdersClientAdd(JsonArray operationIds) {
-        log.info("1 ");
         String query = " UPDATE " + Lystore.lystoreSchema + ".order_client_equipment " +
                 "SET status = 'WAITING_FOR_ACCEPTANCE' " +
                 " WHERE id_operation IN " +
@@ -428,33 +425,25 @@ GROUP BY
 
     @Override
     public void getOperationOrders(Integer operationId, Handler<Either<String, JsonArray>> handler) {
-
-        Future<JsonArray> getOrderRegionByOperationFuture = Future.future();
-        Future<JsonArray> getOrderClientByOperationFuture = Future.future();
-
-        getOrderRegionByOperation(operationId, FutureHelper.handlerJsonArray(getOrderRegionByOperationFuture));
-        getOrderClientByOperation(operationId, FutureHelper.handlerJsonArray(getOrderClientByOperationFuture));
-
-        CompositeFuture.all( getOrderRegionByOperationFuture, getOrderClientByOperationFuture).setHandler(asyncEvent -> {
-            if (asyncEvent.failed()) {
-                String message = "Failed to retrieve order of operation";
-                handler.handle(new Either.Left<>(message));
-                return;
-            }
-
-            JsonArray ordersRegionsByOperation = getOrderRegionByOperationFuture.result();
-            JsonArray ordersClientsByOperation = getOrderClientByOperationFuture.result();
-
-            for (int i = 0 ; i<ordersClientsByOperation.size() ; i++){
-                ordersClientsByOperation.getJsonObject(i).put("typeOrder", "client");
-            }
-
-            for (int i = 0 ; i<ordersRegionsByOperation.size() ; i++){
-                ordersClientsByOperation.add(ordersRegionsByOperation.getJsonObject(i).put("typeOrder", "region"));
-            }
-
-            handler.handle(new Either.Right<>(ordersClientsByOperation));
-        });
+        getOrderByOperation(operationId, new Handler<Either<String, JsonArray>>() {
+            @Override
+            public void handle(Either<String, JsonArray> event) {
+                if(event.isRight()) {
+                    JsonArray ordersClientsByOperation = event.right().getValue();
+                    for (int i = 0 ; i<ordersClientsByOperation.size() ; i++){
+                        JsonObject order =  ordersClientsByOperation.getJsonObject(i);
+                        if(order.getBoolean("override_region")!= null)
+                            ordersClientsByOperation.getJsonObject(i).put("typeOrder", "client");
+                        else{
+                            ordersClientsByOperation.getJsonObject(i).put("typeOrder", "region");
+                        }
+                    }
+                    handler.handle(new Either.Right<>(ordersClientsByOperation));
+                }
+                else {
+                    handler.handle(new Either.Left<>(event.left().getValue()));
+                }
+            }});
     }
 
     @Override
@@ -509,64 +498,55 @@ GROUP BY
                 .put("action", "prepared");
     }
 
-    private void getOrderRegionByOperation(int idOperation, Handler<Either<String, JsonArray>> handler){
-        String queryGetOrderRegion = "" +
-                "SELECT ore.id, " +
-                "       ore.id_order_client_equipment, " +
-                "       ore.creation_date, " +
-                "       ore.amount, " +
-                "       ore.name, " +
-                "       ore.id_structure, " +
-                "       ore.status, " +
-                "       ore.price * ore.amount AS price, " +
-                "       c.name AS contract_name " +
-                "FROM  " + Lystore.lystoreSchema +".\"order-region-equipment\" ore " +
-                "INNER JOIN  " + Lystore.lystoreSchema +".contract c ON ore.id_contract = c.id " +
-                "INNER JOIN  " + Lystore.lystoreSchema +".operation o ON (ore.id_operation = o.id) " +
-                "WHERE o.id = ? " +
-                "GROUP BY (ore.id, " +
-                "          ore.price, " +
-                "          ore.name, " +
-                "          ore.id_structure, " +
-                "          c.name);";
-
-        Sql.getInstance().prepared(queryGetOrderRegion, new JsonArray().add(idOperation), SqlResult.validResultHandler(handler));
-    }
-
-
-    private void getOrderClientByOperation(int idOperation, Handler<Either<String, JsonArray>> handler){
+    private void getOrderByOperation(int idOperation, Handler<Either<String, JsonArray>> handler){
         String queryGOrderClient = "" +
-                "SELECT oce.id,  " +
-                "       (  " +
-                "               (SELECT " +
-                "                  CASE " +
-                "                  WHEN SUM(oco.price + ((oco.price * oco.tax_amount) /100) * oco.amount)  IS NULL THEN 0 " +
-                "                  WHEN oce.price_proposal IS NOT NULL THEN 0 " +
-                "                  ELSE SUM(oco.price + ((oco.price * oco.tax_amount) /100) * oco.amount) " +
-                "                  END " +
-                "               FROM " + Lystore.lystoreSchema +".order_client_options oco " +
-                "               WHERE id_order_client_equipment = oce.id) + " +
-                "                                                         (CASE  " +
-                "                                                             WHEN oce.price_proposal IS NOT NULL THEN (oce.price_proposal)  " +
-                "                                                             ELSE (oce.price + ((oce.price * oce.tax_amount) /100))  " +
-                "                                                         END))  * oce.amount AS price,  " +
-                "       oce.creation_date,  " +
-                "       oce.amount,  " +
-                "       oce.name,  " +
-                "       oce.id_structure,  " +
-                "       oce.status,  " +
+                "SELECT orders.id," +
+                "   instruction.cp_adopted as instruction_cp_adopted, " +
+                "   ct.code, " +
+                "   orders.override_region, " +
+                "                Round(( (SELECT CASE " +
+                "                         WHEN orders.price_proposal IS NOT NULL THEN 0 " +
+                "                         WHEN orders.override_region IS NULL THEN 0 " +
+                "                         WHEN Sum(oco.price + ( ( oco.price * oco.tax_amount ) / " +
+                "                                                100 ) " +
+                "                                              * " +
+                "                                              oco.amount) IS " +
+                "                              NULL THEN 0 " +
+                "                         ELSE Sum(oco.price + ( ( oco.price * oco.tax_amount ) / " +
+                "                                                100 ) " +
+                "                                              * " +
+                "                                              oco.amount) " +
+                "                       END " +
+                "                FROM   " + Lystore.lystoreSchema + ".order_client_options oco " +
+                "                WHERE  oco.id_order_client_equipment = orders.id) " +
+                "               + orders.\"price TTC\" ) * orders.amount, 2)      AS Total, " +
+                "       orders.creation_date,  " +
+                "       orders.amount,  " +
+                "       orders.name,  " +
+                "       orders.id_structure,  " +
+                "       orders.status,  " +
                 "       c.name AS contract_name  " +
-                "FROM   " + Lystore.lystoreSchema +".order_client_equipment oce  " +
-                "INNER JOIN   " + Lystore.lystoreSchema +".contract c ON oce.id_contract = c.id  " +
-                "INNER JOIN   " + Lystore.lystoreSchema +".operation o ON (oce.id_operation = o.id)  " +
-                "WHERE  " +
-                "   o.id = ? " +
-                "  AND oce.override_region IS FALSE  " +
-                "GROUP BY (oce.id,  " +
-                "          oce.price,  " +
-                "          oce.name,  " +
-                "          oce.id_structure,  " +
-                "          c.name);";
+                "FROM   " + Lystore.lystoreSchema +".allorders orders  " +
+                "INNER JOIN   " + Lystore.lystoreSchema +".contract c ON orders.id_contract = c.id  " +
+                "INNER JOIN   " + Lystore.lystoreSchema +".contract_type ct ON c.id_contract_type = ct.id  " +
+                "INNER JOIN   " + Lystore.lystoreSchema +".operation o ON (orders.id_operation = o.id)" +
+                "LEFT JOIN  " + Lystore.lystoreSchema + ".instruction on o.id_instruction = instruction.id  "+
+                "WHERE" +
+                " orders.override_region is not true   " +
+                "  AND o.id = ? " +
+                "GROUP BY (orders.id,  " +
+                "          orders.\"price TTC\",  " +
+                "          orders.name,  " +
+                "          orders.id_structure,  " +
+                "          c.name," +
+                " orders.price_proposal ," +
+                " orders.override_region," +
+                "orders.amount," +
+                "orders.creation_date," +
+                "orders.status," +
+                "instruction_cp_adopted," +
+                "ct.code ) " +
+                "ORDER BY override_region;";
 
         Sql.getInstance().prepared(queryGOrderClient, new JsonArray().add(idOperation), SqlResult.validResultHandler(handler));
     }

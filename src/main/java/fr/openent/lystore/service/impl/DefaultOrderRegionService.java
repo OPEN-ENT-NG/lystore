@@ -251,7 +251,7 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 "INNER JOIN  " + Lystore.lystoreSchema + ".title AS tt ON tt.id = prj.id_title " +
                 "INNER JOIN  " + Lystore.lystoreSchema + ".rel_group_campaign ON (ore.id_campaign = rel_group_campaign.id_campaign) " +
                 "INNER JOIN  " + Lystore.lystoreSchema + ".rel_group_structure ON (ore.id_structure = rel_group_structure.id_structure) " +
-                "WHERE ore.status = 'IN PROGRESS' AND ore.id = ? " +
+                "WHERE ore.id = ? " +
                 "GROUP BY ( prj.id, " +
                 "          ore.id, " +
                 "          contract.id, " +
