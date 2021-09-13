@@ -57,7 +57,7 @@
                                     <i18n>lystore.cp.adopted</i18n> *
                                 </span>
                     <switch-toggle ng-model="instruction.cp_adopted"
-                                   ng-disabled="instruction.cp_adopted"
+                                   ng-disabled="instruction.cp_already_adopted"
                                    class="cell">
                     </switch-toggle>
                 </div>
@@ -99,7 +99,9 @@
                                     <i18n>close</i18n>
                                 </span>
                                 </td>
-                                <td class="one aligne-text-center" ng-click="dropOperation($index, operationAdd)">
+                                <td  ng-if="!instruction.cp_already_adopted"
+                                     class="one aligne-text-center"
+                                     ng-click="dropOperation($index, operationAdd)">
                                     <i  class="trash"></i>
                                 </td>
                             </tr>
@@ -124,14 +126,21 @@
                     </article>
 
                     <input
-                            ng-show="isOperationsIsEmpty ||  instruction.cp_adopted "
+                            ng-show="isOperationsIsEmpty "
                             class="vertical-spacing"
                             type="button"
                             ng-disabled="true"
                             i18n-value="lystore.operation.form.empty"
                     />
                     <input
-                            ng-show="!isOperationsIsEmpty && !instruction.cp_adopted"
+                            ng-show="instruction.cp_already_adopted "
+                            class="vertical-spacing"
+                            type="button"
+                            ng-disabled="true"
+                            i18n-value="lystore.operation.deny"
+                    />
+                    <input
+                            ng-show="!isOperationsIsEmpty && !instruction.cp_already_adopted"
                             class="vertical-spacing"
                             type="button"
                             ng-disabled="isNewOperation"

@@ -621,5 +621,6 @@
   "reject.comment.label": "Raison du refus  :",
   "campaign.basket.alert": "Des paniers sont présents sur ces campagnes :",
   "lystore.campaign.delete.message": "Vous allez supprimer les campagnes suivantes :",
-  "campaign.delete.avert": "Après suppression des campagnes les paniers seront également supprimés"
+  "campaign.delete.avert": "Après suppression des campagnes les paniers seront également supprimés",
+  "lystore.operation.deny": "Impossible d'ajouter des opérations"
 }
