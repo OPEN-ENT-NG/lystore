@@ -519,7 +519,7 @@ GROUP BY
                 "                       END " +
                 "                FROM   " + Lystore.lystoreSchema + ".order_client_options oco " +
                 "                WHERE  oco.id_order_client_equipment = orders.id) " +
-                "               + orders.\"price TTC\" ) * orders.amount, 2)      AS Total, " +
+                "               + orders.\"price TTC\" ) * orders.amount, 2)      AS price, " +
                 "       orders.creation_date,  " +
                 "       orders.amount,  " +
                 "       orders.name,  " +
