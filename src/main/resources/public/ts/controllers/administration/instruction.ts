@@ -45,7 +45,7 @@ export const instructionController = ng.controller('instructionController',
 
         $scope.isOperationEdit = false;
         $scope.openInstructionForm = async (action: string) => {
-                $scope.instruction = new Instruction();
+            $scope.instruction = new Instruction();
             $scope.loadingArray = true;
             template.open('instruction-main', 'administrator/instruction/instruction-form');
             await $scope.initOperation();
@@ -199,35 +199,38 @@ export const instructionController = ng.controller('instructionController',
             $scope.display.lightbox.cp_adopted = false;
             Utils.safeApply($scope);
         }
-        $scope.validAdoptedLightbox  = () =>{
+        $scope.validAdoptedLightbox  = async () =>{
             $scope.instruction.cp_adopted = true;
+            await sendForm();
             $scope.closeAdoptedLightbox()
         }
-        $scope.cancelIfAlreadyTrue = () =>{
-          console.log($scope.instruction.cp_adopted)
-            if($scope.instruction.cp_adopted){
-                $scope.display.lightbox.cp_adopted = true;
-                template.open('instruction.cp.lightbox', 'administrator/instruction/instruction-cp-adopted-lightbox');
-            }else{
-                $scope.instruction.cp_adopted = true;
-                Utils.safeApply($scope);
-            }
-        }
-        $scope.sendInstruction = async () => {
+
+        async function sendForm() {
             await $scope.instruction.save();
-            if($scope.instruction.operations.length !== 0){
-                let operationIds = $scope.instruction.operations.map( operation => operation.id );
-                if($scope.instruction.id){
+            if ($scope.instruction.operations.length !== 0) {
+                let operationIds = $scope.instruction.operations.map(operation => operation.id);
+                if ($scope.instruction.id) {
                     await $scope.operations.updateOperations($scope.instruction.id, operationIds);
                 }
             }
-            if($scope.operationEditRemoveInstructionIds.length !== 0){
+            if ($scope.operationEditRemoveInstructionIds.length !== 0) {
                 await $scope.operations.updateRemoveOperations($scope.operationEditRemoveInstructionIds);
             }
             $scope.isOperationEdit = false;
             await $scope.initInstructions();
             $scope.cancelInstructionForm();
-            Utils.safeApply($scope);
+        }
+
+        $scope.sendInstruction = async () => {
+            if($scope.instruction.cp_adopted && !$scope.instruction.cp_already_adopted){
+                $scope.display.lightbox.cp_adopted = true;
+                template.open('instruction.cp.lightbox', 'administrator/instruction/instruction-cp-adopted-lightbox');
+            }else{
+                if( !$scope.instruction.cp_already_adopted)
+                    $scope.instruction.cp_adopted = false;
+                await sendForm();
+                Utils.safeApply($scope);
+            }
         };
 
         $scope.exportRME = async (instruction) => {
