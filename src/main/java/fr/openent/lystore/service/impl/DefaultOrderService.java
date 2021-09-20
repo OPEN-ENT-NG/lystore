@@ -305,7 +305,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
 
         for (int i = 0; i < 2; i++) {
             for (int j = 0; j < validationNumbers.size(); j++) {
-                    params.add(validationNumbers.getString(j));
+                params.add(validationNumbers.getString(j));
             }
         }
         Sql.getInstance().prepared(query, params, SqlResult.validResultHandler(handler));
@@ -565,8 +565,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
         for(int i = 0 ; i < ids.size() ; i++){
             Integer id = ids.get(i);
             Boolean override = override_region.getBoolean(i);
-            log.info(id + " " + override);
-            statements.add(getUpdateORderDoneStatus(id,override));
+            statements.add(getUpdateORderDoneStatus(id, override));
         }
         sql.transaction(statements, new Handler<Message<JsonObject>>() {
             @Override
