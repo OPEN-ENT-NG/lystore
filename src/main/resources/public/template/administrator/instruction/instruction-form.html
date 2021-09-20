@@ -44,7 +44,9 @@
                                 <span class="cell ">
                                     <i18n>lystore.submitted.to.cp</i18n> *
                                 </span>
-                    <switch-toggle ng-model="instruction.submitted_to_cp"
+                    <switch-toggle
+                            ng-disabled="instruction.cp_already_adopted"
+                            ng-model="instruction.submitted_to_cp"
                                    class="cell">
 
                     </switch-toggle>
