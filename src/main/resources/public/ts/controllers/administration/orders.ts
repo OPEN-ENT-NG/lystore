@@ -186,7 +186,7 @@ export const orderController = ng.controller('orderController',
         };
 
         $scope.switchAllOrders = () => {
-            $scope.ordersClient.all.map((order) => order.selected = $scope.allOrdersSelected);
+            $scope.displayedOrders.all.map((order) => order.selected = $scope.allOrdersSelected);
         };
 
         $scope.getSelectedOrders = () => $scope.ordersClient.selected;
@@ -581,6 +581,8 @@ export const orderController = ng.controller('orderController',
             $scope.redirectTo(`/order/update/${order.id}`);
         };
         $scope.selectCampaignAndInitFilter = async (campaign: Campaign) =>{
+            $scope.allOrdersSelected = false;
+            $scope.switchAllOrders();
             await $scope.selectCampaignShow(campaign);
             $scope.search.filterWords = [];
         };
