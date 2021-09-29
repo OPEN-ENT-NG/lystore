@@ -373,7 +373,7 @@ export class OrdersClient extends Selection<OrderClient> {
         let total = 0;
         for (let i = 0; i < this.all.length; i++) {
             let order = this.all[i];
-            total += this.choosePriceTotal(order);
+            total += order.priceTotalTTC;
         }
         return total;
     }
