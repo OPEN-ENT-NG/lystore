@@ -1,4 +1,20 @@
 .upload-files {
+  .order-region {
+    > h3 {
+      color: #5b6472;
+      font-weight: bold;
+    }
+    > li {
+      margin: 0;
+      padding-bottom: 20px;
+      display: inline-block;
+      list-style-type: none;
+    }
+    > a {
+      padding-right: 10px;
+    }
+  }
+
   .import-files {
     > article {
       box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);

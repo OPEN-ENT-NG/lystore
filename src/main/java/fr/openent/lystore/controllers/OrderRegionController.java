@@ -4,27 +4,30 @@ import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
 import fr.openent.lystore.security.ManagerRight;
-import fr.openent.lystore.security.PostBasketFileRight;
 import fr.openent.lystore.service.OrderRegionService;
 import fr.openent.lystore.service.impl.DefaultOrderRegionService;
 import fr.openent.lystore.service.impl.DefaultOrderService;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 
-import static fr.wseduc.webutils.http.response.DefaultResponseHandler.arrayResponseHandler;
+import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultResponseHandler;
 
 public class OrderRegionController extends BaseController {
@@ -33,7 +36,7 @@ public class OrderRegionController extends BaseController {
     private OrderRegionService orderRegionService;
     private Storage storage;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger (DefaultOrderService.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultOrderService.class);
 
     public static final String UTF8_BOM = "\uFEFF";
 
@@ -44,6 +47,35 @@ public class OrderRegionController extends BaseController {
 
     }
 
+//    @Post("/order/upload/file")
+//    @ApiDoc("Upload a file for a specific order")
+//    @SecuredAction(value = "", type = ActionType.RESOURCE)
+//    @ResourceFilter(ManagerRight.class)
+//    public void uploadFile(HttpServerRequest request) {
+//        storage.writeUploadFile(request, entries -> {
+//            if (!"ok".equals(entries.getString("status"))) {
+//                renderError(request);
+//                return;
+//            }
+//            try {
+//                String fileId = entries.getString("_id");
+//                String filename = entries.getJsonObject("metadata").getString("filename");
+//                orderRegionService.addFileToOrder(fileId, filename, event -> {
+//                    if (event.isRight()) {
+//                        JsonObject response = new JsonObject()
+//                                .put("id", fileId)
+//                                .put("filename", filename);
+//                        request.response().setStatusCode(201).putHeader("Content-Type", "application/json").end(response.toString());
+//                    } else {
+//                        deleteFile(fileId);
+//                        renderError(request);
+//                    }
+//                });
+//            } catch (NumberFormatException e) {
+//                renderError(request);
+//            }
+//        });
+//    }
 
     @Post("/region/order")
     @ApiDoc("Create an order with id order client when admin or manager")
@@ -81,7 +113,7 @@ public class OrderRegionController extends BaseController {
                 RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
                     @Override
                     public void handle(JsonObject order) {
-                        RequestUtils.bodyToJson(request, orderRegion ->  orderRegionService.updateOrderRegion(order, idOrder, event, Logging.defaultResponseHandler(eb,
+                        RequestUtils.bodyToJson(request, orderRegion -> orderRegionService.updateOrderRegion(order, idOrder, event, Logging.defaultResponseHandler(eb,
                                 request,
                                 Contexts.ORDERREGION.toString(),
                                 Actions.UPDATE.toString(),
@@ -98,52 +130,93 @@ public class OrderRegionController extends BaseController {
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(ManagerRight.class)
     public void createAdminOrder(final HttpServerRequest request) {
-        try{
-            UserUtils.getUserInfos(eb, request, user -> {
-                RequestUtils.bodyToJson(request, orders -> {
-                    if (!orders.isEmpty()) {
-                        JsonArray ordersList = orders.getJsonArray("orders");
-                        Integer id_title = ordersList.getJsonObject(0).getInteger("title_id");
-                        orderRegionService.createProject(id_title, idProject -> {
-                            if(idProject.isRight()){
-                                Integer idProjectRight = idProject.right().getValue().getInteger("id");
-                                Logging.insert(eb,
-                                        request,
-                                        Contexts.PROJECT.toString(),
-                                        Actions.CREATE.toString(),
-                                        idProjectRight.toString(),
-                                        new JsonObject().put("id", idProjectRight).put("id_title", id_title));
-                                for(int i = 0 ; i<ordersList.size() ; i++){
-                                    JsonObject newOrder = ordersList.getJsonObject(i);
-                                    orderRegionService.createOrdersRegion(newOrder, user, idProjectRight, orderCreated -> {
-                                        if(orderCreated.isRight()){
-                                            Number idReturning = orderCreated.right().getValue().getInteger("id");
-                                            Logging.insert(eb,
-                                                    request,
-                                                    Contexts.ORDERREGION.toString(),
-                                                    Actions.CREATE.toString(),
-                                                    idReturning.toString(),
-                                                    new JsonObject().put("order region", newOrder));
-                                        } else {
-                                            LOGGER.error("An error when you want get id after create order region " + orderCreated.left());
-                                            request.response().setStatusCode(400).end();
-                                        }
-                                    });
-                                }
-                                request.response().setStatusCode(201).end();
-                            } else {
-                                LOGGER.error("An error when you want get id after create project " + idProject.left());
-                                request.response().setStatusCode(400).end();
-                            }
-                        });
-                    }
-                });
+        String totalFiles = request.getHeader("Files");
+        ArrayList<JsonObject> files = new ArrayList<>();
+        AtomicInteger cptFiles = new AtomicInteger(0);
+        AtomicBoolean hasFile = new AtomicBoolean(false);
+
+        if(Integer.parseInt(totalFiles) != 0){
+            hasFile.set(true);
+            storage.writeUploadFile(request, resultUpload -> {
+                //ici bool
+                if (!"ok".equals(resultUpload.getString("status"))) {
+                    String message = "[Presences@DefaultStatementAbsenceController:createWithFile] Failed to save file.";
+                    log.error(message + " " + resultUpload.getString("message"));
+                    renderError(request);
+                    return;
+                }
+
+                cptFiles.set(cptFiles.get() + 1);
+                String file_id = resultUpload.getString("_id");
+                JsonObject metadata = resultUpload.getJsonObject("metadata").put("file_id", file_id);
+                JsonObject file = metadata;
+                files.add(file);
+
+                if (cptFiles.get() == Integer.parseInt(totalFiles)) {
+//                renderJson(request, resultUpload);
+                    orderCreate(request);
+                    hasFile.set(false);
+                }
             });
-        } catch( Exception e){
+        } else {
+            orderCreate(request);
+        }
+    }
+
+    private void orderCreate(final HttpServerRequest request){
+        try {
+            JsonObject orders = formatDataToJson(request);
+            UserUtils.getUserInfos(eb, request, user -> {
+                if (!orders.isEmpty()) {
+                    JsonArray ordersList = orders.getJsonArray("orders");
+                    Integer id_title = ordersList.getJsonObject(0).getInteger("title_id");
+                    orderRegionService.createProject(id_title, idProject -> {
+                        if (idProject.isRight()) {
+                            Integer idProjectRight = idProject.right().getValue().getInteger("id");
+                            Logging.insert(eb,
+                                    request,
+                                    Contexts.PROJECT.toString(),
+                                    Actions.CREATE.toString(),
+                                    idProjectRight.toString(),
+                                    new JsonObject().put("id", idProjectRight).put("id_title", id_title));
+                            for (int i = 0; i < ordersList.size(); i++) {
+                                JsonObject newOrder = ordersList.getJsonObject(i);
+                                orderRegionService.createOrdersRegion(newOrder, user, idProjectRight, orderCreated -> {
+                                    if (orderCreated.isRight()) {
+                                        Number idReturning = orderCreated.right().getValue().getInteger("id");
+                                        Logging.insert(eb,
+                                                request,
+                                                Contexts.ORDERREGION.toString(),
+                                                Actions.CREATE.toString(),
+                                                idReturning.toString(),
+                                                new JsonObject().put("order region", newOrder));
+                                    } else {
+                                        LOGGER.error("An error when you want get id after create order region " + orderCreated.left());
+                                        request.response().setStatusCode(400).end();
+                                    }
+                                });
+                            }
+                            request.response().setStatusCode(201).end();
+                        } else {
+                            LOGGER.error("An error when you want get id after create project " + idProject.left());
+                            request.response().setStatusCode(400).end();
+                        }
+                    });
+                }
+            });
+        } catch (Exception e) {
             LOGGER.error("An error when you want create order region and project", e);
             request.response().setStatusCode(400).end();
         }
-    };
+    }
+
+    private JsonObject formatDataToJson(HttpServerRequest request) {
+        JsonObject body = new JsonObject();
+        request.formAttributes().entries().forEach(entry -> {
+            body.put(entry.getKey(), entry.getValue());
+        });
+        return body;
+    }
 
     @Delete("/region/:id/order")
     @ApiDoc("delete order by id order region ")
@@ -182,47 +255,6 @@ public class OrderRegionController extends BaseController {
                 new JsonObject().put("ids", idsOrders))));
     }
 
-    @Post("/order/upload/file")
-    @ApiDoc("Upload a file for a specific order")
-    @SecuredAction(value = "", type = ActionType.RESOURCE)
-    @ResourceFilter(ManagerRight.class)
-    public void uploadFile(HttpServerRequest request) {
-        storage.writeUploadFile(request, entries -> {
-            if (!"ok".equals(entries.getString("status"))) {
-                renderError(request);
-                return;
-            }
-            try {
-                String fileId = entries.getString("_id");
-                String filename = entries.getJsonObject("metadata").getString("filename");
-                orderRegionService.addFileToOrder(fileId, filename, event -> {
-                    if (event.isRight()) {
-                        JsonObject response = new JsonObject()
-                                .put("id", fileId)
-                                .put("filename", filename);
-                        request.response().setStatusCode(201).putHeader("Content-Type", "application/json").end(response.toString());
-                    } else {
-                        deleteFile(fileId);
-                        renderError(request);
-                    }
-                });
-            } catch (NumberFormatException e) {
-                renderError(request);
-            }
-        });
-    }/**
-     * Delete file from storage based on identifier
-     *
-     * @param fileId File identifier to delete
-     */
-    private void deleteFile(String fileId) {
-        storage.removeFile(fileId, e -> {
-            if (!"ok".equals(e.getString("status"))) {
-                log.error("[Lystore@uploadFile] An error occurred while removing " + fileId + " file.");
-            }
-        });
-    }
-
     @Get("/order/region/create/file/:fileId")
     @ApiDoc("Download specific file")
     @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
@@ -233,6 +265,20 @@ public class OrderRegionController extends BaseController {
                 storage.sendFile(fileId, event.right().getValue().getString("filename"), request, false, new JsonObject());
             } else {
                 notFound(request);
+            }
+        });
+    }
+
+    /**
+     * //     * Delete file from storage based on identifier
+     * //     *
+     * //     * @param fileId File identifier to delete
+     * //
+     */
+    private void deleteFile(String fileId) {
+        storage.removeFile(fileId, e -> {
+            if (!"ok".equals(e.getString("status"))) {
+                log.error("[Lystore@uploadFile] An error occurred while removing " + fileId + " file.");
             }
         });
     }

@@ -2,6 +2,7 @@ package fr.openent.lystore.service;
 
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
@@ -22,8 +23,6 @@ public interface OrderRegionService {
     public void linkOrderToOperation(Integer id_order_client_equipment, Integer id_operation, Handler<Either<String, JsonObject>> handler);
 
     void createProject (Integer idProject,  Handler<Either<String, JsonObject>> handler);
-
-    void addFileToOrder(String fileId, String fileName, Handler<Either<String, JsonObject>> handler);
 
     void getFileOrderRegion(String fileId, Handler<Either<String, JsonObject>> handler);
 
