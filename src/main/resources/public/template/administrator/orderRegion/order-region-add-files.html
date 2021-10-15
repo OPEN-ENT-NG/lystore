@@ -1,15 +1,15 @@
 <div class="upload-files">
-    <div class="row">
+    <div class="order-region row">
         <h1>
             <i18n>lystore.basket.add-file</i18n>
         </h1>
         <h3>
             <i18n>lystore.orderRegion-documents</i18n>
         </h3>
-        <div ng-if="orderTemp.files.length === 0">
+        <div class="align-center" ng-if="orderTemp.files.length === 0">
             <i18n>lystore.basket.no-file</i18n>
         </div>
-        <div class="row color-list"
+        <div class="order-region row"
              ng-if="orderTemp.files.length > 0">
 
             <li ng-repeat="file in orderTemp.files track by $index" class="twelve row">

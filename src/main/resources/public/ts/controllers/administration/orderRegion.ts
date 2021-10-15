@@ -13,11 +13,12 @@ import {
     Equipments, ContractType, ContractTypes, Contracts, Order, Basket
 } from "../../model";
 import http from "axios";
-    import {statementsFilesService} from "../../services/fileOrder";
+import {IStatementsOrdersService} from "../../services";
 
 declare let window: any;
 export const orderRegionController = ng.controller('orderRegionController',
-    ['$scope', '$location', '$routeParams', ($scope, $location, $routeParams) => {
+    ['$scope', "StatementsOrdersService", '$location', '$routeParams',
+        ($scope, statementsOrdersService: IStatementsOrdersService, $location, $routeParams) => {
 
         $scope.orderToCreate = new OrderRegion();
         $scope.structure_groups = new StructureGroups();
@@ -277,29 +278,42 @@ export const orderRegionController = ng.controller('orderRegionController',
             Utils.safeApply($scope);
         };
 
-
         $scope.createOrder = async ():Promise<void> => {
             let ordersToCreate = new OrdersRegion();
-            $scope.orderToCreate.rows.map(row => {
+            $scope.orderToCreate.rows.forEach(row => {
                 if (checkRow(row)) {
                     if (row.structure instanceof StructureGroup) {
-                        row.structure.structures.map(s => {
+                        row.structure.structures.forEach(s => {
                             let orderRegionTemp = new OrderRegion();
-                            statementsFilesService.create()
-                            orderRegionTemp.id_campaign = $scope.orderToCreate.campaign.id;
-                            orderRegionTemp.id_structure = s;
-                            orderRegionTemp.title_id = $scope.orderToCreate.project;
-                            orderRegionTemp.id_operation = $scope.orderToCreate.operation;
-                            orderRegionTemp.equipment_key = row.equipment.id;
-                            orderRegionTemp.equipment = row.equipment;
-                            orderRegionTemp.comment = row.comment;
-                            orderRegionTemp.amount = row.amount;
-                            orderRegionTemp.price = row.price;
-                            orderRegionTemp.name = row.equipment.name;
-                            orderRegionTemp.files = row.files;
-                            orderRegionTemp.technical_spec = row.equipment.technical_specs;
-                            orderRegionTemp.id_contract = row.equipment.id_contract;
-                            orderRegionTemp.id_type = row.equipment.id_type;
+                            statementsOrdersService.create({
+                                id_campaign: $scope.orderToCreate.campaign.id,
+                                id_structure: s,
+                                title_id: $scope.orderToCreate.project,
+                                id_operation: $scope.orderToCreate.operation,
+                                equipment_key: row.equipment.id,
+                                equipment: row.equipment,
+                                comment: row.comment,
+                                amount: row.amount,
+                                price: row.price,
+                                equipment_name: row.equipment.name,
+                                technical_spec: row.equipment.technical_specs,
+                                id_contract: row.equipment.id_contract,
+                                name_structure: row.structure.name,
+                                files: row.files
+                            });
+                            // orderRegionTemp.id_campaign = $scope.orderToCreate.campaign.id;
+                            // orderRegionTemp.id_structure = s;
+                            // orderRegionTemp.title_id = $scope.orderToCreate.project;
+                            // orderRegionTemp.id_operation = $scope.orderToCreate.operation;
+                            // orderRegionTemp.equipment_key = row.equipment.id;
+                            // orderRegionTemp.equipment = row.equipment;
+                            // orderRegionTemp.comment = row.comment;
+                            // orderRegionTemp.amount = row.amount;
+                            // orderRegionTemp.price = row.price;
+                            // orderRegionTemp.name = row.equipment.name;
+                            // orderRegionTemp.files = row.files;
+                            // orderRegionTemp.technical_spec = row.equipment.technical_specs;
+                            // orderRegionTemp.id_contract = row.equipment.id_contract;
                             if (!row.rank){
                                 orderRegionTemp.rank = 0;
                             } else {
@@ -311,21 +325,36 @@ export const orderRegionController = ng.controller('orderRegionController',
                         })
                     } else {
                         let orderRegionTemp = new OrderRegion();
-                        orderRegionTemp.id_campaign = $scope.orderToCreate.campaign.id;
-                        orderRegionTemp.id_structure = row.structure.id;
-                        orderRegionTemp.title_id = $scope.orderToCreate.project;
-                        orderRegionTemp.equipment = row.equipment;
-                        orderRegionTemp.equipment_key = row.equipment.id;
-                        orderRegionTemp.id_operation = $scope.orderToCreate.operation;
-                        orderRegionTemp.comment = row.comment;
-                        orderRegionTemp.amount = row.amount;
-                        orderRegionTemp.price = row.price;
-                        orderRegionTemp.name = row.equipment.name;
-                        orderRegionTemp.files = row.files;
-                        orderRegionTemp.technical_spec = row.equipment.technical_specs;
-                        orderRegionTemp.id_contract = row.equipment.id_contract;
-                        orderRegionTemp.name_structure = row.structure.name;
-                        orderRegionTemp.id_type = row.equipment.id_type;
+                        statementsOrdersService.create({
+                            id_campaign: $scope.orderToCreate.campaign.id,
+                            id_structure: row.structure.id,
+                            title_id: $scope.orderToCreate.project,
+                            id_operation: $scope.orderToCreate.operation,
+                            equipment_key: row.equipment.id,
+                            equipment: row.equipment,
+                            comment: row.comment,
+                            amount: row.amount,
+                            price: row.price,
+                            equipment_name: row.equipment.name,
+                            technical_spec: row.equipment.technical_specs,
+                            id_contract: row.equipment.id_contract,
+                            name_structure: row.structure.name,
+                            files: row.files
+                        });
+                        // orderRegionTemp.id_campaign = $scope.orderToCreate.campaign.id;
+                        // orderRegionTemp.id_structure = row.structure.id;
+                        // orderRegionTemp.title_id = $scope.orderToCreate.project;
+                        // orderRegionTemp.equipment = row.equipment;
+                        // orderRegionTemp.equipment_key = row.equipment.id;
+                        // orderRegionTemp.id_operation = $scope.orderToCreate.operation;
+                        // orderRegionTemp.comment = row.comment;
+                        // orderRegionTemp.amount = row.amount;
+                        // orderRegionTemp.price = row.price;
+                        // orderRegionTemp.name = row.equipment.name;
+                        // orderRegionTemp.files = row.files;
+                        // orderRegionTemp.technical_spec = row.equipment.technical_specs;
+                        // orderRegionTemp.id_contract = row.equipment.id_contract;
+                        // orderRegionTemp.name_structure = row.structure.name;
                         if (!row.rank){
                             orderRegionTemp.rank = 0;
                         } else {
