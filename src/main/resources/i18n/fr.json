@@ -622,5 +622,6 @@
   "campaign.basket.alert": "Des paniers sont présents sur ces campagnes :",
   "lystore.campaign.delete.message": "Vous allez supprimer les campagnes suivantes :",
   "campaign.delete.avert": "Après suppression des campagnes les paniers seront également supprimés",
-  "lystore.operation.deny": "Impossible d'ajouter des opérations"
+  "lystore.operation.deny": "Impossible d'ajouter des opérations",
+  "lystore.campaign.purse.total_order": "Commandes"
 }
