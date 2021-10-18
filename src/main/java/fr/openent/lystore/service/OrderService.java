@@ -217,4 +217,6 @@ public interface OrderService {
     void getRejectOrderComment(int idCampaign, Handler<Either<String, JsonArray>> handler);
 
    JsonArray filterValidOrders(JsonArray orders, List<String> queries);
+
+    void listOrderWaiting(List<String> idCampaigns, List<String> queries, Handler<Either<String, JsonArray>> arrayResponseHandler);
 }

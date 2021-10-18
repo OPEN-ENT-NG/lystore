@@ -118,54 +118,64 @@ public class OrderController extends ControllerHelper {
     @ResourceFilter(ManagerRight.class)
     public void listOrders (final HttpServerRequest request){
         if (request.params().contains("status")) {
+            List<String> queries = request.params().getAll("q");
             final String status = request.params().get("status");
-            if ("valid".equals(status.toLowerCase())) {
-                final JsonArray statusList = new fr.wseduc.webutils.collections.JsonArray().add(status).add("SENT").add("DONE");
-                orderService.getOrdersGroupByValidationNumber(statusList, new Handler<Either<String, JsonArray>>() {
-                    @Override
-                    public void handle(Either<String, JsonArray> event) {
-                        if (event.isRight()) {
-                            final JsonArray orders = event.right().getValue();
-                            orderService.getOrdersDetailsIndexedByValidationNumber(statusList, new Handler<Either<String, JsonArray>>() {
-                                @Override
-                                public void handle(Either<String, JsonArray> event) {
-                                    if (event.isRight()) {
-                                        JsonArray equipments = event.right().getValue();
-                                        JsonObject mapNumberEquipments = initNumbersMap(orders);
-                                        mapNumberEquipments = mapNumbersEquipments(equipments, mapNumberEquipments);
-                                        JsonObject order;
-                                        for (int i = 0; i < orders.size(); i++) {
-                                            order = orders.getJsonObject(i);
-                                            order.put("price",
-                                                    decimals.format(
-                                                            roundWith2Decimals(getTotalOrder(mapNumberEquipments.getJsonArray(order.getString("number_validation")))))
-                                                            .replace(".", ","));
-                                        }
-                                        List<String> queries = request.params().getAll("q");
-                                        renderJson(request, orderService.filterValidOrders(orders,queries));
-                                    } else {
-                                        badRequest(request);
-                                    }
-                                }
-                            });
-                        } else {
-                            badRequest(request);
-                        }
-
-                    }
-                });
-            } else {
-                List<String> queries = request.params().getAll("q");
-                if(status.equals("SENT"))
-                {
+            switch (status.toLowerCase()){
+                case "valid":
+                    getValidOrders(request, status);
+                    break;
+                case "sent":
                     orderService.listOrderSent(status, queries, arrayResponseHandler(request));
-                }else {
+                    break;
+                case "waiting":
+                    List<String> idCampaigns = request.params().getAll("idCampaign");
+                    orderService.listOrderWaiting(idCampaigns, queries, arrayResponseHandler(request));
+                    break;
+                default:
                     orderService.listOrder(status, queries, arrayResponseHandler(request));
-                }
+                    break;
+
             }
         } else {
             badRequest(request);
         }
+    }
+
+    private void getValidOrders(HttpServerRequest request, String status) {
+        final JsonArray statusList = new fr.wseduc.webutils.collections.JsonArray().add(status).add("SENT").add("DONE");
+        orderService.getOrdersGroupByValidationNumber(statusList, new Handler<Either<String, JsonArray>>() {
+            @Override
+            public void handle(Either<String, JsonArray> event) {
+                if (event.isRight()) {
+                    final JsonArray orders = event.right().getValue();
+                    orderService.getOrdersDetailsIndexedByValidationNumber(statusList, new Handler<Either<String, JsonArray>>() {
+                        @Override
+                        public void handle(Either<String, JsonArray> event) {
+                            if (event.isRight()) {
+                                JsonArray equipments = event.right().getValue();
+                                JsonObject mapNumberEquipments = initNumbersMap(orders);
+                                mapNumberEquipments = mapNumbersEquipments(equipments, mapNumberEquipments);
+                                JsonObject order;
+                                for (int i = 0; i < orders.size(); i++) {
+                                    order = orders.getJsonObject(i);
+                                    order.put("price",
+                                            decimals.format(
+                                                    roundWith2Decimals(getTotalOrder(mapNumberEquipments.getJsonArray(order.getString("number_validation")))))
+                                                    .replace(".", ","));
+                                }
+                                List<String> queries = request.params().getAll("q");
+                                renderJson(request, orderService.filterValidOrders(orders,queries));
+                            } else {
+                                badRequest(request);
+                            }
+                        }
+                    });
+                } else {
+                    badRequest(request);
+                }
+
+            }
+        });
     }
 
     @Get("/order")
