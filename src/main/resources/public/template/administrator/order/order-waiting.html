@@ -8,14 +8,26 @@
     <div ng-show="!loadingArray">
         <div class="row">
             <h1 class="twelve-mobile six cell"><i18n>lystore.orders.validations.waiting</i18n></h1>
-            <div class="right-magnet">
-                <select
-                        ng-model="campaign"
-                        ng-options="campaignSelect as campaignSelect.name for campaignSelect in campaignsForSelectInput"
-                        ng-change="selectCampaignAndInitFilter(campaign)"
-                >
-                    <option value="" disabled >[[campaign.name]]</option>
-                </select>
+            <div class="right-magnet three cell">
+                <multi-combo
+                        class="twelve"
+                        title="Selection de campagne(s) "
+                        id="classes-list"
+                        combo-model="campaigns.all"
+                        search-on="name"
+                        order-by="name"
+                        filtered-model="campaignSelection"
+                        labels="comboLabels"
+                        selection-event="syncOrders('WAITING',campaignSelection)"
+                        deselection-event="syncOrders('WAITING',campaignSelection)"
+                ></multi-combo>
+<!--                <select-->
+<!--                        ng-model="campaign"-->
+<!--                        ng-options="campaignSelect as campaignSelect.name for campaignSelect in campaignsForSelectInput"-->
+<!--                        ng-change="selectCampaignAndInitFilter(campaign)"-->
+<!--                >-->
+<!--                    <option value="" disabled >[[campaign.name]]</option>-->
+<!--                </select>-->
             </div>
         </div>
         <div class="row">

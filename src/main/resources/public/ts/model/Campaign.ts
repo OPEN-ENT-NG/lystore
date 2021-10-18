@@ -61,7 +61,9 @@ export class Campaign implements Selectable  {
             automatic_close: this.automatic_close
         };
     }
-
+    toString() {
+        return this.name;
+    }
     async save () {
         if (this.id) {
             if(this.automatic_close)

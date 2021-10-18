@@ -18,6 +18,7 @@ export const orderController = ng.controller('orderController',
 
         $scope.rejectedOrders = new RejectOrders();
 
+        $scope.campaignSelection = [];
         if(isPageOrderSent)
             $scope.displayedOrdersSent = $scope.displayedOrders;
         $scope.sort = {
@@ -273,15 +274,24 @@ export const orderController = ng.controller('orderController',
             Utils.safeApply($scope);
 
         };
-        $scope.syncOrders = async (status: string) =>{
+        $scope.syncOrders = async (status: string,campaignsSelected?) =>{
             $scope.displayedOrders.all = [];
+            $scope.loadingArray = true;
+            Utils.safeApply($scope);
+            if(!campaignsSelected)
             await $scope.ordersClient.sync(status, $scope.structures.all,$scope.contracts,
                 $scope.contractTypes, $scope.suppliers,$scope.campaigns, $scope.projects , $scope.titles);
+            else{
+                await $scope.ordersClient.syncWaiting( $scope.structures.all,$scope.contracts,
+                    $scope.contractTypes, $scope.suppliers,$scope.campaigns, $scope.projects , $scope.titles,campaignsSelected);
+            }
             $scope.displayedOrders.all = $scope.ordersClient.all;
             $scope.displayedOrders.all.map(order => {
                     order.selected = false;
                 }
             );
+            $scope.loadingArray = false;
+            Utils.safeApply($scope);
         };
 
         $scope.windUpOrders = async (orders: Order[]) => {

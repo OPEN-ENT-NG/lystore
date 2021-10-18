@@ -1588,7 +1588,8 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "LEFT JOIN lystore.order_client_options oco " +
                 "ON oco.id_order_client_equipment = oce.id " +
                 " LEFT JOIN " + Lystore.lystoreSchema + ".order_file ON oce.id = order_file.id_order_client_equipment " +
-                " WHERE oce.status = 'WAITING' AND oce.id_campaign IN  " + Sql.listPrepared(idCampaigns) +
+                " WHERE oce.status = 'WAITING' "
+                + ((idCampaigns.isEmpty()) ? " " : " AND oce.id_campaign IN  " + Sql.listPrepared(idCampaigns) )+
 
                 "GROUP  BY oce.id, " +
                 "    oce.id_project, " +
@@ -1600,22 +1601,17 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "   contract_type_name, " +
                 "   title.name" +
                 " ORDER by id DESC" +
-//                " LIMIT 50 OFFSET 50" +
                 " ;";
         JsonArray params = new JsonArray();
 
-        if(!idCampaigns.isEmpty()){
-            for(String idC : idCampaigns){
-                params.add(Integer.parseInt(idC));
-            }
+        for (String idC : idCampaigns) {
+            params.add(Integer.parseInt(idC));
+        }
+        if (!filters.isEmpty()) {
+            sql.prepared(query, params, SqlResult.validResultHandler(filterOrders(filters,"WAITING",   handler)));
         }else{
             sql.prepared(query, params, SqlResult.validResultHandler(handler));
         }
-//        if (!filters.isEmpty()) {
-//            sql.prepared(query, params, SqlResult.validResultHandler(filterOrders(filters,   handler)));
-//        }else{
-            sql.prepared(query, params, SqlResult.validResultHandler(handler));
-//        }
     }
 }
 
