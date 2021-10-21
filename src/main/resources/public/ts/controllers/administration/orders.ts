@@ -18,7 +18,6 @@ export const orderController = ng.controller('orderController',
 
         $scope.rejectedOrders = new RejectOrders();
 
-        $scope.campaignSelection = [];
         if(isPageOrderSent)
             $scope.displayedOrdersSent = $scope.displayedOrders;
         $scope.sort = {
@@ -590,10 +589,9 @@ export const orderController = ng.controller('orderController',
             $scope.ub.putPreferences("searchFields", $scope.search.filterWords);
             $scope.redirectTo(`/order/update/${order.id}`);
         };
-        $scope.selectCampaignAndInitFilter = async (campaign: Campaign) =>{
-            $scope.allOrdersSelected = false;
+        $scope.selectCampaignAndInitFilter = async () =>{
+            await $scope.selectCampaignShow();
             $scope.switchAllOrders();
-            await $scope.selectCampaignShow(campaign);
             $scope.search.filterWords = [];
         };
 

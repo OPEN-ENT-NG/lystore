@@ -75,7 +75,7 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
         $scope.equipments.eventer.on('loading::true', () => Utils.safeApply($scope));
         $scope.equipments.eventer.on('loading::false', () => Utils.safeApply($scope));
         $scope.loadingArray = false;
-
+        $scope.campaignSelection = [];
         route({
             main: async () => {
                 if ($scope.isManager() || $scope.isAdministrator()) {
@@ -280,13 +280,17 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                     if (preferences.ordersWaitingCampaign) {
                         let campaignPref;
                         $scope.campaignsForSelectInput.forEach(c => {
-                            if (c.id === preferences.ordersWaitingCampaign)
-                                campaignPref = c;
+                            preferences.ordersWaitingCampaign.forEach(pref =>{
+                                if (c.id === pref){
+                                    $scope.campaignSelection.push(c);
+                                    campaignPref = c;
+                                }
+                            })
                         });
                         if (campaignPref) {
                             template.open('administrator-main');
                             template.open('selectCampaign', 'administrator/order/select-campaign');
-                            await $scope.initOrders('WAITING');
+                            await $scope.initOrders('WAITING',$scope.campaignSelection);
                             $scope.selectCampaignShow(campaignPref);
                             $scope.loadingArray = false;
 
@@ -304,12 +308,12 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
             orderSent: async () => {
                 template.open('administrator-main', 'administrator/order/order-sent');
                 $scope.structures = new Structures();
-                await $scope.initOrders('SENT');
+                await $scope.initOrders('SENT', $scope.campaignSelection);
                 $scope.orderToSend = null;
                 Utils.safeApply($scope);
             },
             orderClientValided: () => {
-                $scope.initOrders('VALID');
+                $scope.initOrders('VALID', $scope.campaignSelection);
                 template.open('administrator-main', 'administrator/order/order-valided');
                 Utils.safeApply($scope);
             },
@@ -392,7 +396,7 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                 await  $scope.operations.sync(true);
                 let operations = [];
                 $scope.operations.all.map((operation,index)=>{
-                   if(operation.status == 'true' && !operation.instruction) {
+                    if(operation.status == 'true' && !operation.instruction) {
                         operations.push(operation);
                     }
                 });
@@ -557,7 +561,7 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
             Utils.safeApply($scope);
         };
 
-        $scope.initOrders = async (status) => {
+        $scope.initOrders = async (status, campaignSelection?: any) => {
             if($scope.suppliers.all === undefined  || $scope.suppliers.all.length === 0)
                 await $scope.suppliers.sync();
             if(status === 'WAITING' || status === 'SENT' ){
@@ -574,7 +578,12 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                     await $scope.titles.sync();
             }
             await $scope.initOrderStructures();
-            await $scope.syncOrders(status);
+            if(campaignSelection){
+                await $scope.ordersClient.syncWaiting( $scope.structures.all,$scope.contracts,
+                    $scope.contractTypes, $scope.suppliers,$scope.campaigns, $scope.projects , $scope.titles,campaignSelection);
+            }else{
+                await $scope.syncOrders(status);
+            }
             Utils.safeApply($scope);
         };
 
@@ -606,25 +615,26 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
             template.open('administrator-main');
             template.open('selectCampaign', 'administrator/order/select-campaign');
             $scope.display.lightbox.lightBoxIsOpen = true;
-            $scope.initOrders('WAITING');
+            $scope.initOrders('WAITING', $scope.campaignSelection);
             Utils.safeApply($scope);
         };
-        $scope.selectCampaignShow = (campaign?: Campaign): void => {
-            $scope.ub.putPreferences("ordersWaitingCampaign", campaign.id);
+        $scope.selectCampaignShow = (campaign?:Campaign): void => {
+            if (campaign && $scope.campaignSelection.length === 0){
+                $scope.campaignSelection.push(campaign);
+            }
+            let idsCampaign = [];
+            $scope.campaignSelection.forEach(c =>{
+                idsCampaign.push(c.id)
+            })
+            $scope.ub.putPreferences("ordersWaitingCampaign", idsCampaign);
             $scope.display.lightbox.lightBoxIsOpen = false;
             template.close('selectCampaign');
-            if(campaign){
-                $scope.campaign = campaign;
-                $scope.displayedOrders.all = $scope.ordersClient.all
-                    .filter( order => order.id_campaign === campaign.id || campaign.id === -1);
-                $scope.cancelSelectCampaign(false);
-            } else {
-                $scope.campaign = $scope.allCampaignsSelect;
-                $scope.cancelSelectCampaign(true);
-            }
+            $scope.campaign = $scope.allCampaignsSelect;
+            $scope.cancelSelectCampaign(true);
+
         };
         $scope.getOrderWaitingFiltered = async (campaign:Campaign):Promise<void> =>{
-            await $scope.initOrders('WAITING');
+            await $scope.initOrders('WAITING', $scope.campaignSelection);
             $scope.selectCampaignShow(campaign);
         };
         $scope.cancelSelectCampaign = (initOrder: boolean):void => {

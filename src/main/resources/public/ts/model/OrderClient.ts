@@ -215,7 +215,6 @@ export class OrdersClient extends Selection<OrderClient> {
             this.all = Mix.castArrayAs(OrderClient, data);
             this.syncWithIdsCampaignAndStructure(idCampaign, idStructure);
         } else {
-            console.log(campaigns)
             const queriesFilter = Utils.formatGetParameters({q: this.filters});
             let datas;
             //EN SUSPEND
@@ -262,11 +261,8 @@ export class OrdersClient extends Selection<OrderClient> {
         this.projects = new Selection<Project>([]);
         this.id_project_use = -1;
 
-        console.log(campaigns)
         const queriesFilter = Utils.formatGetParameters({q: this.filters});
         let datas;
-        console.log("campaignSelected")
-        console.log(campaignSelected)
         if(campaignSelected){
             let campaignFilter="";
            campaignSelected.forEach(campaign =>{

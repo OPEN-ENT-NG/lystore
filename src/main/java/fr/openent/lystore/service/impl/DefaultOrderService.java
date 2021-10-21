@@ -1554,7 +1554,6 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
 
     @Override
     public void listOrderWaiting(List<String> idCampaigns, List<String> filters, Handler<Either<String, JsonArray>> handler) {
-        log.info(idCampaigns);
 
         String query = "SELECT oce.id, oce.price, oce.tax_amount, oce.amount, oce.creation_date, oce.id_campaign, oce.id_structure, oce.name, oce.summary, oce.description," +
                 " oce.image, oce.technical_spec, oce.status, oce.id_contract, oce.equipment_key,title.name as project_name," +

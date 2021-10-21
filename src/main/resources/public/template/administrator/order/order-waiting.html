@@ -18,8 +18,8 @@
                         order-by="name"
                         filtered-model="campaignSelection"
                         labels="comboLabels"
-                        selection-event="syncOrders('WAITING',campaignSelection)"
-                        deselection-event="syncOrders('WAITING',campaignSelection)"
+                        selection-event="syncOrders('WAITING',campaignSelection);selectCampaignAndInitFilter();"
+                        deselection-event="syncOrders('WAITING',campaignSelection);selectCampaignAndInitFilter();"
                 ></multi-combo>
 <!--                <select-->
 <!--                        ng-model="campaign"-->
