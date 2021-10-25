@@ -385,7 +385,7 @@ export class OrdersClient extends Selection<OrderClient> {
         let total = 0;
         for (let i = 0; i < this.all.length; i++) {
             let order = this.all[i];
-            total += order.total;
+            total += parseFloat(order.total.toString());
         }
         return total;
     }
