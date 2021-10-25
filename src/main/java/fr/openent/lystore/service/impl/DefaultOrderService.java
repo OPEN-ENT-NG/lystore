@@ -149,7 +149,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 " oce.action, array_to_json(array_agg( distinct structure_group.name)) as structure_groups, " +
                 " oce.id_operation, oce.override_region, oce.id_type,  " +
                 "             ROUND((( SELECT CASE          " +
-                "            WHEN oce.price_proposal IS NOT NULL THEN 0     " +
+                "            WHEN oce.price_proposal IS NOT NULL THEN price_proposal     " +
                 "            WHEN oce.override_region IS NULL THEN 0 " +
                 "            WHEN SUM(oco.price + ((oco.price * oco.tax_amount) /100) * oco.amount) IS NULL THEN 0         " +
                 "            ELSE SUM(oco.price + ((oco.price * oco.tax_amount) /100) * oco.amount)         " +
