@@ -54,8 +54,45 @@ public class DefaultPurseService implements PurseService {
 
     @Override
     public void getPursesByCampaignId(Integer campaignId, Handler<Either<String, JsonArray>> handler) {
-        String query = "SELECT * FROM " + Lystore.lystoreSchema + ".purse" +
-                " WHERE id_campaign = ?;";
+        String query = "   " +
+                "   SELECT purse.*,orders.total_order " +
+                "FROM  " +
+                "( " +
+                " SELECT " +
+                "     oce.id_structure, " +
+                "      oce.id_campaign, " +
+                "       SUM( " +
+                "        ( " +
+                "            ( " +
+                "                SELECT " +
+                "                CASE WHEN oce.price_proposal is not null " +
+                "              THEN 0 WHEN SUM( " +
+                "                    oco.price + (oco.price * oco.tax_amount / 100) * oco.amount " +
+                "                ) is NULL THEN 0 ELSE SUM( " +
+                "                    ROUND(oco.price + (oco.price * oco.tax_amount / 100) * oco.amount,2) " +
+                "                ) END " +
+                "                FROM " +
+                "                lystore.order_client_options oco " +
+                "                where " +
+                "                oco.id_order_client_equipment = oce.id " +
+                "            ) + ROUND((oce.price + oce.price * oce.tax_amount /100),2) " +
+                "        ) * oce.amount " +
+                "       ) as total_order " +
+                "       from " +
+                "       lystore.order_client_equipment oce " +
+                "       inner join lystore.purse ON purse.id_campaign = oce.id_campaign " +
+                "       and oce.id_structure = purse.id_structure " +
+                "    group by " +
+                "    oce.id_structure, " +
+                "    oce.id_campaign " +
+                "    order by " +
+                "    id_structure " +
+                "    ) as orders " +
+                "    INNER JOIN lystore.purse ON orders.id_structure = purse.id_structure  " +
+                "WHERE  " +
+                "   orders.id_campaign = purse.id_campaign  " +
+                "  AND purse.id_campaign = ? " +
+                "; " ;
 
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray()
                 .add(campaignId);
@@ -190,12 +227,12 @@ public class DefaultPurseService implements PurseService {
                 {
                     JsonArray results = event.right().getValue();
                     for(int i =0;i<results.size();i++){
-                       JsonObject result = results.getJsonObject(i);
-                       try {
-                           result.put("substraction",  Double.parseDouble(result.getString("substraction")));
-                       }catch (NullPointerException e){
+                        JsonObject result = results.getJsonObject(i);
+                        try {
+                            result.put("substraction",  Double.parseDouble(result.getString("substraction")));
+                        }catch (NullPointerException e){
                             result.put("substraction",0.d);
-                       }
+                        }
                     }
                     handler.handle(new Either.Right<>(results));
                 }else {
