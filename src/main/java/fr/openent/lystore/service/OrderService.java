@@ -67,9 +67,10 @@ public interface OrderService {
     /**
      * Wind up orders
      * @param ids List containing ids
+     * @param override_region
      * @param handler Function handler returning data
      **/
-    void windUpOrders(List<Integer> ids, Handler<Either<String, JsonObject>> handler);
+    void windUpOrders(List<Integer> ids, JsonArray override_region, Handler<Either<String, JsonObject>> handler);
 
     /**
      * get params for the exportCsvOrdersSelected
@@ -107,10 +108,10 @@ public interface OrderService {
 
     /**
      * Get structure ids based on provided order ids
-     * @param ids order ids
+     * @param validationNumbers order validationNumbers
      * @param handler Function handler returning data
      */
-    void getStructuresId(JsonArray ids, Handler<Either<String, JsonArray>> handler);
+    void getStructuresId(JsonArray validationNumbers, Handler<Either<String, JsonArray>> handler);
 
     /**
      * List an union of equipments and options based on order ids

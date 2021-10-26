@@ -99,10 +99,10 @@ public class DefaultContractService extends SqlCrudService implements ContractSe
     @Override
     public void getContract(JsonArray ids, Handler<Either<String, JsonArray>> handler) {
         String query = "SELECT contract.* " +
-                "FROM " + Lystore.lystoreSchema + ".order_client_equipment " +
+                "FROM " + Lystore.lystoreSchema + ".allorders orders " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".contract " +
-                "ON (order_client_equipment.id_contract = contract.id) " +
-                "WHERE order_client_equipment.number_validation IN " + Sql.listPrepared(ids.getList()) +
+                "ON (orders.id_contract = contract.id) " +
+                "WHERE orders.number_validation IN " + Sql.listPrepared(ids.getList()) +
                 " GROUP BY contract.id " +
                 " LIMIT 1";
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray();

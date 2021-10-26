@@ -10,8 +10,3 @@ WHERE id NOT IN (
     RETURN NULL;
 END;
  $$  LANGUAGE plpgsql;
-
-CREATE TRIGGER check_order_no_ref AFTER UPDATE
-ON Lystore.order_client_equipment
-FOR EACH ROW
-EXECUTE PROCEDURE order_without_ref();

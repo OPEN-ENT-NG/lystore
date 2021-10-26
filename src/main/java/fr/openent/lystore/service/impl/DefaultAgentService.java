@@ -55,14 +55,14 @@ public class DefaultAgentService extends SqlCrudService implements AgentService 
     }
 
     @Override
-    public void getAgentByOrderIds(JsonArray ids, Handler<Either<String, JsonObject>> handler) {
+    public void getAgentByOrderIds(JsonArray validationNumbers, Handler<Either<String, JsonObject>> handler) {
         String query = "SELECT distinct agent.id, agent.email, agent.name, agent.phone " +
                 "FROM lystore.agent " +
                 "INNER JOIN lystore.contract ON (contract.id_agent = agent.id) " +
                 "INNER JOIN lystore.equipment ON (equipment.id_contract = contract.id) " +
-                "INNER JOIN lystore.order_client_equipment ON (equipment.id = order_client_equipment.equipment_key) " +
-                "WHERE order_client_equipment.number_validation IN " + Sql.listPrepared(ids.getList());
+                "INNER JOIN lystore.allOrders ON (equipment.id = allOrders.equipment_key) " +
+                "WHERE allOrders.number_validation IN " + Sql.listPrepared(validationNumbers.getList());
 
-        sql.prepared(query, ids, SqlResult.validUniqueResultHandler(handler, new String[0]));
+        sql.prepared(query, validationNumbers, SqlResult.validUniqueResultHandler(handler, new String[0]));
     }
 }

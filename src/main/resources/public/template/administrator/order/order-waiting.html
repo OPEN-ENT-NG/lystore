@@ -89,7 +89,7 @@
                     <td ng-if="tableFields[12].display"> <div class="tabElem"> [[order.name]]</div></td>
                     <td ng-if="tableFields[13].display"> <div class="smallTabElem"> [[order.amount]]</div></td>
                     <td ng-if="tableFields[14].display"> <div class="smallTabElem"><span ng-bind="order.priceUnitedTTC | currency"></span></div></td>
-                    <td ng-if="tableFields[15].display"> <div class="tabElem"><span ng-bind="order.priceTotalTTC | currency"></span></div>
+                    <td ng-if="tableFields[15].display"> <div class="tabElem"><span ng-bind="order.total | currency"></span></div>
                     </td>
                     <td ng-if="tableFields[16].display"> <div class="tabElem">
                         <div ng-if="order.files.length > 0" class="twelve">

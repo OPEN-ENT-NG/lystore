@@ -21,6 +21,7 @@ export class Instruction implements Selectable {
     operations:Array<Operation> ;
     selected:boolean = false;
     cp_adopted:boolean = false;
+    cp_already_adopted: boolean;
 
     constructor(){
     }
@@ -153,6 +154,7 @@ export class Instructions extends Selection<Instruction>{
             this.all.forEach(instructionGet => {
                 instructionGet.exercise = Mix.castAs(Exercise, JSON.parse(instructionGet.exercise.toString()));
                 instructionGet.date_cp = moment(instructionGet.date_cp);
+                instructionGet.cp_already_adopted = instructionGet.cp_adopted;
                 instructionGet.operations = JSON.parse(instructionGet.operations.toString())[0]?
                     JSON.parse(instructionGet.operations.toString()):
                     [];

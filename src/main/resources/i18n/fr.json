@@ -597,7 +597,7 @@
   "lystore.campaign.delete": "Supprimer la(es) campagne(s): ",
   "lystore.cp.adopted": "CP Adopté",
   "lystore.export.cp.adopted.title": "Adoption du CP",
-  "lystore.export.cp.adopted.text": "Etes-vous sur de vouloir valider le CP? Cette action n est pas reversible",
+  "lystore.export.cp.adopted.text": "Êtes-vous sûr de vouloir valider le CP? Cette action n'est pas réversible",
   "lystore.instruction.cp_adopted": "Adoption CP",
   "campaign.automatic.manual.change": "Vous allez modifier la date d'ouverture ou de fermeture de la Campagne. Voulez-vous continuer ?",
   "campaign.automatic.dates": "Campagne ouverte",
@@ -621,5 +621,6 @@
   "reject.comment.label": "Raison du refus  :",
   "campaign.basket.alert": "Des paniers sont présents sur ces campagnes :",
   "lystore.campaign.delete.message": "Vous allez supprimer les campagnes suivantes :",
-  "campaign.delete.avert": "Après suppression des campagnes les paniers seront également supprimés"
+  "campaign.delete.avert": "Après suppression des campagnes les paniers seront également supprimés",
+  "lystore.operation.deny": "Impossible d'ajouter des opérations"
 }

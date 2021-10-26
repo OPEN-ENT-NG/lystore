@@ -11,6 +11,8 @@ import org.apache.poi.ss.usermodel.Workbook;
 import java.util.ArrayList;
 import java.util.Map;
 
+import static fr.openent.lystore.helpers.OrderHelper.getTaxExcludedPrice;
+
 public class ListLycWithPrice extends TabHelper {
     private String numberValidation;
     private ArrayList<Integer> totalsXQty = new ArrayList<>();
@@ -68,11 +70,16 @@ public class ListLycWithPrice extends TabHelper {
             typeEquipment = data.getString("typeequipment");
             Double priceAmount = Double.parseDouble(data.getString("price")) * Double.parseDouble(data.getString("amount"));
             if(typeEquipment.equals("EQUIPEMENT")) {
-                excel.insertWithStyle(6,currentI,priceAmount ,excel.tabStringStyleRight);
+                excel.insertWithStyle(6,
+                        currentI,
+                        getTaxExcludedPrice(priceAmount,Double.parseDouble(data.getString("tax_amount")) )
+                        ,excel.tabStringStyleRight);
             }else{
-                excel.insertWithStyle(7,currentI,priceAmount,excel.tabStringStyleRight);
+                excel.insertWithStyle(7,    currentI,
+                        getTaxExcludedPrice(priceAmount,Double.parseDouble(data.getString("tax_amount")) )
+                        ,excel.tabStringStyleRight);
             }
-            excel.insertWithStyle(9,currentI,priceAmount + (priceAmount * Double.parseDouble(data.getString("tax_amount"))/100),excel.tabCurrencyStyle);
+            excel.insertWithStyle(9,currentI,priceAmount ,excel.tabCurrencyStyle);
             oldUai = data.getString("uai");
             currentI ++;
             if(i == 10){
@@ -265,7 +272,7 @@ public class ListLycWithPrice extends TabHelper {
 
     @Override
     public void getDatas(Handler<Either<String, JsonArray>> handler) {
-        query = "SELECT oce.price,  " +
+        query = "SELECT oce.\"price TTC\" as price,  " +
                 "       oce.tax_amount,  " +
                 "       oce.NAME,  " +
                 "       oce.id_contract,  " +
@@ -275,7 +282,7 @@ public class ListLycWithPrice extends TabHelper {
                 "       market.name as market_name," +
                 "       market.reference as market_reference," +
                 "       od.date_creation as creation_bc " +
-                "       FROM   "+ Lystore.lystoreSchema +".order_client_equipment oce  " +
+                "       FROM   "+ Lystore.lystoreSchema +".allorders oce  " +
                 "       INNER JOIN "+ Lystore.lystoreSchema +".equipment_type et  " +
                 "               ON oce.id_type = et.id  " +
                 "       INNER JOIN "+ Lystore.lystoreSchema +".contract market  " +
@@ -284,7 +291,7 @@ public class ListLycWithPrice extends TabHelper {
                 "               ON oce.id_order = od.id " +
                 "WHERE  number_validation = ?  " +
                 "GROUP  BY oce.equipment_key,  " +
-                "          oce.price,  " +
+                "          price,  " +
                 "          oce.tax_amount,  " +
                 "          oce.NAME,  " +
                 "          oce.id_contract,  " +
@@ -294,7 +301,7 @@ public class ListLycWithPrice extends TabHelper {
                 "          market_reference," +
                 "          od.date_creation " +
                 " UNION  " +
-                " SELECT opt.price,  " +
+                " SELECT (opt.price + opt.price * opt.tax_amount / 100) as price,  " +
                 "       opt.tax_amount,  " +
                 "       opt.NAME,  " +
                 "       opt.id_contract,  " +

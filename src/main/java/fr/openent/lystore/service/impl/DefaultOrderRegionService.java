@@ -49,7 +49,8 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 "cause_status, " +
                 "number_validation, " +
                 "id_order, " +
-                "id_project) ";
+                "id_project," +
+                "id_type ) ";
 
         query += "SELECT " +
                 "? ," +
@@ -74,7 +75,8 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 "       cause_status, " +
                 "       number_validation, " +
                 "       id_order, " +
-                "       id_project " +
+                "       id_project," +
+                "       ? " +
                 "FROM  " + Lystore.lystoreSchema + ".order_client_equipment " +
                 "WHERE id = ? " +
                 "RETURNING id;";
@@ -95,6 +97,7 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
             params.add(order.getInteger("id_operation"));
         }
         params.add(order.getInteger("id_contract"));
+        params.add(order.getInteger("id_type"));
         params.add(order.getInteger("id_order_client_equipment"));
         Sql.getInstance().prepared(query, params, SqlResult.validUniqueResultHandler(handler));
     }
@@ -111,7 +114,8 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 "owner_name = ? , " +
                 "owner_id = ?, " +
                 "name = ?, " +
-                "equipment_key = ?, " +
+                "equipment_key = ?," +
+                "id_type = ?, " +
                 "cause_status = 'IN PROGRESS', ";
 
         query += order.getInteger("rank") != -1 ? "rank=?," : "rank = NULL, ";
@@ -127,7 +131,8 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 .add(user.getUsername())
                 .add(user.getUserId())
                 .add(order.getString("name"))
-                .add(order.getInteger("equipment_key"));
+                .add(order.getInteger("equipment_key"))
+                .add(order.getInteger("id_type"));
         if (order.getInteger("rank") != -1) {
             params.add(order.getInteger("rank"));
         }
@@ -167,13 +172,13 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
         if (order.getInteger("rank") != -1) {
             queryOrderRegionEquipment += " ( price, amount, creation_date,  owner_name, owner_id, name, summary, description, image," +
                     " technical_spec, status, id_contract, equipment_key, id_campaign, id_structure," +
-                    " comment,  id_project,  id_operation, rank) " +
-                    "  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ) RETURNING id ; ";
+                    " comment,  id_project,  id_operation, id_type, rank) " +
+                    "  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ? ) RETURNING id ; ";
         } else {
             queryOrderRegionEquipment += " ( price, amount, creation_date,  owner_name, owner_id, name, summary, description, image," +
                     " technical_spec, status, id_contract, equipment_key, id_campaign, id_structure," +
-                    " comment,  id_project,  id_operation) " +
-                    "  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ) RETURNING id ; ";
+                    " comment,  id_project,  id_operation, id_type) " +
+                    "  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ) RETURNING id ; ";
         }
 
         params = new fr.wseduc.webutils.collections.JsonArray()
@@ -194,7 +199,8 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 .add(order.getString("id_structure"))
                 .add(order.getString("comment"))
                 .add(id_project)
-                .add(order.getInteger("id_operation"));
+                .add(order.getInteger("id_operation"))
+                .add(order.getInteger("id_type"));
         if (order.getInteger("rank") != -1) {
             params.add(order.getInteger("rank"));
         }
@@ -245,7 +251,7 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 "INNER JOIN  " + Lystore.lystoreSchema + ".title AS tt ON tt.id = prj.id_title " +
                 "INNER JOIN  " + Lystore.lystoreSchema + ".rel_group_campaign ON (ore.id_campaign = rel_group_campaign.id_campaign) " +
                 "INNER JOIN  " + Lystore.lystoreSchema + ".rel_group_structure ON (ore.id_structure = rel_group_structure.id_structure) " +
-                "WHERE ore.status = 'IN PROGRESS' AND ore.id = ? " +
+                "WHERE ore.id = ? " +
                 "GROUP BY ( prj.id, " +
                 "          ore.id, " +
                 "          contract.id, " +

@@ -273,6 +273,7 @@ export const orderRegionController = ng.controller('orderRegionController',
                             orderRegionTemp.name = row.equipment.name;
                             orderRegionTemp.technical_spec = row.equipment.technical_specs;
                             orderRegionTemp.id_contract = row.equipment.id_contract;
+                            orderRegionTemp.id_type = row.equipment.id_type;
                             if (!row.rank){
                                 orderRegionTemp.rank = 0;
                             } else {
@@ -297,6 +298,7 @@ export const orderRegionController = ng.controller('orderRegionController',
                         orderRegionTemp.technical_spec = row.equipment.technical_specs;
                         orderRegionTemp.id_contract = row.equipment.id_contract;
                         orderRegionTemp.name_structure = row.structure.name;
+                        orderRegionTemp.id_type = row.equipment.id_type;
                         if (!row.rank){
                             orderRegionTemp.rank = 0;
                         } else {

@@ -148,27 +148,35 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 " oce.cause_status, oce.number_validation, oce.id_order, oce.comment, oce.price_proposal, oce.id_project, oce.rank, oce.program," +
                 " oce.action, array_to_json(array_agg( distinct structure_group.name)) as structure_groups, " +
                 " oce.id_operation, oce.override_region, oce.id_type,  " +
-                "             ROUND((( SELECT CASE          " +
-                "            WHEN oce.price_proposal IS NOT NULL THEN 0     " +
-                "            WHEN oce.override_region IS NULL THEN 0 " +
-                "            WHEN SUM(oco.price + ((oco.price * oco.tax_amount) /100) * oco.amount) IS NULL THEN 0         " +
-                "            ELSE SUM(oco.price + ((oco.price * oco.tax_amount) /100) * oco.amount)         " +
-                "            END           " +
-                "             FROM   " + Lystore.lystoreSchema + ".order_client_options oco  " +
-                "              where oco.id_order_client_equipment = oce.id " +
-                "             ) + oce.price + oce.price * oce.tax_amount/100 " +
-                "              ) * oce.amount   ,2 ) " +
+                "     Round(( (SELECT CASE " +
+                "                         WHEN oce.price_proposal IS NOT NULL THEN 0 " +
+                "                         WHEN oce.override_region IS NULL THEN 0 " +
+                "                         WHEN Sum(oco.price + ( ( oco.price * oco.tax_amount ) / " +
+                "                                                100 ) " +
+                "                                              * " +
+                "                                              oco.amount) IS " +
+                "                              NULL THEN 0 " +
+                "                         ELSE Sum(oco.price + ( ( oco.price * oco.tax_amount ) / " +
+                "                                                100 ) " +
+                "                                              * " +
+                "                                              oco.amount) " +
+                "                       END " +
+                "                FROM   lystore.order_client_options oco " +
+                "                WHERE  oco.id_order_client_equipment = oce.id) " +
+                "               + (CASE   WHEN oce.price_proposal IS NOT NULL THEN oce.price_proposal " +
+                "               ELSE oce.price + oce.price * oce.tax_amount / 100 END" +
+                " ) * oce.amount ), 2)" +
                 "             as Total "+
-                " FROM lystore.order_client_equipment oce " +
-                "INNER JOIN lystore.project ON (oce.id_project = project.id) " +
-                "INNER JOIN lystore.title ON (project.id_title = title.id) " +
-                "INNER JOIN lystore.contract ON (oce.id_contract = contract.id) " +
-                "INNER JOIN lystore.contract_type ON (contract.id_contract_type = contract_type.id) " +
-                "INNER JOIN lystore.rel_group_campaign ON (oce.id_campaign = rel_group_campaign.id_campaign) " +
-                "INNER JOIN lystore.rel_group_structure ON (oce.id_structure = rel_group_structure.id_structure) " +
-                "INNER JOIN lystore.structure_group ON (rel_group_structure.id_structure_group = structure_group.id " +
+                " FROM " + Lystore.lystoreSchema + ".order_client_equipment oce " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".project ON (oce.id_project = project.id) " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".title ON (project.id_title = title.id) " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".contract ON (oce.id_contract = contract.id) " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".contract_type ON (contract.id_contract_type = contract_type.id) " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".rel_group_campaign ON (oce.id_campaign = rel_group_campaign.id_campaign) " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".rel_group_structure ON (oce.id_structure = rel_group_structure.id_structure) " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".structure_group ON (rel_group_structure.id_structure_group = structure_group.id " +
                 "AND rel_group_campaign.id_structure_group = structure_group.id) " +
-                "LEFT JOIN lystore.order_client_options oco " +
+                "LEFT JOIN " + Lystore.lystoreSchema + ".order_client_options oco " +
                 "ON oco.id_order_client_equipment = oce.id " +
                 " LEFT JOIN " + Lystore.lystoreSchema + ".order_file ON oce.id = order_file.id_order_client_equipment " +
                 " WHERE oce.status = ?  " +
@@ -204,14 +212,14 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "to_json(contract.*) contract ,to_json(supplier.*) supplier, " +
                 "to_json(campaign.* ) campaign, to_json( prj.*) as project, to_json( tt.*) as title," +
                 "to_json( gr.*) as grade, array_to_json(array_agg(  oco.*)) as options " +
-                "FROM lystore.order_client_equipment oce " +
+                "FROM " + Lystore.lystoreSchema + ".order_client_equipment oce " +
                 "LEFT JOIN "+ Lystore.lystoreSchema + ".order_client_options oco " +
                 "ON oco.id_order_client_equipment = oce.id " +
                 "LEFT JOIN "+ Lystore.lystoreSchema + ".contract ON oce.id_contract = contract.id " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".supplier ON contract.id_supplier = supplier.id " +
-                "INNER JOIN lystore.project as prj ON oce.id_project = prj.id " +
-                "INNER JOIN lystore.title as tt ON tt.id = prj.id_title " +
-                "INNER JOIN lystore.grade as gr ON gr.id = prj.id_grade " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".project as prj ON oce.id_project = prj.id " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".title as tt ON tt.id = prj.id_title " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".grade as gr ON gr.id = prj.id_grade " +
                 "INNER JOIN "+ Lystore.lystoreSchema + ".campaign ON oce.id_campaign = campaign.id " +
                 "WHERE oce.id in "+ Sql.listPrepared(ids.toArray()) +
                 " GROUP BY (prj.preference, prj.id , oce.id, tt.id, gr.id, contract.id, supplier.id, campaign.id) ORDER BY prj.preference, oce.id_project DESC; ";
@@ -224,12 +232,12 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     }
 
     @Override
-    public void getStructuresId(JsonArray ids, Handler<Either<String, JsonArray>> handler) {
+    public void getStructuresId(JsonArray validationNumbers, Handler<Either<String, JsonArray>> handler) {
         String query = "SELECT id, id_structure " +
-                "FROM " + Lystore.lystoreSchema + ".order_client_equipment " +
-                "WHERE number_validation IN " + Sql.listPrepared(ids.getList()) + ";";
+                "FROM " + Lystore.lystoreSchema + ".allOrders " +
+                "WHERE number_validation IN " + Sql.listPrepared(validationNumbers.getList()) + ";";
 
-        Sql.getInstance().prepared(query, ids, SqlResult.validResultHandler(handler));
+        Sql.getInstance().prepared(query, validationNumbers, SqlResult.validResultHandler(handler));
     }
 
     @Override
@@ -255,7 +263,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "WHERE " + (isNumberValidation ? "number_validation" : "id_order_client_equipment") + " IN " + Sql.listPrepared(ids.getList()) +
                 (structureId != null ? " AND equipment.id_structure = ?" : "") +
                 ") as opt";
-        query += (groupByStructure || structureId != null ? " INNER JOIN lystore.order_client_equipment equipment ON (opt.id_order_client_equipment = equipment.id)" : "");
+        query += (groupByStructure || structureId != null ? " INNER JOIN " + Lystore.lystoreSchema + ".order_client_equipment equipment ON (opt.id_order_client_equipment = equipment.id)" : "");
         query += " GROUP BY opt.name, opt.price, opt.tax_amount, opt.id_contract" + (groupByStructure ? ", equipment.id_structure" : "");
 
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray();
@@ -277,32 +285,56 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
 
 
     @Override
-    public void getOrderByValidatioNumber(JsonArray ids, Handler<Either<String, JsonArray>> handler) {
-        String query = "SELECT * FROM " + Lystore.lystoreSchema + ".order_client_equipment " +
-                "WHERE number_validation IN " + Sql.listPrepared(ids.getList());
+    public void getOrderByValidatioNumber(JsonArray validationNumbers, Handler<Either<String, JsonArray>> handler) {
+        String query = "SELECT \"price TTC\" as pricettc,tax_amount,  name, id_contract,id_structure, " +
+                "SUM(amount) as amount " +
+                "FROM " + Lystore.lystoreSchema + ".allOrders  " +
+                "WHERE number_validation  IN " + Sql.listPrepared(validationNumbers.getList());
+        query += " GROUP BY equipment_key, \"price TTC\",  name, id_contract,id_structure,tax_amount " +
+                "UNION " +
+                "SELECT " +
+                "  opt.price + ( opt.tax_amount * opt.price) as pricettc,tax_amount, " +
+                "  opt.name, " +
+                "  opt.id_contract," +
+                "  id_structure, " +
+                "  SUM(opt.amount) as amount " +
+                "FROM (" +
+                "SELECT options.price, options.tax_amount," +
+                "options.name, equipment.id_contract," +
+                "equipment.amount, options.id_order_client_equipment, equipment.id_structure " +
+                "FROM " + Lystore.lystoreSchema + ".order_client_options options " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".order_client_equipment equipment " +
+                "ON (options.id_order_client_equipment = equipment.id) " +
+                "WHERE  number_validation IN " + Sql.listPrepared(validationNumbers.getList()) +
+                ") as opt";
+        query += " GROUP BY opt.name, opt.price, opt.tax_amount, opt.id_contract,id_structure" ;
 
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray();
 
-        for (int i = 0; i < ids.size(); i++) {
-            params.add(ids.getString(i));
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < validationNumbers.size(); j++) {
+                params.add(validationNumbers.getString(j));
+            }
         }
-
         Sql.getInstance().prepared(query, params, SqlResult.validResultHandler(handler));
     }
 
     @Override
     public void getOrdersGroupByValidationNumber(JsonArray status, Handler<Either<String, JsonArray>> handler) {
-        String query = "SELECT row.id_operation, row.number_validation, row.status, contract.name as contract_name, contract.id as id_contract, supplier.name as supplier_name, " +
-                "array_to_json(array_agg(structure_group.name)) as structure_groups, count(distinct row.id_structure) as structure_count, supplier.id as supplierId, " +
+        String query = "SELECT row.number_validation, row.status, contract.name as contract_name, contract.id as id_contract," +
+                "CASE WHEN id_operation is null THEN false else true END as has_operation ,  " +
+                "supplier.name as supplier_name, " +
+                "array_to_json(array_agg(structure_group.name)) as structure_groups, count(distinct row.id_structure) as structure_count," +
+                " supplier.id as supplierId, " +
                 Lystore.lystoreSchema + ".order.label_program, " + Lystore.lystoreSchema + ".order.order_number " +
                 "FROM " + Lystore.lystoreSchema + ".allOrders row " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".contract ON (row.id_contract = contract.id) " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".supplier ON (contract.id_supplier = supplier.id) " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".rel_group_structure ON (row.id_structure = rel_group_structure.id_structure) " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".structure_group ON (rel_group_structure.id_structure_group = structure_group.id) " +
-                "LEFT OUTER JOIN " + Lystore.lystoreSchema + ".order ON (row.id_order = lystore.order.id)  " +
+                "LEFT OUTER JOIN " + Lystore.lystoreSchema + ".order ON (row.id_order = " + Lystore.lystoreSchema + ".order.id)  " +
                 "WHERE row.status IN " + Sql.listPrepared(status.getList()) +
-                " GROUP BY row.id_operation, row.number_validation, contract.name, supplier.name, contract.id, supplierId, row.status, " + Lystore.lystoreSchema +
+                " GROUP BY  row.number_validation, contract.name, supplier.name, contract.id, supplierId, row.status,has_operation, " + Lystore.lystoreSchema +
                 ".order.label_program, " + Lystore.lystoreSchema + ".order.order_number;";
 
         this.sql.prepared(query, status, SqlResult.validResultHandler(handler));
@@ -310,14 +342,15 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
 
     @Override
     public void getOrdersDetailsIndexedByValidationNumber(JsonArray status, Handler<Either<String, JsonArray>> handler) {
-        String query = "SELECT price, tax_amount, amount::text, number_validation " +
-                "FROM " + Lystore.lystoreSchema + ".order_client_equipment " +
+        String query = "SELECT \"price TTC\" as price, 0 as tax_amount, amount::text, number_validation " +
+                "FROM " + Lystore.lystoreSchema + ".allorders " +
                 "WHERE status IN " + Sql.listPrepared(status.getList()) +
                 " UNION ALL " +
                 "SELECT order_client_options.price, order_client_options.tax_amount, order_client_equipment.amount::text, order_client_equipment.number_validation " +
                 "FROM " + Lystore.lystoreSchema + ".order_client_options " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".order_client_equipment ON (order_client_equipment.id = order_client_options.id_order_client_equipment) " +
-                "WHERE order_client_equipment.status IN " + Sql.listPrepared(status.getList());
+                "WHERE order_client_equipment.status IN " + Sql.listPrepared(status.getList()) +
+                "";
 
         JsonArray statusList = new fr.wseduc.webutils.collections.JsonArray();
         for (int i = 0; i < 2; i++) {
@@ -332,13 +365,13 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     @Override
     public void getOrdersForCSVExportByValidationNumbers(JsonArray validationNumbers, Handler<Either<String, JsonArray>> handler) {
         String query = "SELECT name, SUM(amount) as amount, id_structure, equipment_key " +
-                "FROM lystore.order_client_equipment " +
+                "FROM " + Lystore.lystoreSchema + ".order_client_equipment " +
                 "WHERE number_validation IN " + Sql.listPrepared(validationNumbers.getList()) +
                 "GROUP BY equipment_key, id_structure, name, id_structure " +
                 "UNION ALL " +
                 "SELECT order_client_options.name, SUM(order_client_options.amount) as amount, order_client_equipment.id_structure, order_client_equipment.equipment_key " +
-                "FROM lystore.order_client_options " +
-                "INNER JOIN lystore.order_client_equipment ON (order_client_options.id_order_client_equipment = order_client_equipment.id) " +
+                "FROM " + Lystore.lystoreSchema + ".order_client_options " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".order_client_equipment ON (order_client_options.id_order_client_equipment = order_client_equipment.id) " +
                 "WHERE number_validation IN " + Sql.listPrepared(validationNumbers.getList()) +
                 "GROUP BY equipment_key, id_structure, order_client_options.name, id_structure " +
                 "ORDER BY id_structure";
@@ -355,7 +388,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
 
     @Override
     public void cancelValidation(JsonArray validationNumbers, Handler<Either<String, JsonObject>> handler) {
-        String query = "UPDATE lystore.order_client_equipment SET number_validation = '', status = 'WAITING' ,id_order = NULL " +
+        String query = "UPDATE " + Lystore.lystoreSchema + ".order_client_equipment SET number_validation = '', status = 'WAITING' ,id_order = NULL " +
                 "WHERE number_validation IN " + Sql.listPrepared(validationNumbers.getList());
 
         this.sql.prepared(query, validationNumbers, SqlResult.validUniqueResultHandler(handler));
@@ -535,11 +568,37 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     }
 
     @Override
-    public  void windUpOrders(List<Integer> ids, Handler<Either<String, JsonObject>> handler){
-        JsonObject statement = getUpdateStatusStatement(ids, "DONE");
-        sql.prepared(statement.getString("statement"),
-                statement.getJsonArray("values"),
-                SqlResult.validUniqueResultHandler(handler));
+    public  void windUpOrders(List<Integer> ids, JsonArray override_region, Handler<Either<String, JsonObject>> handler){
+        JsonArray statements = new JsonArray();
+        for(int i = 0 ; i < ids.size() ; i++){
+            Integer id = ids.get(i);
+            Boolean override = override_region.getBoolean(i);
+            statements.add(getUpdateORderDoneStatus(id, override));
+        }
+        sql.transaction(statements, new Handler<Message<JsonObject>>() {
+            @Override
+            public void handle(Message<JsonObject> event) {
+                handler.handle(SqlQueryUtils.getTransactionHandler(event,0));
+            }
+        });
+    }
+
+    private JsonObject getUpdateORderDoneStatus(Integer id, Boolean override) {
+        String query = "";
+        JsonArray params = new JsonArray().add(id);
+        if(override != null){
+            query =  "UPDATE lystore.order_client_equipment " +
+                    " SET  status = 'DONE' " +
+                    " WHERE id = ?;";
+        }else{
+            query =  "UPDATE lystore.\"order-region-equipment\"" +
+                    " SET  status = 'DONE' " +
+                    " WHERE id = ?;";
+        }
+        return new JsonObject()
+                .put("statement", query)
+                .put("values", params)
+                .put("action", "prepared");
     }
 
     private JsonObject getOptionsOrderDeletion (Integer idOrder){
@@ -590,12 +649,12 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     }
 
     @Override
-    public void updateStatusToSent(final List<String> ids, String status, final String engagementNumber, final String labelProgram, final String dateCreation,
+    public void updateStatusToSent(final List<String> validationNumbers, String status, final String engagementNumber, final String labelProgram, final String dateCreation,
                                    final String orderNumber, final Handler<Either<String, JsonObject>> handler) {
         String query = "SELECT distinct id_order " +
-                "FROM " + Lystore.lystoreSchema + ".order_client_equipment " +
-                "WHERE order_client_equipment.number_validation IN " + Sql.listPrepared(ids.toArray());
-        Sql.getInstance().prepared(query, new fr.wseduc.webutils.collections.JsonArray(ids), SqlResult.validResultHandler(new Handler<Either<String, JsonArray>>() {
+                "FROM " + Lystore.lystoreSchema + ".allOrders orders " +
+                "WHERE orders.number_validation IN " + Sql.listPrepared(validationNumbers.toArray());
+        Sql.getInstance().prepared(query, new fr.wseduc.webutils.collections.JsonArray(validationNumbers), SqlResult.validResultHandler(new Handler<Either<String, JsonArray>>() {
             @Override
             public void handle(Either<String, JsonArray> updateOrCreateEvent) {
                 if (updateOrCreateEvent.isRight()) {
@@ -610,8 +669,10 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                                     Number orderId = eventId.right().getValue().getInteger("id");
                                     JsonArray statements = new fr.wseduc.webutils.collections.JsonArray()
                                             .add(getOrderCreateStatement(orderId, engagementNumber, labelProgram, dateCreation, orderNumber))
-                                            .add(getAddOrderClientRef(orderId, ids))
-                                            .add(getUpdateClientOrderStatement(new fr.wseduc.webutils.collections.JsonArray(ids), "SENT"));
+                                            .add(getAddOrderClientRef(orderId, validationNumbers))
+                                            .add(getAddOrderRegionRef(orderId, validationNumbers))
+                                            .add(getUpdateClientOrderStatement(new JsonArray(validationNumbers), "SENT"))
+                                            .add(getUpdateRegionOrderStatement(new JsonArray(validationNumbers), "SENT"));
 
                                     Sql.getInstance().transaction(statements, SqlResult.validRowsResultHandler(handler));
                                 } else {
@@ -623,7 +684,9 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                         Number orderId = (orderIds.getJsonObject(0)).getInteger("id_order");
                         JsonArray statements = new fr.wseduc.webutils.collections.JsonArray()
                                 .add(getUpdateOrderStatement(engagementNumber, labelProgram, dateCreation, orderNumber, orderId))
-                                .add(getUpdateClientOrderStatement(new fr.wseduc.webutils.collections.JsonArray(ids), "SENT"));
+                                .add(getAddOrderRegionRef(orderId, validationNumbers))
+                                .add(getUpdateClientOrderStatement(new JsonArray(validationNumbers), "SENT"))
+                                .add(getUpdateRegionOrderStatement(new JsonArray(validationNumbers), "SENT"));
 
                         Sql.getInstance().transaction(statements, SqlResult.validRowsResultHandler(handler));
                     }
@@ -649,6 +712,24 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 .put("values", params)
                 .put("action", "prepared");
     }
+
+
+    private JsonObject getAddOrderRegionRef(Number orderId, List<String> validationNumbers) {
+        String query = "UPDATE " + Lystore.lystoreSchema + ".\"order-region-equipment\" " +
+                "SET id_order = ? " +
+                "WHERE number_validation IN " + Sql.listPrepared(validationNumbers.toArray());
+
+        JsonArray params = new fr.wseduc.webutils.collections.JsonArray().add(orderId);
+        for (String number : validationNumbers)  {
+            params.add(number);
+        }
+
+        return new JsonObject()
+                .put("statement", query)
+                .put("values", params)
+                .put("action", "prepared");
+    }
+
 
     private JsonObject getUpdateOrderStatement (String engagementNumber, String labelProgram, String dateCreation, String orderNumber, Number orderId) {
         String query = "UPDATE " + Lystore.lystoreSchema + ".order " +
@@ -698,6 +779,24 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 .put("values", params)
                 .put("action", "prepared");
     }
+
+
+    private JsonObject getUpdateRegionOrderStatement (JsonArray validationNumbers, String status) {
+        String query = "UPDATE " + Lystore.lystoreSchema + ".\"order-region-equipment\" " +
+                " SET  status = ? " +
+                " WHERE number_validation in " + Sql.listPrepared(validationNumbers.getList()) +";";
+        JsonArray params = new fr.wseduc.webutils.collections.JsonArray().add(status);
+
+        for (int i = 0; i < validationNumbers.size(); i++) {
+            params.add(validationNumbers.getString(i));
+        }
+
+        return new JsonObject()
+                .put("statement", query)
+                .put("values", params)
+                .put("action", "prepared");
+    }
+
 
     private JsonObject getAddFileStatement(String mongoId, String owner, Number orderId) {
         String query = "INSERT INTO " + Lystore.lystoreSchema + ".file(id_mongo, owner, id_order) " +
@@ -1194,10 +1293,11 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
 
     @Override
     public void getOrderBCParams(JsonArray validationNumbers, Handler<Either<String, JsonObject>> handler) {
+        //MDOIFIER
         String query = "SELECT DISTINCT engagement_number, label_program , order_number " +
                 " FROM " + Lystore.lystoreSchema + ".order od " +
-                " INNER JOIN " + Lystore.lystoreSchema + ".order_client_equipment oce on oce.id_order = od.id " +
-                " WHERE oce.number_validation = ?";
+                " INNER JOIN " + Lystore.lystoreSchema + ".allOrders orders on orders.id_order = od.id " +
+                " WHERE orders.number_validation = ?";
 
         JsonArray params = new JsonArray().add(validationNumbers.getString(0));
 
@@ -1206,44 +1306,89 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
 
     @Override
     public void listOrderSent(String status, List<String> filters, Handler<Either<String, JsonArray>> handler) {
-        String query = "SELECT oce.id, oce.price, oce.tax_amount, oce.amount, oce.creation_date, oce.id_campaign, oce.id_structure, oce.name, oce.summary, oce.description," +
-                " oce.image, oce.technical_spec, oce.status, oce.id_contract, oce.equipment_key, contract.name as contract_name, supplier.name as supplier_name," +
-                " array_to_json(array_agg(DISTINCT order_file.*)) as files , " +
-                " array_to_json(array_agg( DISTINCT oco.*)) as options," +
-                " oce.cause_status, oce.number_validation, oce.id_order, oce.comment, oce.price_proposal, oce.id_project, oce.rank, oce.program," +
-                " oce.action, array_to_json(array_agg( distinct structure_group.name)) as structure_groups," +
-                " ord.order_number , " +
-                " oce.id_operation, oce.override_region, oce.id_type,  " +
-                "             ROUND((( SELECT CASE          " +
-                "            WHEN oce.price_proposal IS NOT NULL THEN 0     " +
-                "            WHEN oce.override_region IS NULL THEN 0 " +
-                "            WHEN SUM(oco.price + ((oco.price * oco.tax_amount) /100) * oco.amount) IS NULL THEN 0         " +
-                "            ELSE SUM(oco.price + ((oco.price * oco.tax_amount) /100) * oco.amount)         " +
-                "            END           " +
-                "             FROM   " + Lystore.lystoreSchema + ".order_client_options oco  " +
-                "              where oco.id_order_client_equipment = oce.id " +
-                "             ) + oce.price + oce.price * oce.tax_amount/100 " +
-                "              ) * oce.amount   ,2 ) " +
-                "             as Total "+
-                " FROM lystore.order_client_equipment oce " +
-                "INNER JOIN lystore.rel_group_campaign ON (oce.id_campaign = rel_group_campaign.id_campaign) " +
-                "INNER JOIN lystore.rel_group_structure ON (oce.id_structure = rel_group_structure.id_structure) " +
-                "INNER JOIN lystore.structure_group ON (rel_group_structure.id_structure_group = structure_group.id " +
-                "AND rel_group_campaign.id_structure_group = structure_group.id) " +
-                "INNER JOIN " + Lystore.lystoreSchema + ".contract on contract.id =  oce.id_contract "+
-                "INNER JOIN " + Lystore.lystoreSchema + ".supplier on supplier.id =  contract.id_supplier  "+
-                "INNER JOIN lystore.order ord on oce.id_order = ord.id " +
-                "LEFT JOIN lystore.order_client_options oco " +
-                "ON oco.id_order_client_equipment = oce.id " +
-                " LEFT JOIN " + Lystore.lystoreSchema + ".order_file ON oce.id = order_file.id_order_client_equipment " +
-                " WHERE oce.status = ?" +
-                "GROUP  BY oce.id, " +
-                "    oce.id_project, " +
-                "    oce.id_structure, " +
-                "    oce.id_contract," +
-                "   ord.order_number, supplier.name ," +
-                " contract.name " +
-                " ORDER by id DESC " +
+        String query = "SELECT orders.id, " +
+                "       orders.amount, " +
+                "       orders.id_campaign, " +
+                "       orders.id_structure, " +
+                "       orders.NAME, " +
+                "       orders.status, " +
+                "       orders.id_contract, " +
+                "       orders.equipment_key, " +
+                "       contract.NAME                                           AS contract_name, " +
+                "       supplier.NAME                                           AS supplier_name, " +
+                "       Array_to_json(Array_agg(DISTINCT order_file.*))         AS files, " +
+                "       Array_to_json(Array_agg(DISTINCT oco.*))                AS options," +
+                "       orders.\"price TTC\" as price, " +
+                "       orders.tax_amount, " +
+                "       orders.cause_status, " +
+                "       orders.number_validation, " +
+                "       orders.id_project, " +
+                "       orders.action, " +
+                "       Array_to_json(Array_agg(DISTINCT structure_group.NAME)) AS " +
+                "       structure_groups, " +
+                "       ord.order_number, " +
+                "       orders.id_operation, " +
+                "       orders.override_region, " +
+                "       orders.id_type, " +
+                "       Round(( (SELECT CASE " +
+                "                         WHEN orders.price_proposal IS NOT NULL THEN 0 " +
+                "                         WHEN orders.override_region IS NULL THEN 0 " +
+                "                         WHEN Sum(oco.price + ( ( oco.price * oco.tax_amount ) / " +
+                "                                                100 ) " +
+                "                                              * " +
+                "                                              oco.amount) IS " +
+                "                              NULL THEN 0 " +
+                "                         ELSE Sum(oco.price + ( ( oco.price * oco.tax_amount ) / " +
+                "                                                100 ) " +
+                "                                              * " +
+                "                                              oco.amount) " +
+                "                       END " +
+                "                FROM   " + Lystore.lystoreSchema + ".order_client_options oco " +
+                "                WHERE  oco.id_order_client_equipment = orders.id) " +
+                "               + orders.\"price TTC\" ) * orders.amount, 2)      AS Total " +
+                "FROM   " + Lystore.lystoreSchema + ".allorders orders " +
+                "       INNER JOIN " + Lystore.lystoreSchema + ".rel_group_campaign " +
+                "               ON ( orders.id_campaign = rel_group_campaign.id_campaign ) " +
+                "       INNER JOIN " + Lystore.lystoreSchema + ".rel_group_structure " +
+                "               ON ( orders.id_structure = rel_group_structure.id_structure ) " +
+                "       INNER JOIN " + Lystore.lystoreSchema + ".structure_group " +
+                "               ON ( rel_group_structure.id_structure_group = structure_group.id " +
+                "                    AND rel_group_campaign.id_structure_group = " +
+                "                        structure_group.id ) " +
+                "       INNER JOIN " + Lystore.lystoreSchema + ".contract " +
+                "               ON contract.id = orders.id_contract " +
+                "       INNER JOIN " + Lystore.lystoreSchema + ".supplier " +
+                "               ON supplier.id = contract.id_supplier " +
+                "       INNER JOIN " + Lystore.lystoreSchema + ".order ord " +
+                "               ON orders.id_order = ord.id " +
+                "       LEFT JOIN " + Lystore.lystoreSchema + ".order_client_options oco " +
+                "              ON oco.id_order_client_equipment = orders.id " +
+                "       LEFT JOIN " + Lystore.lystoreSchema + ".order_file " +
+                "              ON orders.id = order_file.id_order_client_equipment " +
+                "WHERE  orders.status = ? and override_region is not true " +
+                "GROUP  BY orders.id, " +
+                "          orders.id_project, " +
+                "          orders.id_structure, " +
+                "          orders.id_contract, " +
+                "    orders.amount, " +
+                "          ord.order_number, " +
+                "    orders.id_campaign, " +
+                "    orders.name, " +
+                "          supplier.NAME, " +
+                "    orders.status, " +
+                "        orders.id_contract, " +
+                "        orders.equipment_key, " +
+                "   orders.cause_status, " +
+                "   orders.action, " +
+                "   orders.override_region, " +
+                "   orders.id_type, " +
+                "   orders.price_proposal, " +
+                "   orders.id_operation, " +
+                "   orders.\"price TTC\" , " +
+                "       orders.tax_amount, " +
+                "   orders.number_validation, " +
+                "          contract.NAME " +
+                "ORDER  BY id DESC; " +
                 " ;";
         JsonArray params = new JsonArray().add(status);
         if (!filters.isEmpty()) {
@@ -1292,7 +1437,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     }
 
     private JsonObject updateStatusRejectOrder(Integer id_order) {
-        String statement = "UPDATE lystore.order_client_equipment " +
+        String statement = "UPDATE " + Lystore.lystoreSchema + ".order_client_equipment " +
                 " SET status = 'REJECTED' " +
                 " WHERE id = ? " +
                 " RETURNING id;";

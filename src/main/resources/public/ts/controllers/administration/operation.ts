@@ -289,6 +289,12 @@ export const operationController = ng.controller('operationController',
             $scope.redirectTo(`/operation/order/${operation.id}`)
             Utils.safeApply($scope);
         };
+        $scope.checkStatusAndCode = (order :OrderClient) =>{
+            if(order){
+                return !order.instruction_cp_adopted
+            }else
+                return false;
+           }
         $scope.openOrders = () => {
             $scope.redirectTo(`/operation/order/${$scope.operations.selected[0].id}`)
         }

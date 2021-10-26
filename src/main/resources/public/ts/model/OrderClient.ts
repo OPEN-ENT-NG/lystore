@@ -76,6 +76,10 @@ export class OrderClient implements Order  {
     status:string;
     technical_spec:TechnicalSpec;
     rejectOrder?: RejectOrder;
+    override_region: boolean;
+    supplierid: any;
+    has_operation: boolean;
+    instruction_cp_adopted: boolean;
 
     constructor() {
         this.typeOrder= "client";
@@ -163,7 +167,7 @@ export class OrderClient implements Order  {
 
     async exportListLycee(params: string) {
         try {
-           await http.get( `/lystore/orders/valid/export/structure_list?${params}`);
+            await http.get( `/lystore/orders/valid/export/structure_list?${params}`);
         } catch (e) {
             notify.error("lystore.order.get.err")
         }
@@ -204,42 +208,45 @@ export class OrdersClient extends Selection<OrderClient> {
                 suppliers : Suppliers, campaigns : Campaigns,projects : Projects, titles : Titles,
                 idCampaign?: number, idStructure?: string):Promise<void> {
         // try {
-            this.projects = new Selection<Project>([]);
-            this.id_project_use = -1;
-            if (idCampaign && idStructure) {
-                const { data } = await http.get(  `/lystore/orders/${idCampaign}/${idStructure}` );
-                this.all = Mix.castArrayAs(OrderClient, data);
-                this.syncWithIdsCampaignAndStructure(idCampaign, idStructure);
-            } else {
-                const queriesFilter = Utils.formatGetParameters({q: this.filters});
-                const { data } = await http.get(  `/lystore/orders?status=${status}&${queriesFilter}`);
-                this.all = Mix.castArrayAs(OrderClient, data);
-                this.all.map((order: OrderClient) => {
-                    order.contract = contracts.all.find(c => c.id === order.id_contract);
-                    order.contract_type = contractTypes.all.find(c => c.id === order.contract.id_contract_type);
+        this.projects = new Selection<Project>([]);
+        this.id_project_use = -1;
+        if (idCampaign && idStructure) {
+            const { data } = await http.get(  `/lystore/orders/${idCampaign}/${idStructure}` );
+            this.all = Mix.castArrayAs(OrderClient, data);
+            this.syncWithIdsCampaignAndStructure(idCampaign, idStructure);
+        } else {
+            const queriesFilter = Utils.formatGetParameters({q: this.filters});
+            const { data } = await http.get(  `/lystore/orders?status=${status}&${queriesFilter}`);
+            this.all = Mix.castArrayAs(OrderClient, data);
+            this.all.map((order: OrderClient) => {
+                order.contract = contracts.all.find(c => c.id === order.id_contract);
+                order.contract_type = contractTypes.all.find(c => c.id === order.contract.id_contract_type);
+                if(order.supplierid)
+                    order.supplier = suppliers.all.find(s => s.id === order.supplierid)
+                else
                     order.supplier = suppliers.all.find(s => s.id === order.contract.id_supplier);
-                    order.campaign = campaigns.all.find(c => c.id === order.id_campaign);
-                    //plus utile pour le waiting
-                    order.project = projects.all.find(p => p.id === order.id_project);
-                    try {
-                        order.title = titles.all.find(t => t.id === order.project.id_title);
-                    }catch (e) {
-                    }
-                    order.name_structure =  structures.length > 0 ? OrderUtils.initNameStructure(order.id_structure, structures) : '';
-                    order.structure = structures.length > 0 ? OrderUtils.initStructure(order.id_structure, structures) : new Structure();
-                    order.price = parseFloat(status === 'VALID' ? order.price.toString().replace(',', '.') : order.price.toString());
-                    order.structure_groups = Utils.parsePostgreSQLJson(order.structure_groups);
-                    order.files = order.files !== '[null]' ? Utils.parsePostgreSQLJson(order.files) : [];
-                    if(order.files.length > 1 )
-                        order.files.sort(function (a, b) {
-                            return  a.filename.localeCompare(b.filename);
-                        });
-                    if (status !== 'VALID') {
-                        this.makeOrderNotValid(order);
-                        return;
-                    }
-                });
-            }
+                order.campaign = campaigns.all.find(c => c.id === order.id_campaign);
+                //plus utile pour le waiting
+                order.project = projects.all.find(p => p.id === order.id_project);
+                try {
+                    order.title = titles.all.find(t => t.id === order.project.id_title);
+                }catch (e) {
+                }
+                order.name_structure =  structures.length > 0 ? OrderUtils.initNameStructure(order.id_structure, structures) : '';
+                order.structure = structures.length > 0 ? OrderUtils.initStructure(order.id_structure, structures) : new Structure();
+                order.price = parseFloat(status === 'VALID' ? order.price.toString().replace(',', '.') : order.price.toString());
+                order.structure_groups = Utils.parsePostgreSQLJson(order.structure_groups);
+                order.files = order.files !== '[null]' ? Utils.parsePostgreSQLJson(order.files) : [];
+                if(order.files.length > 1 )
+                    order.files.sort(function (a, b) {
+                        return  a.filename.localeCompare(b.filename);
+                    });
+                if (status !== 'VALID') {
+                    this.makeOrderNotValid(order);
+                    return;
+                }
+            });
+        }
         // } catch (e) {
         //     notify.error('lystore.order.sync.err');
         // }
@@ -285,7 +292,7 @@ export class OrdersClient extends Selection<OrderClient> {
         }
         order.id_supplier = order.supplier.id;
         order.rank = order.rank ? parseInt(order.rank.toString()) : null ;
-        if (this.id_project_use != order.project.id)this.makeProjects(order);
+        // if (this.id_project_use != order.project.id)this.makeProjects(order);
         order.creation_date = moment(order.creation_date).format('L');
         order.options.toString() !== '[null]' && order.options !== null ?
             order.options = Mix.castArrayAs( OrderOptionClient, JSON.parse(order.options.toString()))
@@ -293,7 +300,7 @@ export class OrdersClient extends Selection<OrderClient> {
         order.priceUnitedTTC = order.price_proposal ?
             parseFloat(( order.price_proposal).toString()):
             parseFloat((OrderUtils.calculatePriceTTC(2, order) as number).toString());
-        order.priceTotalTTC = this.choosePriceTotal(order);
+        // order.priceTotalTTC = this.choosePriceTotal(order);
         if( order.campaign.orderPriorityEnable()){
             order.rankOrder = order.rank + 1;
         } else if (order.campaign.projectPriorityEnable()){
@@ -313,12 +320,16 @@ export class OrdersClient extends Selection<OrderClient> {
         const ids = status === 'SENT'
             ? _.pluck(this.all, 'number_validation')
             : _.pluck(this.all, 'id');
-
+        let override_region = [];
+        if( _.pluck(this.all,"override_region")[0]!== undefined){
+             override_region = _.pluck(this.all,"override_region")
+        }
         const supplierId = status === 'SENT'
             ? _.pluck(this.all, 'supplierid')[0]
             : this.supplier.id;
         return {
             ids,
+            override_region,
             status : status,
             bc_number: this.bc_number || null,
             engagement_number: this.engagement_number || null,
@@ -331,6 +342,7 @@ export class OrdersClient extends Selection<OrderClient> {
 
     async getPreviewData (): Promise<any> {
         try {
+            // console.log(this.toJson('SENT'));
             const params = Utils.formatGetParameters(this.toJson('SENT'));
             const { data } = await http.get(`lystore/orders/preview?${params}`);
             return data;
@@ -373,7 +385,7 @@ export class OrdersClient extends Selection<OrderClient> {
         let total = 0;
         for (let i = 0; i < this.all.length; i++) {
             let order = this.all[i];
-            total += order.priceTotalTTC;
+            total += parseFloat(order.total.toString());
         }
         return total;
     }

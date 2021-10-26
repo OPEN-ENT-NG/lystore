@@ -6,6 +6,9 @@
     "ids": {
       "type": "array"
     },
+    "override_region": {
+      "type": "array"
+    },
     "status":{
       "type": "string"
     },

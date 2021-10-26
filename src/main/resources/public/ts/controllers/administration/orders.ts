@@ -186,7 +186,7 @@ export const orderController = ng.controller('orderController',
         };
 
         $scope.switchAllOrders = () => {
-            $scope.ordersClient.all.map((order) => order.selected = $scope.allOrdersSelected);
+            $scope.displayedOrders.all.map((order) => order.selected = $scope.allOrdersSelected);
         };
 
         $scope.getSelectedOrders = () => $scope.ordersClient.selected;
@@ -284,10 +284,13 @@ export const orderController = ng.controller('orderController',
             );
         };
 
-        $scope.windUpOrders = async (orders: OrderClient[]) => {
+        $scope.windUpOrders = async (orders: Order[]) => {
             let ordersToWindUp  = new OrdersClient();
             // console.log($scope.displayedOrders.all);
             ordersToWindUp.all = Mix.castArrayAs(OrderClient, orders);
+            orders.forEach(order =>{
+                console.log(order.override_region);
+            })
             let { status } = await ordersToWindUp.updateStatus('DONE');
             if (status === 200) {
                 toasts.confirm('lystore.windUp.notif');
@@ -317,7 +320,8 @@ export const orderController = ng.controller('orderController',
         };
 
         $scope.disableCancelValidation = (orders: OrderClient[]) => {
-            return _.where(orders, { status : 'SENT' }).length > 0;
+            return _.where(orders, { status : 'SENT' }).length > 0
+                || orders.find(order => order.has_operation)  !== undefined ;
         };
 
         $scope.prepareSendOrder = async (orders: OrderClient[]) => {
@@ -577,6 +581,8 @@ export const orderController = ng.controller('orderController',
             $scope.redirectTo(`/order/update/${order.id}`);
         };
         $scope.selectCampaignAndInitFilter = async (campaign: Campaign) =>{
+            $scope.allOrdersSelected = false;
+            $scope.switchAllOrders();
             await $scope.selectCampaignShow(campaign);
             $scope.search.filterWords = [];
         };

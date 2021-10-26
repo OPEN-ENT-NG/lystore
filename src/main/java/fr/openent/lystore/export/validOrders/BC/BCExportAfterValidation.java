@@ -30,6 +30,7 @@ public class BCExportAfterValidation  extends PDF_OrderHElper {
                     public void handle(Either<String, JsonArray> event) {
                         if (event.isRight()) {
                             JsonArray paramstemp = event.right().getValue();
+                            log.info(paramstemp);
                             JsonObject params = paramstemp.getJsonObject(0);
                             final JsonArray ids = new JsonArray();
                             JsonArray idsArray =  new JsonArray(params.getString("ids"));
@@ -67,30 +68,6 @@ public class BCExportAfterValidation  extends PDF_OrderHElper {
     }
 
     private void getOrdersDataSql(String nbrbc, Handler<Either<String,JsonArray>> handler) {
-        String query = "SELECT ord.engagement_number AS nbr_engagement, " +
-                "       ord.date_creation     AS date_generation, " +
-                "       supplier.id           AS supplier_id, " +
-                "       array_to_json(Array_agg(DISTINCT oce.number_validation)) as ids " +
-                "FROM   lystore.order ord " +
-                "       INNER JOIN lystore.order_client_equipment oce " +
-                "               ON oce.id_order = ord.id " +
-                "       LEFT JOIN lystore.contract " +
-                "              ON contract.id = oce.id_contract " +
-                "       INNER JOIN lystore.supplier " +
-                "               ON contract.id_supplier = supplier.id " +
-                "WHERE  ord.order_number = ? " +
-                "GROUP  BY ord.engagement_number, " +
-                "          ord.date_creation, " +
-                "          supplier_id "
-                ;
-
-        Sql.getInstance().prepared(query, new JsonArray().add(nbrbc), new DeliveryOptions().setSendTimeout(Lystore.timeout * 1000000000L), SqlResult.validResultHandler(event -> {
-            if (event.isLeft()) {
-                handler.handle(event.left());
-            } else {
-                JsonArray datas = event.right().getValue();
-                handler.handle(new Either.Right<>(datas));
-            }
-        }));
+        BCExportAfterValidationStructure.getOrdersDataQueryByStructure(nbrbc, handler);
     }
 }

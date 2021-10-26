@@ -5,11 +5,11 @@ import fr.openent.lystore.helpers.FutureHelper;
 import fr.openent.lystore.service.InstructionService;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.webutils.Either;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -19,7 +19,9 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.common.sql.Sql;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static fr.openent.lystore.service.impl.DefaultOrderService.getNextValidationNumber;
 
@@ -199,7 +201,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                         JsonArray statements = new fr.wseduc.webutils.collections.JsonArray()
                                 .add(getInstructionCreationStatement(id,instruction));
 
-                        handleAdoptedCP(id, statements, instruction, handler);
+                        checkCpValue(id, statements, instruction, handler);
 
                     }catch(ClassCastException e){
                         log.error("An error occured when casting structures ids " + e);
@@ -217,36 +219,115 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
 
     }
 
-    private void handleAdoptedCP(Number id, JsonArray statements, JsonObject instruction, Handler<Either<String, JsonObject>> handler) {
+    private void checkCpValue(Number id, JsonArray statements, JsonObject instruction, Handler<Either<String, JsonObject>> handler) {
         if(instruction.getBoolean("cp_adopted")){
-            String getIdQuery = getNextValidationNumber();
-            sql.raw(getIdQuery, SqlResult.validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
-                @Override
-                public void handle(Either<String, JsonObject> event) {
-                    final String numberOrder = event.right().getValue().getString("numberorder");
-                    statements.add( getUpdateOrdersStatementClient(id,numberOrder));
-                    statements.add(getUpdateOrdersStatementRegion(id,numberOrder));
-                    sql.transaction(statements, new Handler<Message<JsonObject>>() {
-                        @Override
-                        public void handle(Message<JsonObject> event) {
-                            handler.handle(SqlQueryUtils.getTransactionHandler(event,id));
-                        }
-                    });
-                }
-            }));
+            handleCpAdopted(id, statements, handler);
         }else{
             sql.transaction(statements, new Handler<Message<JsonObject>>() {
-            @Override
-            public void handle(Message<JsonObject> event) {
-                handler.handle(SqlQueryUtils.getTransactionHandler(event,id));
-            }
-        });
+                @Override
+                public void handle(Message<JsonObject> event) {
+                    handler.handle(SqlQueryUtils.getTransactionHandler(event,id));
+                }
+            });
 
         }
 
 
     }
 
+    private void handleCpAdopted(Number id, JsonArray statements, Handler<Either<String, JsonObject>> handler) {
+        String queryGetOrders=  "SELECT distinct orders.id,orders.id_contract, " +
+                "CASE WHEN orders.override_region is null then 'REGION' else 'EPLE' END " +
+                "from  " +  Lystore.lystoreSchema + ".allOrders orders " +
+                "INNER JOIN  " +  Lystore.lystoreSchema + ".contract on contract.id = orders.id_contract " +
+                "INNER join  " +  Lystore.lystoreSchema + ".contract_type on contract.id_contract_type = contract_type.id " +
+                "INNER JOIN  " +  Lystore.lystoreSchema + ".operation on operation.id = orders.id_operation " +
+                "INNER JOIN  " +  Lystore.lystoreSchema + ".instruction on instruction.id = operation.id_instruction and instruction.id = ? " +
+                "WHERE code != '236'    AND (override_region IS NULL OR override_region IS false) " +
+                "order by id_contract " +
+                " ";
+        Map<Integer,JsonArray> mapMarket = new HashMap<>();
+
+        sql.prepared(queryGetOrders, new JsonArray().add(id) ,new Handler<Message<JsonObject>>() {
+            @Override
+            public void handle(Message<JsonObject> event) {
+                if (event.body().containsKey("status") && "ok".equals(event.body().getString("status"))) {
+                    JsonArray sqlResults = event.body().getJsonArray("results");
+                    for(Object o : sqlResults){
+                        JsonArray sqlResult = (JsonArray)o;
+                        Integer idMarket = sqlResult.getInteger(1);
+                        if(mapMarket.containsKey(idMarket)){
+                            mapMarket.put(idMarket,mapMarket.get(idMarket).add(sqlResult));
+                        }else{
+                            mapMarket.put(idMarket,new JsonArray().add(sqlResult));
+                        }
+                    }
+                }
+
+                generateOrdersUpdateStatements(mapMarket, statements, handler, id);
+            }
+        });
+
+    }
+
+    //PROBLEMES LE STATUS EST EFFACE APRES PAR LE WAITING OR ACCEPTANCE
+    private void generateOrdersUpdateStatements(Map<Integer, JsonArray> mapMarket, JsonArray statements, Handler<Either<String, JsonObject>> handler, Number id) {
+        List<Future> futures = new ArrayList<>();
+        for (Map.Entry<Integer, JsonArray> entry : mapMarket.entrySet()) {
+            Future<JsonArray> future = Future.future();
+            futures.add(future);
+        }
+        CompositeFuture.all(futures).setHandler(new Handler<AsyncResult<CompositeFuture>>() {
+            @Override
+            public void handle(AsyncResult<CompositeFuture> event) {
+                if (event.succeeded()) {
+                    List<JsonArray> resultsList = event.result().list();
+                    for (int i = 0; i < resultsList.size(); i++) {
+                        statements.addAll(resultsList.get(i));
+                    }
+                    sql.transaction(statements, new Handler<Message<JsonObject>>() {
+                        @Override
+                        public void handle(Message<JsonObject> event) {
+                            handler.handle(SqlQueryUtils.getTransactionHandler(event, id));
+                        }
+
+                    });
+                }
+            }
+        });
+
+        int i = 0;
+        for (Map.Entry<Integer, JsonArray> entry : mapMarket.entrySet()) {
+            createNewValidationNumber(id,entry,FutureHelper.handlerJsonArray(futures.get(i++)));
+        }
+    }
+
+    private void createNewValidationNumber(Number idInstruction,Map.Entry<Integer, JsonArray> entry, Handler<Either<String, JsonArray>> handler) {
+        String getIdQuery = getNextValidationNumber();
+        sql.raw(getIdQuery, SqlResult.validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
+            @Override
+            public void handle(Either<String, JsonObject> event) {
+                if (event.isRight()) {
+                    JsonArray statements = new JsonArray();
+                    JsonArray orders = entry.getValue();
+                    final String numberOrder = event.right().getValue().getString("numberorder");
+                    for (Object o : orders) {
+                        JsonArray order = (JsonArray) o;
+                        if (order.getString(2).equals("REGION")) {
+                            statements.add(getUpdateOrdersStatementRegion(order.getInteger(0), numberOrder));
+                        } else {
+                            statements.add(getUpdateOrdersStatementClient(order.getInteger(0), numberOrder));
+                        }
+                    }
+                    handler.handle(new Either.Right<>(statements));
+                }else{
+                    log.error("error When creating new validation number");
+                    handler.handle(new Either.Left<>("error When creating new validation number"));
+                }
+            }
+
+        }));
+    }
 
 
     private JsonObject getUpdateOrdersStatementRegion(Number id, String numberOrder) {
@@ -255,25 +336,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                         Lystore.lystoreSchema + ".\"order-region-equipment\" " +
                         "SET " +
                         "  status = 'VALID', number_validation = ? " +
-                        "FROM " +
-                        "  ( " +
-                        "    SELECT " +
-                        "      \"order-region-equipment\".id, " +
-                        "      \"order-region-equipment\".status, " +
-                        "      \"order-region-equipment\".id_operation, " +
-                        "      contract_type.code " +
-                        "    FROM " +
-                        "      lystore.\"order-region-equipment\" " +
-                        "      inner join " + Lystore.lystoreSchema +".operation on \"order-region-equipment\".id_operation = operation.id " +
-                        "      inner join " + Lystore.lystoreSchema +".instruction on operation.id_instruction = instruction.id AND instruction.id = ? " +
-                        "      inner join " + Lystore.lystoreSchema +".contract on contract.id = \"order-region-equipment\".id_contract " +
-                        "      inner join " + Lystore.lystoreSchema +".contract_type on contract.id_contract_type = contract_type.id " +
-                        "  ) as ore " +
-                        "where " +
-                        "  ore.id_operation is not null " +
-                        "  and ore.code != '236' " +
-                        "  and \"order-region-equipment\".id = ore.id "+
-                        "  and ore.status = 'IN PROGRESS';";
+                        "where id = ?  AND STATUS NOT IN ('VALID', 'DONE', 'SENT');";
 
 
         JsonArray params = new JsonArray().add(numberOrder).add(id);
@@ -289,25 +352,8 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                         Lystore.lystoreSchema + ".order_client_equipment " +
                         "SET " +
                         "  status = 'VALID', number_validation = ? " +
-                        "FROM " +
-                        "  ( " +
-                        "    SELECT " +
-                        "      order_client_equipment.id, " +
-                        "      order_client_equipment.status, " +
-                        "      order_client_equipment.id_operation, " +
-                        "      contract_type.code " +
-                        "    FROM " +
-                        "      lystore.order_client_equipment " +
-                        "      inner join " + Lystore.lystoreSchema +".operation on order_client_equipment.id_operation = operation.id " +
-                        "      inner join " + Lystore.lystoreSchema +".instruction on operation.id_instruction = instruction.id AND instruction.id = ? " +
-                        "      inner join " + Lystore.lystoreSchema +".contract on contract.id = order_client_equipment.id_contract " +
-                        "      inner join " + Lystore.lystoreSchema +".contract_type on contract.id_contract_type = contract_type.id " +
-                        "  ) as oce " +
-                        "where " +
-                        "  oce.id_operation is not null " +
-                        "  and oce.code != '236' " +
-                        "  and order_client_equipment.id = oce.id " +
-                        "and oce.status IN ('IN PROGRESS');";
+                        "where id = ? AND STATUS NOT IN ('VALID', 'DONE', 'SENT');";
+
 
         JsonArray params = new JsonArray().add(numberOrder).add(id);
         return new JsonObject()
@@ -327,10 +373,10 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 "submitted_to_cp, " +
                 "date_cp, " +
                 "comment" +
-//                ",cp_adopted" +
+                ",cp_adopted" +
                 ") " +
                 "VALUES (? ,? ,? ,? ,? ,? ,? ," +
-//                "? ," +
+                "? ," +
                 "? ) " +
                 "RETURNING id; ";
 
@@ -348,7 +394,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 .add(instruction.getBoolean("submitted_to_cp"))
                 .add(instruction.getString("date_cp"))
                 .add(instruction.getString("comment"))
-//                .add(instruction.getBoolean("cp_adopted"))
+                .add(instruction.getBoolean("cp_adopted"))
                 ;
 
         return new JsonObject()
@@ -362,7 +408,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
 
             JsonArray statements = new JsonArray()
                     .add(getUpdateInstructionStatement(id,instruction));
-            handleAdoptedCP(id, statements, instruction, handler);
+            checkCpValue(id, statements, instruction, handler);
 
         }catch(ClassCastException e){
             log.error("An error occured when casting structures ids " + e);
@@ -380,7 +426,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 "submitted_to_cp = ? , " +
                 "date_cp = ? , " +
                 "comment = ?  " +
-//                ",cp_adopted = ?  " +
+                ",cp_adopted = ?  " +
                 "WHERE id = ? " +
                 "RETURNING id;";
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray()
@@ -391,7 +437,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 .add(instruction.getBoolean("submitted_to_cp"))
                 .add(instruction.getString("date_cp"))
                 .add(instruction.getString("comment"))
-//                .add(instruction.getBoolean("cp_adopted"))
+                .add(instruction.getBoolean("cp_adopted"))
                 .add(id);
         return new JsonObject()
                 .put("statement", statement)

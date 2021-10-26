@@ -44,24 +44,25 @@
                                 <span class="cell ">
                                     <i18n>lystore.submitted.to.cp</i18n> *
                                 </span>
-                    <switch-toggle ng-model="instruction.submitted_to_cp"
+                    <switch-toggle
+                            ng-disabled="instruction.cp_already_adopted"
+                            ng-model="instruction.submitted_to_cp"
                                    class="cell">
 
                     </switch-toggle>
                     <date-picker ng-model="instruction.date_cp" ng-disaled required>
                     </date-picker>
                 </div>
-<!--                <div ng-show="instruction.submitted_to_cp"-->
-<!--                     class="six cell vertical-spacing twelve-mobile row-mobile">-->
-<!--                                <span class="cell ">-->
-<!--                                    <i18n>lystore.cp.adopted</i18n> *-->
-<!--                                </span>-->
-<!--                    <switch-toggle ng-model="instruction.cp_adopted"-->
-<!--                                   ng-change="cancelIfAlreadyTrue()"-->
-<!--                                   ng-disabled="instruction.cp_adopted"-->
-<!--                                   class="cell">-->
-<!--                    </switch-toggle>-->
-<!--                </div>-->
+                <div ng-show="instruction.submitted_to_cp"
+                     class="six cell vertical-spacing twelve-mobile row-mobile">
+                                <span class="cell ">
+                                    <i18n>lystore.cp.adopted</i18n> *
+                                </span>
+                    <switch-toggle ng-model="instruction.cp_adopted"
+                                   ng-disabled="instruction.cp_already_adopted"
+                                   class="cell">
+                    </switch-toggle>
+                </div>
                 <div class="row twelve vertical-spacing">
                         <span class="twelve">
                             <i18n>lystore.instruction.commenter</i18n>
@@ -100,7 +101,9 @@
                                     <i18n>close</i18n>
                                 </span>
                                 </td>
-                                <td class="one aligne-text-center" ng-click="dropOperation($index, operationAdd)">
+                                <td  ng-if="!instruction.cp_already_adopted"
+                                     class="one aligne-text-center"
+                                     ng-click="dropOperation($index, operationAdd)">
                                     <i  class="trash"></i>
                                 </td>
                             </tr>
@@ -125,14 +128,21 @@
                     </article>
 
                     <input
-                            ng-show="isOperationsIsEmpty ||  instruction.cp_adopted "
+                            ng-show="isOperationsIsEmpty "
                             class="vertical-spacing"
                             type="button"
                             ng-disabled="true"
                             i18n-value="lystore.operation.form.empty"
                     />
                     <input
-                            ng-show="!isOperationsIsEmpty && !instruction.cp_adopted"
+                            ng-show="instruction.cp_already_adopted "
+                            class="vertical-spacing"
+                            type="button"
+                            ng-disabled="true"
+                            i18n-value="lystore.operation.deny"
+                    />
+                    <input
+                            ng-show="!isOperationsIsEmpty && !instruction.cp_already_adopted"
                             class="vertical-spacing"
                             type="button"
                             ng-disabled="isNewOperation"
@@ -142,13 +152,14 @@
                 </div>
                 <div class="right-magnet vertical-spacing">
                     <input type="button" class="cancel" ng-click="cancelInstructionForm()" i18n-value="cancel"/>
-                    <input type="submit" class="button" ng-disabled="!(instruction.object && instruction.object.length <= 80 && instruction.date_cp)"/>
+                    <input type="submit" class="button"
+                           ng-disabled="!(instruction.object && instruction.object.length <= 80 && instruction.date_cp)"/>
                 </div>
             </div>
         </form>
     </article>
 </div>
 <lightbox show="display.lightbox.cp_adopted"
-          on-close="closeAdoptedLightbox()">
+          on-close="cancelAdoptedLightbox()">
     <container template="instruction.cp.lightbox"></container>
 </lightbox>
