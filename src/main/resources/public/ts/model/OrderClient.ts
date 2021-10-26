@@ -216,8 +216,11 @@ export class OrdersClient extends Selection<OrderClient> {
             this.syncWithIdsCampaignAndStructure(idCampaign, idStructure);
         } else {
             const queriesFilter = Utils.formatGetParameters({q: this.filters});
-            const { data } = await http.get(  `/lystore/orders?status=${status}&${queriesFilter}`);
-            this.all = Mix.castArrayAs(OrderClient, data);
+            let datas;
+            //EN SUSPEND
+            const {data} = await http.get(`/lystore/orders?status=${status}&${queriesFilter}`);
+            datas  = data
+            this.all = Mix.castArrayAs(OrderClient, datas);
             this.all.map((order: OrderClient) => {
                 order.contract = contracts.all.find(c => c.id === order.id_contract);
                 order.contract_type = contractTypes.all.find(c => c.id === order.contract.id_contract_type);
@@ -225,6 +228,7 @@ export class OrdersClient extends Selection<OrderClient> {
                     order.supplier = suppliers.all.find(s => s.id === order.supplierid)
                 else
                     order.supplier = suppliers.all.find(s => s.id === order.contract.id_supplier);
+
                 order.campaign = campaigns.all.find(c => c.id === order.id_campaign);
                 //plus utile pour le waiting
                 order.project = projects.all.find(p => p.id === order.id_project);
@@ -250,6 +254,57 @@ export class OrdersClient extends Selection<OrderClient> {
         // } catch (e) {
         //     notify.error('lystore.order.sync.err');
         // }
+    }
+    async syncWaiting( structures: Structures = new Structures(),contracts : Contracts, contractTypes : ContractTypes,
+                      suppliers : Suppliers, campaigns : Campaigns,projects : Projects, titles : Titles,campaignSelected){
+        // try {
+        this.projects = new Selection<Project>([]);
+        this.id_project_use = -1;
+
+        const queriesFilter = Utils.formatGetParameters({q: this.filters});
+        let datas;
+        if(campaignSelected){
+            let campaignFilter="";
+           campaignSelected.forEach(campaign =>{
+               campaignFilter += `idCampaign=${campaign.id}&`;
+           })
+            campaignFilter.slice(0, -1)
+            console.log("campaignFilter")
+            console.log(campaignFilter)
+            const { data } = await http.get(  `/lystore/orders?status=WAITING&${queriesFilter}&${campaignFilter}`);
+            datas = data
+        }
+        else {
+            const {data} = await http.get(`/lystore/orders?status=WAITING&${queriesFilter}`);
+            datas  = data
+        }
+        this.all = Mix.castArrayAs(OrderClient, datas);
+        this.all.map((order: OrderClient) => {
+            order.contract = contracts.all.find(c => c.id === order.id_contract);
+            order.contract_type = contractTypes.all.find(c => c.id === order.contract.id_contract_type);
+            order.supplier = suppliers.all.find(s => s.id === order.contract.id_supplier);
+            order.campaign = campaigns.all.find(c => c.id === order.id_campaign);
+            //plus utile pour le waiting
+            order.project = projects.all.find(p => p.id === order.id_project);
+            try {
+                order.title = titles.all.find(t => t.id === order.project.id_title);
+            }catch (e) {
+            }
+            order.name_structure =  structures.length > 0 ? OrderUtils.initNameStructure(order.id_structure, structures) : '';
+            order.structure = structures.length > 0 ? OrderUtils.initStructure(order.id_structure, structures) : new Structure();
+            order.price = parseFloat(status === 'VALID' ? order.price.toString().replace(',', '.') : order.price.toString());
+            order.structure_groups = Utils.parsePostgreSQLJson(order.structure_groups);
+            order.files = order.files !== '[null]' ? Utils.parsePostgreSQLJson(order.files) : [];
+            if(order.files.length > 1 )
+                order.files.sort(function (a, b) {
+                    return  a.filename.localeCompare(b.filename);
+                });
+            if (status !== 'VALID') {
+                this.makeOrderNotValid(order);
+                return;
+            }
+        });
+
     }
 
     syncWithIdsCampaignAndStructure(idCampaign:number, idStructure:string):void{
