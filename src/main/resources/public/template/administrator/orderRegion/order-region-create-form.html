@@ -170,7 +170,9 @@
                                min="1" step="1" max="10"/>
                     </td>
                     <td class="two">
-                        <input ng-model="row.comment" type="text"/>
+                        <p>
+                            <span class="textarea-region-comment" role="textbox" ng-model="row.comment" contenteditable></span>
+                        </p>
                     </td>
                     <td class="one">
                         <i class="plus" ng-click="duplicateRow($index)"></i>

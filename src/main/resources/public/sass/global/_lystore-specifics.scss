@@ -776,6 +776,43 @@ body.lystore {
     }
   }
 
+  .textarea-region-comment {
+    border: 1px solid #ccc;
+    font-family: inherit;
+    font-size: inherit;
+    padding: 1px 6px;
+    display: block;
+    width: 10em;
+    min-height: 1em;
+    max-height: 10em;
+    overflow: auto;
+    resize: none;
+  }
+  .textarea-region-comment::-webkit-scrollbar-track{
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);
+    border-radius: 10px;
+    background-color: white;
+  }
+
+  .textarea-region-comment::-webkit-scrollbar
+  {
+    width: 8px;
+    height: 10px;
+    background-color: #F5F5F5;
+  }
+
+  .textarea-region-comment::-webkit-scrollbar-thumb
+  {
+    border-radius: 10px;
+    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+    background-color: #dadada;
+  }
+
+  .textarea-region-comment::-webkit-scrollbar {
+    border-radius: 3px;
+    background-color: #F5F5F5;
+  }
+
   .price-label {
     font-size: 20px;
     font-weight: bold;
