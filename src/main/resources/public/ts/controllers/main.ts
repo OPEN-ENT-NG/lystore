@@ -277,7 +277,7 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                     if ($scope.fromWaiting)
                         $scope.fromWaiting = false;
                     let preferences = JSON.parse($scope.preferences.preference);
-                    if (preferences.ordersWaitingCampaign) {
+                    if (preferences.ordersWaitingCampaign && preferences.ordersWaitingCampaign.length) {
                         let campaignPref;
                         $scope.campaignsForSelectInput.forEach(c => {
                             preferences.ordersWaitingCampaign.forEach(pref =>{
