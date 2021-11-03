@@ -88,7 +88,7 @@ public class OrderRegionController extends BaseController {
                 RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
                     @Override
                     public void handle(JsonObject order) {
-                        RequestUtils.bodyToJson(request, orderRegion ->  orderRegionService.setOrderRegion(order, event, Logging.defaultResponseHandler(eb,
+                        RequestUtils.bodyToJson(request, orderRegion -> orderRegionService.setOrderRegion(order, event, Logging.defaultResponseHandler(eb,
                                 request,
                                 Contexts.ORDERREGION.toString(),
                                 Actions.CREATE.toString(),
@@ -133,12 +133,9 @@ public class OrderRegionController extends BaseController {
         String totalFiles = request.getHeader("Files");
         ArrayList<JsonObject> files = new ArrayList<>();
         AtomicInteger cptFiles = new AtomicInteger(0);
-        AtomicBoolean hasFile = new AtomicBoolean(false);
 
-        if(Integer.parseInt(totalFiles) != 0){
-            hasFile.set(true);
+        if (Integer.parseInt(totalFiles) != 0) {
             storage.writeUploadFile(request, resultUpload -> {
-                //ici bool
                 if (!"ok".equals(resultUpload.getString("status"))) {
                     String message = "[Presences@DefaultStatementAbsenceController:createWithFile] Failed to save file.";
                     log.error(message + " " + resultUpload.getString("message"));
@@ -154,22 +151,23 @@ public class OrderRegionController extends BaseController {
 
                 if (cptFiles.get() == Integer.parseInt(totalFiles)) {
 //                renderJson(request, resultUpload);
-                    orderCreate(request);
-                    hasFile.set(false);
+                    orderCreate(request, files);
                 }
             });
         } else {
-            orderCreate(request);
+            request.pause();
+            request.setExpectMultipart(true);
+            ArrayList noFiles = new ArrayList();
+            orderCreate(request, noFiles);
         }
     }
 
-    private void orderCreate(final HttpServerRequest request){
+    private void orderCreate(final HttpServerRequest request, ArrayList files) {
         try {
-            JsonObject orders = formatDataToJson(request);
+            JsonObject order = formatDataToJson(request, files);
             UserUtils.getUserInfos(eb, request, user -> {
-                if (!orders.isEmpty()) {
-                    JsonArray ordersList = orders.getJsonArray("orders");
-                    Integer id_title = ordersList.getJsonObject(0).getInteger("title_id");
+                if (!order.isEmpty()) {
+                    Integer id_title = Integer.parseInt(order.getString("title_id"));
                     orderRegionService.createProject(id_title, idProject -> {
                         if (idProject.isRight()) {
                             Integer idProjectRight = idProject.right().getValue().getInteger("id");
@@ -179,23 +177,21 @@ public class OrderRegionController extends BaseController {
                                     Actions.CREATE.toString(),
                                     idProjectRight.toString(),
                                     new JsonObject().put("id", idProjectRight).put("id_title", id_title));
-                            for (int i = 0; i < ordersList.size(); i++) {
-                                JsonObject newOrder = ordersList.getJsonObject(i);
-                                orderRegionService.createOrdersRegion(newOrder, user, idProjectRight, orderCreated -> {
-                                    if (orderCreated.isRight()) {
-                                        Number idReturning = orderCreated.right().getValue().getInteger("id");
-                                        Logging.insert(eb,
-                                                request,
-                                                Contexts.ORDERREGION.toString(),
-                                                Actions.CREATE.toString(),
-                                                idReturning.toString(),
-                                                new JsonObject().put("order region", newOrder));
-                                    } else {
-                                        LOGGER.error("An error when you want get id after create order region " + orderCreated.left());
-                                        request.response().setStatusCode(400).end();
-                                    }
-                                });
-                            }
+                            orderRegionService.createOrdersRegion(order, user, idProjectRight, orderCreated -> {
+                                if (orderCreated.isRight()) {
+                                    Number idReturning = orderCreated.right().getValue().getInteger("id");
+                                    Logging.insert(eb,
+                                            request,
+                                            Contexts.ORDERREGION.toString(),
+                                            Actions.CREATE.toString(),
+                                            idReturning.toString(),
+                                            new JsonObject().put("order region", order));
+                                } else {
+                                    LOGGER.error("An error when you want get id after create order region " + orderCreated.left());
+                                    request.response().setStatusCode(400).end();
+                                }
+                            });
+
                             request.response().setStatusCode(201).end();
                         } else {
                             LOGGER.error("An error when you want get id after create project " + idProject.left());
@@ -210,10 +206,10 @@ public class OrderRegionController extends BaseController {
         }
     }
 
-    private JsonObject formatDataToJson(HttpServerRequest request) {
+    private JsonObject formatDataToJson(HttpServerRequest request, ArrayList files) {
         JsonObject body = new JsonObject();
         request.formAttributes().entries().forEach(entry -> {
-            body.put(entry.getKey(), entry.getValue());
+            body.put(entry.getKey(), entry.getValue()).put("files", files);
         });
         return body;
     }
