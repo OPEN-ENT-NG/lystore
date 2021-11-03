@@ -1,5 +1,6 @@
 package fr.openent.lystore.controllers;
 
+import fr.openent.lystore.helpers.FileHelper;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
@@ -131,29 +132,38 @@ public class OrderRegionController extends BaseController {
     @ResourceFilter(ManagerRight.class)
     public void createAdminOrder(final HttpServerRequest request) {
         String totalFiles = request.getHeader("Files");
-        ArrayList<JsonObject> files = new ArrayList<>();
-        AtomicInteger cptFiles = new AtomicInteger(0);
-
         if (Integer.parseInt(totalFiles) != 0) {
-            storage.writeUploadFile(request, resultUpload -> {
-                if (!"ok".equals(resultUpload.getString("status"))) {
-                    String message = "[Presences@DefaultStatementAbsenceController:createWithFile] Failed to save file.";
-                    log.error(message + " " + resultUpload.getString("message"));
-                    renderError(request);
-                    return;
-                }
-
-                cptFiles.set(cptFiles.get() + 1);
-                String file_id = resultUpload.getString("_id");
-                JsonObject metadata = resultUpload.getJsonObject("metadata").put("file_id", file_id);
-                JsonObject file = metadata;
-                files.add(file);
-
-                if (cptFiles.get() == Integer.parseInt(totalFiles)) {
+//            storage.writeUploadFile(request, resultUpload -> {
+//                if (!"ok".equals(resultUpload.getString("status"))) {
+//                    String message = "[Presences@DefaultStatementAbsenceController:createWithFile] Failed to save file.";
+//                    log.error(message + " " + resultUpload.getString("message"));
+//                    renderError(request);
+//                    return;
+//                }
+//
+//                cptFiles.set(cptFiles.get() + 1);
+//                String file_id = resultUpload.getString("_id");
+//                JsonObject metadata = resultUpload.getJsonObject("metadata").put("file_id", file_id);
+//                JsonObject file = metadata;
+//                files.add(file);
+//
+//                if (cptFiles.get() == Integer.parseInt(totalFiles)) {
 //                renderJson(request, resultUpload);
-                    orderCreate(request, files);
-                }
-            });
+//                    orderCreate(request, files);
+//                }
+//            });
+            FileHelper.uploadMultipleFiles(totalFiles, request, storage, vertx.fileSystem())
+                    .onSuccess(res -> {
+                        // todo récupérer Jsonobject Payload (RequestUtils.bodyToJson ?)
+                        orderCreate(request, new ArrayList());
+                    })
+                    .onFailure(err -> {
+                        String message = String.format("[Lystore@%s::createAdminOrder] An error has occurred " +
+                                        "during upload files: %s",
+                                this.getClass().getSimpleName(), err.getMessage());
+                        log.error(message, err);
+                        renderError(request);
+                    });
         } else {
             request.pause();
             request.setExpectMultipart(true);
