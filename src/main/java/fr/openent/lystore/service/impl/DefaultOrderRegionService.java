@@ -248,8 +248,13 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 try {
                     final Number id = event.right().getValue().getInteger("id");
                     JsonArray statements = new JsonArray()
-                            .add(createOrderRegionStatement(id, order, user, id_project))
-                            .add(updateIdOrderRegionEquipment(id, order.getJsonArray("files")));
+                            .add(createOrderRegionStatement(id, order, user, id_project));
+
+                    JsonArray files =  order.getJsonArray("files");
+                    for(int i =0 ;i < files.size(); i++){
+                        JsonObject file = files.getJsonObject(i);
+                        statements.add(addFileToOrder(id, file));
+                    }
 
                     sql.transaction(statements, new Handler<Message<JsonObject>>() {
                         @Override
@@ -273,39 +278,34 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
         if (order.getInteger("rank") != -1) {
             statement += " ( id, price, amount, creation_date,  owner_name, owner_id, name, summary, description, image," +
                     " technical_spec, status, id_contract, equipment_key, id_campaign, id_structure," +
-                    " comment,  id_project,  id_operation, id_type, rank) " +
-                    "  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ? ) RETURNING id ; ";
+                    " comment,  id_project,  id_operation, rank) " +
+                    "  VALUES (?, ?, ?, now(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ) RETURNING id ; ";
         } else {
             statement += " ( id, price, amount, creation_date,  owner_name, owner_id, name, summary, description, image," +
                     " technical_spec, status, id_contract, equipment_key, id_campaign, id_structure," +
                     " comment,  id_project,  id_operation, id_type) " +
-                    "  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ) RETURNING id ; ";
+                    "  VALUES (?, ?, ?, now(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ) RETURNING id ; ";
         }
 
         JsonArray params = new JsonArray()
                 .add(id)
-                .add(order.getDouble("price"))
-                .add(order.getInteger("amount"))
-                .add(order.getString("creation_date"))
+                .add(order.getString("price"))
+                .add(order.getString("amount"))
                 .add(user.getUsername())
                 .add(user.getUserId())
-                .add(order.getString("name"))
+                .add(order.getString("equipment_name"))
                 .add(order.getString("summary"))
                 .add(order.getString("description"))
                 .add(order.getString("image"))
                 .add(order.getJsonArray("technical_specs"))
                 .add("IN PROGRESS")
-                .add(order.getInteger("id_contract"))
-                .add(order.getInteger("equipment_key"))
-                .add(order.getInteger("id_campaign"))
+                .add(order.getString("id_contract"))
+                .add(order.getString("equipment_key"))
+                .add(order.getString("id_campaign"))
                 .add(order.getString("id_structure"))
                 .add(order.getString("comment"))
                 .add(id_project)
-                .add(order.getInteger("id_operation"))
-                .add(order.getInteger("id_type"));
-        if (order.getInteger("rank") != -1) {
-            params.add(order.getInteger("rank"));
-        }
+                .add(order.getString("id_operation"));
 
         return new JsonObject()
                 .put("statement", statement)
