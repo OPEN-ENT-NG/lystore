@@ -79,9 +79,9 @@ export class OrderRegion implements Order  {
     toJson():any {
         return {
             amount: this.amount,
-            name: this.equipment.name,
+            name: this.equipment ? (this.equipment.name? this.equipment.name: "") : "",
             price: this.price,
-            summary: this.summary,
+            summary: this.summary? this.summary: "",
             description: (this.description) ? this.description : "",
             ...(this.id_orderClient && {id_order_client_equipment: this.id_orderClient}),
             image: this.image,
@@ -96,7 +96,7 @@ export class OrderRegion implements Order  {
             id_campaign: this.id_campaign,
             id_structure: this.id_structure,
             id_project: this.id_project,
-            equipment_key: this.equipment.id? this.equipment.id : this.equipment_key,
+            equipment_key: this.equipment ? (this.equipment.id ? this.equipment_key : "") : "",
             comment: (this.comment) ? this.comment : "",
             ...(this.rank && {rank: this.rank}),
             technical_specs: (Utils.parsePostgreSQLJson(this.technical_spec) === null || Utils.parsePostgreSQLJson(this.technical_spec).length === 0) ?
@@ -109,9 +109,8 @@ export class OrderRegion implements Order  {
                 }),
             id_operation: this.id_operation,
             rank: this.rank -1,
-            id_type: this.id_type,
-
-    }
+            id_type: this.id_type ? this.id_type : "",
+        }
     }
 
     createFromOrderClient(order: OrderClient):void {

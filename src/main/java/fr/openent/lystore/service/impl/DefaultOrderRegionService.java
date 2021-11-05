@@ -1,6 +1,7 @@
 package fr.openent.lystore.service.impl;
 
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.model.file.Attachment;
 import fr.openent.lystore.service.OrderRegionService;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.webutils.Either;
@@ -19,6 +20,7 @@ import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.UserInfos;
 
+import java.lang.reflect.Array;
 import java.util.List;
 
 public class DefaultOrderRegionService extends SqlCrudService implements OrderRegionService {
@@ -40,13 +42,6 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                     final Number id = event.right().getValue().getInteger("id");
                     JsonArray statements = new JsonArray()
                             .add(setOrderRegionStatement(id, orderRegion, user));
-
-                    JsonArray files =  orderRegion.getJsonArray("files");
-                    for(int i =0 ;i < files.size(); i++){
-                        JsonObject file = files.getJsonObject(i);
-                        statements.add(addFileToOrder(id, file));
-
-                    }
 
                     sql.transaction(statements, new Handler<Message<JsonObject>>() {
                         @Override
@@ -149,19 +144,6 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 .put("action", "prepared");
     }
 
-    private JsonObject addFileToOrder(Number id, JsonObject file) {
-        String statement = "INSERT INTO " + Lystore.lystoreSchema + ".order_region_file (id, id_order_region_equipment, filename) " +
-                "VALUES (?, ?, ?) ;" ;
-
-        JsonArray params = new JsonArray().add(file.getString("file_id")).add(id).add(file.getString("filename"));
-
-
-        return new JsonObject()
-                .put("statement", statement)
-                .put("values", params)
-                .put("action", "prepared");
-    }
-
     private JsonObject updateIdOrderRegionEquipment(Number id, JsonArray files) {
 
         String statement = "UPDATE " + Lystore.lystoreSchema + ".order_region_file " +
@@ -240,42 +222,36 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
 
     }
 
-    public void createOrdersRegion(JsonObject order, UserInfos user, Number id_project, Handler<Either<String, JsonObject>> handler) {
+    public void createOrdersRegion(JsonObject order, List<Attachment> files, UserInfos user, Number id_project, Handler<Either<String, JsonObject>> handler) {
         String getIdQuery = "SELECT nextval('" + Lystore.lystoreSchema + ".order-region-equipment_id_seq') as id";
-        sql.raw(getIdQuery, SqlResult.validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
-            @Override
-            public void handle(Either<String, JsonObject> event) {
-                try {
-                    final Number id = event.right().getValue().getInteger("id");
-                    JsonArray statements = new JsonArray()
-                            .add(createOrderRegionStatement(id, order, user, id_project));
+        sql.raw(getIdQuery, SqlResult.validUniqueResultHandler(event -> {
+            try {
+                final Number id = event.right().getValue().getInteger("id");
+                JsonArray statements = new JsonArray()
+                        .add(createOrderRegionStatement(id, order, user, id_project));
 
-                    JsonArray files =  order.getJsonArray("files");
-                    for(int i =0 ;i < files.size(); i++){
-                        JsonObject file = files.getJsonObject(i);
-                        statements.add(addFileToOrder(id, file));
-                    }
-
-                    sql.transaction(statements, new Handler<Message<JsonObject>>() {
-                        @Override
-                        public void handle(Message<JsonObject> event) {
-                            handler.handle(SqlQueryUtils.getTransactionHandler(event, id));
-                        }
-                    });
-                } catch(ClassCastException e) {
-                    LOGGER.error("An error occurred when casting ids", e);
-                    handler.handle(new Either.Left<String, JsonObject>(""));
+                for(Attachment file : files){
+                    statements.add(addFileToOrder(id, file));
                 }
+
+                sql.transaction(statements, new Handler<Message<JsonObject>>() {
+                    @Override
+                    public void handle(Message<JsonObject> event) {
+                        handler.handle(SqlQueryUtils.getTransactionHandler(event, id));
+                    }
+                });
+            } catch(ClassCastException e) {
+                LOGGER.error("An error occurred when casting ids", e);
+                handler.handle(new Either.Left<>(""));
             }
         }));
     }
 
     private JsonObject createOrderRegionStatement(Number id, JsonObject order, UserInfos user, Number id_project) {
-        String statement = "";
-        statement = "" +
+        String statement = "" +
                 " INSERT INTO lystore.\"order-region-equipment\" ";
 
-        if (order.getInteger("rank") != -1) {
+        if (order.getInteger("rank", -1) != -1) {
             statement += " ( id, price, amount, creation_date,  owner_name, owner_id, name, summary, description, image," +
                     " technical_spec, status, id_contract, equipment_key, id_campaign, id_structure," +
                     " comment,  id_project,  id_operation, rank) " +
@@ -284,7 +260,7 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
             statement += " ( id, price, amount, creation_date,  owner_name, owner_id, name, summary, description, image," +
                     " technical_spec, status, id_contract, equipment_key, id_campaign, id_structure," +
                     " comment,  id_project,  id_operation, id_type) " +
-                    "  VALUES (?, ?, ?, now(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ) RETURNING id ; ";
+                    "  VALUES (?, ?, ?, now(), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? ) RETURNING id ; ";
         }
 
         JsonArray params = new JsonArray()
@@ -305,7 +281,23 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 .add(order.getString("id_structure"))
                 .add(order.getString("comment"))
                 .add(id_project)
-                .add(order.getString("id_operation"));
+                .add(order.getString("id_operation"))
+                .add(order.getString("id_type"));
+
+        return new JsonObject()
+                .put("statement", statement)
+                .put("values", params)
+                .put("action", "prepared");
+    }
+
+    private JsonObject addFileToOrder(Number id, Attachment file) {
+        String statement = "INSERT INTO " + Lystore.lystoreSchema + ".order_region_file (id, id_order_region_equipment, filename) " +
+                "VALUES (?, ?, ?) ;" ;
+
+        JsonArray params = new JsonArray()
+                .add(file.id())
+                .add(id)
+                .add(file.metadata().filename());
 
         return new JsonObject()
                 .put("statement", statement)

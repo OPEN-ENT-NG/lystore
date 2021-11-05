@@ -41,4 +41,7 @@ public class Metadata {
                 .put("charset", this.charset);
     }
 
+    public String filename() {
+        return filename;
+    }
 }

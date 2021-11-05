@@ -47,11 +47,19 @@ public class FileHelper {
      * @param fileSystem    FileSystem vertx
      *
      * @return list of {@link Attachment} (and all your files will be uploaded)
+     * (process will continue in background to stream all these files in your storage)
      */
     public static Future<List<Attachment>> uploadMultipleFiles(String headerCount, HttpServerRequest request, Storage storage,
                                                                FileSystem fileSystem) {
         Promise<List<Attachment>> promise = Promise.promise();
         String totalFilesToUpload = request.getHeader(headerCount);
+
+        // return empty arrayList if no header is sent (meaning no files to upload)
+        if (totalFilesToUpload == null || totalFilesToUpload.isEmpty()) {
+            promise.complete(new ArrayList<>());
+            return promise.future();
+        }
+
         AtomicInteger incrementFile = new AtomicInteger(0);
         List<Attachment> listMetadata = new ArrayList<>();
 
@@ -79,8 +87,8 @@ public class FileHelper {
                         return;
                     }
                     upload.streamToFileSystem(path);
-                    incrementFile.set(incrementFile.get() + 1);
                 });
+                incrementFile.set(incrementFile.get() + 1);
             } catch (FileNotFoundException e) {
                 log.error(e.getMessage(), e);
                 promise.fail(e.getMessage());
