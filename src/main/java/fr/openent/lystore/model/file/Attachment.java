@@ -9,11 +9,11 @@ public class Attachment {
         this.metadata = metadata;
     }
 
-    public String getId() {
+    public String id() {
         return id;
     }
 
-    public Metadata getMetadata() {
+    public Metadata metadata() {
         return metadata;
     }
 }

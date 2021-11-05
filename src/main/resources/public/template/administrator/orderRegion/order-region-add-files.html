@@ -13,7 +13,7 @@
              ng-if="orderTemp.files.length > 0">
 
             <li ng-repeat="file in orderTemp.files track by $index" class="twelve row">
-                <a class="eleven" ng-click="orderRegion.downloadFile(file)">[[ file.name ||
+                <a class="eleven">[[ file.name ||
                     file.filename ]]</a>
                 <i class="one text-right"
                    ng-class="{ close: file.status !== 'loading', loading: file.status === 'loading'}"

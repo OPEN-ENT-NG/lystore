@@ -12,7 +12,7 @@ import {
     Utils,
     Equipments, ContractType, ContractTypes, Contracts, Order, Basket
 } from "../../model";
-import http from "axios";
+import http, {AxiosResponse} from "axios";
 import {IStatementsOrdersService} from "../../services";
 
 declare let window: any;
@@ -275,13 +275,14 @@ export const orderRegionController = ng.controller('orderRegionController',
         };
 
         $scope.createOrder = async ():Promise<void> => {
-            let ordersToCreate = new OrdersRegion();
+            //let ordersToCreate = new OrdersRegion();
+            const promises: Array<Promise<AxiosResponse>> = [];
             $scope.orderToCreate.rows.forEach(row => {
                 if (checkRow(row)) {
                     if (row.structure instanceof StructureGroup) {
                         row.structure.structures.forEach(s => {
-                            let orderRegionTemp = new OrderRegion();
-                            statementsOrdersService.create({
+                            //let orderRegionTemp = new OrderRegion();
+                            promises.push(statementsOrdersService.create({
                                 id_campaign: $scope.orderToCreate.campaign.id,
                                 id_structure: s,
                                 title_id: $scope.orderToCreate.project,
@@ -296,7 +297,7 @@ export const orderRegionController = ng.controller('orderRegionController',
                                 id_contract: row.equipment.id_contract,
                                 name_structure: row.structure.name,
                                 files: row.files
-                            });
+                            }));
                             // orderRegionTemp.id_campaign = $scope.orderToCreate.campaign.id;
                             // orderRegionTemp.id_structure = s;
                             // orderRegionTemp.title_id = $scope.orderToCreate.project;
@@ -310,33 +311,36 @@ export const orderRegionController = ng.controller('orderRegionController',
                             // orderRegionTemp.files = row.files;
                             // orderRegionTemp.technical_spec = row.equipment.technical_specs;
                             // orderRegionTemp.id_contract = row.equipment.id_contract;
-                            if (!row.rank){
-                                orderRegionTemp.rank = 0;
-                            } else {
-                                orderRegionTemp.rank = row.rank;
-                            }
-                            let struct = $scope.structures.all.find(struct => s.id === struct.id);
-                            (struct) ? orderRegionTemp.name_structure = struct.name : orderRegionTemp.name_structure = "";
-                            ordersToCreate.all.push(orderRegionTemp);
+
+                            // if (!row.rank){
+                            //     orderRegionTemp.rank = 0;
+                            // } else {
+                            //     orderRegionTemp.rank = row.rank;
+                            // }
+                            // let struct = $scope.structures.all.find(struct => s.id === struct.id);
+                            // (struct) ? orderRegionTemp.name_structure = struct.name : orderRegionTemp.name_structure = "";
+                            // ordersToCreate.all.push(orderRegionTemp);
                         })
                     } else {
-                        let orderRegionTemp = new OrderRegion();
-                        statementsOrdersService.create({
-                            id_campaign: $scope.orderToCreate.campaign.id,
-                            id_structure: row.structure.id,
-                            title_id: $scope.orderToCreate.project,
-                            id_operation: $scope.orderToCreate.operation,
-                            equipment_key: row.equipment.id,
-                            equipment: row.equipment,
-                            comment: row.comment,
-                            amount: row.amount,
-                            price: row.price,
-                            equipment_name: row.equipment.name,
-                            technical_spec: row.equipment.technical_specs,
-                            id_contract: row.equipment.id_contract,
-                            name_structure: row.structure.name,
-                            files: row.files
-                        });
+                        //let orderRegionTemp = new OrderRegion();
+                        promises.push(
+                            statementsOrdersService.create({
+                                id_campaign: $scope.orderToCreate.campaign.id,
+                                id_structure: row.structure.id,
+                                title_id: $scope.orderToCreate.project,
+                                id_operation: $scope.orderToCreate.operation,
+                                equipment_key: row.equipment.id,
+                                equipment: row.equipment,
+                                comment: row.comment,
+                                amount: row.amount,
+                                price: row.price,
+                                equipment_name: row.equipment.name,
+                                technical_spec: row.equipment.technical_specs,
+                                id_contract: row.equipment.id_contract,
+                                name_structure: row.structure.name,
+                                files: row.files
+                            })
+                        );
                         // orderRegionTemp.id_campaign = $scope.orderToCreate.campaign.id;
                         // orderRegionTemp.id_structure = row.structure.id;
                         // orderRegionTemp.title_id = $scope.orderToCreate.project;
@@ -351,24 +355,37 @@ export const orderRegionController = ng.controller('orderRegionController',
                         // orderRegionTemp.technical_spec = row.equipment.technical_specs;
                         // orderRegionTemp.id_contract = row.equipment.id_contract;
                         // orderRegionTemp.name_structure = row.structure.name;
-                        if (!row.rank){
-                            orderRegionTemp.rank = 0;
-                        } else {
-                            orderRegionTemp.rank = row.rank;
-                        }
-                        ordersToCreate.all.push(orderRegionTemp);
+
+                        // if (!row.rank){
+                        //     orderRegionTemp.rank = 0;
+                        // } else {
+                        //     orderRegionTemp.rank = row.rank;
+                        // }
+                        // ordersToCreate.all.push(orderRegionTemp);
                     }
                 }
             });
-            let {status} = await ordersToCreate.create();
-            if (status === 201) {
-                toasts.confirm('lystore.order.region.create.message');
-                $scope.orderToCreate = new OrderRegion();
-                $scope.titles = new Titles();
-            }
-            else {
+
+
+            // let {status} = await ordersToCreate.create();
+            try {
+                let responses: Array<AxiosResponse> = await Promise.all(promises);
+                if (responses) {
+                    toasts.confirm('lystore.order.region.create.message');
+                    $scope.orderToCreate = new OrderRegion();
+                    $scope.titles = new Titles();
+                }
+            } catch (err) {
                 notify.error('lystore.admin.order.create.err');
             }
+            // if (status === 201) {
+            //     toasts.confirm('lystore.order.region.create.message');
+            //     $scope.orderToCreate = new OrderRegion();
+            //     $scope.titles = new Titles();
+            // }
+            // else {
+            //     notify.error('lystore.admin.order.create.err');
+            // }
             await $scope.deleteOrderRegionFile();
             Utils.safeApply($scope);
         }

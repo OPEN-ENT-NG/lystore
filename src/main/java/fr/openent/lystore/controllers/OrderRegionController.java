@@ -4,6 +4,7 @@ import fr.openent.lystore.helpers.FileHelper;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
+import fr.openent.lystore.model.file.Attachment;
 import fr.openent.lystore.security.ManagerRight;
 import fr.openent.lystore.service.OrderRegionService;
 import fr.openent.lystore.service.impl.DefaultOrderRegionService;
@@ -11,6 +12,8 @@ import fr.openent.lystore.service.impl.DefaultOrderService;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -25,6 +28,7 @@ import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -127,100 +131,75 @@ public class OrderRegionController extends BaseController {
     }
 
     @Post("/region/orders/")
-    @ApiDoc("Create orders from a region")
+    @ApiDoc("Create orders from a region with attachments (0 or n)")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(ManagerRight.class)
     public void createAdminOrder(final HttpServerRequest request) {
-        String totalFiles = request.getHeader("Files");
-        if (Integer.parseInt(totalFiles) != 0) {
-//            storage.writeUploadFile(request, resultUpload -> {
-//                if (!"ok".equals(resultUpload.getString("status"))) {
-//                    String message = "[Presences@DefaultStatementAbsenceController:createWithFile] Failed to save file.";
-//                    log.error(message + " " + resultUpload.getString("message"));
-//                    renderError(request);
-//                    return;
-//                }
-//
-//                cptFiles.set(cptFiles.get() + 1);
-//                String file_id = resultUpload.getString("_id");
-//                JsonObject metadata = resultUpload.getJsonObject("metadata").put("file_id", file_id);
-//                JsonObject file = metadata;
-//                files.add(file);
-//
-//                if (cptFiles.get() == Integer.parseInt(totalFiles)) {
-//                renderJson(request, resultUpload);
-//                    orderCreate(request, files);
-//                }
-//            });
-            FileHelper.uploadMultipleFiles(totalFiles, request, storage, vertx.fileSystem())
-                    .onSuccess(res -> {
-                        // todo récupérer Jsonobject Payload (RequestUtils.bodyToJson ?)
-                        orderCreate(request, new ArrayList());
-                    })
-                    .onFailure(err -> {
-                        String message = String.format("[Lystore@%s::createAdminOrder] An error has occurred " +
-                                        "during upload files: %s",
-                                this.getClass().getSimpleName(), err.getMessage());
-                        log.error(message, err);
-                        renderError(request);
-                    });
-        } else {
-            request.pause();
-            request.setExpectMultipart(true);
-            ArrayList noFiles = new ArrayList();
-            orderCreate(request, noFiles);
-        }
-    }
-
-    private void orderCreate(final HttpServerRequest request, ArrayList files) {
-        try {
-            JsonObject order = formatDataToJson(request, files);
-            UserUtils.getUserInfos(eb, request, user -> {
-                if (!order.isEmpty()) {
-                    Integer id_title = Integer.parseInt(order.getString("title_id"));
-                    orderRegionService.createProject(id_title, idProject -> {
-                        if (idProject.isRight()) {
-                            Integer idProjectRight = idProject.right().getValue().getInteger("id");
-                            Logging.insert(eb,
-                                    request,
-                                    Contexts.PROJECT.toString(),
-                                    Actions.CREATE.toString(),
-                                    idProjectRight.toString(),
-                                    new JsonObject().put("id", idProjectRight).put("id_title", id_title));
-                            orderRegionService.createOrdersRegion(order, user, idProjectRight, orderCreated -> {
-                                if (orderCreated.isRight()) {
-                                    Number idReturning = orderCreated.right().getValue().getInteger("id");
-                                    Logging.insert(eb,
-                                            request,
-                                            Contexts.ORDERREGION.toString(),
-                                            Actions.CREATE.toString(),
-                                            idReturning.toString(),
-                                            new JsonObject().put("order region", order));
-                                } else {
-                                    LOGGER.error("An error when you want get id after create order region " + orderCreated.left());
-                                    request.response().setStatusCode(400).end();
-                                }
+        FileHelper.uploadMultipleFiles("Files", request, storage, vertx.fileSystem())
+                .onSuccess(files -> UserUtils.getUserInfos(eb, request, user -> {
+                            request.endHandler(aVoid -> {
+                                JsonObject order = formatDataToJson(request);
+                                orderCreate(order, files, user, request)
+                                        .onSuccess(res -> renderJson(request, new JsonObject()))
+                                        .onFailure(err -> {
+                                            String message = String.format("[Lystore@%s::createAdminOrder] An error has occurred " +
+                                                            "during upload files: %s",
+                                                    this.getClass().getSimpleName(), err.getMessage());
+                                            log.error(message, err);
+                                            renderError(request);
+                                        });
                             });
-
-                            request.response().setStatusCode(201).end();
-                        } else {
-                            LOGGER.error("An error when you want get id after create project " + idProject.left());
-                            request.response().setStatusCode(400).end();
-                        }
-                    });
-                }
-            });
-        } catch (Exception e) {
-            LOGGER.error("An error when you want create order region and project", e);
-            request.response().setStatusCode(400).end();
-        }
+                        })
+                )
+                .onFailure(err -> {
+                    String message = String.format("[Lystore@%s::createAdminOrder] An error has occurred " +
+                                    "during upload files: %s",
+                            this.getClass().getSimpleName(), err.getMessage());
+                    log.error(message, err);
+                    renderError(request);
+                });
     }
 
-    private JsonObject formatDataToJson(HttpServerRequest request, ArrayList files) {
-        JsonObject body = new JsonObject();
-        request.formAttributes().entries().forEach(entry -> {
-            body.put(entry.getKey(), entry.getValue()).put("files", files);
+    private Future<Void> orderCreate(JsonObject order, List<Attachment> files, UserInfos userInfos, HttpServerRequest request) {
+        Promise<Void> promise = Promise.promise();
+
+        Integer id_title = Integer.parseInt(order.getString("title_id"));
+        orderRegionService.createProject(id_title, idProject -> {
+            if (idProject.isRight()) {
+                Integer idProjectRight = idProject.right().getValue().getInteger("id");
+                Logging.insert(eb,
+                        request,
+                        Contexts.PROJECT.toString(),
+                        Actions.CREATE.toString(),
+                        idProjectRight.toString(),
+                        new JsonObject().put("id", idProjectRight).put("id_title", id_title));
+                orderRegionService.createOrdersRegion(order, files, userInfos, idProjectRight, orderCreated -> {
+                    if (orderCreated.isRight()) {
+                        Number idReturning = orderCreated.right().getValue().getInteger("id");
+                        Logging.insert(eb,
+                                request,
+                                Contexts.ORDERREGION.toString(),
+                                Actions.CREATE.toString(),
+                                idReturning.toString(),
+                                new JsonObject().put("order region", order));
+                        promise.complete();
+                    } else {
+                        LOGGER.error("An error when you want get id after create order region " + orderCreated.left()); // todo revoir commentaire
+                        promise.fail(orderCreated.left().getValue());
+                    }
+                });
+            } else {
+                LOGGER.error("An error when you want get id after create project " + idProject.left()); // todo revoir commentaire
+                promise.fail(idProject.left().getValue());
+            }
         });
+
+        return promise.future();
+    }
+
+    private JsonObject formatDataToJson(HttpServerRequest request) {
+        JsonObject body = new JsonObject();
+        request.formAttributes().entries().forEach(entry -> body.put(entry.getKey(), entry.getValue()));
         return body;
     }
 
