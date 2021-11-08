@@ -462,26 +462,11 @@ export const orderRegionController = ng.controller('orderRegionController',
             Utils.safeApply($scope);
         };
 
-        // $scope.uploadFileCreate = async (file) => {
-        //     file.status = 'loading';
-        //     let formData = new FormData();
-        //     $scope.uploadUri = "/lystore/order/upload/file";
-        //     formData.append("file", file, file.name);
-        //     try {
-        //         const {data} = await http.post($scope.uploadUri, formData, {'headers': {'Content-Type': 'multipart/form-data'}});
-        //         file.id = data.id;
-        //         file.status = 'loaded';
-        //     } catch (err) {
-        //         file.status = 'failed';
-        //     }
-        //     Utils.safeApply($scope);
-        // };
-
         $scope.importFilesCreate = (files) => {
             Array.from(files).forEach(file => {
                 $scope.orderTemp.files.push(file);
-                //$scope.uploadFileCreate(file);
             });
+            document.getElementsByTagName("input")[7].value = "";
             if ($scope.orderTemp.files === undefined || $scope.orderTemp.files.length === 0) return;
             Utils.safeApply($scope);
         };
@@ -491,7 +476,6 @@ export const orderRegionController = ng.controller('orderRegionController',
                 file.status = 'loading';
                 Utils.safeApply($scope);
                 //await orderRegion.deleteDocument(file);
-                //delete $scope.files
                 $scope.orderTemp.files.splice($index,1);
                 toasts.confirm('lystore.basket.file.delete.success');
             } catch (err) {
