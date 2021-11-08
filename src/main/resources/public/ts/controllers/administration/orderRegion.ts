@@ -491,6 +491,7 @@ export const orderRegionController = ng.controller('orderRegionController',
                 file.status = 'loading';
                 Utils.safeApply($scope);
                 //await orderRegion.deleteDocument(file);
+                //delete $scope.files
                 $scope.orderTemp.files.splice($index,1);
                 toasts.confirm('lystore.basket.file.delete.success');
             } catch (err) {

@@ -97,7 +97,7 @@ export class OrderRegion implements Order  {
             id_structure: this.id_structure,
             id_project: this.id_project,
             equipment_key: this.equipment ? (this.equipment.id ? this.equipment_key : "") : "",
-            comment: (this.comment) ? this.comment : "",
+            comment: this.comment ? this.comment : "",
             ...(this.rank && {rank: this.rank}),
             technical_specs: (Utils.parsePostgreSQLJson(this.technical_spec) === null || Utils.parsePostgreSQLJson(this.technical_spec).length === 0) ?
                 []:

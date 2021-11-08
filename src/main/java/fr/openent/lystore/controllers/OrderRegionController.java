@@ -184,12 +184,12 @@ public class OrderRegionController extends BaseController {
                                 new JsonObject().put("order region", order));
                         promise.complete();
                     } else {
-                        LOGGER.error("An error when you want get id after create order region " + orderCreated.left()); // todo revoir commentaire
+                        LOGGER.error("[Lystore@%s::createAdminOrder] An error when you want get id after create order region: %s" + orderCreated.left()); // todo revoir commentaire
                         promise.fail(orderCreated.left().getValue());
                     }
                 });
             } else {
-                LOGGER.error("An error when you want get id after create project " + idProject.left()); // todo revoir commentaire
+                LOGGER.error("[Lystore@%s::createAdminOrder] An error when you want get id after create project: %s" + idProject.left()); // todo revoir commentaire
                 promise.fail(idProject.left().getValue());
             }
         });
