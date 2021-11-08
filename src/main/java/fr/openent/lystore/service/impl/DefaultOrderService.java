@@ -1411,8 +1411,51 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
             JsonObject order = ordersArray.getJsonObject(i);
             statements.add(createRejectOrder(order.getInteger("id_order"), order.getString("comment")));
             statements.add(updateStatusRejectOrder(order.getInteger("id_order")));
+            statements.add(updatePurse(order.getInteger("id_order")));
+            //get info + update (coir si select update)
         }
-        handleRejectOrders(ordersArray.getJsonObject(0).getInteger("id_order"), statements, handler);
+
+       handleRejectOrders(ordersArray.getJsonObject(0).getInteger("id_order"), statements, handler);
+
+    }
+
+    private JsonObject updatePurse(Integer id_order) {
+        String statement = " " +
+                "UPDATE " +
+                "    lystore.purse " +
+                "SET " +
+                "    amount = purse.amount +         Round(( (SELECT CASE  " +
+                "                                        WHEN oce.price_proposal IS NOT NULL THEN 0  " +
+                "                                        WHEN oce.override_region IS NULL THEN 0  " +
+                "                                        WHEN Sum(oco.price + ( ( oco.price * oco.tax_amount ) / " +
+                "                                                                100 ) " +
+                "                                                              *  " +
+                "                                                              oco.amount) IS  " +
+                "                                              NULL THEN 0  " +
+                "                                         ELSE Sum(oco.price + ( ( oco.price * oco.tax_amount )/ " +
+                "                                                                100 )  " +
+                "                                                              *  " +
+                "                                                              oco.amount)  " +
+                "                                      END  " +
+                "                                FROM   lystore.order_client_options oco " +
+                "                                WHERE  oco.id_order_client_equipment = oce.id) " +
+                "                               + (CASE   WHEN oce.price_proposal IS NOT NULL THEN oce.price_proposal  " +
+                "                               ELSE oce.price + oce.price * oce.tax_amount / 100 END " +
+                "                ) * oce.amount ), 2) " +
+                "                         " +
+                "FROM " +
+                "    lystore.purse as purse_tmp " +
+                "    INNER JOIN lystore.order_client_equipment AS oce " +
+                "        ON purse_tmp.id_campaign = oce.id_campaign AND purse_tmp.id_structure = oce.id_structure " +
+                "WHERE " +
+                "    oce.id = ? AND purse_tmp.id = purse.id; " +
+                "\t";
+
+        JsonArray  params = new JsonArray().add(id_order);
+        return new JsonObject()
+                .put("statement", statement)
+                .put("values", params)
+                .put("action", "prepared");
     }
 
     private void handleRejectOrders(Number id, JsonArray statements, Handler<Either<String, JsonObject>> handler) {
