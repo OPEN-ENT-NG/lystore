@@ -8,3 +8,4 @@ export * from './parameter-table';
 export * from './postNgRepeat';
 export * from './searchAndSelect';
 export * from './tabs';
+export * from './contenteditable';
