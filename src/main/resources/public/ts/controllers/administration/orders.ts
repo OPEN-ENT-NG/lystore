@@ -177,6 +177,11 @@ export const orderController = ng.controller('orderController',
             $scope.loadingArray = false;
             Utils.safeApply($scope);
         };
+        $scope.dropCampaign = async (campaign) =>{
+            $scope.campaignSelection = $scope.campaignSelection.filter( c => c !== campaign);
+            $scope.syncOrders('WAITING', $scope.campaignSelection);
+            $scope.selectCampaignAndInitFilter();
+        }
 
         $scope.addFilter = (filterWord: string, event?) => {
             if (event && (event.which === 13 || event.keyCode === 13 )) {

@@ -623,5 +623,6 @@
   "lystore.campaign.delete.message": "Vous allez supprimer les campagnes suivantes :",
   "campaign.delete.avert": "Après suppression des campagnes les paniers seront également supprimés",
   "lystore.operation.deny": "Impossible d'ajouter des opérations",
-  "lystore.campaign.purse.total_order": "Commandes"
+  "lystore.campaign.purse.total_order": "Commandes",
+  "campaign.select.list": "Campagnes séléctionnées : "
 }

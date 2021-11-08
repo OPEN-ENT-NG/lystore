@@ -21,13 +21,20 @@
                         selection-event="syncOrders('WAITING',campaignSelection);selectCampaignAndInitFilter();"
                         deselection-event="syncOrders('WAITING',campaignSelection);selectCampaignAndInitFilter();"
                 ></multi-combo>
-<!--                <select-->
-<!--                        ng-model="campaign"-->
-<!--                        ng-options="campaignSelect as campaignSelect.name for campaignSelect in campaignsForSelectInput"-->
-<!--                        ng-change="selectCampaignAndInitFilter(campaign)"-->
-<!--                >-->
-<!--                    <option value="" disabled >[[campaign.name]]</option>-->
-<!--                </select>-->
+
+                <!--                <select-->
+                <!--                        ng-model="campaign"-->
+                <!--                        ng-options="campaignSelect as campaignSelect.name for campaignSelect in campaignsForSelectInput"-->
+                <!--                        ng-change="selectCampaignAndInitFilter(campaign)"-->
+                <!--                >-->
+                <!--                    <option value="" disabled >[[campaign.name]]</option>-->
+                <!--                </select>-->
+            </div>
+        </div>
+        <div class="select-blocks">
+            <h4><i18n>campaign.select.list</i18n></h4>
+            <div ng-repeat="campaign in campaignSelection" ng-click="dropCampaign(campaign)" class="labels-in-ligne ng-scope">
+                <div > [[ campaign.name ]] </div>
             </div>
         </div>
         <div class="row">
