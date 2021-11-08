@@ -618,9 +618,12 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
             $scope.initOrders('WAITING', $scope.campaignSelection);
             Utils.safeApply($scope);
         };
-        $scope.selectCampaignShow = (campaign?:Campaign): void => {
+        $scope.selectCampaignShow = (campaign?:Campaign,campaignSelect?: Campaign[]): void => {
             if (campaign && $scope.campaignSelection.length === 0){
                 $scope.campaignSelection.push(campaign);
+            }
+            if(campaignSelect){
+                $scope.campaignSelection = campaignSelect;
             }
             let idsCampaign = [];
             $scope.campaignSelection.forEach(c =>{

@@ -17,7 +17,6 @@ export const orderController = ng.controller('orderController',
         let isPageOrderSent = $location.path() === "/order/sent";
 
         $scope.rejectedOrders = new RejectOrders();
-
         if(isPageOrderSent)
             $scope.displayedOrdersSent = $scope.displayedOrders;
         $scope.sort = {
@@ -595,7 +594,7 @@ export const orderController = ng.controller('orderController',
             $scope.redirectTo(`/order/update/${order.id}`);
         };
         $scope.selectCampaignAndInitFilter = async () =>{
-            await $scope.selectCampaignShow();
+            await $scope.selectCampaignShow(new Campaign(),$scope.campaignSelection);
             $scope.switchAllOrders();
             $scope.search.filterWords = [];
         };
