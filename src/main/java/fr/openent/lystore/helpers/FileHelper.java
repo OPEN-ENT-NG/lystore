@@ -51,19 +51,18 @@ public class FileHelper {
      */
     public static Future<List<Attachment>> uploadMultipleFiles(String headerCount, HttpServerRequest request, Storage storage,
                                                                FileSystem fileSystem) {
+        request.setExpectMultipart(true);
         Promise<List<Attachment>> promise = Promise.promise();
         String totalFilesToUpload = request.getHeader(headerCount);
 
         // return empty arrayList if no header is sent (meaning no files to upload)
-        if (totalFilesToUpload == null || totalFilesToUpload.isEmpty()) {
+        if (totalFilesToUpload == null || totalFilesToUpload.isEmpty() || Integer.parseInt(totalFilesToUpload) == 0) {
             promise.complete(new ArrayList<>());
             return promise.future();
         }
 
         AtomicInteger incrementFile = new AtomicInteger(0);
         List<Attachment> listMetadata = new ArrayList<>();
-
-        request.setExpectMultipart(true);
         request.exceptionHandler(event -> {
             String message = String.format("[Lystore@%s::uploadMultipleFiles] An error has occurred during http request process: %s",
                     FileHelper.class.getSimpleName(), event.getMessage());
