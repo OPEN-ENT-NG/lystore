@@ -777,12 +777,14 @@ body.lystore {
   }
 
   .textarea-region-comment {
-    border: 1px solid #ccc;
-    font-family: inherit;
-    font-size: inherit;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #aaa;
+    box-shadow: none;
     padding: 1px 6px;
     display: block;
     width: 10em;
+    color: #333;
     min-height: 1em;
     max-height: 10em;
     overflow: auto;
