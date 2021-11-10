@@ -4,14 +4,20 @@
       color: #5b6472;
       font-weight: bold;
     }
+    > ul {
+      padding-inline-start: unset;
+      margin-block-start: 2em;
+      margin-block-end: unset;
+    }
     > li {
       margin: 0;
       padding-bottom: 20px;
+      padding-right: 10px;
       display: inline-block;
       list-style-type: none;
     }
-    > a {
-      padding-right: 10px;
+    > i {
+      padding-right: 20px;
     }
   }
 

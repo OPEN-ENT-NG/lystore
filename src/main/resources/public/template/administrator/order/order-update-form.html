@@ -1,4 +1,4 @@
-<article ng-controller="orderRegionController" class=" order-client-sent">
+<article ng-controller="orderRegionController" class="upload-files">
     <h1>
         <i18n>lystore.order.update</i18n>
     </h1>
@@ -177,23 +177,26 @@
                     class="four cell horizontal-margin"
                     ng-if="file.name || file.filename"
             >
-                [[orderParent.file.name || orderParent.file.filename]]
+                <a ng-click="orderRegion.downloadFile(file)">
+                    [[orderParent.file.name || orderParent.file.filename]]
+                </a>
             </div>
 
-            <div class="row basket-file-list"
+            <div class="order-region row"
                  ng-if="orderRegion.files.length > 0">
-                <ul class="four">
-                    <li ng-repeat="file in orderRegion.files" class="twelve basket-file row">
-                        <a class="cell three" ng-click="orderRegion.downloadFile(file)">[[ file.name ||
-                            file.filename ]]</a>
-                        <i class="cell one text-right"
-                           ng-class="{ close: file.status !== 'loading', loading: file.status === 'loading'}"
-                           ng-click="deleteOrderDocument(orderRegion, file)"></i>
+                <ul class="four order-region">
+                    <li ng-repeat="file in orderRegion.files" class="twelve row">
+                        <div class="eleven">
+                            [[ file.name || file.filename ]]
+                            <i class="one text-right"
+                               ng-class="{ close: file.status !== 'loading', loading: file.status === 'loading'}"
+                               ng-click="deleteOrderDocument(orderRegion, file)"></i>
+                        </div>
                     </li>
                 </ul>
             </div>
 
-            <div class="four cell horizontal-margin">
+            <div class="four cell">
                 <a ng-click="openAddDocumentsLightbox(orderParent)">
                     <!--<i class="attachment" />--><i18n>lystore.basket.add-file</i18n>
                 </a>
@@ -223,9 +226,8 @@
                   show="display.lightbox.validOrder">
             <container template="validOrder.lightbox"></container>
         </lightbox>
-        <lightbox show="display.lightbox.addDocuments" on-close="display.lightbox.addDocuments = false">
-            <upload-files end="endUpload"
-                          upload-uri="'/lystore/order/upload/file'"></upload-files>
+        <lightbox show="display.lightbox.addDocuments" on-close="endUpload()">
+            <container template="addDocuments.lightbox"></container>
         </lightbox>
         <div class="row">
             <div class="right-magnet">
