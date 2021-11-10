@@ -1,27 +1,5 @@
 <div class="upload-files">
     <div class="order-region row">
-        <h1>
-            <i18n>lystore.basket.add-file</i18n>
-        </h1>
-        <h3>
-            <i18n>lystore.orderRegion-documents</i18n>
-        </h3>
-        <div class="align-center" ng-if="orderTemp.files.length === 0">
-            <i18n>lystore.basket.no-file</i18n>
-        </div>
-        <div class="order-region row"
-             ng-if="orderTemp.files.length > 0">
-
-            <li ng-repeat="file in orderTemp.files track by $index" class="twelve row">
-                <div class="eleven">
-                    [[ file.name || file.filename ]]
-                    <i class="one text-right"
-                       ng-class="{ close: file.status !== 'loading', loading: file.status === 'loading'}"
-                        ng-click="deleteOrderDocumentCreate(file, $index)">
-                    </i>
-                </div>
-            </li>
-        </div>
         <h3>
             <i18n>lystore.orderRegion-new-documents</i18n>
         </h3>
@@ -37,7 +15,7 @@
             <article class="default flex-row align-center absolute-position">
                 <div class="three select-file">
                     <div class="hidden-content">
-                        <input id="input-file-order-region-create" type="file" class="file-input" multiple files-input-change="importFilesCreate(files)"
+                        <input id="input-file-order-region-update" type="file" class="file-input" multiple files-input-change="importFiles(files)"
                                ng-model="files"/>
                     </div>
                     <button class="file-button no-margin" translate content="library.file.choose"></button>
@@ -53,7 +31,7 @@
         </div>
     </div>
     <div class="row">
-        <button class="right-magnet" ng-click="endUploadCreate()" type="button">
+        <button class="right-magnet" ng-click="endUpload()" type="button">
             <i18n>Validate</i18n>
         </button>
     </div>
