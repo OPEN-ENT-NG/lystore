@@ -4,7 +4,7 @@
     <tr ng-repeat="campaign in campaignsForSelectInput">
         <td class="selectOperationRow aligne-text-center"
             ng-class="{ greyRow: $index % 2 === 1 }"
-            ng-click="selectCampaignShow(campaign)">
+            ng-click="selectCampaignWhenNoPref(campaign)">
             [[campaign.name]]
         </td>
     </tr>

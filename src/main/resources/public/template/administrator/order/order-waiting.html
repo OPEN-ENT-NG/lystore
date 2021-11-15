@@ -19,7 +19,7 @@
                         filtered-model="campaignSelection"
                         labels="comboLabels"
                         selection-event="syncOrders('WAITING',campaignSelection);selectCampaignAndInitFilter();"
-                        deselection-event="syncOrders('WAITING',campaignSelection);selectCampaignAndInitFilter();"
+                        deselection-event=" selectCampaignAndInitFilter();displayedOrders.all = [];"
                 ></multi-combo>
 
                 <!--                <select-->

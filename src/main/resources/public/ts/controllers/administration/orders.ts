@@ -149,7 +149,7 @@ export const orderController = ng.controller('orderController',
                 $scope.loadingArray = true;
                 Utils.safeApply($scope);
                 if (isPageOrderWaiting) {
-                    await $scope.syncOrders('WAITING');
+                    await $scope.syncOrders('WAITING',$scope.campaignSelection);
                     $scope.displayedOrders.all = $scope.displayedOrders.all.filter(order => order.id_campaign === $scope.campaign.id || $scope.campaign.id === -1);
                 }else if(isPageOrderSent)
                     await $scope.syncOrders('SENT');
@@ -166,7 +166,7 @@ export const orderController = ng.controller('orderController',
             Utils.safeApply($scope);
             $scope.ordersClient.filters = $scope.ordersClient.filters.filter( filterWord => filterWord !== filter);
             if (isPageOrderWaiting) {
-                await $scope.syncOrders('WAITING');
+                await $scope.syncOrders('WAITING',$scope.campaignSelection);
                 $scope.displayedOrders.all = $scope.displayedOrders.all.filter(order => order.id_campaign === $scope.campaign.id || $scope.campaign.id === -1);
             }else if(isPageOrderSent)
                 await $scope.syncOrders('SENT');
@@ -178,8 +178,15 @@ export const orderController = ng.controller('orderController',
         };
         $scope.dropCampaign = async (campaign) =>{
             $scope.campaignSelection = $scope.campaignSelection.filter( c => c !== campaign);
-            $scope.syncOrders('WAITING', $scope.campaignSelection);
-            $scope.selectCampaignAndInitFilter();
+            if($scope.campaignSelection.length === 0){
+                await $scope.selectCampaignAndInitFilter();
+                $scope.displayedOrders.all = [];
+                Utils.safeApply($scope);
+            }
+            else {
+                await $scope.syncOrders('WAITING', $scope.campaignSelection);
+                await  $scope.selectCampaignAndInitFilter();
+            }
         }
 
         $scope.addFilter = (filterWord: string, event?) => {
@@ -282,8 +289,8 @@ export const orderController = ng.controller('orderController',
             $scope.loadingArray = true;
             Utils.safeApply($scope);
             if(!campaignsSelected)
-            await $scope.ordersClient.sync(status, $scope.structures.all,$scope.contracts,
-                $scope.contractTypes, $scope.suppliers,$scope.campaigns, $scope.projects , $scope.titles);
+                await $scope.ordersClient.sync(status, $scope.structures.all,$scope.contracts,
+                    $scope.contractTypes, $scope.suppliers,$scope.campaigns, $scope.projects , $scope.titles);
             else{
                 await $scope.ordersClient.syncWaiting( $scope.structures.all,$scope.contracts,
                     $scope.contractTypes, $scope.suppliers,$scope.campaigns, $scope.projects , $scope.titles,campaignsSelected);
@@ -594,10 +601,12 @@ export const orderController = ng.controller('orderController',
             $scope.redirectTo(`/order/update/${order.id}`);
         };
         $scope.selectCampaignAndInitFilter = async () =>{
+            console.log($scope.campaignSelection)
             await $scope.selectCampaignShow(new Campaign(),$scope.campaignSelection);
             $scope.switchAllOrders();
             $scope.search.filterWords = [];
         };
+
 
         // $scope.test = () =>{
         //     let elements = document.getElementsByClassName('vertical-array-scroll');

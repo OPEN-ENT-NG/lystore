@@ -287,16 +287,18 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                                 }
                             })
                         });
-                        if (campaignPref) {
+                        console.log($scope.campaignSelection.length)
+                        if ($scope.campaignSelection.length && $scope.campaignSelection.length !== 0) {
                             template.open('administrator-main');
                             template.open('selectCampaign', 'administrator/order/select-campaign');
                             await $scope.initOrders('WAITING',$scope.campaignSelection);
                             $scope.selectCampaignShow(campaignPref);
                             $scope.loadingArray = false;
-
                         }
-                        else
+                        else{
+                            console.log("else")
                             await $scope.openLightSelectCampaign();
+                        }
                     }
                     else
                         await $scope.openLightSelectCampaign();
@@ -604,22 +606,22 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
         };
         $scope.syncCampaignInputSelected = async ():Promise<void> => {
             $scope.campaignsForSelectInput = [];
-            $scope.allCampaignsSelect = new Campaign(lang.translate("lystore.campaign.order.all"), '');
-            $scope.allCampaignsSelect.id = -1;
             await $scope.campaigns.sync();
             $scope.campaignsForSelectInput = [...$scope.campaigns.all];
-            $scope.campaignsForSelectInput.unshift( $scope.allCampaignsSelect);
 
         };
         $scope.openLightSelectCampaign = async ():Promise<void> => {
             template.open('administrator-main');
             template.open('selectCampaign', 'administrator/order/select-campaign');
             $scope.display.lightbox.lightBoxIsOpen = true;
-            $scope.initOrders('WAITING', $scope.campaignSelection);
             Utils.safeApply($scope);
         };
+        $scope.selectCampaignWhenNoPref = async (campaign:Campaign) =>{
+            $scope.campaignSelection.push(campaign)
+            await $scope.getOrderWaitingFiltered(campaign);
+        }
         $scope.selectCampaignShow = (campaign?:Campaign,campaignSelect?: Campaign[]): void => {
-            if (campaign && $scope.campaignSelection.length === 0){
+            if (campaign && $scope.campaignSelection.length === 0 && campaign.id){
                 $scope.campaignSelection.push(campaign);
             }
             if(campaignSelect){
@@ -644,6 +646,7 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
             if(initOrder) {
                 $scope.displayedOrders.all = $scope.ordersClient.all;
             }
+            $scope.loadingArray = false;
             template.open('administrator-main', 'administrator/order/order-waiting');
             Utils.safeApply($scope);
         };
