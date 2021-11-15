@@ -33,7 +33,7 @@ public class ImportCSVHelper {
     }
 
     public void getParsedCSV(final HttpServerRequest request, final String path, final Handler<Either<String, Buffer>> handler) {
-        getParsedCSV(request, path, true, handler);
+        getParsedCSV(request, path, false, handler);
     }
 
     /**

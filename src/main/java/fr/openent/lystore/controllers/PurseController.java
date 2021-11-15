@@ -31,6 +31,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.storage.Storage;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -46,14 +47,14 @@ import static org.entcore.common.utils.FileUtils.deleteImportPath;
 public class PurseController extends ControllerHelper {
 
 
-    private ImportCSVHelper importCSVHelper;
+    private final Storage storage;
     private StructureService structureService;
     private PurseService purseService;
     private CampaignService campaignService;
-
-    public PurseController(Vertx vertx) {
+    private String fileId ;
+    public PurseController(Vertx vertx, Storage storage) {
         super();
-        this.importCSVHelper = new ImportCSVHelper(vertx, this.eb);
+        this.storage = storage;
         this.structureService = new DefaultStructureService(Lystore.lystoreSchema);
         this.purseService = new DefaultPurseService();
         this.campaignService = new DefaultCampaignService(Lystore.lystoreSchema, "campaign");
@@ -64,49 +65,69 @@ public class PurseController extends ControllerHelper {
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(AdministratorRight.class)
     public void purse(final HttpServerRequest request) {
-        final String importId = UUID.randomUUID().toString();
-        final String path = config.getString("import-folder", "/tmp") + File.separator + importId;
-        importCSVHelper.getParsedCSV(request, path, new Handler<Either<String, Buffer>>() {
-            @Override
-            public void handle(Either<String, Buffer> event) {
-                if (event.isRight()) {
-
-                    Buffer content = event.right().getValue();
-                    parseCsv(request, path, content);
-                } else {
-                    renderError(request);
-                }
+        storage.writeUploadFile(request, entries -> {
+            if (!"ok".equals(entries.getString("status"))) {
+                renderError(request);
+                return;
             }
+            String fileId = entries.getString("_id");
+            String filename = entries.getJsonObject("metadata").getString("filename");
+            parseCsv(request,fileId,filename);
         });
+//        final String importId = UUID.randomUUID().toString();
+//        final String path = config.getString("import-folder", "/tmp") + File.separator + importId;
+//        importCSVHelper.getParsedCSV(request, path, new Handler<Either<String, Buffer>>() {
+//            @Override
+//            public void handle(Either<String, Buffer> event) {
+//                request.resume();
+//                if (event.isRight()) {
+//                    Buffer content = event.right().getValue();
+//                    storage.writeBuffer(content,"temp",".csv", storageEvent->{
+//                        fileId =storageEvent.getString("_id");
+//                        log.info("_id : " + fileId);
+//                        parseCsv(request, path, content);
+//                    });
+//                } else {
+////                    renderError(request);
+//                }
+////                request.resume();
+////
+//            }
+//        });
     }
 
     /**
      * Parse CSV file
      *
      * @param request Http request
-     * @param path    Directory path
+     * @param filename    Directory path
      */
-    private void parseCsv(final HttpServerRequest request, final String path, Buffer content) {
-        try {
+//    private void parseCsv(final HttpServerRequest request, final String path, Buffer content) {
+    private void parseCsv(final HttpServerRequest request, final String fileId, String filename) {
+        storage.readFile(fileId,event -> {
             CSVReader csv = new CSVReader(new InputStreamReader(
-                    new ByteArrayInputStream(content.getBytes())),
+                    new ByteArrayInputStream(event.getBytes())),
                     ';', '"', 1);
             String[] values;
             JsonArray uais = new fr.wseduc.webutils.collections.JsonArray();
             JsonObject amounts = new JsonObject();
-            while ((values = csv.readNext()) != null) {
-                amounts.put(values[0], values[1]);
-                uais.add(values[0]);
+            try {
+                while ((values = csv.readNext()) != null) {
+                    amounts.put(values[0], values[1]);
+                    uais.add(values[0]);
+                }
+                if (uais.size() > 0) {
+                    log.info(uais);
+                    log.info(amounts);
+                    matchUAIID(request, filename, uais, amounts, event.toString());
+                } else {
+                    returnErrorMessage(request, new Throwable("missing.uai"), filename);
+                }
+            } catch (IOException e) {
+                log.error("[Lystore@CSVImport]: csv exception", e);
+                returnErrorMessage(request, e.getCause(), filename);
             }
-            if (uais.size() > 0) {
-                matchUAIID(request, path, uais, amounts, content.toString());
-            } else {
-                returnErrorMessage(request, new Throwable("missing.uai"), path);
-            }
-        } catch (IOException e) {
-            log.error("[Lystore@CSVImport]: csv exception", e);
-            returnErrorMessage(request, e.getCause(), path);
-        }
+        });
     }
 
     /**
@@ -159,7 +180,6 @@ public class PurseController extends ControllerHelper {
                                             returnErrorMessage(request, new Throwable("lystore.statements.empty"), path);
                                             return;
                                         }
-
                                         JsonObject statementsValues = new JsonObject();
                                         JsonObject id;
                                         for (int i = 0; i < correctIds.size(); i++) {
@@ -428,7 +448,7 @@ public class PurseController extends ControllerHelper {
                     for (int i = 0; i < uais.size(); i++) {
                         uai = uais.getJsonObject(i);
                         values.put(uai.getString("uai"),
-                               exportValues.getDouble(uai.getString("id")));
+                                exportValues.getDouble(uai.getString("id")));
                     }
                     launchExport(values, request);
                 } else {
