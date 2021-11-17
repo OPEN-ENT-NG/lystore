@@ -281,28 +281,29 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                         let campaignPref;
                         $scope.campaignsForSelectInput.forEach(c => {
                             preferences.ordersWaitingCampaign.forEach(pref =>{
-                                if (c.id === pref){
+                                if (c.id === pref
+                                    && !$scope.campaignSelection.find(campaign => campaign.id === c.id )){
                                     $scope.campaignSelection.push(c);
                                     campaignPref = c;
                                 }
                             })
                         });
-                        if (campaignPref) {
+                        if ($scope.campaignSelection.length && $scope.campaignSelection.length !== 0) {
                             template.open('administrator-main');
                             template.open('selectCampaign', 'administrator/order/select-campaign');
                             await $scope.initOrders('WAITING',$scope.campaignSelection);
                             $scope.selectCampaignShow(campaignPref);
-                            $scope.loadingArray = false;
-
                         }
-                        else
+                        else{
                             await $scope.openLightSelectCampaign();
+                        }
                     }
                     else
                         await $scope.openLightSelectCampaign();
                 }
                 else
                     await $scope.openLightSelectCampaign();
+                $scope.loadingArray = false;
                 Utils.safeApply($scope);
             },
             orderSent: async () => {
@@ -604,23 +605,26 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
         };
         $scope.syncCampaignInputSelected = async ():Promise<void> => {
             $scope.campaignsForSelectInput = [];
-            $scope.allCampaignsSelect = new Campaign(lang.translate("lystore.campaign.order.all"), '');
-            $scope.allCampaignsSelect.id = -1;
             await $scope.campaigns.sync();
             $scope.campaignsForSelectInput = [...$scope.campaigns.all];
-            $scope.campaignsForSelectInput.unshift( $scope.allCampaignsSelect);
 
         };
         $scope.openLightSelectCampaign = async ():Promise<void> => {
             template.open('administrator-main');
             template.open('selectCampaign', 'administrator/order/select-campaign');
             $scope.display.lightbox.lightBoxIsOpen = true;
-            $scope.initOrders('WAITING', $scope.campaignSelection);
             Utils.safeApply($scope);
         };
-        $scope.selectCampaignShow = (campaign?:Campaign): void => {
-            if (campaign && $scope.campaignSelection.length === 0){
+        $scope.selectCampaignWhenNoPref = async (campaign:Campaign) =>{
+            $scope.campaignSelection.push(campaign)
+            await $scope.getOrderWaitingFiltered(campaign);
+        }
+        $scope.selectCampaignShow = (campaign?:Campaign,campaignSelect?: Campaign[]): void => {
+            if (campaign && $scope.campaignSelection.length === 0 && campaign.id){
                 $scope.campaignSelection.push(campaign);
+            }
+            if(campaignSelect){
+                $scope.campaignSelection = campaignSelect;
             }
             let idsCampaign = [];
             $scope.campaignSelection.forEach(c =>{
@@ -641,6 +645,7 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
             if(initOrder) {
                 $scope.displayedOrders.all = $scope.ordersClient.all;
             }
+            $scope.loadingArray = false;
             template.open('administrator-main', 'administrator/order/order-waiting');
             Utils.safeApply($scope);
         };

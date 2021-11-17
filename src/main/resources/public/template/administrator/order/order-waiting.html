@@ -8,7 +8,7 @@
     <div ng-show="!loadingArray">
         <div class="row">
             <h1 class="twelve-mobile six cell"><i18n>lystore.orders.validations.waiting</i18n></h1>
-            <div class="right-magnet three cell">
+            <div class="right-magnet three cell" ng-click="initMultiCombo()">
                 <multi-combo
                         class="twelve"
                         title="Selection de campagne(s) "
@@ -16,10 +16,10 @@
                         combo-model="campaigns.all"
                         search-on="name"
                         order-by="name"
-                        filtered-model="campaignSelection"
+                        filtered-model="campaignSelectionMulti"
                         labels="comboLabels"
-                        selection-event="syncOrders('WAITING',campaignSelection);selectCampaignAndInitFilter();"
-                        deselection-event="syncOrders('WAITING',campaignSelection);selectCampaignAndInitFilter();"
+                        selection-event="campaignSelection= campaignSelectionMulti;syncOrders('WAITING',campaignSelection);selectCampaignAndInitFilter();"
+                        deselection-event=" campaignSelection= campaignSelectionMulti;selectCampaignAndInitFilter();displayedOrders.all = [];"
                 ></multi-combo>
 
                 <!--                <select-->

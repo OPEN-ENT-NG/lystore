@@ -169,7 +169,6 @@ export class Campaigns extends Selection<Campaign> {
             this.all = Mix.castArrayAs(Campaign, data);
             this.all.forEach(c =>{
                 if(c.id == 2)
-                    console.log(c)
                 c.accessible = c.accessible
                     ||
                     (c.end_date != null && c.start_date != null && moment(c.start_date).diff(moment(),'days') <= 0
