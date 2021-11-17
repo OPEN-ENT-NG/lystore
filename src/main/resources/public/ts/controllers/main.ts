@@ -281,22 +281,20 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                         let campaignPref;
                         $scope.campaignsForSelectInput.forEach(c => {
                             preferences.ordersWaitingCampaign.forEach(pref =>{
-                                if (c.id === pref){
+                                if (c.id === pref
+                                    && !$scope.campaignSelection.find(campaign => campaign.id === c.id )){
                                     $scope.campaignSelection.push(c);
                                     campaignPref = c;
                                 }
                             })
                         });
-                        console.log($scope.campaignSelection.length)
                         if ($scope.campaignSelection.length && $scope.campaignSelection.length !== 0) {
                             template.open('administrator-main');
                             template.open('selectCampaign', 'administrator/order/select-campaign');
                             await $scope.initOrders('WAITING',$scope.campaignSelection);
                             $scope.selectCampaignShow(campaignPref);
-                            $scope.loadingArray = false;
                         }
                         else{
-                            console.log("else")
                             await $scope.openLightSelectCampaign();
                         }
                     }
@@ -305,6 +303,7 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                 }
                 else
                     await $scope.openLightSelectCampaign();
+                $scope.loadingArray = false;
                 Utils.safeApply($scope);
             },
             orderSent: async () => {

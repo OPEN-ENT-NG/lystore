@@ -269,8 +269,6 @@ export class OrdersClient extends Selection<OrderClient> {
                campaignFilter += `idCampaign=${campaign.id}&`;
            })
             campaignFilter.slice(0, -1)
-            console.log("campaignFilter")
-            console.log(campaignFilter)
             const { data } = await http.get(  `/lystore/orders?status=WAITING&${queriesFilter}&${campaignFilter}`);
             datas = data
         }

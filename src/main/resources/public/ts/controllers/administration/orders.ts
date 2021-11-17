@@ -13,6 +13,7 @@ export const orderController = ng.controller('orderController',
         ($scope.ordersClient.selected[0]) ? $scope.orderToUpdate = $scope.ordersClient.selected[0] : $scope.orderToUpdate = new OrderClient();
         $scope.allOrdersSelected = false;
         $scope.tableFields = orderWaiting;
+        $scope.campaignSelectionMulti = [];
         let isPageOrderWaiting = $location.path() === "/order/waiting";
         let isPageOrderSent = $location.path() === "/order/sent";
 
@@ -601,13 +602,19 @@ export const orderController = ng.controller('orderController',
             $scope.redirectTo(`/order/update/${order.id}`);
         };
         $scope.selectCampaignAndInitFilter = async () =>{
-            console.log($scope.campaignSelection)
             await $scope.selectCampaignShow(new Campaign(),$scope.campaignSelection);
             $scope.switchAllOrders();
             $scope.search.filterWords = [];
         };
 
-
+        $scope.initMultiCombo = () =>{
+            //copier les objets de campagne
+            $scope.campaignSelection.forEach(c =>{
+                if(!$scope.campaignSelectionMulti.find(campaign => campaign.id === c.id ))
+                    $scope.campaignSelectionMulti.push($scope.campaigns.all.find(campaign => campaign.id === c.id ))
+            })
+            Utils.safeApply($scope)
+        }
         // $scope.test = () =>{
         //     let elements = document.getElementsByClassName('vertical-array-scroll');
         //     if(elements[0])
