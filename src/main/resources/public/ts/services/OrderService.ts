@@ -1,5 +1,6 @@
 import {ng} from 'entcore'
 import http, {AxiosResponse} from 'axios';
+import {Equipment} from "../model";
 
 export interface FileLystore {
     file_id: number;
@@ -26,34 +27,44 @@ interface IStatementOrderBody {
 
 export interface IStatementsOrdersService {
     create(statementsOrders: IStatementOrderBody): Promise<AxiosResponse>;
+    update(statementsOrders: IStatementOrderBody, orderId: number): Promise<AxiosResponse>;
+}
+
+function getOrderData(statementsOrders: IStatementOrderBody) {
+    const formData: FormData = new FormData();
+    const headers = {
+        'headers':
+            {'Content-type': 'multipart/form-data', 'Files': statementsOrders.files.length}
+    };
+    formData.append('id_campaign', statementsOrders.id_campaign);
+    formData.append('id_structure', statementsOrders.id_structure);
+    formData.append('title_id', statementsOrders.title_id);
+    formData.append('id_operation', statementsOrders.id_operation);
+    formData.append('equipment_key', statementsOrders.equipment_key);
+    formData.append('equipment', statementsOrders.equipment);
+    formData.append('comment', statementsOrders.comment);
+    formData.append('amount', statementsOrders.amount);
+    formData.append('price', statementsOrders.price);
+    formData.append('equipment_name', statementsOrders.equipment_name);
+    formData.append('technical_spec', statementsOrders.technical_spec);
+    formData.append('id_contract', statementsOrders.id_contract);
+    formData.append('name_structure', statementsOrders.name_structure);
+    statementsOrders.files.forEach(file => {
+        formData.append('fileToUpload[]', file);
+    });
+    return {formData, headers};
 }
 
 export const statementsOrdersService: IStatementsOrdersService = {
+
     create: async (statementsOrders: IStatementOrderBody): Promise<AxiosResponse> => {
-        const formData: FormData = new FormData();
-        const headers = {'headers':
-                {'Content-type': 'multipart/form-data', 'Files': statementsOrders.files.length}
-        };
-
-        formData.append('id_campaign', statementsOrders.id_campaign);
-        formData.append('id_structure', statementsOrders.id_structure);
-        formData.append('title_id', statementsOrders.title_id);
-        formData.append('id_operation', statementsOrders.id_operation);
-        formData.append('equipment_key', statementsOrders.equipment_key);
-        formData.append('equipment', statementsOrders.equipment);
-        formData.append('comment', statementsOrders.comment);
-        formData.append('amount', statementsOrders.amount);
-        formData.append('price', statementsOrders.price);
-        formData.append('equipment_name', statementsOrders.equipment_name);
-        formData.append('technical_spec', statementsOrders.technical_spec);
-        formData.append('id_contract', statementsOrders.id_contract);
-        formData.append('name_structure', statementsOrders.name_structure);
-        statementsOrders.files.forEach(file => {
-            formData.append('fileToUpload[]', file);
-        });
-
-
+        const {formData, headers} = getOrderData(statementsOrders);
         return http.post(`/lystore/region/orders/`, formData, headers);
+    },
+    update(statementsOrders: IStatementOrderBody , orderId: number): Promise<AxiosResponse> {
+        const {formData, headers} = getOrderData(statementsOrders);
+        return http.put(`/lystore/region/order/${orderId}`, formData, headers);
     }
+
 }
 export const StatementsOrdersService = ng.service('StatementsOrdersService', (): IStatementsOrdersService => statementsOrdersService);

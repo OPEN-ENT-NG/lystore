@@ -112,23 +112,28 @@ public class OrderRegionController extends BaseController {
     @ResourceFilter(ManagerRight.class)
     public void updateAdminOrder(final HttpServerRequest request) {
         Integer idOrder = Integer.parseInt(request.getParam("id"));
-        UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-            @Override
-            public void handle(UserInfos event) {
-                RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
-                    @Override
-                    public void handle(JsonObject order) {
-                        RequestUtils.bodyToJson(request, orderRegion -> orderRegionService.updateOrderRegion(order, idOrder, event, Logging.defaultResponseHandler(eb,
-                                request,
-                                Contexts.ORDERREGION.toString(),
-                                Actions.UPDATE.toString(),
-                                idOrder.toString(),
-                                new JsonObject().put("orderRegion", orderRegion))));
-                    }
+        FileHelper.uploadMultipleFiles("Files", request, storage, vertx.fileSystem())
+                .onSuccess(files -> UserUtils.getUserInfos(eb, request, user -> {
+                            request.endHandler(aVoid -> {
+                                JsonObject order = formatDataToJson(request);
+                                orderRegionService.updateOrderRegion(order, idOrder,files, user, Logging.defaultResponseHandler(eb,
+                                        request,
+                                        Contexts.ORDERREGION.toString(),
+                                        Actions.UPDATE.toString(),
+                                        idOrder.toString(),
+                                        new JsonObject().put("orderRegion", order)));
+                            });
+                        })
+                )
+                .onFailure(err -> {
+                    String message = String.format("[Lystore@%s::createAdminOrder] An error has occurred " +
+                                    "during upload files: %s",
+                            this.getClass().getSimpleName(), err.getMessage());
+                    log.error(message, err);
+                    renderError(request);
                 });
-            }
-        });
     }
+
 
     @Post("/region/orders/")
     @ApiDoc("Create orders from a region with attachments (0 or n)")
