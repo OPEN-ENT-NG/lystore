@@ -5,14 +5,10 @@ import fr.openent.lystore.model.file.Attachment;
 import fr.openent.lystore.service.OrderRegionService;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.webutils.Either;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import io.vertx.core.logging.JULLogDelegate;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.service.impl.SqlCrudService;
@@ -20,8 +16,10 @@ import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.UserInfos;
 
-import java.lang.reflect.Array;
 import java.util.List;
+
+import static fr.openent.lystore.utils.OrderUtils.safeGetDouble;
+import static org.entcore.common.email.impl.PostgresEmailHelper.logger;
 
 public class DefaultOrderRegionService extends SqlCrudService implements OrderRegionService {
 
@@ -161,15 +159,44 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 .put("action", "prepared");
     }
 
-    public void updateOrderRegion(JsonObject order, int idOrder, UserInfos user, Handler<Either<String, JsonObject>> handler) {
-        String query = "";
+    public void updateOrderRegion(JsonObject order, int idOrder, List<Attachment> files, UserInfos user, Handler<Either<String, JsonObject>> handler) {
+        JsonArray statements = new JsonArray();
+        statements.add(deletePreviousFilesStatement(idOrder));
+        statements.add(getUpdateOrderStatement(order,idOrder,user));
+
+        for(Attachment file : files){
+            statements.add(addFileToOrder(idOrder, file));
+        }
+        sql.transaction(statements, new Handler<Message<JsonObject>>() {
+            @Override
+            public void handle(Message<JsonObject> event) {
+                handler.handle(SqlQueryUtils.getTransactionHandler(event, idOrder));
+            }
+        });
+    }
+
+    private JsonObject deletePreviousFilesStatement(int idOrder) {
+        String statement = "DELETE FROM " + Lystore.lystoreSchema + ".order_region_file" +
+                " WHERE id_order_region_equipment =  ? ;" ;
+
+        JsonArray params = new JsonArray()
+                .add(idOrder);
+
+        return new JsonObject()
+                .put("statement", statement)
+                .put("values", params)
+                .put("action", "prepared");
+    }
+
+    private JsonObject getUpdateOrderStatement(JsonObject order, int idOrder, UserInfos user) {
+        String statement = "";
         JsonArray params = new JsonArray();
-        query = "" +
+        statement = "" +
                 "UPDATE " + Lystore.lystoreSchema + ".\"order-region-equipment\" " +
                 " SET " +
                 "price = ?, " +
                 "amount = ?, " +
-                "modification_date = ? , " +
+                "modification_date = NOW() , " +
                 "owner_name = ? , " +
                 "owner_id = ?, " +
                 "name = ?, " +
@@ -177,33 +204,36 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 "id_type = ?, " +
                 "cause_status = 'IN PROGRESS', ";
 
-        query += order.getInteger("rank") != -1 ? "rank=?," : "rank = NULL, ";
-        query += order.containsKey("id_operation") ? "id_operation = ?, " : "";
-        query += order.containsKey("id_contract") ? "id_contract = ?, " : "";
-        query += "comment = ? " +
-                "WHERE id = ?" +
+        statement += order.containsKey("rank") && order.getInteger("rank") != -1 ? "rank=?," : "rank = NULL, ";
+        statement += order.containsKey("id_operation") ? "id_operation = ?, " : "";
+        statement += order.containsKey("id_contract") ? "id_contract = ?, " : "";
+        statement += "comment = ? " +
+                "WHERE id = ? " +
                 "RETURNING id;";
 
-        params.add(order.getDouble("price"))
-                .add(order.getInteger("amount"))
-                .add(order.getString("creation_date"))
-                .add(user.getUsername())
-                .add(user.getUserId())
-                .add(order.getString("name"))
-                .add(order.getInteger("equipment_key"))
-                .add(order.getInteger("id_type"));
-        if (order.getInteger("rank") != -1) {
+        params.add(safeGetDouble(order,"price"));
+        params.add(Integer.parseInt(order.getString("amount")));
+        params.add(user.getUsername());
+        params.add(user.getUserId());
+        params.add(order.getString("equipment_name"));
+        params.add(Integer.parseInt(order.getString("equipment_key")));
+        params.add(order.getInteger("id_type"));
+        //TODO RANK
+        if ( order.containsKey("rank") && order.getInteger("rank") != -1) {
             params.add(order.getInteger("rank"));
         }
         if (order.containsKey("id_operation")) {
-            params.add(order.getInteger("id_operation"));
+            params.add(Integer.parseInt(order.getString("id_operation")));
         }
         if (order.containsKey("id_contract")) {
-            params.add(order.getInteger("id_contract"));
+            params.add(Integer.parseInt(order.getString("id_contract")));
         }
         params.add(order.getString("comment"))
                 .add(idOrder);
-        Sql.getInstance().prepared(query, params, SqlResult.validUniqueResultHandler(handler));
+        return new JsonObject()
+                .put("statement", statement)
+                .put("values", params)
+                .put("action", "prepared");
     }
 
     @Override

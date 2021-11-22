@@ -118,16 +118,51 @@ export const orderRegionController = ng.controller('orderRegionController',
         };
 
         $scope.updateLinkedOrderConfirm = async ():Promise<void> => {
+            //ici changer
             let orderRegion = new OrderRegion();
             orderRegion.createFromOrderClient($scope.orderToUpdate);
             orderRegion.equipment_key = $scope.orderToUpdate.equipment_key;
             orderRegion.id_contract = orderRegion.equipment.id_contract;
-            $scope.cancelUpdate();
-            if($scope.orderToUpdate.typeOrder === "region"){
-                await orderRegion.update($scope.orderToUpdate.id);
-            } else {
-                await orderRegion.create();
+            orderRegion.files = $scope.orderRegion.files
+            // $scope.cancelUpdate();
+            console.log(orderRegion)
+            console.log(orderRegion.files)
+            console.log($scope.orderRegion )
+            console.log($scope.orderToUpdate )
+            console.log($scope.orderToUpdate.id)
+            const promises: Array<Promise<AxiosResponse>> = [];
+            let statement =  statementsOrdersService.update({
+                id_campaign: $scope.orderToUpdate.campaign.id,
+                id_structure: $scope.orderToUpdate.id_structure,
+                title_id: $scope.orderToUpdate.project,
+                id_operation: $scope.orderToUpdate.id_operation,
+                equipment_key: $scope.orderToUpdate.equipment.id,
+                equipment: $scope.orderToUpdate.equipment,
+                comment: $scope.orderToUpdate.comment,
+                amount: $scope.orderToUpdate.amount,
+                price: $scope.orderToUpdate.price,
+                equipment_name: $scope.orderToUpdate.equipment.name,
+                technical_spec: $scope.orderToUpdate.equipment.technical_specs,
+                id_contract: $scope.orderToUpdate.equipment.id_contract,
+                name_structure: $scope.orderToUpdate.structure.name,
+                files: orderRegion.files
+            },$scope.orderToUpdate.id);
+            console.log(statement)
+            promises.push(statement)
+            try {
+                let responses: Array<AxiosResponse> = await Promise.all(promises);
+                if (responses) {
+
+                }
+            }catch (e) {
+                //error msg
+
             }
+            // if($scope.orderToUpdate.typeOrder === "region"){
+            //     await orderRegion.update($scope.orderToUpdate.id);
+            // } else {
+            //     await orderRegion.create();
+            // }
             toasts.confirm('lystore.order.region.update');
         };
         $scope.isValidFormUpdate = ():boolean => {
@@ -385,6 +420,7 @@ export const orderRegionController = ng.controller('orderRegionController',
         }
 
         $scope.openAddDocumentsLightbox = (orderRegion: OrderRegion) => {
+            console.log(orderRegion)
             $scope.order = JSON.parse(JSON.stringify(orderRegion));
             $scope.files = [];
             $scope.display.lightbox.addDocuments = true;
