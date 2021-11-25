@@ -194,6 +194,10 @@ body.lystore {
     }
   }
 
+  .label-cell {
+    font-size: 18px;
+  }
+
   .label-row {
     display: inline-flex;
     input {
@@ -288,10 +292,19 @@ body.lystore {
       .in-ligne{
         display: inline-flex;
       }
+      .button-add-basket{
+        margin-left: 30px;
+      }
+      h4{
+        font-weight: 400 !important;
+        margin-top: 10px;
+        margin-bottom: 10px;
+        width: auto;
+      }
       .add-basket{
         h1{
           margin:0;
-          line-height: 100px;
+          line-height: 50px;
         }
         .quantity{
           height: 50px;
@@ -304,7 +317,7 @@ body.lystore {
           }
           h4{
             font-weight: 400 !important;
-            margin-right: 5px;
+            margin-right: 10px;
             margin-top: 0;
             width: auto;
           }

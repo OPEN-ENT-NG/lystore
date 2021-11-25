@@ -1,33 +1,57 @@
 <div class="card cell left-detail-box" ng-show="display.equipment">
-    <h1 class="row">[[basket.equipment.name]] </h1>
+    <div class="add-basket row">
+        <h1 class="eight cell twelve-mobile">[[basket.equipment.name]] </h1>
+        <div class="right-magnet centered-text">
+            <input type="button"  ng-click="addBasketItem(basket)" class="button-add-basket" i18n-value="lystore.add.to.basket" ng-disabled="!validArticle(basket.equipment)" />
+        </div>
+        <div class="right-magnet centered-text quantity">
+            <h4 class="cell"><i18n>lystore.quantity</i18n></h4>
+            <i class="moins" ng-click="amountDecrease()"></i>
+            <input type="number"
+                   step="1"
+                   min="0"
+                   ng-keypress="avoidDecimals($event)"
+                   class="numberWithoutArrow"
+                   ng-model="basket.amount" class="three"/>
+            <i class="plus" ng-click="amountIncrease()"></i>
+        </div>
+    </div>
+
     <div class="twelve cell">
         <div class="four cell twelve-mobile">
             <img class="img-equipment" ng-src="[[basket.equipment.image]]" ng-show="basket.equipment.image!==null && basket.equipment.image!==undefined " />
             <img class="img-equipment" skin-src="/img/illustrations/pages-default.png" ng-show="basket.equipment.image===null || basket.equipment.image===undefined "/>
         </div>
         <div class="eight cell twelve-mobile" >
-            <div class="summary" ng-show="basket.equipment.description !== null" >
-                <p ng-bind-html="basket.equipment.description"></p>
-            </div>
             <article class="add-basket centered row twelve vertical-spacing twelve-mobile">
-                <div class="six cell twelve-mobile">
-                    <h1 class="centered-text" ng-bind="(calculatePriceOfEquipmentHT(basket.equipment, true, 2) | currency) + 'HT'"></h1>
-                </div>
-                <div class="six cell twelve-mobile">
-                    <div class="centered-text quantity">
-                        <h4 class="cell"><i18n>lystore.quantity</i18n></h4>
-                        <i class="moins" ng-click="amountDecrease()"></i>
-                        <input type="number"
-                               step="1"
-                               min="0"
-                               ng-keypress="avoidDecimals($event)"
-                               class="numberWithoutArrow"
-                               ng-model="basket.amount" class="three"/>
-                        <i class="plus" ng-click="amountIncrease()"></i>
+                <div class="six row twelve-mobile">
+                    <div class="six cell">
+                        <div class="twelve row">
+                            <label class="label-cell">
+                                <h4>
+                                    <i18n>lystore.amount.HT</i18n>
+                                    <span ng-bind="calculatePriceOfEquipmentHT(basket.equipment, true, 2) | currency" ></span>
+                                </h4>
+                            </label>
+                        </div>
+                        <div class="twelve row">
+                            <label class="label-cell">
+                                <h4>
+                                    <i18n>lystore.tax.equipment</i18n>
+                                    <span ng-bind="taxes.all[0].value + '%'"></span>
+                                </h4>
+                            </label>
+                        </div>
                     </div>
-                    <div class="centered-text row"><input type="button"  ng-click="addBasketItem(basket)" i18n-value="lystore.add.to.basket" ng-disabled="!validArticle(basket.equipment)" /> </div>
+                    <div class="six cell">
+                        <h1 class="right-magnet" ng-bind="(calculatePriceTTC(basket.equipment.price, taxes.all[0].value, 2) | currency) + 'TTC'"></h1>
+                    </div>
                 </div>
             </article>
+            <div ng-show="basket.equipment.description !== null" >
+                <h2><i18n>lystore.campaigns.description</i18n></h2>
+                <p ng-bind-html="basket.equipment.description"></p>
+            </div>
         </div>
     </div>
 
@@ -63,6 +87,12 @@
                 &nbsp;
             </td>
             <td class="three">
+                <i18n>lystore.price</i18n>
+            </td>
+            <td class="three">
+                <i18n>lystore.tax</i18n>
+            </td>
+            <td class="three">
                 <i18n>lystore.price.TTC</i18n>
             </td>
             </thead>
@@ -79,7 +109,15 @@
                     </label>
                 </td>
                 <td >[[option.name]]</td>
-                <td class="three"><span ng-bind="calculatePriceTTC(option.price, option.tax_amount, 2) | currency"></span></td>
+                <td class="three">
+                    <span ng-bind="calculatePriceOfOptionHT(option, 2) | currency"></span>
+                </td>
+                <td class="three">
+                    <span ng-bind="option.tax_amount + '%'"></span>
+                </td>
+                <td class="three">
+                    <span ng-bind="calculatePriceTTC(option.price, option.tax_amount, 2) | currency"></span>
+                </td>
             </tr>
             </tbody>
         </table>
