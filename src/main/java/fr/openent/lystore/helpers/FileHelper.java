@@ -4,10 +4,7 @@ import fr.openent.lystore.model.file.Attachment;
 import fr.openent.lystore.model.file.Metadata;
 import fr.wseduc.swift.utils.FileUtils;
 import fr.wseduc.webutils.DefaultAsyncResult;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
-import io.vertx.core.Promise;
+import io.vertx.core.*;
 import io.vertx.core.file.FileSystem;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
@@ -20,7 +17,9 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static fr.wseduc.webutils.Utils.isNotEmpty;
 
@@ -44,23 +43,34 @@ public class FileHelper {
      * @param headerCount   the name of your header used to fetch your total number file
      * @param request       request HttpServerRequest
      * @param storage       Storage vertx
-     * @param fileSystem    FileSystem vertx
+     * @param vertx    Vertx vertx
      *
      * @return list of {@link Attachment} (and all your files will be uploaded)
      * (process will continue in background to stream all these files in your storage)
      */
     public static Future<List<Attachment>> uploadMultipleFiles(String headerCount, HttpServerRequest request, Storage storage,
-                                                               FileSystem fileSystem) {
+                                                               Vertx vertx, JsonObject config) {
+        request.response().setChunked(true);
         request.setExpectMultipart(true);
         Promise<List<Attachment>> promise = Promise.promise();
         String totalFilesToUpload = request.getHeader(headerCount);
+        AtomicBoolean responseSent= new AtomicBoolean();
+        responseSent.set(false);
+
+        List<String> fileIds = new ArrayList<>();
+        AtomicReference<List<String>> pathIds= new AtomicReference<>();
+        for(int i = 0 ; i< Integer.parseInt(totalFilesToUpload);i++){
+            fileIds.add(UUID.randomUUID().toString());
+        }
+        log.info("size : ");
+        log.info(fileIds.size());
+        String path  = " ";
 
         // return empty arrayList if no header is sent (meaning no files to upload)
         if (totalFilesToUpload == null || totalFilesToUpload.isEmpty() || Integer.parseInt(totalFilesToUpload) == 0) {
             promise.complete(new ArrayList<>());
             return promise.future();
         }
-
         AtomicInteger incrementFile = new AtomicInteger(0);
         List<Attachment> listMetadata = new ArrayList<>();
         request.exceptionHandler(event -> {
@@ -70,29 +80,25 @@ public class FileHelper {
             promise.fail(event.getMessage());
         });
 
-        request.uploadHandler(upload -> {
-            final String id = UUID.randomUUID().toString();
-            final JsonObject metadata = FileUtils.metadata(upload);
-            final String path;
-            listMetadata.add(new Attachment(id, new Metadata(metadata)));
-            try {
-                path = getFilePath(id, storage.getBucket());
-                mkdirsIfNotExists(fileSystem, path, directory -> {
-                    if (directory.failed()) {
-                        String message = String.format("[Lystore@%s::uploadMultipleFiles] Failed to create directory in storage: %s",
-                                FileHelper.class.getSimpleName(), directory.cause().getMessage());
-                        log.error(message, directory.cause());
-                        promise.fail(message);
-                        return;
-                    }
-                    upload.streamToFileSystem(path);
-                });
-                incrementFile.set(incrementFile.get() + 1);
-            } catch (FileNotFoundException e) {
-                log.error(e.getMessage(), e);
-                promise.fail(e.getMessage());
-                return;
+        request.pause();
+        request.exceptionHandler(new Handler<Throwable>() {
+            @Override
+            public void handle(Throwable event) {
+                promise.fail(event.getMessage());
             }
+        });
+
+        request.uploadHandler(upload -> {
+            String finalPath = pathIds.get().get(incrementFile.get());
+            final JsonObject metadata = FileUtils.metadata(upload);
+            listMetadata.add(new Attachment(fileIds.get(incrementFile.get()), new Metadata(metadata)));
+                    upload.streamToFileSystem(finalPath).endHandler(handler ->{
+                        log.info("done");
+                    });
+            incrementFile.set(incrementFile.get() + 1);
+
+
+
 
             upload.exceptionHandler(err -> {
                 String message = String.format("[Lystore@%s::uploadMultipleFiles] An exception has occurred during http upload process: %s",
@@ -101,13 +107,56 @@ public class FileHelper {
                 promise.fail(message);
             });
             upload.endHandler(aVoid -> {
-                if (incrementFile.get() == Integer.parseInt(totalFilesToUpload)) {
+                log.info("endHandler");
+
+                if (incrementFile.get() == Integer.parseInt(totalFilesToUpload) && !responseSent.get()) {
+                    responseSent.set(true);
+                    for(Attachment at : listMetadata){
+                        log.info(at.id());
+                    }
                     promise.complete(listMetadata);
                 }
             });
 
         });
+        request.endHandler(end ->{
+            log.info("request endHandler");
+            log.info(end);
+            log.info(request.formAttributes().entries());
+        });
 
+        List<Future> makeFolders = new ArrayList<>();
+
+        for(int i=0;i< fileIds.size();i++) {
+            makeFolders.add(makeFolder( storage, vertx,fileIds, path, i));
+        }
+
+        CompositeFuture.all(makeFolders).onSuccess(success ->{
+            pathIds.set(success.list());
+            request.resume();
+        }).onFailure(failure ->{
+            promise.fail(failure.getMessage());
+        });
+
+        return promise.future();
+    }
+
+    private static Future<String> makeFolder( Storage storage, Vertx vertx, List<String> fileIds, String path, int i) {
+        Promise<String> promise = Promise.promise();
+        try {
+            path = getFilePath(fileIds.get(i), storage.getBucket());
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        String finalPath = path;
+        mkdirsIfNotExists(vertx.fileSystem(), path, event -> {
+            if (event.succeeded()) {
+                log.info("MKDIR");
+                promise.complete(finalPath);
+            } else {
+                promise.fail("mkdir.error: ");
+            }
+        });
         return promise.future();
     }
 

@@ -14,6 +14,7 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
+import io.vertx.core.buffer.Buffer;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -29,9 +30,6 @@ import org.entcore.common.user.UserUtils;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultResponseHandler;
 
@@ -112,7 +110,8 @@ public class OrderRegionController extends BaseController {
     @ResourceFilter(ManagerRight.class)
     public void updateAdminOrder(final HttpServerRequest request) {
         Integer idOrder = Integer.parseInt(request.getParam("id"));
-        FileHelper.uploadMultipleFiles("Files", request, storage, vertx.fileSystem())
+        //TODO effacer storage
+        FileHelper.uploadMultipleFiles("Files", request, storage, vertx , config)
                 .onSuccess(files -> UserUtils.getUserInfos(eb, request, user -> {
                             request.endHandler(aVoid -> {
                                 JsonObject order = formatDataToJson(request);
@@ -140,7 +139,7 @@ public class OrderRegionController extends BaseController {
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(ManagerRight.class)
     public void createAdminOrder(final HttpServerRequest request) {
-        FileHelper.uploadMultipleFiles("Files", request, storage, vertx.fileSystem())
+        FileHelper.uploadMultipleFiles("Files", request, storage, vertx , config)
                 .onSuccess(files -> UserUtils.getUserInfos(eb, request, user -> {
                             request.endHandler(aVoid -> {
                                 JsonObject order = formatDataToJson(request);
@@ -245,6 +244,7 @@ public class OrderRegionController extends BaseController {
                 new JsonObject().put("ids", idsOrders))));
     }
 
+    @Deprecated
     @Get("/order/region/create/file/:fileId")
     @ApiDoc("Download specific file")
     @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
@@ -259,6 +259,47 @@ public class OrderRegionController extends BaseController {
         });
     }
 
+    @Get("/file/:id")
+    @ApiDoc("download a file")
+    @SecuredAction(value = "",type = ActionType.AUTHENTICATED)
+    public void getFile(HttpServerRequest request) {
+        String fileId = request.getParam("id");
+        storage.sendFile(fileId,"test.csv",request,false,new JsonObject());
+    }
+
+    @Get("/orderRegion/:id/files")
+    @ApiDoc("Download specific file")
+    @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+    public void getFilesOrderRegion(HttpServerRequest request) {
+        Integer orderId = Integer.valueOf(request.getParam("id"));
+        orderRegionService.getFilesId(orderId ,event ->{
+            try {
+                JsonArray filesId = event.right().getValue();
+                List<Buffer> files = new ArrayList<>();
+                for (int i = 0; i < filesId.size(); i++) {
+                    String fileId = filesId.getJsonObject(i).getString("id");
+                    log.info(fileId);
+                    storage.readFile(fileId, bufferEvent -> {
+                        files.add(bufferEvent);
+                        log.info(bufferEvent);
+                        log.info(files.size());
+                    });
+//
+                    storage.sendFile(fileId, "test", request, false, new JsonObject());
+                }
+            }catch (NullPointerException e){
+                request.response().setStatusCode(201).end();
+            }
+
+        });
+//        orderRegionService.getFileOrderRegion(fileId, event -> {
+//            if (event.isRight()) {
+//                storage.sendFile(fileId, event.right().getValue().getString("filename"), request, false, new JsonObject());
+//            } else {
+//                notFound(request);
+//            }
+//        });
+    }
     /**
      * //     * Delete file from storage based on identifier
      * //     *
