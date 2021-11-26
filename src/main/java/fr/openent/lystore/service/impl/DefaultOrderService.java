@@ -148,25 +148,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 " oce.cause_status, oce.number_validation, oce.id_order, oce.comment, oce.price_proposal, oce.id_project, oce.rank, oce.program," +
                 " oce.action, array_to_json(array_agg( distinct structure_group.name)) as structure_groups, " +
                 " oce.id_operation, oce.override_region, oce.id_type,  " +
-                "     Round(( (SELECT CASE " +
-                "                         WHEN oce.price_proposal IS NOT NULL THEN 0 " +
-                "                         WHEN oce.override_region IS NULL THEN 0 " +
-                "                         WHEN Sum(oco.price + ( ( oco.price * oco.tax_amount ) / " +
-                "                                                100 ) " +
-                "                                              * " +
-                "                                              oco.amount) IS " +
-                "                              NULL THEN 0 " +
-                "                         ELSE Sum(oco.price + ( ( oco.price * oco.tax_amount ) / " +
-                "                                                100 ) " +
-                "                                              * " +
-                "                                              oco.amount) " +
-                "                       END " +
-                "                FROM   lystore.order_client_options oco " +
-                "                WHERE  oco.id_order_client_equipment = oce.id) " +
-                "               + (CASE   WHEN oce.price_proposal IS NOT NULL THEN oce.price_proposal " +
-                "               ELSE oce.price + oce.price * oce.tax_amount / 100 END" +
-                " ) * oce.amount ), 2)" +
-                "             as Total "+
+                 Lystore.lystoreSchema + ".order_total(oce.id) AS Total"+
                 " FROM " + Lystore.lystoreSchema + ".order_client_equipment oce " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".project ON (oce.id_project = project.id) " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".title ON (project.id_title = title.id) " +
@@ -1330,22 +1312,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "       orders.id_operation, " +
                 "       orders.override_region, " +
                 "       orders.id_type, " +
-                "       Round(( (SELECT CASE " +
-                "                         WHEN orders.price_proposal IS NOT NULL THEN 0 " +
-                "                         WHEN orders.override_region IS NULL THEN 0 " +
-                "                         WHEN Sum(oco.price + ( ( oco.price * oco.tax_amount ) / " +
-                "                                                100 ) " +
-                "                                              * " +
-                "                                              oco.amount) IS " +
-                "                              NULL THEN 0 " +
-                "                         ELSE Sum(oco.price + ( ( oco.price * oco.tax_amount ) / " +
-                "                                                100 ) " +
-                "                                              * " +
-                "                                              oco.amount) " +
-                "                       END " +
-                "                FROM   " + Lystore.lystoreSchema + ".order_client_options oco " +
-                "                WHERE  oco.id_order_client_equipment = orders.id) " +
-                "               + orders.\"price TTC\" ) * orders.amount, 2)      AS Total " +
+                Lystore.lystoreSchema + ".order_total(oce.id) AS Total " +
                 "FROM   " + Lystore.lystoreSchema + ".allorders orders " +
                 "       INNER JOIN " + Lystore.lystoreSchema + ".rel_group_campaign " +
                 "               ON ( orders.id_campaign = rel_group_campaign.id_campaign ) " +
@@ -1607,17 +1574,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 " oce.cause_status, oce.number_validation, oce.id_order, oce.comment, oce.price_proposal, oce.id_project, oce.rank, oce.program," +
                 " oce.action, array_to_json(array_agg( distinct structure_group.name)) as structure_groups, " +
                 " oce.id_operation, oce.override_region, oce.id_type,  " +
-                "             ROUND((( SELECT CASE          " +
-                "            WHEN oce.price_proposal IS NOT NULL THEN 0     " +
-                "            WHEN oce.override_region IS NULL THEN 0 " +
-                "            WHEN SUM(oco.price + ((oco.price * oco.tax_amount) /100) * oco.amount) IS NULL THEN 0         " +
-                "            ELSE SUM(oco.price + ((oco.price * oco.tax_amount) /100) * oco.amount)         " +
-                "            END           " +
-                "             FROM   " + Lystore.lystoreSchema + ".order_client_options oco  " +
-                "              where oco.id_order_client_equipment = oce.id " +
-                "             ) + oce.price + oce.price * oce.tax_amount/100 " +
-                "              ) * oce.amount   ,2 ) " +
-                "             as Total "+
+                Lystore.lystoreSchema + ".order_total(oce.id) AS Total " +
                 " FROM lystore.order_client_equipment oce " +
                 "INNER JOIN lystore.project ON (oce.id_project = project.id) " +
                 "INNER JOIN lystore.title ON (project.id_title = title.id) " +
