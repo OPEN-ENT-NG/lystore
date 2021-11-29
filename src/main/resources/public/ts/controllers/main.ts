@@ -189,6 +189,9 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                 Utils.safeApply($scope);
             },
             campaignCatalog: async (params) => {
+                if($scope.taxes !== undefined || $scope.taxes !== 0){
+                    $scope.taxes.sync();
+                }
                 let idCampaign = params.idCampaign;
                 $scope.fromCatalog=true
                 $scope.idIsInteger(idCampaign);
@@ -511,6 +514,13 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
 
                 return (!isNaN(price)) ? (roundNumber ? price.toFixed(roundNumber) : price) : price;
             };
+
+        $scope.calculatePriceOfOptionHT =
+            (option : any, roundNumber: number = 2) => {
+                let price = parseFloat(option.price);
+                return (!isNaN(price)) ? (roundNumber ? price.toFixed(roundNumber) : price) : price;
+            }
+
         /**
          * Calculate the price of an equipment
          * @param {Equipment} equipment

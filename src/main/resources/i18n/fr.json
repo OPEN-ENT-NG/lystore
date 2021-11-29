@@ -81,6 +81,8 @@
   "lystore.tax": "TVA",
   "lystore.price": "Prix (HT)",
   "lystore.price.TTC": "Prix (TTC)",
+  "lystore.amount.HT": "Montant HT : ",
+  "lystore.tax.equipment": "Montant TVA sur l'équipement : ",
   "lystore.information": "Informations",
   "lystore.availability": "Disponibilité",
   "lystore.set.AVAILABLE": "Rendre disponible",
