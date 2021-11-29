@@ -134,9 +134,7 @@ public class FileHelper {
         CompositeFuture.all(makeFolders).onSuccess(success ->{
             pathIds.set(success.list());
             request.resume();
-        }).onFailure(failure ->{
-            promise.fail(failure.getMessage());
-        });
+        }).onFailure(failure -> promise.fail(failure.getMessage()));
 
         return promise.future();
     }
