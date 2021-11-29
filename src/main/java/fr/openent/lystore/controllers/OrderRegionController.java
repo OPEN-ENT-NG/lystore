@@ -31,6 +31,7 @@ import org.entcore.common.user.UserUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import static fr.wseduc.webutils.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultResponseHandler;
 
 public class OrderRegionController extends BaseController {
@@ -259,9 +260,12 @@ public class OrderRegionController extends BaseController {
         });
     }
 
-    @Get("/file/:id")
+
+    //TODO DELETE CETTE FOCNTION
+    @Get("/orderRegion/file/:id")
     @ApiDoc("download a file")
-    @SecuredAction(value = "",type = ActionType.AUTHENTICATED)
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(ManagerRight.class)
     public void getFile(HttpServerRequest request) {
         String fileId = request.getParam("id");
         storage.sendFile(fileId,"test.csv",request,false,new JsonObject());
@@ -272,33 +276,7 @@ public class OrderRegionController extends BaseController {
     @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
     public void getFilesOrderRegion(HttpServerRequest request) {
         Integer orderId = Integer.valueOf(request.getParam("id"));
-        orderRegionService.getFilesId(orderId ,event ->{
-            try {
-                JsonArray filesId = event.right().getValue();
-                List<Buffer> files = new ArrayList<>();
-                for (int i = 0; i < filesId.size(); i++) {
-                    String fileId = filesId.getJsonObject(i).getString("id");
-                    log.info(fileId);
-                    storage.readFile(fileId, bufferEvent -> {
-                        files.add(bufferEvent);
-                        log.info(bufferEvent);
-                        log.info(files.size());
-                    });
-//
-                    storage.sendFile(fileId, "test", request, false, new JsonObject());
-                }
-            }catch (NullPointerException e){
-                request.response().setStatusCode(201).end();
-            }
-
-        });
-//        orderRegionService.getFileOrderRegion(fileId, event -> {
-//            if (event.isRight()) {
-//                storage.sendFile(fileId, event.right().getValue().getString("filename"), request, false, new JsonObject());
-//            } else {
-//                notFound(request);
-//            }
-//        });
+        orderRegionService.getFilesId(orderId , arrayResponseHandler(request));
     }
     /**
      * //     * Delete file from storage based on identifier
