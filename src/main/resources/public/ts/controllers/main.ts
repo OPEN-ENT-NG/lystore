@@ -579,7 +579,7 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                     await $scope.titles.sync();
             }
             await $scope.initOrderStructures();
-            if(campaignSelection){
+            if(campaignSelection && status === "WAITING"){
                 await $scope.ordersClient.syncWaiting( $scope.structures.all,$scope.contracts,
                     $scope.contractTypes, $scope.suppliers,$scope.campaigns, $scope.projects , $scope.titles,campaignSelection);
             }else{
