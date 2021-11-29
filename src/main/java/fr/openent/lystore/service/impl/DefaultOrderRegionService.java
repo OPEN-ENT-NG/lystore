@@ -412,9 +412,21 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
         JsonArray params = new JsonArray()
                 .add(fileId);
 
-        Sql.getInstance().prepared(query, params, SqlResult.validResultHandler(event -> {
+        Sql.getInstance().prepared(query, params, SqlResult.validResultsHandler(event -> {
             if (event.isRight() && event.right().getValue().size() > 0) {
                 handler.handle(new Either.Right<>(event.right().getValue().getJsonObject(0)));
+            } else {
+                handler.handle(new Either.Left<>("Not found"));
+            }
+        }));
+    }
+    @Override
+    public void getFilesId(Integer idOrder , Handler<Either<String,JsonArray>> handler){
+        String query = "SELECT * from " + Lystore.lystoreSchema + ".order_region_file where id_order_region_equipment = ? ;";
+        JsonArray params = new JsonArray().add(idOrder);
+        Sql.getInstance().prepared(query, params, SqlResult.validResultHandler(event -> {
+            if (event.isRight() && event.right().getValue().size() > 0) {
+                handler.handle(new Either.Right<>(event.right().getValue()));
             } else {
                 handler.handle(new Either.Left<>("Not found"));
             }
