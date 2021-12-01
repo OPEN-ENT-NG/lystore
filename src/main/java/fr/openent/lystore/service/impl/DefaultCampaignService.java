@@ -184,8 +184,8 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                 "FROM " + Lystore.lystoreSchema + ".campaign " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".rel_group_campaign ON (campaign.id = rel_group_campaign.id_campaign) " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".rel_group_structure ON (rel_group_structure.id_structure_group = rel_group_campaign.id_structure_group) " +
-                "GROUP BY campaign.id;";
-
+                "GROUP BY campaign.id,campaign.name,campaign.description,campaign.image,campaign.accessible,campaign.purse_enabled,campaign.automatic_close\n" +
+                ",campaign.start_date,campaign.end_date,campaign.priority_enabled,campaign.priority_field;";
         Sql.getInstance().prepared(query, new JsonArray(), SqlResult.validResultHandler(handler));
     }
 
@@ -196,7 +196,8 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                 "INNER JOIN " + Lystore.lystoreSchema + ".rel_group_structure ON (rel_group_campaign.id_structure_group = rel_group_structure.id_structure_group) " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".rel_equipment_tag ON (rel_group_campaign.id_tag = rel_equipment_tag.id_tag) " +
                 "WHERE rel_group_structure.id_structure = ? " +
-                "GROUP BY campaign.id;";
+                "GROUP BY campaign.id,campaign.name,campaign.description,campaign.image,campaign.accessible,campaign.purse_enabled,campaign.automatic_close\n" +
+                ",campaign.start_date,campaign.end_date,campaign.priority_enabled,campaign.priority_field;";
 
         Sql.getInstance().prepared(query, new JsonArray().add(idStructure), SqlResult.validResultHandler(handler));
     }
