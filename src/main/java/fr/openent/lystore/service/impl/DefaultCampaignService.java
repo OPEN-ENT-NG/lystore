@@ -140,8 +140,10 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                 "INNER JOIN " + Lystore.lystoreSchema + ".rel_group_campaign ON (campaign.id = rel_group_campaign.id_campaign) " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".tag ON (rel_group_campaign.id_tag = tag.id) " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".rel_equipment_tag ON (tag.id = rel_equipment_tag.id_tag) " +
+                "WHERE rel_equipment_tag.id_equipment  not in (SELECT id from  "
+                                    + Lystore.lystoreSchema + ".equipment where equipment.status != 'UNAVAILABLE' OR equipment.status = 'OUT_OF_STOCK'  )" +
                 "GROUP BY campaign.id";
-        Sql.getInstance().prepared(query, new JsonArray(), SqlResult.validResultHandler(handler));
+         Sql.getInstance().prepared(query, new JsonArray(), SqlResult.validResultHandler(handler));
     }
 
     private void getCampaignsPurses(Handler<Either<String, JsonArray>> handler) {
