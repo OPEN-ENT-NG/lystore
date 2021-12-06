@@ -57,6 +57,7 @@ export class Order implements OrderImp{
     price_single_ttc: number;
     program: Program;
     project: Project;
+    files?: any;
     rank: number;
     rankOrder: Number;
     selected:boolean;
