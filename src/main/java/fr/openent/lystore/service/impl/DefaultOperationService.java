@@ -504,22 +504,7 @@ GROUP BY
                 "   instruction.cp_adopted as instruction_cp_adopted, " +
                 "   ct.code, " +
                 "   orders.override_region, " +
-                "                Round(( (SELECT CASE " +
-                "                         WHEN orders.price_proposal IS NOT NULL THEN 0 " +
-                "                         WHEN orders.override_region IS NULL THEN 0 " +
-                "                         WHEN Sum(oco.price + ( ( oco.price * oco.tax_amount ) / " +
-                "                                                100 ) " +
-                "                                              * " +
-                "                                              oco.amount) IS " +
-                "                              NULL THEN 0 " +
-                "                         ELSE Sum(oco.price + ( ( oco.price * oco.tax_amount ) / " +
-                "                                                100 ) " +
-                "                                              * " +
-                "                                              oco.amount) " +
-                "                       END " +
-                "                FROM   " + Lystore.lystoreSchema + ".order_client_options oco " +
-                "                WHERE  oco.id_order_client_equipment = orders.id) " +
-                "               + orders.\"price TTC\" ) * orders.amount, 2)      AS price, " +
+                Lystore.lystoreSchema + ".order_total(oce.id) AS price, " +
                 "       orders.creation_date,  " +
                 "       orders.amount,  " +
                 "       orders.name,  " +
