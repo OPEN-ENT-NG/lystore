@@ -158,7 +158,12 @@ export class OrderClient implements Order  {
     async getOneOrderClient(id:number, structures:Structures):Promise<Order>{
         try{
             const {data} = await http.get(`/lystore/orderClient/${id}/order/`);
-            return new Order(Object.assign(data, {typeOrder:"client"}), structures);
+            let order = new Order(Object.assign(data, {typeOrder:"client"}), structures);
+            console.log(data)
+            order.files = data.files !== '[null]' ? Utils.parsePostgreSQLJson(data.files) : [];
+            console.log(order.files)
+
+            return order;
         } catch (e) {
             notify.error('lystore.admin.order.get.err');
             throw e;

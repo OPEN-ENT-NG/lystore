@@ -331,6 +331,10 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                 $scope.fromWaiting = true;
                 await $scope.initOrderStructures();
                 $scope.orderToUpdate = await $scope.orderClient.getOneOrderClient(idOrder, $scope.structures.all);
+                console.log($scope.orderToUpdate)
+                console.log( $scope.orderToUpdate.files)
+                $scope.filesMetadataTemp = Object.assign($scope.orderToUpdate.files);
+
                 await $scope.equipments.syncAll($scope.orderToUpdate.campaign.id);
                 $scope.loadingArray = false;
 
@@ -346,6 +350,9 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                 $scope.orderToUpdate = params.typeOrder === 'client'
                     ? await $scope.orderClient.getOneOrderClient(idOrder, $scope.structures.all)
                     : await $scope.orderRegion.getOneOrderRegion(idOrder, $scope.structures.all);
+                $scope.filesMetadata = await $scope.orderRegion.getFilesMetadata(idOrder);
+                $scope.filesMetadataTemp = Object.assign($scope.filesMetadata);
+
                 await $scope.equipments.syncAll($scope.orderToUpdate.campaign.id);
                 $scope.orderToUpdate.equipment = $scope.equipments.all.find(findElement => findElement.id === $scope.orderToUpdate.equipment_key);
                 if(params.typeOrder === 'client'){

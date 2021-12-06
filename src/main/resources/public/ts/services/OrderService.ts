@@ -22,12 +22,15 @@ interface IStatementOrderBody {
     technical_spec: string,
     id_contract: string,
     name_structure: string,
+    oldFiles ?: string
     files: Array<File>;
 }
 
 export interface IStatementsOrdersService {
     create(statementsOrders: IStatementOrderBody): Promise<AxiosResponse>;
     update(statementsOrders: IStatementOrderBody, orderId: number): Promise<AxiosResponse>;
+    createOne(statementsOrders: IStatementOrderBody,orderClientId : number): Promise<AxiosResponse>;
+
 }
 
 function getOrderData(statementsOrders: IStatementOrderBody) {
@@ -49,6 +52,7 @@ function getOrderData(statementsOrders: IStatementOrderBody) {
     formData.append('technical_spec', statementsOrders.technical_spec);
     formData.append('id_contract', statementsOrders.id_contract);
     formData.append('name_structure', statementsOrders.name_structure);
+    formData.append('oldFiles', statementsOrders.oldFiles);
     statementsOrders.files.forEach(file => {
         formData.append('fileToUpload[]', file);
     });
@@ -57,6 +61,10 @@ function getOrderData(statementsOrders: IStatementOrderBody) {
 
 export const statementsOrdersService: IStatementsOrdersService = {
 
+    createOne: async (statementOder : IStatementOrderBody ,orderClientId): Promise<AxiosResponse> =>{
+        const {formData, headers} = getOrderData(statementOder);
+        return http.post(`/lystore/region/from/client/${orderClientId}`, formData, headers);
+    },
     create: async (statementsOrders: IStatementOrderBody): Promise<AxiosResponse> => {
         const {formData, headers} = getOrderData(statementsOrders);
         return http.post(`/lystore/region/orders/`, formData, headers);

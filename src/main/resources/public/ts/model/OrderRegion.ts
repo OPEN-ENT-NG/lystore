@@ -71,6 +71,7 @@ export class OrderRegion implements Order  {
     title_id ?: number;
     id_type: number;
     override_region: boolean;
+    filesMetadata?: any;
 
     constructor() {
         this.typeOrder = "region";
@@ -192,6 +193,16 @@ export class OrderRegion implements Order  {
         }
     }
 
+
+    async getFilesMetadata(idOrder){
+        try{
+            const {data} =  await http.get(`/lystore/orderRegion/${idOrder}/files`);
+            return data
+        } catch (e) {
+            notify.error('lystore.admin.order.update.err');
+            throw e;
+        }
+    }
     async deleteDocument(file) {
         try {
             await http.delete(`/lystore/order/update/file/${file.id}`);
