@@ -72,13 +72,18 @@ export const orderRegionController = ng.controller('orderRegionController',
                     orderRegionCreate.equipment_key = $scope.orderToUpdate.equipment_key;
                     orderRegionCreate.technical_spec = $scope.orderToUpdate.equipment.technical_specs;
                     orderRegionCreate.id_contract = $scope.orderToUpdate.equipment.id_contract;
-
+                    let ordersOldFiles = "";
+                    let ordersOldFilesName = "";
+                    $scope.filesMetadataTemp.forEach(file =>{
+                        ordersOldFiles += file.id + ","
+                        ordersOldFilesName+=file.filename +"/";
+                    })
                     const promises: Array<Promise<AxiosResponse>> = [];
                     let statement =  statementsOrdersService.createOne({
                         id_campaign: $scope.orderToUpdate.campaign.id,
-                        id_structure: $scope.orderToUpdate.id_structure,
-                        title_id: $scope.orderToUpdate.project,
-                        id_operation: $scope.orderToUpdate.id_operation,
+                        id_structure: $scope.orderToUpdate.structure.id_structure,
+                        title_id: $scope.orderToUpdate.project.name,
+                        id_operation: orderRegionCreate.id_operation.toString(),
                         equipment_key: $scope.orderToUpdate.equipment.id,
                         equipment: $scope.orderToUpdate.equipment,
                         comment: $scope.orderToUpdate.comment,
@@ -89,13 +94,15 @@ export const orderRegionController = ng.controller('orderRegionController',
                         id_contract: $scope.orderToUpdate.equipment.id_contract,
                         name_structure: $scope.orderToUpdate.structure.name,
                         files: orderRegionCreate.files,
-                        oldFiles : orderRegionCreate.filesMetadata
+                        oldFiles : ordersOldFiles,
+                        oldFilesName : ordersOldFilesName,
                     },$scope.orderToUpdate.id);
                     promises.push(statement)
                     try {
                         let responses: Array<AxiosResponse> = await Promise.all(promises);
                         if (responses) {
-
+                            toasts.confirm('lystore.order.region.update');
+                            $scope.cancelUpdate();
                         }
                     }catch (e) {
                         //error msg
@@ -181,9 +188,13 @@ export const orderRegionController = ng.controller('orderRegionController',
                 },$scope.orderToUpdate.id);
                 promises.push(statement)
                 try {
+                    console.log("plop")
                     let responses: Array<AxiosResponse> = await Promise.all(promises);
                     if (responses) {
-
+                        console.log("in if")
+                        if (responses) {
+                            toasts.confirm('lystore.order.region.update');
+                        }
                     }
                 }catch (e) {
                     //error msg
@@ -194,7 +205,6 @@ export const orderRegionController = ng.controller('orderRegionController',
                 // } else {
                 //     await orderRegion.create();
                 // }
-                toasts.confirm('lystore.order.region.update');
             };
             $scope.isValidFormUpdate = ():boolean => {
                 return $scope.orderToUpdate &&  $scope.orderToUpdate.equipment_key

@@ -2,6 +2,7 @@ package fr.openent.lystore.service.impl;
 
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.model.file.Attachment;
+import fr.openent.lystore.model.file.Metadata;
 import fr.openent.lystore.service.OrderRegionService;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.webutils.Either;
@@ -16,7 +17,7 @@ import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.UserInfos;
 
-import java.util.List;
+import java.util.*;
 
 import static fr.openent.lystore.utils.OrderUtils.safeGetDouble;
 import static org.entcore.common.email.impl.PostgresEmailHelper.logger;
@@ -31,16 +32,25 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
 
 
     @Override
-    public void setOrderRegion(JsonObject orderRegion, UserInfos user, Handler<Either<String, JsonObject>> handler) {
+    public void setOrderRegion(JsonObject order, int idOrderClient, JsonArray files, ArrayList<String> oldFiles, UserInfos user, Handler<Either<String, JsonObject>> handler) {
         String getIdQuery = "SELECT nextval('" + Lystore.lystoreSchema + ".order-region-equipment_id_seq') as id";
+
         sql.raw(getIdQuery, SqlResult.validUniqueResultHandler(new Handler<Either<String, JsonObject>>() {
             @Override
             public void handle(Either<String, JsonObject> event) {
                 try {
                     final Number id = event.right().getValue().getInteger("id");
                     JsonArray statements = new JsonArray()
-                            .add(setOrderRegionStatement(id, orderRegion, user));
-
+                            .add(setOrderRegionStatement(id, order,idOrderClient, user));
+                    for(Object fileObject : files){
+                        JsonObject fileJo = (JsonObject) fileObject;
+                        Attachment attachment = new Attachment(((JsonObject) fileObject).getString("id"),new Metadata(fileJo.getJsonObject("metadata")));
+                        statements.add(addFileToOrder(id, attachment));
+                    }
+                    for(String fileId : oldFiles){
+                        statements.add(addIdFileToOrder( id ,fileId));
+                    }
+//                    logger.info(setOrderRegionStatement(id, order,idOrderClient, user));
                     sql.transaction(statements, new Handler<Message<JsonObject>>() {
                         @Override
                         public void handle(Message<JsonObject> event) {
@@ -55,7 +65,22 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
         }));
     }
 
-    private JsonObject setOrderRegionStatement(Number id, JsonObject order, UserInfos user) {
+    private JsonObject addIdFileToOrder(Number id, String nameAndFileId) {
+        String statement = "INSERT INTO " + Lystore.lystoreSchema + ".order_region_file (id, id_order_region_equipment, filename) " +
+                "VALUES (?, ?, ?) ;" ;
+        String[] nameFileArrayStr = nameAndFileId.split("/");
+        JsonArray params = new JsonArray()
+                .add(nameFileArrayStr[1])
+                .add(id)
+                .add(nameFileArrayStr[0])
+                ;
+        return new JsonObject()
+                .put("statement", statement)
+                .put("values", params)
+                .put("action", "prepared");
+    }
+
+    private JsonObject setOrderRegionStatement(Number id, JsonObject order, int idOrderClient, UserInfos user) {
         String statement = "";
         statement = "" +
                 "INSERT INTO  " + Lystore.lystoreSchema + ".\"order-region-equipment\" AS ore " +
@@ -89,14 +114,14 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 "? ," +
                 "? ," +
                 "? ," +
-                "? ," +
+                "NOW() ," +
                 "? ," +
                 "? ," +
                 "? ," +
                 "? ," +
                 "? ," +
                 "? ,";
-        statement += order.getInteger("rank") != -1 ? "?, " : "NULL, ";
+        statement += (order.containsKey("rank") && order.getInteger("rank") != -1 ) ? "?, " : "NULL, ";
         statement += order.containsKey("id_operation") ? "?, " : "";
         statement += " 'IN PROGRESS', " +
                 "       id_campaign, " +
@@ -117,24 +142,23 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
 
         JsonArray params = new JsonArray()
                 .add(id)
-                .add(order.getDouble("price"))
-                .add(order.getInteger("amount"))
-                .add(order.getString("creation_date"))
+                .add(safeGetDouble(order,"price"))
+                .add(Integer.parseInt(order.getString("amount")))
                 .add(user.getUsername())
                 .add(user.getUserId())
-                .add(order.getInteger("equipment_key"))
-                .add(order.getString("name"))
+                .add(Integer.parseInt(order.getString("equipment_key")))
+                .add(order.getString("equipment_name"))
                 .add(order.getString("comment"))
-                .add(order.getInteger("id_order_client_equipment"));
-        if (order.getInteger("rank") != -1) {
-            params.add(order.getInteger("rank"));
+                .add(idOrderClient);
+        if (order.containsKey("rank") && order.getInteger("rank") != -1) {
+            params.add(Integer.parseInt(order.getString("rank")));
         }
         if (order.containsKey("id_operation")) {
-            params.add(order.getInteger("id_operation"));
+            params.add(Integer.parseInt(order.getString("id_operation")));
         }
-        params.add(order.getInteger("id_contract"));
-        params.add(order.getInteger("id_type"));
-        params.add(order.getInteger("id_order_client_equipment"));
+        params.add(Integer.parseInt(order.getString("id_contract")));
+        params.add(1);
+        params.add(idOrderClient);
 
         return new JsonObject()
                 .put("statement", statement)
@@ -161,7 +185,7 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
 
     public void updateOrderRegion(JsonObject order, int idOrder, List<Attachment> files, UserInfos user, Handler<Either<String, JsonObject>> handler) {
         JsonArray statements = new JsonArray();
-        statements.add(deletePreviousFilesStatement(idOrder));
+        statements.add(deletePreviousFilesStatement(idOrder,order));
         statements.add(getUpdateOrderStatement(order,idOrder,user));
 
         for(Attachment file : files){
@@ -175,13 +199,19 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
         });
     }
 
-    private JsonObject deletePreviousFilesStatement(int idOrder) {
+    private JsonObject deletePreviousFilesStatement(int idOrder, JsonObject order) {
+        String idFilesStr  = order.getString("oldFiles");
+        String[] idFileArrayStr = idFilesStr.split(",");
+        List<String> idsFiles = new ArrayList<>(Arrays.asList(idFileArrayStr));
+
         String statement = "DELETE FROM " + Lystore.lystoreSchema + ".order_region_file" +
-                " WHERE id_order_region_equipment =  ? ;" ;
+                " WHERE id_order_region_equipment =  ? AND id NOT IN "  + Sql.listPrepared(idsFiles) + " ;" ;
 
         JsonArray params = new JsonArray()
                 .add(idOrder);
-
+        for(String idFile : idsFiles){
+            params.add(idFile);
+        }
         return new JsonObject()
                 .put("statement", statement)
                 .put("values", params)
@@ -425,7 +455,7 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
         String query = "SELECT * from " + Lystore.lystoreSchema + ".order_region_file where id_order_region_equipment = ? ;";
         JsonArray params = new JsonArray().add(idOrder);
         Sql.getInstance().prepared(query, params, SqlResult.validResultHandler(event -> {
-            if (event.isRight() && event.right().getValue().size() > 0) {
+            if (event.isRight()) {
                 handler.handle(new Either.Right<>(event.right().getValue()));
             } else {
                 handler.handle(new Either.Left<>("Not found"));

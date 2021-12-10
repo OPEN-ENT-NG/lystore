@@ -1,12 +1,16 @@
 package fr.openent.lystore.helpers;
 
 import fr.wseduc.webutils.Either;
+import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.impl.CompositeFutureImpl;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+
+import java.util.List;
 
 public class FutureHelper {
 
@@ -35,6 +39,17 @@ public class FutureHelper {
                 future.fail(event.left().getValue());
             }
         };
+    }
+    public static <T> CompositeFuture all(List<Future<T>> futures) {
+        return CompositeFutureImpl.all(futures.toArray(new Future[futures.size()]));
+    }
+
+    public static <T> CompositeFuture join(List<Future<T>> futures) {
+        return CompositeFutureImpl.join(futures.toArray(new Future[futures.size()]));
+    }
+
+    public static <T> CompositeFuture any(List<Future<T>> futures) {
+        return CompositeFutureImpl.any(futures.toArray(new Future[0]));
     }
 }
 

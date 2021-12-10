@@ -1,5 +1,7 @@
 package fr.openent.lystore.model.file;
 
+import io.vertx.core.json.JsonObject;
+
 public class Attachment {
     private final String id;
     private final Metadata metadata;
@@ -15,5 +17,8 @@ public class Attachment {
 
     public Metadata metadata() {
         return metadata;
+    }
+    public JsonObject toJson() {
+        return new JsonObject().put("id",id).put("metadata",metadata.toJSON());
     }
 }
