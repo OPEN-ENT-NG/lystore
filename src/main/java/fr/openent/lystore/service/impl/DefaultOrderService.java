@@ -1306,13 +1306,15 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "       to_json(ct.*) contract_type, " +
                 "       to_json(campaign.*) campaign, " +
                 "       to_json(prj.*) AS project, " +
-                "       to_json(tt.*) AS title " +
+                "       to_json(tt.*) AS title, " +
+                " Array_to_json(Array_agg(DISTINCT order_file.*))         AS files " +
                 "FROM  " + Lystore.lystoreSchema + ".order_client_equipment oce " +
                 "LEFT JOIN  " + Lystore.lystoreSchema + ".contract ON oce.id_contract = contract.id " +
                 "INNER JOIN  " + Lystore.lystoreSchema + ".contract_type ct ON ct.id = contract.id_contract_type " +
                 "INNER JOIN  " + Lystore.lystoreSchema + ".campaign ON oce.id_campaign = campaign.id " +
                 "INNER JOIN  " + Lystore.lystoreSchema + ".project AS prj ON oce.id_project = prj.id " +
                 "INNER JOIN  " + Lystore.lystoreSchema + ".title AS tt ON tt.id = prj.id_title " +
+                " LEFT JOIN " + Lystore.lystoreSchema + ".order_file ON oce.id = order_file.id_order_client_equipment " +
                 "WHERE oce.id = ? " +
                 "GROUP BY (prj.id, " +
                 "          oce.id, " +

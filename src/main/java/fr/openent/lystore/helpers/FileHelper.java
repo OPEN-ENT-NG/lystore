@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -62,8 +63,6 @@ public class FileHelper {
         for(int i = 0 ; i< Integer.parseInt(totalFilesToUpload);i++){
             fileIds.add(UUID.randomUUID().toString());
         }
-        log.info("size : ");
-        log.info(fileIds.size());
         String path  = " ";
 
         // return empty arrayList if no header is sent (meaning no files to upload)
@@ -92,9 +91,7 @@ public class FileHelper {
             String finalPath = pathIds.get().get(incrementFile.get());
             final JsonObject metadata = FileUtils.metadata(upload);
             listMetadata.add(new Attachment(fileIds.get(incrementFile.get()), new Metadata(metadata)));
-                    upload.streamToFileSystem(finalPath).endHandler(handler ->{
-                        log.info("done");
-                    });
+                    upload.streamToFileSystem(finalPath);
             incrementFile.set(incrementFile.get() + 1);
 
 
@@ -107,8 +104,6 @@ public class FileHelper {
                 promise.fail(message);
             });
             upload.endHandler(aVoid -> {
-                log.info("endHandler");
-
                 if (incrementFile.get() == Integer.parseInt(totalFilesToUpload) && !responseSent.get()) {
                     responseSent.set(true);
                     for(Attachment at : listMetadata){
@@ -120,18 +115,16 @@ public class FileHelper {
 
         });
         request.endHandler(end ->{
-            log.info("request endHandler");
-            log.info(end);
             log.info(request.formAttributes().entries());
         });
 
-        List<Future> makeFolders = new ArrayList<>();
+        List<Future<String>> makeFolders = new ArrayList<>();
 
         for(int i=0;i< fileIds.size();i++) {
             makeFolders.add(makeFolder( storage, vertx,fileIds, path, i));
         }
 
-        CompositeFuture.all(makeFolders).onSuccess(success ->{
+        FutureHelper.all(makeFolders).onSuccess(success ->{
             pathIds.set(success.list());
             request.resume();
         }).onFailure(failure -> promise.fail(failure.getMessage()));
@@ -149,7 +142,6 @@ public class FileHelper {
         String finalPath = path;
         mkdirsIfNotExists(vertx.fileSystem(), path, event -> {
             if (event.succeeded()) {
-                log.info("MKDIR");
                 promise.complete(finalPath);
             } else {
                 promise.fail("mkdir.error: ");
@@ -189,6 +181,39 @@ public class FileHelper {
 
         }
         throw new FileNotFoundException("Invalid file : " + file);
+    }
+
+    public static Future<ArrayList<String>> getCopyOldFiles(Map<String, String> namesAndFiles, Storage storage) {
+        Promise<ArrayList<String>> promise = Promise.promise();
+
+        List<Future<String>> copyIds = new ArrayList<>();
+
+        for (Map.Entry<String, String> entry : namesAndFiles.entrySet()) {
+            copyIds.add(copyFile(entry.getKey(),entry.getValue(),storage));
+        }
+        FutureHelper.all(copyIds).onSuccess(success ->{
+            ArrayList<String> ids = new ArrayList<>();
+            for(Object idObject: success.list()){
+                ids.add(idObject.toString());
+            }
+            promise.complete(ids);
+        }).onFailure(failure -> promise.fail(failure.getMessage()));
+
+        return promise.future();
+    }
+
+    private static Future<String> copyFile( String filename,String id,Storage storage) {
+        log.info(id);
+        Promise<String> promise = Promise.promise();
+            storage.copyFile(id,  event -> {
+                if (event.getString("status").equals("ok")) {
+                    log.info(event.getString("_id"));
+                    promise.complete(filename + "/" +event.getString("_id"));
+                } else {
+                    promise.fail("error when copying file");
+                }
+            });
+        return promise.future();
     }
 
 }

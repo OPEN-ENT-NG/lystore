@@ -3,15 +3,15 @@ package fr.openent.lystore.service;
 import fr.openent.lystore.model.file.Attachment;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
-import io.vertx.core.impl.HAManager;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.user.UserInfos;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public interface OrderRegionService {
-    void setOrderRegion(JsonObject order, UserInfos user, Handler<Either<String, JsonObject>> handler);
+    void setOrderRegion(JsonObject order, int idOrderClient, JsonArray files, ArrayList<String> oldFiles, UserInfos user, Handler<Either<String, JsonObject>> handler);
 
     void updateOrderRegion(JsonObject order, int idOrder, List<Attachment> files, UserInfos user, Handler<Either<String, JsonObject>> handler);
 
