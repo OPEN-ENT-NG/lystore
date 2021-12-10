@@ -1,5 +1,6 @@
 package fr.openent.lystore.controllers;
 
+import fr.openent.lystore.helpers.AttachmentHelper;
 import fr.openent.lystore.helpers.FileHelper;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
@@ -14,13 +15,12 @@ import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import io.vertx.core.Future;
 import io.vertx.core.Promise;
-import io.vertx.core.buffer.Buffer;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
-import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.http.filter.ResourceFilter;
@@ -28,8 +28,7 @@ import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultResponseHandler;
@@ -81,28 +80,77 @@ public class OrderRegionController extends BaseController {
 //        });
 //    }
 
-    @Post("/region/order")
+    @Post("/region/from/client/:id")
     @ApiDoc("Create an order with id order client when admin or manager")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(ManagerRight.class)
     public void createWithOrderClientAdminOrder(final HttpServerRequest request) {
-        UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-            @Override
-            public void handle(UserInfos event) {
-                RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
-                    @Override
-                    public void handle(JsonObject order) {
-                        RequestUtils.bodyToJson(request, orderRegion -> orderRegionService.setOrderRegion(order, event, Logging.defaultResponseHandler(eb,
-                                request,
-                                Contexts.ORDERREGION.toString(),
-                                Actions.CREATE.toString(),
-                                null,
-                                orderRegion)));
-                    }
-                });
-            }
+        Integer idOrder = Integer.parseInt(request.getParam("id"));
+        JsonObject results = new JsonObject();
+        //TODO effacer storage
+        FileHelper.uploadMultipleFiles("Files", request, storage, vertx , config)
+                .compose(files -> {
+                    Promise<JsonObject> promise = Promise.promise();
+                    request.endHandler(aVoid -> {
+                        JsonObject order = formatDataToJson(request);
+                        results.put("newFiles", AttachmentHelper.attachmentsToJsonArray(files));
+                        promise.complete(order);
+                    });
+                    return promise.future();
+                })
+                .compose(bodyOrder -> {
+                    Map<String, String> namesAndIds = generateMapFilenameId(bodyOrder);
+                    results.put("order",bodyOrder);
+                    return FileHelper.getCopyOldFiles(namesAndIds,storage);
+                })
+                .onSuccess(oldFiles -> UserUtils.getUserInfos(eb, request, user -> {
 
-        });
+                    orderRegionService.setOrderRegion(results.getJsonObject("order"), idOrder, results.getJsonArray("newFiles"),oldFiles ,user, Logging.defaultResponseHandler(eb,
+                            request,
+                            Contexts.ORDERREGION.toString(),
+                            Actions.UPDATE.toString(),
+                            idOrder.toString(),
+                            new JsonObject().put("orderRegion", results.getJsonObject("order"))));
+                }))
+                .onFailure(err -> {
+                    String message = String.format("[Lystore@%s::createAdminOrder] An error has occurred " +
+                                    "during upload files: %s",
+                            this.getClass().getSimpleName(), err.getMessage());
+                    log.error(message, err);
+                    renderError(request);
+                });
+//        UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
+//            @Override
+//            public void handle(UserInfos event) {
+//                RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
+//                    @Override
+//                    public void handle(JsonObject order) {
+//                        RequestUtils.bodyToJson(request, orderRegion -> orderRegionService.setOrderRegion(order, event, Logging.defaultResponseHandler(eb,
+//                                request,
+//                                Contexts.ORDERREGION.toString(),
+//                                Actions.CREATE.toString(),
+//                                null,
+//                                orderRegion)));
+//                    }
+//                });
+//            }
+//
+//        });
+    }
+
+    private Map<String, String> generateMapFilenameId(JsonObject bodyOrder) {
+        String idFilesStr = bodyOrder.getString("oldFiles");
+        String[] idFileArrayStr = idFilesStr.split(",");
+        List<String> idsFiles = new ArrayList<>(Arrays.asList(idFileArrayStr));
+        String nameFilesStr = bodyOrder.getString("oldFilesName");
+        String[] nameFileArrayStr = nameFilesStr.split("/");
+        List<String> namesFiles = new ArrayList<>(Arrays.asList(nameFileArrayStr));
+        Map<String, String> namesAndIds = new HashMap<>();
+        for (int i = 0; i < idsFiles.size(); i++) {
+            if(idsFiles.get(i).length() > 0)
+                namesAndIds.put(namesFiles.get(i), idsFiles.get(i));
+        }
+        return namesAndIds;
     }
 
     @Put("/region/order/:id")
@@ -261,15 +309,6 @@ public class OrderRegionController extends BaseController {
     }
 
 
-    //TODO DELETE CETTE FOCNTION
-    @Get("/orderRegion/file/:id")
-    @ApiDoc("download a file")
-    @SecuredAction(value = "", type = ActionType.RESOURCE)
-    @ResourceFilter(ManagerRight.class)
-    public void getFile(HttpServerRequest request) {
-        String fileId = request.getParam("id");
-        storage.sendFile(fileId,"test.csv",request,false,new JsonObject());
-    }
 
     @Get("/orderRegion/:id/files")
     @ApiDoc("Download specific file")

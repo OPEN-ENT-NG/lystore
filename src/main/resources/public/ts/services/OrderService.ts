@@ -23,6 +23,7 @@ interface IStatementOrderBody {
     id_contract: string,
     name_structure: string,
     oldFiles ?: string
+    oldFilesName ?: string
     files: Array<File>;
 }
 
@@ -33,6 +34,7 @@ export interface IStatementsOrdersService {
 
 }
 
+//TODO AJOUTER LE RANK
 function getOrderData(statementsOrders: IStatementOrderBody) {
     const formData: FormData = new FormData();
     const headers = {
@@ -53,6 +55,8 @@ function getOrderData(statementsOrders: IStatementOrderBody) {
     formData.append('id_contract', statementsOrders.id_contract);
     formData.append('name_structure', statementsOrders.name_structure);
     formData.append('oldFiles', statementsOrders.oldFiles);
+    formData.append('oldFilesName', statementsOrders.oldFilesName);
+
     statementsOrders.files.forEach(file => {
         formData.append('fileToUpload[]', file);
     });
