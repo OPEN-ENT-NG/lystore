@@ -22,8 +22,9 @@ interface IStatementOrderBody {
     technical_spec: string,
     id_contract: string,
     name_structure: string,
-    oldFiles ?: string
-    oldFilesName ?: string
+    oldFiles ?: string,
+    rank :string,
+    oldFilesName ?: string,
     files: Array<File>;
 }
 
@@ -56,6 +57,7 @@ function getOrderData(statementsOrders: IStatementOrderBody) {
     formData.append('name_structure', statementsOrders.name_structure);
     formData.append('oldFiles', statementsOrders.oldFiles);
     formData.append('oldFilesName', statementsOrders.oldFilesName);
+    formData.append('rank', statementsOrders.rank);
 
     statementsOrders.files.forEach(file => {
         formData.append('fileToUpload[]', file);

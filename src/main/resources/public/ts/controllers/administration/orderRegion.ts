@@ -96,6 +96,7 @@ export const orderRegionController = ng.controller('orderRegionController',
                         files: orderRegionCreate.files,
                         oldFiles : ordersOldFiles,
                         oldFilesName : ordersOldFilesName,
+                        rank:$scope.orderToUpdate.rank
                     },$scope.orderToUpdate.id);
                     promises.push(statement)
                     try {
@@ -184,7 +185,8 @@ export const orderRegionController = ng.controller('orderRegionController',
                     id_contract: $scope.orderToUpdate.equipment.id_contract,
                     name_structure: $scope.orderToUpdate.structure.name,
                     files: orderRegion.files,
-                    oldFiles : ordersOldFiles
+                    oldFiles : ordersOldFiles,
+                    rank: (orderRegion.rank) ? orderRegion.rank.toString() : "-1"
                 },$scope.orderToUpdate.id);
                 promises.push(statement)
                 try {
@@ -372,6 +374,7 @@ export const orderRegionController = ng.controller('orderRegionController',
                                     technical_spec: row.equipment.technical_specs,
                                     id_contract: row.equipment.id_contract,
                                     name_structure: row.structure.name,
+                                    rank: "-1",
                                     files: row.files
                                 }));
                                 // orderRegionTemp.id_campaign = $scope.orderToCreate.campaign.id;
@@ -414,7 +417,8 @@ export const orderRegionController = ng.controller('orderRegionController',
                                     technical_spec: row.equipment.technical_specs,
                                     id_contract: row.equipment.id_contract,
                                     name_structure: row.structure.name,
-                                    files: row.files
+                                    files: row.files,
+                                    rank: "-1",
                                 })
                             );
                             // orderRegionTemp.id_campaign = $scope.orderToCreate.campaign.id;

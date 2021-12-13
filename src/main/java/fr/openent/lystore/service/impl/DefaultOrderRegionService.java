@@ -15,12 +15,12 @@ import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
+import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 
 import java.util.*;
 
 import static fr.openent.lystore.utils.OrderUtils.safeGetDouble;
-import static org.entcore.common.email.impl.PostgresEmailHelper.logger;
 
 public class DefaultOrderRegionService extends SqlCrudService implements OrderRegionService {
 
@@ -121,7 +121,7 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 "? ," +
                 "? ," +
                 "? ,";
-        statement += (order.containsKey("rank") && order.getInteger("rank") != -1 ) ? "?, " : "NULL, ";
+        statement += (order.containsKey("rank") && Integer.parseInt(order.getString(("rank"))) != -1 ) ? "?, " : "NULL, ";
         statement += order.containsKey("id_operation") ? "?, " : "";
         statement += " 'IN PROGRESS', " +
                 "       id_campaign, " +
@@ -150,7 +150,7 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 .add(order.getString("equipment_name"))
                 .add(order.getString("comment"))
                 .add(idOrderClient);
-        if (order.containsKey("rank") && order.getInteger("rank") != -1) {
+        if (order.containsKey("rank") && Integer.parseInt(order.getString(("rank"))) != -1) {
             params.add(Integer.parseInt(order.getString("rank")));
         }
         if (order.containsKey("id_operation")) {
@@ -183,13 +183,26 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 .put("action", "prepared");
     }
 
-    public void updateOrderRegion(JsonObject order, int idOrder, List<Attachment> files, UserInfos user, Handler<Either<String, JsonObject>> handler) {
+    @Override
+    public  void  getIdFilesToDelete (List<String> idsFiles, Integer idOrder ,  Handler<Message<JsonObject>> handler){
+        String query =  "SELECT id FROM " + Lystore.lystoreSchema + ".order_region_file" +
+                " WHERE id_order_region_equipment =  ? AND id NOT IN "  + Sql.listPrepared(idsFiles) + " ;" ;
+        JsonArray params = new JsonArray()
+                .add(idOrder);
+        for(String idFile : idsFiles) {
+            params.add(idFile);
+        }
+        sql.prepared(query, params,handler);
+    }
+    public void updateOrderRegion(JsonObject order, Storage storage, int idOrder, JsonArray files, UserInfos user, Handler<Either<String, JsonObject>> handler) {
         JsonArray statements = new JsonArray();
         statements.add(deletePreviousFilesStatement(idOrder,order));
         statements.add(getUpdateOrderStatement(order,idOrder,user));
 
-        for(Attachment file : files){
-            statements.add(addFileToOrder(idOrder, file));
+        for(Object fileObject : files){
+            JsonObject fileJo = (JsonObject) fileObject;
+            Attachment attachment = new Attachment(((JsonObject) fileObject).getString("id"),new Metadata(fileJo.getJsonObject("metadata")));
+            statements.add(addFileToOrder(idOrder, attachment));
         }
         sql.transaction(statements, new Handler<Message<JsonObject>>() {
             @Override
@@ -198,6 +211,7 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
             }
         });
     }
+
 
     private JsonObject deletePreviousFilesStatement(int idOrder, JsonObject order) {
         String idFilesStr  = order.getString("oldFiles");
@@ -234,7 +248,7 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 "id_type = ?, " +
                 "cause_status = 'IN PROGRESS', ";
 
-        statement += order.containsKey("rank") && order.getInteger("rank") != -1 ? "rank=?," : "rank = NULL, ";
+        statement += order.containsKey("rank") && Integer.parseInt(order.getString(("rank"))) != -1 ? "rank=?," : "rank = NULL, ";
         statement += order.containsKey("id_operation") ? "id_operation = ?, " : "";
         statement += order.containsKey("id_contract") ? "id_contract = ?, " : "";
         statement += "comment = ? " +
@@ -249,8 +263,8 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
         params.add(Integer.parseInt(order.getString("equipment_key")));
         params.add(order.getInteger("id_type"));
         //TODO RANK
-        if ( order.containsKey("rank") && order.getInteger("rank") != -1) {
-            params.add(order.getInteger("rank"));
+        if ( order.containsKey("rank") &&Integer.parseInt(order.getString(("rank"))) != -1) {
+            params.add(Integer.parseInt(order.getString(("rank"))));
         }
         if (order.containsKey("id_operation")) {
             params.add(Integer.parseInt(order.getString("id_operation")));
@@ -311,7 +325,7 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
         String statement = "" +
                 " INSERT INTO lystore.\"order-region-equipment\" ";
 
-        if (order.getInteger("rank", -1) != -1) {
+        if (Integer.parseInt(order.getString(("rank"))) != -1) {
             statement += " ( id, price, amount, creation_date,  owner_name, owner_id, name, summary, description, image," +
                     " technical_spec, status, id_contract, equipment_key, id_campaign, id_structure," +
                     " comment,  id_project,  id_operation, rank) " +
@@ -343,6 +357,9 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 .add(id_project)
                 .add(order.getString("id_operation"))
                 .add(order.getString("id_type"));
+        if(Integer.parseInt(order.getString(("rank"))) != -1) {
+            params.add(Integer.parseInt(order.getString(("rank"))));
+        }
 
         return new JsonObject()
                 .put("statement", statement)

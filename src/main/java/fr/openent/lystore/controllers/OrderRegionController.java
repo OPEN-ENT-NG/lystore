@@ -158,23 +158,48 @@ public class OrderRegionController extends BaseController {
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(ManagerRight.class)
     public void updateAdminOrder(final HttpServerRequest request) {
+        JsonObject results = new JsonObject();
         Integer idOrder = Integer.parseInt(request.getParam("id"));
-        //TODO effacer storage
         FileHelper.uploadMultipleFiles("Files", request, storage, vertx , config)
+                .compose(files -> {
+                    Promise<JsonObject> promise = Promise.promise();
+                    request.endHandler(aVoid -> {
+                        JsonObject order = formatDataToJson(request);
+                        results.put("newFiles", AttachmentHelper.attachmentsToJsonArray(files));
+                        promise.complete(order);
+                    });
+                    return promise.future();
+                })
+                .compose(bodyOrder -> {
+                    Promise<List<String>> promise = Promise.promise();
+                    String idFilesStr  = bodyOrder.getString("oldFiles");
+                    String[] idFileArrayStr = idFilesStr.split(",");
+                    List<String> idsFiles = new ArrayList<>(Arrays.asList(idFileArrayStr));
+                    results.put("order",bodyOrder);
+                    List<String> idsToRemove = new ArrayList<>();
+                    orderRegionService.getIdFilesToDelete(idsFiles,idOrder, sql ->{
+                        JsonArray resultsDeletedIds = sql.body().getJsonArray("results");
+                        for (Object entry : resultsDeletedIds) {
+                            idsToRemove.add(((JsonArray) entry).getString(0));
+                        }
+                        promise.complete(idsToRemove);
+                    });
+                    return promise.future();
+                })
+                .compose(idsToRemove -> FileHelper.deleteFiles(idsToRemove,storage))
                 .onSuccess(files -> UserUtils.getUserInfos(eb, request, user -> {
                             request.endHandler(aVoid -> {
-                                JsonObject order = formatDataToJson(request);
-                                orderRegionService.updateOrderRegion(order, idOrder,files, user, Logging.defaultResponseHandler(eb,
+                                orderRegionService.updateOrderRegion(results.getJsonObject("order"), storage,idOrder,results.getJsonArray("newFiles"), user, Logging.defaultResponseHandler(eb,
                                         request,
                                         Contexts.ORDERREGION.toString(),
                                         Actions.UPDATE.toString(),
                                         idOrder.toString(),
-                                        new JsonObject().put("orderRegion", order)));
+                                        new JsonObject().put("orderRegion", results.getJsonObject("order"))));
                             });
                         })
                 )
                 .onFailure(err -> {
-                    String message = String.format("[Lystore@%s::createAdminOrder] An error has occurred " +
+                    String message = String.format("[Lystore@%s::updateAdminOrder] An error has occurred " +
                                     "during upload files: %s",
                             this.getClass().getSimpleName(), err.getMessage());
                     log.error(message, err);
@@ -228,6 +253,7 @@ public class OrderRegionController extends BaseController {
                         new JsonObject().put("id", idProjectRight).put("id_title", id_title));
                 orderRegionService.createOrdersRegion(order, files, userInfos, idProjectRight, orderCreated -> {
                     if (orderCreated.isRight()) {
+
                         Number idReturning = orderCreated.right().getValue().getInteger("id");
                         Logging.insert(eb,
                                 request,

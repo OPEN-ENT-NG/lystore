@@ -91,7 +91,7 @@ public class FileHelper {
             String finalPath = pathIds.get().get(incrementFile.get());
             final JsonObject metadata = FileUtils.metadata(upload);
             listMetadata.add(new Attachment(fileIds.get(incrementFile.get()), new Metadata(metadata)));
-                    upload.streamToFileSystem(finalPath);
+            upload.streamToFileSystem(finalPath);
             incrementFile.set(incrementFile.get() + 1);
 
 
@@ -202,18 +202,45 @@ public class FileHelper {
         return promise.future();
     }
 
-    private static Future<String> copyFile( String filename,String id,Storage storage) {
-        log.info(id);
+    private static Future<String> deleteFile(String id, Storage storage) {
         Promise<String> promise = Promise.promise();
-            storage.copyFile(id,  event -> {
-                if (event.getString("status").equals("ok")) {
-                    log.info(event.getString("_id"));
-                    promise.complete(filename + "/" +event.getString("_id"));
-                } else {
-                    promise.fail("error when copying file");
-                }
-            });
+        storage.removeFile(id,  event -> {
+            if (event.getString("status").equals("ok")) {
+                promise.complete("ok");
+            } else {
+                promise.fail("error when copying file");
+            }
+        });
         return promise.future();
     }
 
+    private static Future<String> copyFile( String filename,String id,Storage storage) {
+        log.info(id);
+        Promise<String> promise = Promise.promise();
+        storage.copyFile(id,  event -> {
+            if (event.getString("status").equals("ok")) {
+                log.info(event.getString("_id"));
+                promise.complete(filename + "/" +event.getString("_id"));
+            } else {
+                promise.fail("error when copying file");
+            }
+        });
+        return promise.future();
+    }
+
+    public static Future<String> deleteFiles(List<String> idsFiles, Storage storage) {
+        Promise<String> promise = Promise.promise();
+        List<Future<String>> removeIdsFutures = new ArrayList<>();
+
+        for (String id : idsFiles) {
+            removeIdsFutures.add(deleteFile(id,storage));
+        }
+        FutureHelper.all(removeIdsFutures).onSuccess(success ->{
+            promise.complete("ok");
+        }).onFailure(failure -> {
+            promise.fail(failure.getMessage());
+        });
+
+        return promise.future();
+    }
 }

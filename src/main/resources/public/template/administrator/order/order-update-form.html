@@ -174,10 +174,11 @@
                 :
             </label>
             <div
+                    ng-if="orderToUpdate.files"
                     class="six cell horizontal-margin"
-                    ng-if="orderToUpdate.files.length !== 0 "
             >
-                <ul>
+               <span ng-if="orderToUpdate.files.length === 0 ">- </span>
+                <ul ng-if="orderToUpdate.files.length !== 0 ">
                     <li ng-repeat="file in orderToUpdate.files" class="twelve row">
                         <div class="eleven">
                             [[ file.filename ]]
@@ -213,14 +214,15 @@
                     </li>
 
                 </ul>
+
+                <div class="three right-magnet cell">
+                    <a ng-click="openAddDocumentsLightbox(orderParent)">
+                        <!--<i class="attachment" />--><i18n>lystore.basket.add-file</i18n>
+                    </a>
+                </div>
             </div>
 
 
-            <div class="three right-magnet cell">
-                <a ng-click="openAddDocumentsLightbox(orderParent)">
-                    <!--<i class="attachment" />--><i18n>lystore.basket.add-file</i18n>
-                </a>
-            </div>
         </div>
 
         <div class="row vertical-spacing-four">
