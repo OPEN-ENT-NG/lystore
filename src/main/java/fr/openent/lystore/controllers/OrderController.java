@@ -882,16 +882,24 @@ public class OrderController extends ControllerHelper {
             structureId = structureIds.next();
             structure = structures.getJsonObject(structureId);
             JsonObject finalStructure = structure;
+            String finalStructureId = structureId;
             orderService.getOrderByValidatioNumber(numberValidation,
                     new Handler<Either<String, JsonArray>>() {
                         @Override
                         public void handle(Either<String, JsonArray> event) {
                             if (event.isRight() && event.right().getValue().size() > 0) {
-                                JsonObject order = event.right().getValue().getJsonObject(0);
+                                JsonArray allorders = event.right().getValue();
+                                JsonArray orders = new JsonArray();
+                                for (int i = 0 ; i< allorders.size();i++){
+                                    JsonObject order =allorders.getJsonObject(i);
+                                    if(order.getString("id_structure").equals(finalStructureId)){
+                                        orders.add(order);
+                                    }
+                                }
                                 result.add(new JsonObject()
-                                        .put("id_structure", order.getString("id_structure"))
+                                        .put("id_structure", finalStructureId)
                                         .put("structure", finalStructure.getJsonObject("structureInfo"))
-                                        .put("orders",event.right().getValue())
+                                        .put("orders",orders)
                                 );
                                 if (result.size() == structures.size()) {
                                     handler.handle(result);
