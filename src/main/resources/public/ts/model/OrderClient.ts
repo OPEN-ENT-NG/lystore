@@ -79,7 +79,7 @@ export class OrderClient implements Order  {
     override_region: boolean;
     supplierid: any;
     has_operation: boolean;
-    instruction_cp_adopted: boolean;
+    instruction_cp_adopted: string;
 
     constructor() {
         this.typeOrder= "client";

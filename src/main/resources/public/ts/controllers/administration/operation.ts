@@ -28,10 +28,11 @@ export const operationController = ng.controller('operationController',
                 label: false,
             }
         };
+
         $scope.noValidatedCP = (operations : Operation[]) =>{
-            let noValidateFound = true;
+            let noValidateFound = false;
             operations.forEach(operation =>{
-                noValidateFound = noValidateFound && !operation.instruction.cp_adopted;
+                noValidateFound = noValidateFound && ( operation.instruction.cp_adopted === 'WAITING' || !operation.instruction.cp_adopted )
             })
             return noValidateFound;
         }
