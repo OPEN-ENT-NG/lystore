@@ -56,15 +56,13 @@
                 <div ng-show="instruction.submitted_to_cp"
                      class="six cell vertical-spacing twelve-mobile row-mobile">
                     <label class="six">
-                        <span class="cell margin-right-instruction">
+                        <span class="margin-right-instruction">
                                     <i18n>lystore.cp.adopted</i18n> *
                                 </span>
                         <select
                                 ng-model="instruction.cp_adopted"
                                 ng-disabled="instruction.cp_not_waiting"
-                                ng-options="status as formatStatus(status) for status in tabDisplayStatusInstruction "
-                                class="cell">
-
+                                ng-options="status as formatStatus(status) for status in tabDisplayStatusInstruction ">
                             <!--                        <option value="" disabled selected>[[translate('lystore.instruction.choose.operation')]]</option>-->
                             <option value="" disabled selected>[[translate('lystore.instruction.choose.status')]]</option>
                             <!--                        <option ng-repeat="status in tabDisplayStatusInstruction">[[formatStatus(status)]]</option>-->
