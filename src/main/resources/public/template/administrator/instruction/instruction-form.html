@@ -47,7 +47,7 @@
                     <switch-toggle
                             ng-disabled="instruction.cp_not_waiting"
                             ng-model="instruction.submitted_to_cp"
-                                   class="cell">
+                            class="cell">
 
                     </switch-toggle>
                     <date-picker ng-model="instruction.date_cp" ng-disabled required>
@@ -63,6 +63,7 @@
                                 ng-model="instruction.cp_adopted"
                                 ng-disabled="instruction.cp_not_waiting"
                                 ng-options="status as formatStatus(status) for status in tabDisplayStatusInstruction ">
+
                             <!--                        <option value="" disabled selected>[[translate('lystore.instruction.choose.operation')]]</option>-->
                             <option value="" disabled selected>[[translate('lystore.instruction.choose.status')]]</option>
                             <!--                        <option ng-repeat="status in tabDisplayStatusInstruction">[[formatStatus(status)]]</option>-->

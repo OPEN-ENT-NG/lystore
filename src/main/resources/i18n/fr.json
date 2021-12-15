@@ -631,6 +631,6 @@
   "lystore.instruction.status.waiting": "En attente",
   "lystore.instruction.status.rejected": "Rejeté",
   "lystore.export.cp.rejected.title": "Rejet du CP",
-  "lystore.export.cp.rejected.text": "Êtes-vous sûr de vouloir rejetté le CP? Cette action n'est pas réversible",
+  "lystore.export.cp.rejected.text": "Êtes-vous sûr de vouloir rejeté le CP? Cette action n'est pas réversible",
   "lystore.instruction.choose.status": "Sélectionnez un statut"
 }
