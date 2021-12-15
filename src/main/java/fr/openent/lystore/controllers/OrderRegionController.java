@@ -119,23 +119,6 @@ public class OrderRegionController extends BaseController {
                     log.error(message, err);
                     renderError(request);
                 });
-//        UserUtils.getUserInfos(eb, request, new Handler<UserInfos>() {
-//            @Override
-//            public void handle(UserInfos event) {
-//                RequestUtils.bodyToJson(request, new Handler<JsonObject>() {
-//                    @Override
-//                    public void handle(JsonObject order) {
-//                        RequestUtils.bodyToJson(request, orderRegion -> orderRegionService.setOrderRegion(order, event, Logging.defaultResponseHandler(eb,
-//                                request,
-//                                Contexts.ORDERREGION.toString(),
-//                                Actions.CREATE.toString(),
-//                                null,
-//                                orderRegion)));
-//                    }
-//                });
-//            }
-//
-//        });
     }
 
     private Map<String, String> generateMapFilenameId(JsonObject bodyOrder) {
