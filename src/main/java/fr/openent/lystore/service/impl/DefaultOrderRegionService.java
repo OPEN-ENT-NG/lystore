@@ -50,7 +50,6 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                     for(String fileId : oldFiles){
                         statements.add(addIdFileToOrder( id ,fileId));
                     }
-//                    logger.info(setOrderRegionStatement(id, order,idOrderClient, user));
                     sql.transaction(statements, new Handler<Message<JsonObject>>() {
                         @Override
                         public void handle(Message<JsonObject> event) {
