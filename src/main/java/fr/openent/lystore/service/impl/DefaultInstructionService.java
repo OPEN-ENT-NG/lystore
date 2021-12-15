@@ -3,6 +3,7 @@ package fr.openent.lystore.service.impl;
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.helpers.FutureHelper;
 import fr.openent.lystore.service.InstructionService;
+import fr.openent.lystore.model.InstructionStatus;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.AsyncResult;
@@ -220,9 +221,9 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
     }
 
     private void checkCpValue(Number id, JsonArray statements, JsonObject instruction, Handler<Either<String, JsonObject>> handler) {
-        if(instruction.getBoolean("cp_adopted")){
+        if(instruction.getString("cp_adopted").equals(InstructionStatus.ADOPTED.toString())){
             handleCpAdopted(id, statements, handler);
-        }else{
+        } else {
             sql.transaction(statements, new Handler<Message<JsonObject>>() {
                 @Override
                 public void handle(Message<JsonObject> event) {
@@ -269,7 +270,6 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
         });
 
     }
-
     //PROBLEMES LE STATUS EST EFFACE APRES PAR LE WAITING OR ACCEPTANCE
     private void generateOrdersUpdateStatements(Map<Integer, JsonArray> mapMarket, JsonArray statements, Handler<Either<String, JsonObject>> handler, Number id) {
         List<Future> futures = new ArrayList<>();
@@ -364,7 +364,8 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
     }
     private JsonObject getInstructionCreationStatement(Number id, JsonObject instruction) {
 
-        String statement = "INSERT INTO " + Lystore.lystoreSchema +".instruction (" +
+        String statement = "";
+        statement = "INSERT INTO " + Lystore.lystoreSchema +".instruction (" +
                 "id, "+
                 "id_exercise," +
                 "object, " +
@@ -372,13 +373,13 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 "cp_number, " +
                 "submitted_to_cp, " +
                 "date_cp, " +
-                "comment" +
-                ",cp_adopted" +
-                ") " +
+                "comment," +
+                " cp_adopted) " +
                 "VALUES (? ,? ,? ,? ,? ,? ,? ," +
-                "? ," +
-                "? ) " +
-                "RETURNING id; ";
+                "? ," ;
+        statement += instruction.getString("cp_adopted") != null ? "? " : "NULL ";
+        statement +=")" +
+        "RETURNING id; ";
 
 
         String object = instruction.getString("object");
@@ -393,9 +394,10 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 .add(instruction.getString("cp_number"))
                 .add(instruction.getBoolean("submitted_to_cp"))
                 .add(instruction.getString("date_cp"))
-                .add(instruction.getString("comment"))
-                .add(instruction.getBoolean("cp_adopted"))
-                ;
+                .add(instruction.getString("comment"));
+                if(instruction.getString("cp_adopted") != null) {
+                    params.add(instruction.getString("cp_adopted"));
+                }
 
         return new JsonObject()
                 .put("statement", statement)
@@ -417,7 +419,8 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
     }
 
     private JsonObject getUpdateInstructionStatement(Integer id, JsonObject instruction) {
-        String statement = " UPDATE " + Lystore.lystoreSchema + ".instruction " +
+        String statement = "";
+        statement = " UPDATE " + Lystore.lystoreSchema + ".instruction " +
                 "SET " +
                 "id_exercise = ? ," +
                 "object = ? , " +
@@ -425,9 +428,9 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 "cp_number = ? , " +
                 "submitted_to_cp = ? , " +
                 "date_cp = ? , " +
-                "comment = ?  " +
-                ",cp_adopted = ?  " +
-                "WHERE id = ? " +
+                "comment = ? ,  ";
+        statement += instruction.getString("cp_adopted") != null ? "cp_adopted = ? " : "cp_adopted = NULL ";
+        statement += "WHERE id = ? " +
                 "RETURNING id;";
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray()
                 .add(instruction.getInteger("id_exercise"))
@@ -436,9 +439,11 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 .add(instruction.getString("cp_number"))
                 .add(instruction.getBoolean("submitted_to_cp"))
                 .add(instruction.getString("date_cp"))
-                .add(instruction.getString("comment"))
-                .add(instruction.getBoolean("cp_adopted"))
-                .add(id);
+                .add(instruction.getString("comment"));
+        if(instruction.getString("cp_adopted") != null) {
+            params.add(instruction.getString("cp_adopted"));
+        }
+                params.add(id);
         return new JsonObject()
                 .put("statement", statement)
                 .put("values", params)

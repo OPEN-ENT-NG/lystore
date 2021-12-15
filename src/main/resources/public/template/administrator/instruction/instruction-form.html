@@ -45,23 +45,30 @@
                                     <i18n>lystore.submitted.to.cp</i18n> *
                                 </span>
                     <switch-toggle
-                            ng-disabled="instruction.cp_already_adopted"
+                            ng-disabled="instruction.cp_not_waiting"
                             ng-model="instruction.submitted_to_cp"
-                                   class="cell">
+                            class="cell">
 
                     </switch-toggle>
-                    <date-picker ng-model="instruction.date_cp" ng-disaled required>
+                    <date-picker ng-model="instruction.date_cp" ng-disabled required>
                     </date-picker>
                 </div>
                 <div ng-show="instruction.submitted_to_cp"
                      class="six cell vertical-spacing twelve-mobile row-mobile">
-                                <span class="cell ">
+                    <label class="six">
+                        <span class="margin-right-instruction">
                                     <i18n>lystore.cp.adopted</i18n> *
                                 </span>
-                    <switch-toggle ng-model="instruction.cp_adopted"
-                                   ng-disabled="instruction.cp_already_adopted"
-                                   class="cell">
-                    </switch-toggle>
+                        <select
+                                ng-model="instruction.cp_adopted"
+                                ng-disabled="instruction.cp_not_waiting"
+                                ng-options="status as formatStatus(status) for status in tabDisplayStatusInstruction ">
+
+                            <!--                        <option value="" disabled selected>[[translate('lystore.instruction.choose.operation')]]</option>-->
+                            <option value="" disabled selected>[[translate('lystore.instruction.choose.status')]]</option>
+                            <!--                        <option ng-repeat="status in tabDisplayStatusInstruction">[[formatStatus(status)]]</option>-->
+                        </select>
+                    </label>
                 </div>
                 <div class="row twelve vertical-spacing">
                         <span class="twelve">
@@ -101,7 +108,7 @@
                                     <i18n>close</i18n>
                                 </span>
                                 </td>
-                                <td  ng-if="!instruction.cp_already_adopted"
+                                <td  ng-if="!instruction.cp_not_waiting"
                                      class="one aligne-text-center"
                                      ng-click="dropOperation($index, operationAdd)">
                                     <i  class="trash"></i>
@@ -135,14 +142,14 @@
                             i18n-value="lystore.operation.form.empty"
                     />
                     <input
-                            ng-show="instruction.cp_already_adopted "
+                            ng-show="instruction.cp_not_waiting "
                             class="vertical-spacing"
                             type="button"
                             ng-disabled="true"
                             i18n-value="lystore.operation.deny"
                     />
                     <input
-                            ng-show="!isOperationsIsEmpty && !instruction.cp_already_adopted"
+                            ng-show="!isOperationsIsEmpty && !instruction.cp_not_waiting"
                             class="vertical-spacing"
                             type="button"
                             ng-disabled="isNewOperation"
@@ -162,4 +169,8 @@
 <lightbox show="display.lightbox.cp_adopted"
           on-close="cancelAdoptedLightbox()">
     <container template="instruction.cp.lightbox"></container>
+</lightbox>
+<lightbox show="display.lightbox.cp_rejected"
+          on-close="cancelAdoptedLightbox()">
+    <container template="instruction.cp.rejected.lightbox"></container>
 </lightbox>

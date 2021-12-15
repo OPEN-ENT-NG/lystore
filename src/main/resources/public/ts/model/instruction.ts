@@ -20,8 +20,8 @@ export class Instruction implements Selectable {
     amount:number;
     operations:Array<Operation> ;
     selected:boolean = false;
-    cp_adopted:boolean = false;
-    cp_already_adopted: boolean;
+    cp_adopted:string;
+    cp_not_waiting: boolean;
 
     constructor(){
     }
@@ -61,7 +61,7 @@ export class Instruction implements Selectable {
             submitted_to_cp: this.submitted_to_cp? true : false,
             date_cp: Utils.formatDatePost(this.date_cp),
             comment: this.comment,
-            cp_adopted: this.cp_adopted && this.submitted_to_cp
+            cp_adopted: this.cp_adopted
         };
     }
 
@@ -154,7 +154,9 @@ export class Instructions extends Selection<Instruction>{
             this.all.forEach(instructionGet => {
                 instructionGet.exercise = Mix.castAs(Exercise, JSON.parse(instructionGet.exercise.toString()));
                 instructionGet.date_cp = moment(instructionGet.date_cp);
-                instructionGet.cp_already_adopted = instructionGet.cp_adopted;
+                if(instructionGet.cp_adopted == 'ADOPTED') instructionGet.cp_not_waiting = true;
+                if(instructionGet.cp_adopted == 'WAITING') instructionGet.cp_not_waiting = false;
+                if(instructionGet.cp_adopted == 'REJECTED') instructionGet.cp_not_waiting = true;
                 instructionGet.operations = JSON.parse(instructionGet.operations.toString())[0]?
                     JSON.parse(instructionGet.operations.toString()):
                     [];

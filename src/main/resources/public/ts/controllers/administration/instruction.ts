@@ -1,5 +1,5 @@
 // @ts-ignore
-import {_, moment, ng, template, toasts} from 'entcore';
+import {_, moment, idiom as lang, ng, template, toasts} from 'entcore';
 import {Instruction, Notification, Operation, Utils} from "../../model";
 
 
@@ -7,6 +7,17 @@ declare let window: any;
 
 export const instructionController = ng.controller('instructionController',
     ['$scope', '$routeParams', ($scope, $routeParams) => {
+
+        // $scope.tabStatusInstruction = [
+        //     {displayedName:'Adopté',value:"ADOPTED"},
+        //     {displayedName:'En attente',value:"WAITING"},
+        //     {displayedName:'Rejeté',value:"REJECTED"},
+        // ];
+        $scope.translate = (key: string):string => lang.translate(key);
+
+        $scope.tabDisplayStatusInstruction = [
+            'ADOPTED', 'WAITING', 'REJECTED'
+        ]
 
         $scope.sort = {
             instruction : {
@@ -22,7 +33,8 @@ export const instructionController = ng.controller('instructionController',
             lightbox : {
                 instruction:false,
                 exportEquipment: false,
-                cp_adopted:false
+                cp_adopted:false,
+                cp_rejected: false,
             }
         };
         $scope.formatDate = (date) => {
@@ -192,15 +204,21 @@ export const instructionController = ng.controller('instructionController',
         };
 
         $scope.cancelAdoptedLightbox  = () =>{
-            $scope.instruction.cp_adopted = false;
+            $scope.instruction.cp_adopted = 'WAITING';
             $scope.closeAdoptedLightbox()
         }
         $scope.closeAdoptedLightbox = () =>{
             $scope.display.lightbox.cp_adopted = false;
+            $scope.display.lightbox.cp_rejected = false;
             Utils.safeApply($scope);
         }
         $scope.validAdoptedLightbox  = async () =>{
-            $scope.instruction.cp_adopted = true;
+            $scope.instruction.cp_adopted = 'ADOPTED';
+            await sendForm();
+            $scope.closeAdoptedLightbox()
+        }
+        $scope.validRejectedLightbox = async () => {
+            $scope.instruction.cp_adopted = 'REJECTED';
             await sendForm();
             $scope.closeAdoptedLightbox()
         }
@@ -222,12 +240,17 @@ export const instructionController = ng.controller('instructionController',
         }
 
         $scope.sendInstruction = async () => {
-            if($scope.instruction.cp_adopted && !$scope.instruction.cp_already_adopted){
+            if($scope.instruction.cp_adopted === 'ADOPTED' && !$scope.instruction.cp_not_waiting){
                 $scope.display.lightbox.cp_adopted = true;
                 template.open('instruction.cp.lightbox', 'administrator/instruction/instruction-cp-adopted-lightbox');
-            }else{
-                if( !$scope.instruction.cp_already_adopted)
-                    $scope.instruction.cp_adopted = false;
+            }
+            if($scope.instruction.cp_adopted === 'REJECTED' && !$scope.instruction.cp_not_waiting){
+                $scope.display.lightbox.cp_rejected = true;
+                template.open('instruction.cp.rejected.lightbox', 'administrator/instruction/instruction-cp-rejected-lightbox');
+            }
+            else{
+                if( !$scope.instruction.cp_not_waiting)
+                    $scope.instruction.cp_adopted = 'WAITING';
                 await sendForm();
                 Utils.safeApply($scope);
             }
@@ -286,4 +309,28 @@ export const instructionController = ng.controller('instructionController',
             $scope.instructions.selected[0].selected = false;
             Utils.safeApply($scope);
         }
+        $scope.formatStatus = (status) => {
+            if(status == 'ADOPTED') {
+                return lang.translate("lystore.instruction.status.adopted");
+            }
+            if(status == 'WAITING') {
+                return lang.translate("lystore.instruction.status.waiting");
+            }
+            if(status == 'REJECTED') {
+                return lang.translate("lystore.instruction.status.rejected");
+            }
+            return "-";
+        }
+        $scope.actualStatus = (status) => {
+            if(status == 'ADOPTED') {
+                status = $scope.tabDisplayStatusInstruction[0];
+            }
+            if(status == 'WAITING') {
+                status = $scope.tabDisplayStatusInstruction[1];
+            }
+            if(status == 'REJECTED') {
+                status = $scope.tabDisplayStatusInstruction[2];
+            }
+        }
+
     }]);

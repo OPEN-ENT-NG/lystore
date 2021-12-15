@@ -29,7 +29,7 @@
       "type": "boolean"
     },
     "cp_adopted": {
-      "type": "boolean"
+      "type": ["string", "null"]
     }
   }, "required": [
   "id_exercise",
