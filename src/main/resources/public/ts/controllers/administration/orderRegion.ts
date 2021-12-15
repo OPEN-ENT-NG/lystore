@@ -159,41 +159,67 @@ export const orderRegionController = ng.controller('orderRegionController',
 
             $scope.updateLinkedOrderConfirm = async ():Promise<void> => {
                 //ici changer
+                console.log("$scope.orderParent ")
+                console.log($scope.orderParent )
                 let orderRegion = new OrderRegion();
                 orderRegion.createFromOrderClient($scope.orderToUpdate);
                 orderRegion.equipment_key = $scope.orderToUpdate.equipment_key;
                 orderRegion.id_contract = orderRegion.equipment.id_contract;
                 orderRegion.files = $scope.orderRegion.files
                 let ordersOldFiles = "";
-                $scope.filesMetadataTemp.forEach(files =>{
-                    ordersOldFiles += files.id + ","
+                let ordersOldFilesName = "";
+                $scope.filesMetadataTemp.forEach(file =>{
+                    ordersOldFiles += file.id + ","
+                    ordersOldFilesName+=file.filename +"/";
                 })
-
+                console.log(ordersOldFiles)
                 const promises: Array<Promise<AxiosResponse>> = [];
-                let statement =  statementsOrdersService.update({
-                    id_campaign: $scope.orderToUpdate.campaign.id,
-                    id_structure: $scope.orderToUpdate.id_structure,
-                    title_id: $scope.orderToUpdate.project,
-                    id_operation: $scope.orderToUpdate.id_operation,
-                    equipment_key: $scope.orderToUpdate.equipment.id,
-                    equipment: $scope.orderToUpdate.equipment,
-                    comment: $scope.orderToUpdate.comment,
-                    amount: $scope.orderToUpdate.amount,
-                    price: $scope.orderToUpdate.price,
-                    equipment_name: $scope.orderToUpdate.equipment.name,
-                    technical_spec: $scope.orderToUpdate.equipment.technical_specs,
-                    id_contract: $scope.orderToUpdate.equipment.id_contract,
-                    name_structure: $scope.orderToUpdate.structure.name,
-                    files: orderRegion.files,
-                    oldFiles : ordersOldFiles,
-                    rank: (orderRegion.rank) ? orderRegion.rank.toString() : "-1"
-                },$scope.orderToUpdate.id);
-                promises.push(statement)
+
+                if( $scope.orderParent ) {
+                    let statement = statementsOrdersService.createOne({
+                        id_campaign: $scope.orderToUpdate.campaign.id,
+                        id_structure: $scope.orderToUpdate.id_structure,
+                        title_id: $scope.orderToUpdate.project,
+                        id_operation: $scope.orderToUpdate.id_operation,
+                        equipment_key: $scope.orderToUpdate.equipment.id,
+                        equipment: $scope.orderToUpdate.equipment,
+                        comment: $scope.orderToUpdate.comment,
+                        amount: $scope.orderToUpdate.amount,
+                        price: $scope.orderToUpdate.price,
+                        equipment_name: $scope.orderToUpdate.equipment.name,
+                        technical_spec: $scope.orderToUpdate.equipment.technical_specs,
+                        id_contract: $scope.orderToUpdate.equipment.id_contract,
+                        name_structure: $scope.orderToUpdate.structure.name,
+                        files: orderRegion.files,
+                        oldFiles: ordersOldFiles,
+                        oldFilesName : ordersOldFilesName,
+                        rank: (orderRegion.rank) ? orderRegion.rank.toString() : "-1"
+                    }, $scope.orderToUpdate.id);
+                    promises.push(statement)
+                }else{
+                    let statement = statementsOrdersService.update({
+                        id_campaign: $scope.orderToUpdate.campaign.id,
+                        id_structure: $scope.orderToUpdate.id_structure,
+                        title_id: $scope.orderToUpdate.project,
+                        id_operation: $scope.orderToUpdate.id_operation,
+                        equipment_key: $scope.orderToUpdate.equipment.id,
+                        equipment: $scope.orderToUpdate.equipment,
+                        comment: $scope.orderToUpdate.comment,
+                        amount: $scope.orderToUpdate.amount,
+                        price: $scope.orderToUpdate.price,
+                        equipment_name: $scope.orderToUpdate.equipment.name,
+                        technical_spec: $scope.orderToUpdate.equipment.technical_specs,
+                        id_contract: $scope.orderToUpdate.equipment.id_contract,
+                        name_structure: $scope.orderToUpdate.structure.name,
+                        files: orderRegion.files,
+                        oldFiles: ordersOldFiles,
+                        rank: (orderRegion.rank) ? orderRegion.rank.toString() : "-1"
+                    }, $scope.orderToUpdate.id);
+                    promises.push(statement)
+                }
                 try {
-                    console.log("plop")
                     let responses: Array<AxiosResponse> = await Promise.all(promises);
                     if (responses) {
-                        console.log("in if")
                         if (responses) {
                             toasts.confirm('lystore.order.region.update');
                         }

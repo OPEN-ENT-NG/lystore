@@ -418,7 +418,6 @@ public class OrderController extends ControllerHelper {
                     JsonObject order;
                     for (int i = 0; i < orders.size(); i++) {
                         order = orders.getJsonObject(i);
-                        log.info(order);
                         Logging.insert(eb, request, Contexts.ORDER.toString(), Actions.UPDATE.toString(),
                                 order.getInteger("id").toString(), order);
                     }
