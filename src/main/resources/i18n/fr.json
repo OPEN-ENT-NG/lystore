@@ -631,6 +631,8 @@
   "lystore.operation.deny": "Impossible d'ajouter des opérations",
   "lystore.campaign.purse.total_order": "Commandes",
   "campaign.select.list": "Campagnes séléctionnées : ",
+  "lystore.order.create.no-file": "Aucun document ajouté"
+  "campaign.select.list": "Campagnes séléctionnées : ",
   "lystore.instruction.status.adopted": "Adopté",
   "lystore.instruction.status.waiting": "En attente",
   "lystore.instruction.status.rejected": "Rejeté",

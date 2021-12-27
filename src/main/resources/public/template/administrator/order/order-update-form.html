@@ -181,7 +181,7 @@
                 <ul ng-if="orderToUpdate.files.length !== 0 ">
                     <li ng-repeat="file in orderToUpdate.files" class="twelve row">
                         <div class="eleven">
-                            [[ file.filename ]]
+                            <a ng-click="orderRegion.downloadFile(file, orderToUpdate.id)">[[ file.filename ]]</a>
                         </div>
                     </li>
                 </ul>

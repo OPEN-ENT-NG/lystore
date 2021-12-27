@@ -17,8 +17,8 @@ import {IStatementsOrdersService} from "../../services";
 
 declare let window: any;
 export const orderRegionController = ng.controller('orderRegionController',
-    ['$scope', "StatementsOrdersService", '$location', '$routeParams',
-        ($scope, statementsOrdersService: IStatementsOrdersService, $location, $routeParams) => {
+    ['$scope', "StatementsOrdersService", '$element', '$location', '$routeParams',
+        ($scope, statementsOrdersService: IStatementsOrdersService, element, $location, $routeParams) => {
 
             $scope.orderToCreate = new OrderRegion();
             $scope.structure_groups = new StructureGroups();
@@ -485,6 +485,30 @@ export const orderRegionController = ng.controller('orderRegionController',
                 await $scope.deleteOrderRegionFile();
                 Utils.safeApply($scope);
             }
+
+            element.on('dragenter', (e) => {
+                e.preventDefault();
+            });
+
+            element.on('dragover', (e) => {
+                element.find('.drop-zone').addClass('dragover');
+                e.preventDefault();
+            });
+
+            element.on('dragleave', () => {
+                element.find('.drop-zone').removeClass('dragover');
+            });
+
+            element.on('drop', async (e) => {
+                element.find('.drop-zone').removeClass('dragover');
+                e.preventDefault()
+
+                if($scope.orderTemp) {
+                    $scope.importFilesCreate(e.originalEvent.dataTransfer.files);
+                } else {
+                    $scope.importFiles(e.originalEvent.dataTransfer.files);
+                }
+            });
 
             $scope.openAddDocumentsLightbox = (orderRegion: OrderRegion) =>
             {
