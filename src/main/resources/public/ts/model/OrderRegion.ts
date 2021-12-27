@@ -211,8 +211,8 @@ export class OrderRegion implements Order  {
         }
     }
 
-    downloadFile(file) {
-        window.open(`/lystore/order/update/file/${file.id}`);
+    downloadFile(file, id):void {
+        window.open(`/lystore/order/${id}/file/${file.id}`);
     }
 }
 

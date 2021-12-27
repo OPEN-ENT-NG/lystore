@@ -67,6 +67,74 @@
     background: #fafafa;
   }
 
+  .import-files-admin {
+    > article {
+      box-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
+      border-radius: 5px;
+      overflow: hidden;
+      opacity: 0;
+      width: 80%;
+      position: absolute;
+      height: 70px;
+      transition: 500ms ease;
+      box-sizing: border-box;
+      border: none;
+      .select-file {
+        margin: 0;
+      }
+      .help {
+        display: flex;
+        align-items: center;
+        height: 100%;
+      }
+    }
+    i.cloud-upload {
+      text-align: center;
+      &::before {
+        font-size: 40px;
+      }
+    }
+    article.default {
+      opacity: 1;
+    }
+    &.dragover {
+      article.drop {
+        opacity: 1;
+      }
+      article.default {
+        opacity: 0;
+      }
+    }
+    padding: 50px;
+    padding-top: 125px;
+    border: 2px dashed #ddd;
+    background: #fafafa;
+  }
+
+  .dragAndDrop {
+    .file-zone {
+      padding-bottom: 3%;
+    }
+    .margin-top-button {
+      margin-top: 2%;
+    }
+    .margin-bottom {
+      margin-bottom: 5%;
+    }
+    .pop-up {
+      margin-right: 3%;
+      margin-left: 3%;
+    }
+    .top-update {
+      top: 48%;
+    }
+    .responsive-drop-zone {
+      display: flex;
+      justify-content: center;
+      align-items: end;
+    }
+  }
+
   .loading-list.drop-zone {
     max-height: 360px;
   }
