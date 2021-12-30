@@ -9,14 +9,14 @@ export const purseController = ng.controller('PurseController',
         $scope.campaign = $scope.campaigns.get(parseInt($routeParams.idCampaign));
         $scope.campaign.purses = new Purses(parseInt($routeParams.idCampaign));
         $scope.campaign.purses.sync().then(() => {
-            Utils.safeApply($scope)
-            angular.forEach($scope.campaign.purses, function(purse) {
+            $scope.campaign.purses.all.forEach( purse => {
                 purse.initial_amount = parseFloat(purse.initial_amount);
                 purse.total_order = parseFloat(purse.total_order);
                 if(isNaN(purse.total_order)){
                     purse.total_order = 0;
                 }
             })
+            Utils.safeApply($scope)
         });
 
         $scope.lightbox = {
