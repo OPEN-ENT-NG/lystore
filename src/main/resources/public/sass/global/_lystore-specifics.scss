@@ -63,6 +63,14 @@ body.lystore {
         }
       }
 
+      tbody {
+        search-and-select {
+          .search-and-select-panel {
+            width: fit-content;
+          }
+        }
+      }
+
       td {
         text-align: left;
         width: auto;
