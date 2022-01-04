@@ -38,17 +38,17 @@
                         <i class="up-open" ng-show="sort.purse.type === 'amount' && !sort.purse.reverse"></i>
                         <i class="down-open" ng-show="sort.purse.type === 'amount' && sort.purse.reverse"></i>
                     </td>
-                    <td ng-click="sort.purse.type = 'amount';
+                    <td ng-click="sort.purse.type = 'initial_amount';
                         sort.purse.reverse = !sort.purse.reverse">
                         <i18n>lystore.campaign.purse.init</i18n>
-                        <i class="up-open" ng-show="sort.purse.type === 'amount' && !sort.purse.reverse"></i>
-                        <i class="down-open" ng-show="sort.purse.type === 'amount' && sort.purse.reverse"></i>
+                        <i class="up-open" ng-show="sort.purse.type === 'initial_amount' && !sort.purse.reverse"></i>
+                        <i class="down-open" ng-show="sort.purse.type === 'initial_amount' && sort.purse.reverse"></i>
                     </td>
                     <td ng-click="sort.purse.type = 'total_order';
                         sort.purse.reverse = !sort.purse.reverse">
                         <i18n>lystore.campaign.purse.total_order</i18n>
-                        <i class="up-open" ng-show="sort.purse.type === 'amount' && !sort.purse.reverse"></i>
-                        <i class="down-open" ng-show="sort.purse.type === 'amount' && sort.purse.reverse"></i>
+                        <i class="up-open" ng-show="sort.purse.type === 'total_order' && !sort.purse.reverse"></i>
+                        <i class="down-open" ng-show="sort.purse.type === 'total_order' && sort.purse.reverse"></i>
                     </td>
                     <td ng-show="isChecked"><i18n>difference</i18n></td>
                 </thead>
