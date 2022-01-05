@@ -221,7 +221,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
     }
 
     private void checkCpValue(Number id, JsonArray statements, JsonObject instruction, Handler<Either<String, JsonObject>> handler) {
-        if(instruction.getString("cp_adopted").equals(InstructionStatus.ADOPTED.toString())){
+        if(InstructionStatus.ADOPTED.toString().equalsIgnoreCase(instruction.getString("cp_adopted"))){
             handleCpAdopted(id, statements, handler);
         } else {
             sql.transaction(statements, new Handler<Message<JsonObject>>() {

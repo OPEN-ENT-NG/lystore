@@ -248,12 +248,14 @@ export const instructionController = ng.controller('instructionController',
                 $scope.display.lightbox.cp_rejected = true;
                 template.open('instruction.cp.rejected.lightbox', 'administrator/instruction/instruction-cp-rejected-lightbox');
             }
-            else{
-                if( !$scope.instruction.cp_not_waiting)
-                    $scope.instruction.cp_adopted = 'WAITING';
-                await sendForm();
-                Utils.safeApply($scope);
+            else if(!$scope.instruction.cp_not_waiting && $scope.instruction.submitted_to_cp){
+                $scope.instruction.cp_adopted = 'WAITING';
             }
+            else {
+                $scope.instruction.cp_adopted = null;
+            }
+            await sendForm();
+            Utils.safeApply($scope);
         };
 
         $scope.exportRME = async (instruction) => {

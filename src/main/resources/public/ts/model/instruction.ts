@@ -157,6 +157,7 @@ export class Instructions extends Selection<Instruction>{
                 if(instructionGet.cp_adopted == 'ADOPTED') instructionGet.cp_not_waiting = true;
                 if(instructionGet.cp_adopted == 'WAITING') instructionGet.cp_not_waiting = false;
                 if(instructionGet.cp_adopted == 'REJECTED') instructionGet.cp_not_waiting = true;
+                if(instructionGet.cp_adopted == null) instructionGet.cp_not_waiting = false;
                 instructionGet.operations = JSON.parse(instructionGet.operations.toString())[0]?
                     JSON.parse(instructionGet.operations.toString()):
                     [];
