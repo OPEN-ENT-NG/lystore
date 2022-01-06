@@ -204,12 +204,12 @@
                                ng-click="deleteOrderOldFile(orderRegion, file)"></i>
                         </div>
                     </li>
-                    <li ng-repeat="file in orderRegion.files" class="twelve row">
+                    <li ng-repeat="file in orderRegion.files track by $index" class="twelve row">
                         <div class="eleven">
                             [[ file.name || file.filename ]]
                             <i class="one text-right"
                                ng-class="{ close: file.status !== 'loading', loading: file.status === 'loading'}"
-                               ng-click="deleteOrderDocument(orderRegion, file)"></i>
+                               ng-click="deleteOrderDocument(orderRegion, file,$index)"></i>
                         </div>
                     </li>
 

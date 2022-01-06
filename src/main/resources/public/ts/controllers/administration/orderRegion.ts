@@ -553,8 +553,8 @@ export const orderRegionController = ng.controller('orderRegionController',
                 try {
                     file.status = 'loading';
                     Utils.safeApply($scope);
-                    $scope.orderRegion.files.splice($index,1);
-                    orderRegion.files = _.reject(orderRegion.files, (doc) => doc.id === file.id);
+                    orderRegion.files.splice($index,1);
+                    // orderRegion.files = _.reject(orderRegion.files, (doc) => doc.id === file.id);
                     // toasts.confirm('lystore.basket.file.delete.success');
                 } catch (err) {
                     toasts.warning('lystore.basket.file.delete.error');
