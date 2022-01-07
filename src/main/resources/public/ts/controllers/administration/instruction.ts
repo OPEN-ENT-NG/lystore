@@ -250,11 +250,12 @@ export const instructionController = ng.controller('instructionController',
             }
             else if(!$scope.instruction.cp_not_waiting && $scope.instruction.submitted_to_cp){
                 $scope.instruction.cp_adopted = 'WAITING';
+                await sendForm();
             }
             else {
                 $scope.instruction.cp_adopted = null;
+                await sendForm();
             }
-            await sendForm();
             Utils.safeApply($scope);
         };
 
