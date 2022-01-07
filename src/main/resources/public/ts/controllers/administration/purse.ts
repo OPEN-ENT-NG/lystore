@@ -11,6 +11,7 @@ export const purseController = ng.controller('PurseController',
         $scope.campaign.purses.sync().then(() => {
             $scope.campaign.purses.all.forEach( purse => {
                 purse.initial_amount = parseFloat(purse.initial_amount);
+                purse.amount = parseFloat(purse.amount);
                 purse.total_order = parseFloat(purse.total_order);
                 if(isNaN(purse.total_order)){
                     purse.total_order = 0;
