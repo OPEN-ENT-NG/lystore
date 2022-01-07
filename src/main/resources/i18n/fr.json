@@ -599,7 +599,7 @@
   "lystore.campaign.delete": "Supprimer la(es) campagne(s): ",
   "lystore.cp.adopted": "Statut CP",
   "lystore.export.cp.adopted.title": "Adoption du CP",
-  "lystore.export.cp.adopted.text": "Êtes-vous sûr de vouloir valider le CP? Cette action n'est pas réversible",
+  "lystore.export.cp.adopted.text": "Êtes-vous sûr de vouloir valider le CP ? Cette action n'est pas réversible",
   "lystore.instruction.cp_adopted": "Adoption CP",
   "campaign.automatic.manual.change": "Vous allez modifier la date d'ouverture ou de fermeture de la Campagne. Voulez-vous continuer ?",
   "campaign.automatic.dates": "Campagne ouverte",
@@ -631,6 +631,6 @@
   "lystore.instruction.status.waiting": "En attente",
   "lystore.instruction.status.rejected": "Rejeté",
   "lystore.export.cp.rejected.title": "Rejet du CP",
-  "lystore.export.cp.rejected.text": "Êtes-vous sûr de vouloir rejeté le CP? Cette action n'est pas réversible",
+  "lystore.export.cp.rejected.text": "Êtes-vous sûr de vouloir rejeter le CP ? Cette action n'est pas réversible",
   "lystore.instruction.choose.status": "Sélectionnez un statut"
 }

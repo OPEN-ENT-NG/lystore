@@ -136,7 +136,7 @@
         <div class="row">
             <button
                     ng-click="openOperationForm('edit')"
-                    ng-show="operations.selected.length === 1 && !operations.selected[0].instruction.cp_adopted"
+                    ng-show="operations.selected.length === 1 && !operations.selected[0].instruction.cp_adopted || operations.selected[0].instruction.cp_adopted === 'WAITING'"
             >
                 <i18n>modify</i18n>
             </button>
