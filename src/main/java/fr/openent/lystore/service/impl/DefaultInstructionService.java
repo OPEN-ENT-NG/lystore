@@ -244,9 +244,8 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 "INNER join  " +  Lystore.lystoreSchema + ".contract_type on contract.id_contract_type = contract_type.id " +
                 "INNER JOIN  " +  Lystore.lystoreSchema + ".operation on operation.id = orders.id_operation " +
                 "INNER JOIN  " +  Lystore.lystoreSchema + ".instruction on instruction.id = operation.id_instruction and instruction.id = ? " +
-                "WHERE code != '236'    AND (override_region IS NULL OR override_region IS false) " +
-                "order by id_contract " +
-                " ";
+                "WHERE code != '236'    AND override_region IS NOT true " +
+                "order by id_contract ; ";
         Map<Integer,JsonArray> mapMarket = new HashMap<>();
 
         sql.prepared(queryGetOrders, new JsonArray().add(id) ,new Handler<Message<JsonObject>>() {
@@ -264,7 +263,6 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                         }
                     }
                 }
-
                 generateOrdersUpdateStatements(mapMarket, statements, handler, id);
             }
         });
