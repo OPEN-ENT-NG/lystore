@@ -29,12 +29,12 @@ export const operationController = ng.controller('operationController',
             }
         };
 
-        $scope.noValidatedCP = (operations : Operation[]) =>{
-            let noValidateFound = false;
+        $scope.validatedCP = (operations : Operation[]) =>{
+            let validateFound = false;
             operations.forEach(operation =>{
-                noValidateFound = noValidateFound && ( operation.instruction.cp_adopted === 'WAITING' || !operation.instruction.cp_adopted )
+                validateFound = validateFound || ( operation.instruction.cp_adopted === 'REJECTED' || operation.instruction.cp_adopted  === 'ADOPTED')
             })
-            return noValidateFound;
+            return validateFound;
         }
 
         $scope.getFirstElement = jsonArray => {

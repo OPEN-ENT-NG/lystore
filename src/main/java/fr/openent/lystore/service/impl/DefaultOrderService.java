@@ -1312,7 +1312,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "       orders.id_operation, " +
                 "       orders.override_region, " +
                 "       orders.id_type, " +
-                Lystore.lystoreSchema + ".order_total(oce.id) AS Total " +
+                Lystore.lystoreSchema + ".order_total(orders.id) AS Total " +
                 "FROM   " + Lystore.lystoreSchema + ".allorders orders " +
                 "       INNER JOIN " + Lystore.lystoreSchema + ".rel_group_campaign " +
                 "               ON ( orders.id_campaign = rel_group_campaign.id_campaign ) " +

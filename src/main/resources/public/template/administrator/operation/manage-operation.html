@@ -141,43 +141,15 @@
                 <i18n>modify</i18n>
             </button>
             <button
-                    ng-disabled="true"
-                    ng-click=""
-                    ng-show="false"
-            >
-                <i18n>lystore.orders.valid.certificates.export</i18n>
-            </button>
-            <button
-                    ng-disabled="true"
-                    ng-click=""
-                    ng-show="false"
-            >
-                <i18n>lystore.orders.valid.order.export</i18n>
-            </button>
-            <button
-                ng-disabled="true"
-                ng-click=""
-                ng-show="false"
-        >
-            <i18n>lystore.orders.valid.structure.list.export</i18n>
-        </button>
-            <button
                     ng-click="openOrders()"
                     ng-show="operations.selected[0].nb_orders !== 0 && operations.selected.length === 1"
             >
                 <i18n>lystore.list.equipment</i18n>
             </button>
-            <button ng-if="noValidatedCP(operations.selected)"
+            <button ng-if="!validatedCP(operations.selected)"
                     ng-click="openLightboxDeleteOperation()"
             >
                 <i18n>delete</i18n>
-            </button>
-            <button
-                    ng-disabled="true"
-                    ng-click=""
-                    ng-show="false"
-            >
-                <i18n>lystore.order.valided.generateBC</i18n>
             </button>
         </div>
     </div>
