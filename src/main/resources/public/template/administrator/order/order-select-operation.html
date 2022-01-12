@@ -4,7 +4,8 @@
     <tr ng-repeat="operation in operations.all">
         <td class="selectOperationRow"
             ng-class="{ greyRow: $index % 2 === 1 }"
-            ng-if="operation.status == 'true' && operation.id_instruction === null"
+            ng-if="operation.status == 'true'
+            &&  (operation.instruction.cp_adopted === 'WAITING' || !operation.instruction || !operation.instruction.cp_adopted)"
             ng-click="operationSelected(operation)">
             [[operation.label.label]] -  [[formatDate(operation.date_operation)]]
         </td>
