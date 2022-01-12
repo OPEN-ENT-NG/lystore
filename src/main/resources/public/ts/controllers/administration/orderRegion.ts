@@ -196,6 +196,7 @@ export const orderRegionController = ng.controller('orderRegionController',
 
             $scope.orderToCreate.rows[index].equipments.forEach(equipment => {
                 row.equipments.push(equipment);
+                console.log(row.equipment)
                 if (row.equipment && row.equipment.id === equipment.id)
                     row.equipment = equipment;
             });
@@ -228,6 +229,8 @@ export const orderRegionController = ng.controller('orderRegionController',
             Utils.safeApply($scope);
         };
         $scope.initEquipmentData = (row:OrderRegion):void => {
+            console.log("row.equipment initEquipmentData")
+            console.log(row.equipment)
             let roundedString = row.equipment.priceTTC.toFixed(2);
             let rounded = Number(roundedString);
             row.price = Number(rounded);
