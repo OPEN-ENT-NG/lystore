@@ -192,13 +192,14 @@ export const orderRegionController = ng.controller('orderRegionController',
                 row.contracts.all.push(ct);
             })
             if($scope.orderToCreate.rows[index].contract_type)
-                row.contract_type = $scope.orderToCreate.rows[index].contract_type ;
+                row.contract_type = JSON.parse(JSON.stringify($scope.orderToCreate.rows[index].contract_type));
 
             $scope.orderToCreate.rows[index].equipments.forEach(equipment => {
                 row.equipments.push(equipment);
-                console.log(row.equipment)
                 if (row.equipment && row.equipment.id === equipment.id)
-                    row.equipment = equipment;
+                {
+                    row.equipment = JSON.parse(JSON.stringify(equipment));
+                }
             });
             $scope.orderToCreate.rows.splice(index + 1, 0, row)
         };
@@ -229,17 +230,17 @@ export const orderRegionController = ng.controller('orderRegionController',
             Utils.safeApply($scope);
         };
         $scope.initEquipmentData = (row:OrderRegion):void => {
-            console.log("row.equipment initEquipmentData")
-            console.log(row.equipment)
             let roundedString = row.equipment.priceTTC.toFixed(2);
             let rounded = Number(roundedString);
             row.price = Number(rounded);
             row.amount = 1;
         };
         $scope.initContractType = async (row) => {
-            if (row.contract) {
+            if (row.contract && ( !row.equipment  || row.equipment.id_contract !== row.contract.id)) {
                 row.ct_enabled = true;
                 row.equipment = undefined;
+                row.price = undefined;
+                row.amount = undefined;
                 row.equipments.all = row.allEquipments.filter(equipment => row.contract.id === equipment.id_contract);
                 Utils.safeApply($scope);
 
