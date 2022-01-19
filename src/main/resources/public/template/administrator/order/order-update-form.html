@@ -1,4 +1,4 @@
-<article ng-controller="orderRegionController" class=" order-client-sent">
+<article ng-controller="orderRegionController" class="upload-files">
     <h1>
         <i18n>lystore.order.update</i18n>
     </h1>
@@ -169,6 +169,63 @@
         </div>
 
         <div class="row vertical-spacing-four">
+            <label class="twelve right-padding-form-field cell">
+                <i18n>lystore.basket.file.name</i18n>
+                :
+            </label>
+            <div
+                    ng-if="orderToUpdate.files"
+                    class="six cell horizontal-margin"
+            >
+               <span ng-if="orderToUpdate.files.length === 0 ">- </span>
+                <ul ng-if="orderToUpdate.files.length !== 0 ">
+                    <li ng-repeat="file in orderToUpdate.files" class="twelve row">
+                        <div class="eleven">
+                            <a ng-click="orderRegion.downloadFile(file, orderToUpdate.id)">[[ file.filename ]]</a>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+
+
+
+
+
+
+
+            <div class="order-region  five cell"
+                 >
+                <ul class="twelve order-region">
+                    <li ng-repeat="file in filesMetadataTemp" class="twelve row">
+                        <div class="eleven">
+                            [[ file.filename ]]
+                            <i class="one text-right"
+                               ng-class="{ close: file.status !== 'loading', loading: file.status === 'loading'}"
+                               ng-click="deleteOrderOldFile(orderRegion, file)"></i>
+                        </div>
+                    </li>
+                    <li ng-repeat="file in orderRegion.files track by $index" class="twelve row">
+                        <div class="eleven">
+                            [[ file.name || file.filename ]]
+                            <i class="one text-right"
+                               ng-class="{ close: file.status !== 'loading', loading: file.status === 'loading'}"
+                               ng-click="deleteOrderDocument(orderRegion, file,$index)"></i>
+                        </div>
+                    </li>
+
+                </ul>
+
+                <div class="three right-magnet cell">
+                    <a ng-click="openAddDocumentsLightbox(orderParent)">
+                        <!--<i class="attachment" />--><i18n>lystore.basket.add-file</i18n>
+                    </a>
+                </div>
+            </div>
+
+
+        </div>
+
+        <div class="row vertical-spacing-four">
             <label class="two right-padding-form-field cell">
                 <i18n>comment</i18n>
                 :
@@ -179,10 +236,9 @@
             >
                 [[orderParent.comment]]
             </div>
-            <textarea auto-height=""
-                      style="resize: none; height: 62px;"
+            <textarea style="resize: none;"
                       ng-model="orderToUpdate.comment"
-                      class="ng-pristine ng-valid ng-touched cell horizontal-margin"
+                      class="comment ng-pristine ng-valid ng-touched four cell horizontal-margin"
                       ng-class="{'four': orderParent}">
             >
             </textarea>
@@ -191,6 +247,9 @@
         <lightbox on-close="display.lightbox.validOrder = false; "
                   show="display.lightbox.validOrder">
             <container template="validOrder.lightbox"></container>
+        </lightbox>
+        <lightbox show="display.lightbox.addDocuments" on-close="endUpload()">
+            <container template="addDocuments.lightbox"></container>
         </lightbox>
         <div class="row">
             <div class="right-magnet">

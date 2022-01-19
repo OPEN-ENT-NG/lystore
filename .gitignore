@@ -18,5 +18,6 @@ src/main/resources/public/font
 src/main/resources/public/template/entcore
 src/main/resources/view/
 rev-manifest.json
+/src/main/resources/public/font/
 /out/
 /coverage/

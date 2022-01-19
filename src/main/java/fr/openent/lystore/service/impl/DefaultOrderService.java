@@ -429,6 +429,21 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
         }));
     }
 
+    @Override
+    public void getFileOrderRegion(String fileId, Handler<Either<String, JsonObject>> handler) {
+        String query = "SELECT * FROM " + Lystore.lystoreSchema + ".order_region_file WHERE id = ?";
+        JsonArray params = new JsonArray()
+                .add(fileId);
+
+        Sql.getInstance().prepared(query, params, SqlResult.validResultHandler(event -> {
+            if (event.isRight() && event.right().getValue().size() > 0) {
+                handler.handle(new Either.Right<>(event.right().getValue().getJsonObject(0)));
+            } else {
+                handler.handle(new Either.Left<>("Not found"));
+            }
+        }));
+    }
+
 
     @Override
     public void listExport(Integer idCampaign, String idStructure, Handler<Either<String, JsonArray>> handler) {
@@ -492,7 +507,25 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
         sql.prepared(query, params, SqlResult.validUniqueResultHandler(handler));
     }
 
+    @Override
+    public void deleteFileFromOrder(String fileId, Handler<Either<String, JsonObject>> handler) {
+        String query = "DELETE FROM " + Lystore.lystoreSchema + ".order_region_file WHERE id = ?";
 
+        JsonArray params = new JsonArray()
+                .add(fileId);
+
+        Sql.getInstance().prepared(query, params, SqlResult.validRowsResultHandler(handler));
+    }
+
+    @Override
+    public void deleteOrderRegionFile(Handler<Either<String, JsonObject>> handler){
+        String query =
+                "DELETE FROM " + Lystore.lystoreSchema + ".order_region_file " +
+                        "WHERE id_order_region_equipment IS NULL;";
+
+        JsonArray params = new JsonArray();
+        Sql.getInstance().prepared(query, params, SqlResult.validRowsResultHandler(handler));
+    }
 
 
 
@@ -1255,13 +1288,15 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "       to_json(ct.*) contract_type, " +
                 "       to_json(campaign.*) campaign, " +
                 "       to_json(prj.*) AS project, " +
-                "       to_json(tt.*) AS title " +
+                "       to_json(tt.*) AS title, " +
+                " Array_to_json(Array_agg(DISTINCT order_file.*))         AS files " +
                 "FROM  " + Lystore.lystoreSchema + ".order_client_equipment oce " +
                 "LEFT JOIN  " + Lystore.lystoreSchema + ".contract ON oce.id_contract = contract.id " +
                 "INNER JOIN  " + Lystore.lystoreSchema + ".contract_type ct ON ct.id = contract.id_contract_type " +
                 "INNER JOIN  " + Lystore.lystoreSchema + ".campaign ON oce.id_campaign = campaign.id " +
                 "INNER JOIN  " + Lystore.lystoreSchema + ".project AS prj ON oce.id_project = prj.id " +
                 "INNER JOIN  " + Lystore.lystoreSchema + ".title AS tt ON tt.id = prj.id_title " +
+                " LEFT JOIN " + Lystore.lystoreSchema + ".order_file ON oce.id = order_file.id_order_client_equipment " +
                 "WHERE oce.id = ? " +
                 "GROUP BY (prj.id, " +
                 "          oce.id, " +

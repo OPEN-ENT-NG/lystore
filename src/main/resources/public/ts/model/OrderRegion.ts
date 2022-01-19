@@ -46,7 +46,7 @@ export class OrderRegion implements Order  {
 
     contract_name?: string;
     description:string;
-    files: string;
+    files?: any;
     id_campaign:number;
     id_contract:number;
     id_orderClient: number;
@@ -71,6 +71,7 @@ export class OrderRegion implements Order  {
     title_id ?: number;
     id_type: number;
     override_region: boolean;
+    filesMetadata?: any;
 
     constructor() {
         this.typeOrder = "region";
@@ -79,9 +80,9 @@ export class OrderRegion implements Order  {
     toJson():any {
         return {
             amount: this.amount,
-            name: this.equipment.name,
+            name: this.equipment ? (this.equipment.name? this.equipment.name: "") : "",
             price: this.price,
-            summary: this.summary,
+            summary: this.summary? this.summary: "",
             description: (this.description) ? this.description : "",
             ...(this.id_orderClient && {id_order_client_equipment: this.id_orderClient}),
             image: this.image,
@@ -96,8 +97,8 @@ export class OrderRegion implements Order  {
             id_campaign: this.id_campaign,
             id_structure: this.id_structure,
             id_project: this.id_project,
-            equipment_key: this.equipment.id? this.equipment.id : this.equipment_key,
-            comment: (this.comment) ? this.comment : "",
+            equipment_key: this.equipment ? (this.equipment.id ? this.equipment_key : "") : "",
+            comment: this.comment ? this.comment : "",
             ...(this.rank && {rank: this.rank}),
             technical_specs: (Utils.parsePostgreSQLJson(this.technical_spec) === null || Utils.parsePostgreSQLJson(this.technical_spec).length === 0) ?
                 []:
@@ -109,9 +110,8 @@ export class OrderRegion implements Order  {
                 }),
             id_operation: this.id_operation,
             rank: this.rank -1,
-            id_type: this.id_type,
-
-    }
+            id_type: this.id_type ? this.id_type : "",
+        }
     }
 
     createFromOrderClient(order: OrderClient):void {
@@ -191,6 +191,28 @@ export class OrderRegion implements Order  {
             notify.error('lystore.admin.order.update.err');
             throw e;
         }
+    }
+
+
+    async getFilesMetadata(idOrder){
+        try{
+            const {data} =  await http.get(`/lystore/orderRegion/${idOrder}/files`);
+            return data
+        } catch (e) {
+            notify.error('lystore.admin.order.update.err');
+            throw e;
+        }
+    }
+    async deleteDocument(file) {
+        try {
+            await http.delete(`/lystore/order/update/file/${file.id}`);
+        } catch (err) {
+            throw err;
+        }
+    }
+
+    downloadFile(file, id):void {
+        window.open(`/lystore/order/${id}/file/${file.id}`);
     }
 }
 
