@@ -18,8 +18,8 @@
                         order-by="name"
                         filtered-model="campaignSelectionMulti"
                         labels="comboLabels"
-                        selection-event="campaignSelection= campaignSelectionMulti;syncOrders('WAITING',campaignSelection);selectCampaignAndInitFilter();"
-                        deselection-event=" campaignSelection= campaignSelectionMulti;selectCampaignAndInitFilter();displayedOrders.all = [];"
+                        selection-event="campaignSelection= campaignSelectionMulti;syncOrders('WAITING',campaignSelection);selectCampaignAndInitFilter(); setScrollDisplay();"
+                        deselection-event=" campaignSelection= campaignSelectionMulti;selectCampaignAndInitFilter();displayedOrders.all = []; setScrollDisplay();"
                 ></multi-combo>
 
                 <!--                <select-->
@@ -81,8 +81,8 @@
                     </td>
                 </tr>
                 </thead>
-                <tbody>
-                <tr ng-repeat="order in displayedOrders.all | orderBy:sort.order.type:sort.order.reverse" post-ng-repeat>
+                <tbody bottom-scroll="scrollDisplay.limitTo = scrollDisplay.limitTo + 25">
+                <tr ng-repeat="order in displayedOrders.all | orderBy:sort.order.type:sort.order.reverse | limitTo:scrollDisplay.limitTo" post-ng-repeat>
                     <td workflow="lystore.manager" class="table-selector">
                         <label class="checkbox">
                             <input type="checkbox" ng-model="order.selected">
@@ -138,10 +138,10 @@
                         <i18n>totals</i18n>
                     </td>
 
-                    <td colspan="[[countColSpan('price') - 1]]" ng-if="tableFields[13].display" > <div class="tabElem">[[displayedOrders.calculTotalAmount() ]]</div></td>
+                    <td colspan="[[countColSpan('price') - 1]]" ng-if="tableFields[13].display" > <div class="tabElem">[[displayedOrders.calculTotalAmount(scrollDisplay.limitTo) ]]</div></td>
 
                     <td ng-if="tableFields[15].display" >
-                        <div class="tabElem"> [[displayedOrders.calculTotalPriceTTC() | currency]]</div>
+                        <div class="tabElem"> [[displayedOrders.calculTotalPriceTTC(scrollDisplay.limitTo) | currency]]</div>
                     </td>
                 </tr>
                 </tfoot>

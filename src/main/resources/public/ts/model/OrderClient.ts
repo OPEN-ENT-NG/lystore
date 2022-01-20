@@ -427,19 +427,18 @@ export class OrdersClient extends Selection<OrderClient> {
         }
     }
 
-    calculTotalAmount ():number {
+    calculTotalAmount (limitTo):number {
         let total = 0;
-        this.all.map((order) => {
+        this.all.slice(0, limitTo).map((order) => {
             total += order.amount;
         });
         return total;
     }
-    calculTotalPriceTTC ():number {
+    calculTotalPriceTTC (limitTo):number {
         let total = 0;
-        for (let i = 0; i < this.all.length; i++) {
-            let order = this.all[i];
+        this.all.slice(0, limitTo).map((order) => {
             total += parseFloat(order.total.toString());
-        }
+        });
         return total;
     }
 
