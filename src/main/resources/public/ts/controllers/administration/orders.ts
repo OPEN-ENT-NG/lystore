@@ -16,6 +16,8 @@ export const orderController = ng.controller('orderController',
         $scope.campaignSelectionMulti = [];
         let isPageOrderWaiting = $location.path() === "/order/waiting";
         let isPageOrderSent = $location.path() === "/order/sent";
+        // Don't forget to modify the number in attribute "bottom-scroll" in html page "order-waiting.html" if you modify this number
+        const NBDISPLAYEDORDERS = 25;
 
         $scope.rejectedOrders = new RejectOrders();
         if(isPageOrderSent)
@@ -117,6 +119,7 @@ export const orderController = ng.controller('orderController',
 
         $scope.switchAll = (model: boolean, collection) => {
             model ? collection.selectAll() : collection.deselectAll();
+            $scope.setScrollDisplay();
             Utils.safeApply($scope);
         };
         $scope.calculateTotal = (orderClient: OrderClient, roundNumber: number) => {
@@ -160,10 +163,12 @@ export const orderController = ng.controller('orderController',
                 $scope.loadingArray = false;
                 Utils.safeApply($scope);
             }
+            $scope.setScrollDisplay();
         };
 
         $scope.dropOrderFilter = async (filter: string) => {
             $scope.loadingArray = true;
+            $scope.setScrollDisplay();
             Utils.safeApply($scope);
             $scope.ordersClient.filters = $scope.ordersClient.filters.filter( filterWord => filterWord !== filter);
             if (isPageOrderWaiting) {
@@ -175,6 +180,7 @@ export const orderController = ng.controller('orderController',
                 await $scope.syncOrders('VALID');
             }
             $scope.loadingArray = false;
+
             Utils.safeApply($scope);
         };
         $scope.dropCampaign = async (campaign) =>{
@@ -188,6 +194,7 @@ export const orderController = ng.controller('orderController',
                 await $scope.syncOrders('WAITING', $scope.campaignSelection);
                 await  $scope.selectCampaignAndInitFilter();
             }
+            $scope.setScrollDisplay();
         }
 
         $scope.addFilter = (filterWord: string, event?) => {
@@ -195,6 +202,7 @@ export const orderController = ng.controller('orderController',
                 $scope.addFilterWords(filterWord);
                 $scope.filterDisplayedOrders();
             }
+            $scope.setScrollDisplay();
         };
 
         $scope.switchAllOrders = () => {
@@ -219,6 +227,7 @@ export const orderController = ng.controller('orderController',
                 $scope.search.filterWord = '';
                 Utils.safeApply($scope);
             }
+            $scope.setScrollDisplay();
         };
 
         function generateRegexp (words: string[]): RegExp {
@@ -242,6 +251,7 @@ export const orderController = ng.controller('orderController',
         $scope.pullFilterWord = (filterWord) => {
             $scope.search.filterWords = _.without( $scope.search.filterWords , filterWord);
             $scope.filterDisplayedOrders();
+            $scope.setScrollDisplay();
         };
         $scope.validateOrders = async (orders: OrderClient[]) => {
             let ordersToValidat  = new OrdersClient();
@@ -631,4 +641,12 @@ export const orderController = ng.controller('orderController',
             }
             Utils.safeApply($scope);
         });
+
+        $scope.scrollDisplay = {
+            limitTo : NBDISPLAYEDORDERS
+        };
+
+        $scope.setScrollDisplay = () => {
+            $scope.scrollDisplay.limitTo = NBDISPLAYEDORDERS;
+        }
     }]);
