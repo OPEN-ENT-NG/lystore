@@ -173,9 +173,9 @@ public class PDF_OrderHElper {
             ordersByStructure.put("sumLocale",
                     OrderController.getReadableNumber(roundWith2Decimals(sumWithoutTaxes)));
             ordersByStructure.put("totalTaxesLocale",
-                    OrderController.getReadableNumber(roundWith2Decimals(taxTotal)));
+                    OrderController.getReadableNumber(roundWith2Decimals(taxTotal - sumWithoutTaxes)));
             ordersByStructure.put("totalPriceTaxeIncludedLocal",
-                    OrderController.getReadableNumber(roundWith2Decimals(taxTotal + sumWithoutTaxes)));
+                    OrderController.getReadableNumber(roundWith2Decimals(taxTotal )));
             order.put(s, ordersByStructure);
         }
     }
