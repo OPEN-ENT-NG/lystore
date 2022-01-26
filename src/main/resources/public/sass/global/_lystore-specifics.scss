@@ -804,6 +804,7 @@ body.lystore {
     max-height: 10em;
     overflow: auto;
     resize: none;
+    margin-bottom: 0;
   }
   .textarea-region-comment::-webkit-scrollbar-track{
     -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3);

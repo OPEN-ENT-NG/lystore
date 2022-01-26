@@ -309,8 +309,13 @@ export const orderRegionController = ng.controller('orderRegionController',
                 }
                 //duplicate contracttypes
                 row.ct_enabled =  $scope.orderToCreate.rows[index].ct_enabled;
-
-                row.files = $scope.orderToCreate.rows[index].files;
+                row.files = [];
+                $scope.orderToCreate.rows[index].files.forEach(file => {
+                    const name = file.name;
+                    // Instantiate copy of file, giving it new name.
+                    let newFile = new File([file], name, { type: file.type });
+                    row.files.push(newFile);
+                });
 
                 $scope.orderToCreate.rows[index].contracts.all.forEach(ct=>{
                     row.contracts.all.push(ct);
@@ -322,10 +327,10 @@ export const orderRegionController = ng.controller('orderRegionController',
                     row.equipments.push(equipment);
                     if (row.equipment && row.equipment.id === equipment.id)
                     {
-                    row.equipment = JSON.parse(JSON.stringify(equipment));
-                }
+                        row.equipment = JSON.parse(JSON.stringify(equipment));
+                    }
                 });
-                $scope.orderToCreate.rows.splice(index + 1, 0, row)
+                $scope.orderToCreate.rows.splice(index + 1, 0, row);
             };
             $scope.cancelBasketDelete = ():void => {
                 $scope.display.lightbox.validOrder = false;
@@ -363,8 +368,8 @@ export const orderRegionController = ng.controller('orderRegionController',
                 if (row.contract && ( !row.equipment  || row.equipment.id_contract !== row.contract.id)) {
                     row.ct_enabled = true;
                     row.equipment = undefined;
-                row.price = undefined;
-                row.amount = undefined;
+                    row.price = undefined;
+                    row.amount = undefined;
                     row.equipments.all = row.allEquipments.filter(equipment => row.contract.id === equipment.id_contract);
                     Utils.safeApply($scope);
 
