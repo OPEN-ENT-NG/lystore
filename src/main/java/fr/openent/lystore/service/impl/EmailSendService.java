@@ -141,6 +141,21 @@ public class EmailSendService {
         return formatAccentedString(body);
     }
 
+    public void sendMailsNotifications(){
+
+    }
+
+    private static String getNotificationBodyMail(String name, Integer amount) {
+        String body = null;
+        body = "Madame, Monsieur <br /> <br />"
+                + "Les équipements ci-dessous demandés sur le système d'information LYSTORE viennent d'être commandés pour votre établissement: " + name
+                + "<br /> Liste des matériels à venir: "
+                + "Quantité: " + amount
+                + "<br /> Cordialement, "
+                + "<br /> Direction de la Réussite des Élèves | Pôle Lycées";
+        return formatAccentedString(body);
+    }
+
     private static String getEncodedRedirectUri(String callback) {
         try {
             return "/auth/login?callback=" + URLEncoder.encode(callback, "UTF-8");
