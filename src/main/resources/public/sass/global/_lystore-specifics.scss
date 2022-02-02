@@ -708,6 +708,59 @@ body.lystore {
     }
   }
 
+
+  .tabs.heading-tabs {
+    box-sizing: border-box;
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 20px!important;
+    overflow-x: auto;
+    >* {
+      text-align: initial;
+    }
+    header {
+     //tabs centered in whole space
+      width: auto;    // tabs align right
+      display: flex;
+      flex: 0;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      white-space: nowrap;
+      margin: 0 4px;
+      padding: 10px 15px;
+      transition: color 250ms ease;
+
+      a{
+        vertical-align: middle;
+        i{
+          font-size: 15px;
+          margin-right: 5px;
+        }
+        &:hover{
+          color: $primary;
+        }
+      }
+    }
+  }
+
+
+  @media screen and (max-width: $tablette){
+    .tabs.heading-tabs {
+      header{
+        font-size: 12px;
+      }
+    }
+  }
+  @media screen and (max-width: $fat-mobile){
+    .tabs.heading-tabs {
+      header{
+        &.selected{
+          order: -1;
+        }
+      }
+    }
+  }
   .pagination {
     button, > div {
       float: none;
