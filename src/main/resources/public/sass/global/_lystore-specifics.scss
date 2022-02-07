@@ -714,7 +714,7 @@ body.lystore {
     display: flex;
     justify-content: flex-start;
     margin-bottom: 20px!important;
-    overflow-x: auto;
+    overflow-x: inherit;
     >* {
       text-align: initial;
     }
