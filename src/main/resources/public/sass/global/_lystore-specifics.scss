@@ -851,12 +851,12 @@ body.lystore {
     box-shadow: none;
     padding: 1px 6px;
     display: block;
-    width: 10em;
     color: #333;
-    min-height: 1em;
+    height: 2.5em;
+    min-height: 2.5em;
     max-height: 10em;
     overflow: auto;
-    resize: none;
+    resize: vertical;
     margin-bottom: 0;
   }
   .textarea-region-comment::-webkit-scrollbar-track{
