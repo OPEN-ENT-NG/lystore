@@ -19,6 +19,7 @@ export class Basket implements Selectable {
     price_proposal?: number;
     price_editable: boolean;
     display_price_editable: boolean;
+    commentOnEdition: boolean;
 
 
     files?: any;
@@ -29,6 +30,7 @@ export class Basket implements Selectable {
         this.id_structure = id_structure;
         this.amount = 1;
         this.display_price_editable = false;
+        this.commentOnEdition = false;
     }
 
     toJson () {
