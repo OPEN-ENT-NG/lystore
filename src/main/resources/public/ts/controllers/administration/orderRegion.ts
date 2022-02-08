@@ -222,6 +222,7 @@ export const orderRegionController = ng.controller('orderRegionController',
                     if (responses) {
                         if (responses) {
                             toasts.confirm('lystore.order.region.update');
+                            $scope.cancelUpdate();
                         }
                     }
                 }catch (e) {
