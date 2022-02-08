@@ -363,6 +363,14 @@ export const configurationController = ng.controller('configurationController',
                 $scope.equipments.sync(undefined, undefined, undefined, $scope.sort.equipment);
                 event.target.value = '';
             }
+            else if (event.handleObj.type === 'click'){
+                console.log($scope.search.text)
+                $scope.equipments.sort.filters = [...$scope.equipments.sort.filters, $scope.search.text];
+                $scope.equipments.page = 0;
+                $scope.equipments.sync(undefined, undefined, undefined, $scope.sort.equipment);
+                $scope.search.text = '';
+
+            }
         };
 
         $scope.dropEquipmentFilter = (filter: string) => {

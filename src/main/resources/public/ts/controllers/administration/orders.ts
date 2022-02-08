@@ -143,25 +143,35 @@ export const orderController = ng.controller('orderController',
             return json;
         };
 
-        $scope.addOrderFilter = async (event?) => {
+        async function reloadAfterFilter() {
+            $scope.loadingArray = true;
+            Utils.safeApply($scope);
+            if (isPageOrderWaiting) {
+                await $scope.syncOrders('WAITING', $scope.campaignSelection);
+                $scope.displayedOrders.all = $scope.displayedOrders.all.filter(order => order.id_campaign === $scope.campaign.id || $scope.campaign.id === -1);
+            } else if (isPageOrderSent)
+                await $scope.syncOrders('SENT');
+            else {
+                await $scope.syncOrders('VALID');
+            }
+            $scope.loadingArray = false;
+            Utils.safeApply($scope);
+        }
 
+        $scope.addOrderFilter = async (event?) => {
             if (event && (event.which === 13 || event.keyCode === 13) && event.target.value.trim() !== '') {
                 if (!_.contains($scope.ordersClient.filters, event.target.value)) {
                     $scope.ordersClient.filters = [...$scope.ordersClient.filters, event.target.value];
                 }
                 event.target.value = '';
-                $scope.loadingArray = true;
-                Utils.safeApply($scope);
-                if (isPageOrderWaiting) {
-                    await $scope.syncOrders('WAITING',$scope.campaignSelection);
-                    $scope.displayedOrders.all = $scope.displayedOrders.all.filter(order => order.id_campaign === $scope.campaign.id || $scope.campaign.id === -1);
-                }else if(isPageOrderSent)
-                    await $scope.syncOrders('SENT');
-                else{
-                    await $scope.syncOrders('VALID');
+                await reloadAfterFilter();
+
+            }else if (event.handleObj.type === 'click'){
+                if (!_.contains($scope.ordersClient.filters, $scope.search.filterWord)) {
+                    $scope.ordersClient.filters = [...$scope.ordersClient.filters, $scope.search.filterWord];
                 }
-                $scope.loadingArray = false;
-                Utils.safeApply($scope);
+                $scope.search.filterWord='';
+                await reloadAfterFilter();
             }
             $scope.setScrollDisplay();
         };
@@ -171,14 +181,7 @@ export const orderController = ng.controller('orderController',
             $scope.setScrollDisplay();
             Utils.safeApply($scope);
             $scope.ordersClient.filters = $scope.ordersClient.filters.filter( filterWord => filterWord !== filter);
-            if (isPageOrderWaiting) {
-                await $scope.syncOrders('WAITING',$scope.campaignSelection);
-                $scope.displayedOrders.all = $scope.displayedOrders.all.filter(order => order.id_campaign === $scope.campaign.id || $scope.campaign.id === -1);
-            }else if(isPageOrderSent)
-                await $scope.syncOrders('SENT');
-            else {
-                await $scope.syncOrders('VALID');
-            }
+            await reloadAfterFilter();
             $scope.loadingArray = false;
 
             Utils.safeApply($scope);
