@@ -154,6 +154,7 @@ export const basketController = ng.controller('basketController',
             if (!basket.comment || basket.comment.trim() == "") {
                 basket.comment = "";
             }
+            basket.commentOnEdition = false;
             await basket.updateComment();
             Utils.safeApply($scope);
         }
