@@ -57,29 +57,29 @@ public class EmailSendService {
                 agentMailObject,
                 agentMailBody);
 
-    for(int i = 0 ; i < rows.size(); i++){
-        row = rows.getJsonArray(i);
-        currentIdStruct = row.getString(4);
-        Integer idCampaign = row.getInteger(5);
+        for(int i = 0 ; i < rows.size(); i++){
+            row = rows.getJsonArray(i);
+            currentIdStruct = row.getString(4);
+            Integer idCampaign = row.getInteger(5);
 
-        if(!oldIdStruct.equals(currentIdStruct)){
-            oldIdStruct = currentIdStruct;
-            if(i != 0){
-                mailsToClient(request, result, user, url, nameEtab, idsCampaign, mailsRow);
-                idsCampaign =  new ArrayList<>();
-            }
-            for(int j =0; j < structureRows.size(); j++){
-                structRow = structureRows.getJsonObject(j);
-                if(structRow.getString("id").equals(currentIdStruct)){
-                    nameEtab = structRow.getString("name");
-                    mailsRow = structRow.getJsonArray("mails");
+            if(!oldIdStruct.equals(currentIdStruct)){
+                oldIdStruct = currentIdStruct;
+                if(i != 0){
+                    mailsToClient(request, result, user, url, nameEtab, idsCampaign, mailsRow);
+                    idsCampaign =  new ArrayList<>();
+                }
+                for(int j =0; j < structureRows.size(); j++){
+                    structRow = structureRows.getJsonObject(j);
+                    if(structRow.getString("id").equals(currentIdStruct)){
+                        nameEtab = structRow.getString("name");
+                        mailsRow = structRow.getJsonArray("mails");
+                    }
                 }
             }
+            if(!idsCampaign.contains(idCampaign)){
+                idsCampaign.add(idCampaign);
+            }
         }
-        if(!idsCampaign.contains(idCampaign)){
-            idsCampaign.add(idCampaign);
-        }
-    }
 
         mailsToClient(request, result, user, url, nameEtab, idsCampaign, mailsRow);
 
@@ -141,8 +141,20 @@ public class EmailSendService {
         return formatAccentedString(body);
     }
 
-    public void sendMailsNotifications(){
+    public void sendMailsNotificationsEtab(HttpServerRequest request){
 
+    }
+
+    private static String getNotificationObjectMail(Integer numeroBc, Integer numeroMarche, String marche, Integer codeUai){
+        String object = null;
+        object = "[LYSTORE - BC N°: " + numeroBc
+                + " - MARCHE N°: "
+                + numeroMarche
+                + " - "
+                + marche
+                + " - Commande dotation équipements informatiques] "
+                + codeUai;
+        return formatAccentedString(object);
     }
 
     private static String getNotificationBodyMail(String name, Integer amount) {
@@ -151,7 +163,8 @@ public class EmailSendService {
                 + "Les équipements ci-dessous demandés sur le système d'information LYSTORE viennent d'être commandés pour votre établissement: " + name
                 + "<br /> Liste des matériels à venir: "
                 + "Quantité: " + amount
-                + "<br /> Cordialement, "
+                + "<br /> Cordialement, " + "<br />"
+                + "<br /> Service de la Transformation Numérique des Lycées"
                 + "<br /> Direction de la Réussite des Élèves | Pôle Lycées";
         return formatAccentedString(body);
     }
