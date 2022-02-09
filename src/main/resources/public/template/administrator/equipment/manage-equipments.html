@@ -2,9 +2,9 @@
 <div class="row">
     <div class="cell twelve-mobile horizontal-spacing search-pagination four">
         <div class="row twelve vertical-spacing">
-            <input type="text" class="twelve" ng-keydown="addEquipmentFilter($event)"
+            <input ng-model="search.text" type="text" class="twelve" ng-keydown="addEquipmentFilter($event)"
                    i18n-placeholder="add.a.filter">
-            <i class="search flex-row"></i>
+            <i class="search flex-row" ng-click="addEquipmentFilter($event)"></i>
         </div>
         <div class="row horizontal-spacing">
             <div class="select-blocks">

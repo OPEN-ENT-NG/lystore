@@ -176,6 +176,12 @@ export const instructionController = ng.controller('instructionController',
                 await $scope.initInstructions();
                 Utils.safeApply($scope);
             }
+            else if (event.handleObj.type === 'click'){
+                $scope.instructions.filters = [...$scope.equipments.sort.filters, $scope.search.text];
+                $scope.search.text = '';
+                await $scope.initInstructions();
+                Utils.safeApply($scope);
+            }
         };
         $scope.dropInstructionFilter = async (filter: string) => {
             $scope.instructions.filters = $scope.instructions.filters.filter( filterWord => filterWord !== filter);

@@ -130,7 +130,7 @@ export const exportCtrl = ng.controller('exportCtrl', [
         };
 
         $scope.addFilter = (filterWord: string, event?) => {
-            if (event && (event.which === 13 || event.keyCode === 13 )) {
+            if (event && (event.which === 13 || event.keyCode === 13 ) || event.handleObj.type === 'click') {
                 $scope.addFilterWords(filterWord);
                 $scope.filterDisplayedExports();
             }
