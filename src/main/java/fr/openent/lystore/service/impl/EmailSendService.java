@@ -141,8 +141,17 @@ public class EmailSendService {
         return formatAccentedString(body);
     }
 
-    public void sendMailsNotificationsEtab(HttpServerRequest request){
-
+    public void sendMailsNotificationsEtab(HttpServerRequest request, JsonObject result, UserInfos user, JsonObject equipments, String nameEtab, JsonArray mailsRow, Integer amount){
+        for (int k = 0; k < mailsRow.size(); k++) {
+            JsonObject userMail = mailsRow.getJsonObject(k);
+            String mailObject = "[LyStore] Commandes ";
+            if (userMail.getString("mail") != null) {
+                String mailBody = getNotificationBodyMail(nameEtab, equipments.getString("name"), amount);
+                sendMail(request, userMail.getString("mail"),
+                        mailObject,
+                        mailBody);
+            }
+        }
     }
 
     private static String getNotificationObjectMail(Integer numeroBc, Integer numeroMarche, String marche, Integer codeUai){
@@ -157,11 +166,13 @@ public class EmailSendService {
         return formatAccentedString(object);
     }
 
-    private static String getNotificationBodyMail(String name, Integer amount) {
+    private static String getNotificationBodyMail(String name, String equipmentName, Integer amount) {
         String body = null;
         body = "Madame, Monsieur <br /> <br />"
                 + "Les équipements ci-dessous demandés sur le système d'information LYSTORE viennent d'être commandés pour votre établissement: " + name
                 + "<br /> Liste des matériels à venir: "
+                + "- "
+                + equipmentName
                 + "Quantité: " + amount
                 + "<br /> Cordialement, " + "<br />"
                 + "<br /> Service de la Transformation Numérique des Lycées"
