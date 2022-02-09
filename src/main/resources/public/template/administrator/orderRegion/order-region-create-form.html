@@ -173,7 +173,9 @@
                                min="1" step="1" max="10"/>
                     </td>
                     <td class="two">
-                        <input class="textarea-region-comment" ng-model="row.comment" type="text"/>
+                        <textarea class="textarea-region-comment" ng-model="row.comment" type="text">
+
+                        </textarea>
                     </td>
                     <td class="one">
                         <a ng-click="openAddDocumentsRegionLightbox(row)" ng-if="orderToCreate.rows[$index].files.length === 0">
