@@ -120,7 +120,11 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 "? ," +
                 "? ," +
                 "? ,";
-        statement += (order.containsKey("rank") && Integer.parseInt(order.getString(("rank"))) != -1 ) ? "?, " : "NULL, ";
+        try {
+            statement += (order.containsKey("rank") && Integer.parseInt(order.getString(("rank"))) != -1) ? "?, " : "NULL, ";
+        }catch (NumberFormatException e){
+            statement += "NULL,";
+        }
         statement += order.containsKey("id_operation") ? "?, " : "";
         statement += " 'IN PROGRESS', " +
                 "       id_campaign, " +
@@ -149,9 +153,11 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 .add(order.getString("equipment_name"))
                 .add(order.getString("comment"))
                 .add(idOrderClient);
-        if (order.containsKey("rank") && Integer.parseInt(order.getString(("rank"))) != -1) {
-            params.add(Integer.parseInt(order.getString("rank")));
-        }
+        try {
+            if (order.containsKey("rank") && Integer.parseInt(order.getString(("rank"))) != -1) {
+                params.add(Integer.parseInt(order.getString("rank")));
+            }
+        }catch (NumberFormatException ignored){}
         if (order.containsKey("id_operation")) {
             params.add(Integer.parseInt(order.getString("id_operation")));
         }
