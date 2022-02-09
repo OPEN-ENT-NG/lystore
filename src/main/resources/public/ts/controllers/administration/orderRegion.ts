@@ -175,7 +175,7 @@ export const orderRegionController = ng.controller('orderRegionController',
                 console.log(ordersOldFiles)
                 const promises: Array<Promise<AxiosResponse>> = [];
 
-                if( $scope.orderParent ) {
+                if( $scope.orderToUpdate.typeOrder === "client" ) {
                     let statement = statementsOrdersService.createOne({
                         id_campaign: $scope.orderToUpdate.campaign.id,
                         id_structure: $scope.orderToUpdate.id_structure,
