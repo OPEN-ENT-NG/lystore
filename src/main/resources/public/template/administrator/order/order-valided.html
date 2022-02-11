@@ -132,6 +132,10 @@
                             ng-disabled="!validateSentOrders(getSelectedOrders())">
                         <i18n>lystore.orders.valid.certificates.export</i18n>
                     </button>
+                    <button ng-click="validateNotifications(getSelectedOrders())"
+                            ng-disabled="!checkOrderNumber() || !validateSentOrders(getSelectedOrders())">
+                        <i18n>lystore.order.waiting.notification.etab</i18n>
+                    </button>
                     <button ng-click="cancelValidation(getSelectedOrders())"
                             ng-disabled="disableCancelValidation(getSelectedOrders())">
                         <i18n>cancel</i18n>
