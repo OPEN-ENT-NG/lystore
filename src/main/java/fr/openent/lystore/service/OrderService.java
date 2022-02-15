@@ -225,4 +225,6 @@ public interface OrderService {
    JsonArray filterValidOrders(JsonArray orders, List<String> queries);
 
     void listOrderWaiting(List<String> idCampaigns, List<String> queries, Handler<Either<String, JsonArray>> arrayResponseHandler);
+
+    void sendNotification(String order, HttpServerRequest request);
 }

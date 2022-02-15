@@ -638,5 +638,6 @@
   "lystore.export.cp.rejected.title": "Rejet du CP",
   "lystore.export.cp.rejected.text": "Êtes-vous sûr de vouloir rejeter le CP ? Cette action n'est pas réversible",
   "lystore.instruction.choose.status": "Sélectionnez un statut",
-  "lystore.order.waiting.notification.etab": "Notification établissement"
+  "lystore.order.waiting.notification.etab": "Notification établissement",
+  "lystore.order.notification.mail.err": "Erreur lors de la notifcation"
 }
