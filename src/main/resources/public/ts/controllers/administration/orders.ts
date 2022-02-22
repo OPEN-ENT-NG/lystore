@@ -282,6 +282,10 @@ export const orderController = ng.controller('orderController',
                     number_validation: data.number_validation,
                     //structures: _.uniq(_.pluck(orderNotificationData.all, 'name_structure'))
                 } ;
+                toasts.info("lystore.order.notification.mail.info")
+
+            }else{
+                toasts.warning("lystore.order.notification.mail.error")
             }
         }
         $scope.checkOrderNumber = () => {

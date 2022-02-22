@@ -152,7 +152,8 @@ public class EmailSendService {
         for (Map.Entry<Structure, List<Order>> structureOrderEntry : structureOrderMap.entrySet()) {
             String userMail = structureOrderEntry.getKey().getUAI();
             Order order = structureOrderEntry.getValue().get(0);
-            String mailObject = getNotificationObjectMail(order.getBcOrder().getNumber(),order.getMarket().getMarket_number(),order.getMarket().getName(),structureOrderEntry.getKey().getUAI());
+            String mailObject = getNotificationObjectMail(order.getBcOrder().getNumber(),order.getMarket().getMarket_number(),
+                    order.getMarket().getName(),structureOrderEntry.getKey().getUAI());
             if (userMail != null) {
                 String mailBody = getNotificationBodyMail(structureOrderEntry.getValue(),structureOrderEntry.getKey());
                 sendMail(request, structureOrderEntry.getKey().getUAI() + "@lystore.monlycee.net",
