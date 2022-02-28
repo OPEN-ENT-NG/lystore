@@ -1206,8 +1206,13 @@ public class OrderController extends ControllerHelper {
     public void sendNotificationEtab (final HttpServerRequest request) {
         RequestUtils.bodyToJson(request, order ->{
             final String orderNumber = order.getString("bc_number");
-            orderService.sendNotification(orderNumber,request);
-            log.info(orderNumber);
+            try{
+               String domainMail =  config.getJsonObject("mail").getString("domainMail");
+                orderService.sendNotification(orderNumber,domainMail,request);
+            }catch (Exception e){
+                badRequest(request,e.getMessage());
+            }
+
         });
 
     }

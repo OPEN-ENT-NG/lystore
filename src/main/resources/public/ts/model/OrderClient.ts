@@ -499,7 +499,6 @@ export class OrdersClient extends Selection<OrderClient> {
         try{
             return await http.post(`/lystore/orderClient/send/mail/notification/etab`,{bc_number:this.bc_number} );
         }catch (e){
-            //TODO changer message
             notify.error('lystore.order.notification.mail.err');
             throw e;
         }

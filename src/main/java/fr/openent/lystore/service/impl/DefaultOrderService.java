@@ -14,7 +14,6 @@ import fr.wseduc.webutils.email.EmailSender;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -1654,7 +1653,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
         }
     }
     @Override
-    public void sendNotification(String order_number, HttpServerRequest request){
+    public void sendNotification(String order_number, String domainMail, HttpServerRequest request){
         String query = "SELECT orders.id_structure,orders.name, orders.amount , order_validate.order_number, order_validate.date_creation , contract.reference,contract.name\n" +
                 "FROM   lystore.allorders orders\n" +
                 "       INNER JOIN lystore.order AS order_validate\n" +
@@ -1709,7 +1708,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                                 }
                             }
                         }
-                        emailSender.sendMailsNotificationsEtab(request,structureOrderMap);
+                        emailSender.sendMailsNotificationsEtab(request,structureOrderMap,domainMail);
                     }else
                         badRequest(request);
                 });

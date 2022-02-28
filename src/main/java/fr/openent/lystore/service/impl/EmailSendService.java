@@ -31,6 +31,7 @@ public class EmailSendService {
     public EmailSendService(EmailSender emailSender){
         this.emailSender = emailSender;
         this.neo4j = Neo4j.getInstance();
+
     }
 
     public void sendMail(HttpServerRequest request, String eMail, String object, String body) {
@@ -148,7 +149,7 @@ public class EmailSendService {
         return formatAccentedString(body);
     }
 
-    public void sendMailsNotificationsEtab(HttpServerRequest request, Map<Structure, List<Order>> structureOrderMap){
+    public void sendMailsNotificationsEtab(HttpServerRequest request, Map<Structure, List<Order>> structureOrderMap, String domainMail){
         for (Map.Entry<Structure, List<Order>> structureOrderEntry : structureOrderMap.entrySet()) {
             String userMail = structureOrderEntry.getKey().getUAI();
             Order order = structureOrderEntry.getValue().get(0);
@@ -156,7 +157,7 @@ public class EmailSendService {
                     order.getMarket().getName(),structureOrderEntry.getKey().getUAI());
             if (userMail != null) {
                 String mailBody = getNotificationBodyMail(structureOrderEntry.getValue(),structureOrderEntry.getKey());
-                sendMail(request, structureOrderEntry.getKey().getUAI() + "@lystore.monlycee.net",
+                sendMail(request, structureOrderEntry.getKey().getUAI() + "@" + domainMail ,
                         mailObject,
                         mailBody);
             }
