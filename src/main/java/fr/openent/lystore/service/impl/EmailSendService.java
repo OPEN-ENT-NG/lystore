@@ -166,25 +166,27 @@ public class EmailSendService {
     }
 
     private String getNotificationBodyMail(List<Order> orders,Structure structure) {
-        String body = "";
-        body = "Madame, Monsieur <br /> <br />"
+        StringBuilder body = new StringBuilder();
+        body = new StringBuilder("Madame, Monsieur <br /> <br />"
                 + "Les équipements ci-dessous demandés sur le système d'information LYSTORE viennent d'être commandés pour votre établissement: " + structure.getName()
-                + "<br /> Liste des matériels à venir: "
+                + "<br/> Liste des matériels à venir: "
                 + "<br/>"
-                + "<table>  ";
+                + "<table>  ");
         for(Order order : orders){
-            body +=    " <tr>"
-                + "<td>- "+order.getName() +" </td>"
-                + "<td style=\"padding-left:5px;\">  Quantité: " + order.getAmount() + "</td> "
-            +"</tr>"
+            body.append(" <tr>" + "<td>- ")
+                    .append(order.getName())
+                    .append(" </td>")
+                    .append("<td style=\"padding-left:5px;\">  Quantité: ")
+                    .append(order.getAmount())
+                    .append("</td> ")
+                    .append("</tr>")
              ;
         }
 
-        body += "<br /> Cordialement, " + "<br />"
-                    + "<br /> <b> Service de la Transformation Numérique des Lycées </b>"
-                    + "<br /> Direction de la Réussite des Élèves | Pôle Lycées";
-
-        return formatAccentedString(body);
+        body.append("</table><br/> Cordialement, " + "<br/>" + "<br/> <b> Service de la Transformation Numérique des Lycées </b>" +
+                "<br/> Direction de la Réussite des Élèves | Pôle Lycées");
+        log.info(body);
+        return formatAccentedString(body.toString());
     }
 
     private static String getNotificationObjectMail(String bcNumber, String marketNumber, String marketName, String codeUai){
