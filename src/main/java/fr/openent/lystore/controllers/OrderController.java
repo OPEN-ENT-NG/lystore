@@ -1216,4 +1216,22 @@ public class OrderController extends ControllerHelper {
         });
 
     }
+
+    @Post("/orderClient/send/mail/notification/region")
+    @ApiDoc("Get the pdf of orders")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(ManagerRight.class)
+    public void sendNotificationREgion (final HttpServerRequest request) {
+        RequestUtils.bodyToJson(request, order ->{
+            final String orderNumber = order.getString("bc_number");
+            try{
+                String domainMail =  config.getJsonObject("mail").getString("domainMail");
+                orderService.sendNotificationHelpDesk(orderNumber,domainMail,request);
+            }catch (Exception e){
+                badRequest(request,e.getMessage());
+            }
+
+        });
+
+    }
 }

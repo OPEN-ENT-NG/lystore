@@ -1665,49 +1665,11 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 List<Order> orders = new ArrayList<>();
 
                 JsonArray idsStructure =  new JsonArray();
-                result.body().getJsonArray("results").forEach(res ->{
-                    idsStructure.add(((JsonArray)res).getString(0));
-                    Order order = new Order();
-                    order.setName(((JsonArray)res).getString(1));
-                    order.setAmount(((JsonArray)res).getInteger(2));
-                    BCOrder bcOrder = new BCOrder();
-                    bcOrder.setNumber(((JsonArray)res).getString(3));
-                    bcOrder.setDateCreation(((JsonArray)res).getString(4));
-                    Market market = new Market();
-                    market.setMarket_number(((JsonArray)res).getString(5));
-                    market.setName(((JsonArray)res).getString(6));
-                    Structure structure = new Structure();
-                    structure.setId(((JsonArray)res).getString(0));
-
-                    order.setStructure(structure);
-                    order.setBcOrder(bcOrder);
-                    order.setMarket(market);
-                    orders.add(order);
-                });
+                castResulltInObject(result, orders, idsStructure);
                 Map<Structure,List<Order>> structureOrderMap = new HashMap<>();
                 structureService.getStructureById(idsStructure, neoHandler ->{
                     if (neoHandler.isRight()){
-                        for (Object o : neoHandler.right().getValue()) {
-                            JsonObject neoResult = (JsonObject) o;
-                            Structure neoStructure = new Structure();
-                            neoStructure.setId(neoResult.getString("id"));
-                            neoStructure.setUAI(neoResult.getString("uai"));
-                            neoStructure.setName(neoResult.getString("name"));
-                            for (Order order : orders) {
-                                if (order.getStructure().getId().equals(neoResult.getString("id"))) {
-                                    order.getStructure().setUAI(neoResult.getString("uai"));
-                                    if( structureOrderMap.containsKey(neoStructure)) {
-                                        List<Order> orderList = structureOrderMap.get(neoStructure);
-                                        orderList.add(order);
-                                        structureOrderMap.put(neoStructure, orderList);
-                                    }else {
-                                        List<Order> orderList = new ArrayList<>();
-                                        orderList.add(order);
-                                        structureOrderMap.put(neoStructure,orderList);
-                                    }
-                                }
-                            }
-                        }
+                        createMapStructureListOrders(orders, structureOrderMap, neoHandler);
                         emailSender.sendMailsNotificationsEtab(request,structureOrderMap,domainMail);
                     }else
                         badRequest(request);
@@ -1715,6 +1677,80 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
             }else{
                 badRequest(request);
             }
+        });
+    }
+
+    private void createMapStructureListOrders(List<Order> orders, Map<Structure, List<Order>> structureOrderMap, Either<String, JsonArray> neoHandler) {
+        for (Object o : neoHandler.right().getValue()) {
+            JsonObject neoResult = (JsonObject) o;
+            Structure neoStructure = new Structure();
+            neoStructure.setId(neoResult.getString("id"));
+            neoStructure.setUAI(neoResult.getString("uai"));
+            neoStructure.setName(neoResult.getString("name"));
+            for (Order order : orders) {
+                if (order.getStructure().getId().equals(neoResult.getString("id"))) {
+                    order.getStructure().setUAI(neoResult.getString("uai"));
+                    if( structureOrderMap.containsKey(neoStructure)) {
+                        List<Order> orderList = structureOrderMap.get(neoStructure);
+                        orderList.add(order);
+                        structureOrderMap.put(neoStructure, orderList);
+                    }else {
+                        List<Order> orderList = new ArrayList<>();
+                        orderList.add(order);
+                        structureOrderMap.put(neoStructure,orderList);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void sendNotificationHelpDesk(String orderNumber, String domainMail, HttpServerRequest request) {
+        String query = "SELECT orders.id_structure,orders.name, orders.amount , order_validate.order_number, order_validate.date_creation , contract.reference,contract.name\n" +
+                "FROM   lystore.allorders orders\n" +
+                "       INNER JOIN lystore.order AS order_validate\n" +
+                "               ON orders.id_order = order_validate.id\n" +
+                "\t\t\t   inner join lystore.contract on contract.id = orders.id_contract\n" +
+                "WHERE  order_validate.order_number = ? ";
+        sql.prepared(query,new JsonArray().add(orderNumber),result ->{
+            if(result.body().getString("status").equals("ok")){
+                List<Order> orders = new ArrayList<>();
+
+                JsonArray idsStructure =  new JsonArray();
+                castResulltInObject(result, orders, idsStructure);
+                Map<Structure,List<Order>> structureOrderMap = new HashMap<>();
+                structureService.getStructureById(idsStructure, neoHandler ->{
+                    if (neoHandler.isRight()){
+                        createMapStructureListOrders(orders, structureOrderMap, neoHandler);
+                        emailSender.sendMailsHelpDesk(request,structureOrderMap,domainMail);
+                    }else
+                        badRequest(request);
+                });
+            }else{
+                badRequest(request);
+            }
+        });
+    }
+
+    private void castResulltInObject(Message<JsonObject> result, List<Order> orders, JsonArray idsStructure) {
+        result.body().getJsonArray("results").forEach(res -> {
+            idsStructure.add(((JsonArray) res).getString(0));
+            Order order = new Order();
+            order.setName(((JsonArray) res).getString(1));
+            order.setAmount(((JsonArray) res).getInteger(2));
+            BCOrder bcOrder = new BCOrder();
+            bcOrder.setNumber(((JsonArray) res).getString(3));
+            bcOrder.setDateCreation(((JsonArray) res).getString(4));
+            Market market = new Market();
+            market.setMarket_number(((JsonArray) res).getString(5));
+            market.setName(((JsonArray) res).getString(6));
+            Structure structure = new Structure();
+            structure.setId(((JsonArray) res).getString(0));
+
+            order.setStructure(structure);
+            order.setBcOrder(bcOrder);
+            order.setMarket(market);
+            orders.add(order);
         });
     }
 }

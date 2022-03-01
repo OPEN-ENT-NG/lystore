@@ -16,10 +16,9 @@ import org.entcore.common.user.UserInfos;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class EmailSendService {
@@ -39,6 +38,19 @@ public class EmailSendService {
         emailSender.sendEmail(request,
                 eMail,
                 null,
+                null,
+                object,
+                body,
+                null,
+                true,
+                null);
+
+    }
+    public void sendMail(HttpServerRequest request, String eMail, String cc, String object, String body) {
+
+        emailSender.sendEmail(request,
+                eMail,
+                cc,
                 null,
                 object,
                 body,
@@ -200,6 +212,88 @@ public class EmailSendService {
                 + codeUai;
         return formatAccentedString(object);
     }
+    public void sendMailsHelpDesk(HttpServerRequest request, Map<Structure, List<Order>> structureOrderMap, String domainMail) {
+        for (Map.Entry<Structure, List<Order>> structureOrderEntry : structureOrderMap.entrySet()) {
+            String userMail = structureOrderEntry.getKey().getUAI();
+            Order order = structureOrderEntry.getValue().get(0);
+            String mailObject = getNotificationObjectMail(order.getBcOrder().getNumber(),order.getMarket().getMarket_number(),
+                    order.getMarket().getName(),structureOrderEntry.getKey().getUAI());
+            if (userMail != null) {
+                String mailBody = getNotificationDeskBodyMail(structureOrderEntry.getValue(),structureOrderEntry.getKey());
+                sendMail(request, "cesame.lystore@monlycee.net" ,
+                        structureOrderEntry.getKey().getUAI() + "@" + domainMail,
+                        mailObject,
+                        mailBody);
+            }
+        }
+    }
+
+    private String getFormatDate(String date) {
+        date = date.replace("T"," ");
+        SimpleDateFormat formatterDateSQL = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        SimpleDateFormat formatterDate = new SimpleDateFormat("dd/MM/yyyy");
+        Date orderDate = null;
+        try {
+            orderDate = formatterDateSQL.parse(date);
+            return formatterDate.format(orderDate);
+        } catch (ParseException e) {
+            log.error("Incorrect date format : " + date);
+            return "";
+        }
+    }
+    private String getNotificationDeskBodyMail(List<Order> orders, Structure structure) {
+        String  body = "Madame, Monsieur, <br/>  <br/> " +
+                "Ce ticket a été créé par le Service de la Transformation Numérique des Lycées dans le cadre du suivi de livraison des matériels informatiques fournis par la Région Île-de-France, et pour laquelle votre établissement fait l'objet d'une dotation suite à la commande passée sur le système d'information LYSTORE. <br/> " +
+                " <br/> " +
+
+                "<b>Cadre : Dotation EPLE - Commande de matériel sur le système d'information LYSTORE</b> " +
+                " <br/>" +
+                "<br/> " +
+                "Délai de livraison estimé à 42 jours maximum, à partir du : ";
+        body += getFormatDate(orders.get(0).getBcOrder().getDateCreation());
+        body += "" +
+                " <br/> " +
+                " <br/> - Si vous souhaitez définir une préférence dans l'organisation de la livraison du matériel attendus," +
+                " vous êtes invité à alimenter le ticket correspondant dans le système d'information CESAME." +
+                " <br/> " +
+                "- Important : par défaut, la livraison prévoit une prestation de mise en service des matériels." +
+                " Dans le cas où vous ne souhaitez pas bénéficier de cette prestation à la livraison," +
+                " veuillez l’indiquer aussi dans le ticket correspondant dans le système d'information CESAME. " +
+                "<br/> " +
+                "<br/> " +
+                "Toute information saisie dans ce ticket sera transmise à notre prestataire." +
+                "<br/> " +
+                "Celui-ci vous contactera afin de confirmer la date de livraison et la prestation." +
+                "<br/> " +
+                "<br/> " +
+                "Notez toute fois que cette date, et la prestation de mise en service, ne pourront pas être modifiées " +
+                "pour une question logistique et organisationnelle qui impacte les établissements de toute l'Île-de-France." +
+                " <br/> " +
+                " <br/> <b> Modalité de réception et signature</b><br/> " +
+                "- Nous rappelons que la présence d'un membre de l'équipe de direction (Chef d'établissement, Gestionnaire,...) est impérative à la livraison. Eux seuls sont habilités à signer le bon de livraison et/ou le certificat. <br/> " +
+                "- L'établissement doit préparer le lieux de stockage des matériels à l'avance. La livraison ne pourra se faire à la loge.<br/> " +
+                "<br/><b>Modalité de Support et délai de contrôle</b><br/> " +
+                "- La panne au déballage doit être constatée dans les 5 jours ouvrés suivants la livraison et doit être déclarée auprès de la Région Île-de-France dans un délai de 7 jours ouvrés à compter de la réception. Au-delà, toute anomalie sera prise en charge selon la procédure standard de support et non comme une panne au déballage. <br/> " +
+                "- Toute panne ultérieure devra faire l'objet d'un ticket dédié dans le système d'information CESAME où sera stipulé le numéro d'étiquette RIDF du matériel en cause. <br/> " +
+                " <br/> " +
+                "<b>Liste des matériels à venir :</b> <br/>" +
+                "<br/> " +
+                "<table>";
+        for(Order order : orders){
+            body +=    " <tr>"
+                    + "<td>- "+order.getName() +" </td>"
+                    + "<td style=\"padding-left:5px;\">  Quantité: " + order.getAmount() + "</td> "
+                    +"</tr>"
+            ;
+        }
+        body +=" </table> <br/> Service de la Transformation Numérique des Lycées<br/> " +
+                "Direction de la Réussite des Élèves | Pôle Lycées<br/> " +
+                " <br/> " +
+                "N.B. : Le ticket sera fermé et" +
+            " déclaré « conforme » une fois les livrables (INV,BL,CSF) déposés dans le présent ticket. Le ticket passera alors en « résolu ».<br/> ";
+
+        return formatAccentedString(body);
+    }
 
 
     private static String getEncodedRedirectUri(String callback) {
@@ -225,4 +319,6 @@ public class EmailSendService {
                 .replace("Û","&Ucirc;").replace("Ç","&Ccedil;");
 
     }
+
+
 }

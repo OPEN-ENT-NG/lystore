@@ -227,4 +227,6 @@ public interface OrderService {
     void listOrderWaiting(List<String> idCampaigns, List<String> queries, Handler<Either<String, JsonArray>> arrayResponseHandler);
 
     void sendNotification(String order, String domainMail, HttpServerRequest request);
+
+    void sendNotificationHelpDesk(String orderNumber, String domainMail, HttpServerRequest request);
 }

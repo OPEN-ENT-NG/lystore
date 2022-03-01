@@ -503,6 +503,14 @@ export class OrdersClient extends Selection<OrderClient> {
             throw e;
         }
     }
+    async notificationRegion() {
+        try{
+            return await http.post(`/lystore/orderClient/send/mail/notification/region`,{bc_number:this.bc_number} );
+        }catch (e){
+            notify.error('lystore.order.notification.mail.err');
+            throw e;
+        }
+    }
 }
 
 export class OrderOptionClient implements Selectable {
