@@ -3,6 +3,7 @@ package fr.openent.lystore.controllers;
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.export.ExportTypes;
 import fr.openent.lystore.export.helpers.ExportHelper;
+import fr.openent.lystore.helpers.LystoreEmailFactoryHelper;
 import fr.openent.lystore.helpers.OrderHelper;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
@@ -1208,7 +1209,11 @@ public class OrderController extends ControllerHelper {
             final String orderNumber = order.getString("bc_number");
             try{
                String domainMail =  config.getJsonObject("mail").getString("domainMail");
-                orderService.sendNotification(orderNumber,domainMail,request);
+                String emailNotificationHelpDeskSender = config.getJsonObject("mail",new JsonObject()).getString("notificationMail","ne-pas-repondre@ent.iledefrance.fr");
+                LystoreEmailFactoryHelper emailFactory = new LystoreEmailFactoryHelper(vertx, config,emailNotificationHelpDeskSender);
+
+                EmailSender emailSender = emailFactory.getSender();
+                orderService.sendNotification(orderNumber,domainMail,request,emailSender);
             }catch (Exception e){
                 badRequest(request,e.getMessage());
             }
@@ -1225,8 +1230,12 @@ public class OrderController extends ControllerHelper {
         RequestUtils.bodyToJson(request, order ->{
             final String orderNumber = order.getString("bc_number");
             try{
-                String domainMail =  config.getJsonObject("mail").getString("domainMail");
-                orderService.sendNotificationHelpDesk(orderNumber,domainMail,request);
+                String domainMail =  config.getJsonObject("mail").getString("domainMail","lystore.monlycee.net");
+                String emailNotificationHelpDeskSender = config.getJsonObject("mail",new JsonObject()).getString("notificationHelpDeskMail","cesame.lystore@monlycee.net");
+                LystoreEmailFactoryHelper emailFactory = new LystoreEmailFactoryHelper(vertx, config,emailNotificationHelpDeskSender);
+
+                EmailSender emailSender = emailFactory.getSender();
+                orderService.sendNotificationHelpDesk(orderNumber,domainMail,request,emailSender);
             }catch (Exception e){
                 badRequest(request,e.getMessage());
             }

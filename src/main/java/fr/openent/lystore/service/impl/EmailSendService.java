@@ -26,38 +26,38 @@ public class EmailSendService {
     private Neo4j neo4j;
 
     private static final io.vertx.core.logging.Logger log = LoggerFactory.getLogger (EmailSendService.class);
-    private final EmailSender emailSender;
+    private final EmailSender emailSenderDefault;
     public EmailSendService(EmailSender emailSender){
-        this.emailSender = emailSender;
+        this.emailSenderDefault = emailSender;
         this.neo4j = Neo4j.getInstance();
 
     }
 
-    public void sendMail(HttpServerRequest request, String eMail, String object, String body) {
-
-        emailSender.sendEmail(request,
-                eMail,
-                null,
-                null,
-                object,
-                body,
-                null,
-                true,
-                null);
-
+    public void sendMail(HttpServerRequest request, String eMail, String object, String body, EmailSender emailSender) {
+        sendMail(request,eMail,null,object,body,emailSender);
     }
-    public void sendMail(HttpServerRequest request, String eMail, String cc, String object, String body) {
-
-        emailSender.sendEmail(request,
-                eMail,
-                cc,
-                null,
-                object,
-                body,
-                null,
-                true,
-                null);
-
+    public void sendMail(HttpServerRequest request, String eMail, String cc, String object, String body , EmailSender emailSender) {
+        if(emailSender != null){
+            emailSender.sendEmail(request,
+                    eMail,
+                    cc,
+                    null,
+                    object,
+                    body,
+                    null,
+                    true,
+                    null);
+        }else {
+            emailSenderDefault.sendEmail(request,
+                    eMail,
+                    cc,
+                    null,
+                    object,
+                    body,
+                    null,
+                    true,
+                    null);
+        }
     }
 
     public void sendMails(HttpServerRequest request, JsonObject result, JsonArray rows, UserInfos user, String url,
@@ -75,7 +75,7 @@ public class EmailSendService {
         JsonArray mailsRow = new JsonArray();
         sendMail(request, line.getString(agentEmailIndex),
                 agentMailObject,
-                agentMailBody);
+                agentMailBody,null);
 
         for(int i = 0 ; i < rows.size(); i++){
             row = rows.getJsonArray(i);
@@ -115,7 +115,7 @@ public class EmailSendService {
                         result.getString("number_validation"), url, nameEtab,idsCampaign);
                 sendMail(request, userMail.getString("mail"),
                         mailObject,
-                        mailBody);
+                        mailBody,null);
             }
         }
     }
@@ -161,7 +161,7 @@ public class EmailSendService {
         return formatAccentedString(body);
     }
 
-    public void sendMailsNotificationsEtab(HttpServerRequest request, Map<Structure, List<Order>> structureOrderMap, String domainMail){
+    public void sendMailsNotificationsEtab(HttpServerRequest request, Map<Structure, List<Order>> structureOrderMap, String domainMail, EmailSender emailSend){
         for (Map.Entry<Structure, List<Order>> structureOrderEntry : structureOrderMap.entrySet()) {
             String userMail = structureOrderEntry.getKey().getUAI();
             Order order = structureOrderEntry.getValue().get(0);
@@ -171,7 +171,8 @@ public class EmailSendService {
                 String mailBody = getNotificationBodyMail(structureOrderEntry.getValue(),structureOrderEntry.getKey());
                 sendMail(request, structureOrderEntry.getKey().getUAI() + "@" + domainMail ,
                         mailObject,
-                        mailBody);
+                        mailBody,
+                        emailSend);
             }
         }
 
@@ -212,7 +213,7 @@ public class EmailSendService {
                 + codeUai;
         return formatAccentedString(object);
     }
-    public void sendMailsHelpDesk(HttpServerRequest request, Map<Structure, List<Order>> structureOrderMap, String domainMail) {
+    public void sendMailsHelpDesk(HttpServerRequest request, Map<Structure, List<Order>> structureOrderMap, String domainMail, EmailSender emailSend) {
         for (Map.Entry<Structure, List<Order>> structureOrderEntry : structureOrderMap.entrySet()) {
             String userMail = structureOrderEntry.getKey().getUAI();
             Order order = structureOrderEntry.getValue().get(0);
@@ -220,10 +221,12 @@ public class EmailSendService {
                     order.getMarket().getName(),structureOrderEntry.getKey().getUAI());
             if (userMail != null) {
                 String mailBody = getNotificationDeskBodyMail(structureOrderEntry.getValue(),structureOrderEntry.getKey());
-                sendMail(request, "cesame.lystore@monlycee.net" ,
+                sendMail(request, "collecteur.lystore@monlycee.net" ,
                         structureOrderEntry.getKey().getUAI() + "@" + domainMail,
                         mailObject,
-                        mailBody);
+                        mailBody,
+                        emailSend
+                );
             }
         }
     }

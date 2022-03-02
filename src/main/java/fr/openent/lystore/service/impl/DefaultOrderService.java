@@ -1653,7 +1653,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
         }
     }
     @Override
-    public void sendNotification(String order_number, String domainMail, HttpServerRequest request){
+    public void sendNotification(String order_number, String domainMail, HttpServerRequest request , EmailSender emailSend){
         String query = "SELECT orders.id_structure,orders.name, orders.amount , order_validate.order_number, order_validate.date_creation , contract.reference,contract.name\n" +
                 "FROM   lystore.allorders orders\n" +
                 "       INNER JOIN lystore.order AS order_validate\n" +
@@ -1670,7 +1670,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 structureService.getStructureById(idsStructure, neoHandler ->{
                     if (neoHandler.isRight()){
                         createMapStructureListOrders(orders, structureOrderMap, neoHandler);
-                        emailSender.sendMailsNotificationsEtab(request,structureOrderMap,domainMail);
+                        emailSender.sendMailsNotificationsEtab(request,structureOrderMap,domainMail, emailSend);
                     }else
                         badRequest(request);
                 });
@@ -1705,7 +1705,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     }
 
     @Override
-    public void sendNotificationHelpDesk(String orderNumber, String domainMail, HttpServerRequest request) {
+    public void sendNotificationHelpDesk(String orderNumber, String domainMail, HttpServerRequest request , EmailSender emailSend) {
         String query = "SELECT orders.id_structure,orders.name, orders.amount , order_validate.order_number, order_validate.date_creation , contract.reference,contract.name\n" +
                 "FROM   lystore.allorders orders\n" +
                 "       INNER JOIN lystore.order AS order_validate\n" +
@@ -1722,7 +1722,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 structureService.getStructureById(idsStructure, neoHandler ->{
                     if (neoHandler.isRight()){
                         createMapStructureListOrders(orders, structureOrderMap, neoHandler);
-                        emailSender.sendMailsHelpDesk(request,structureOrderMap,domainMail);
+                        emailSender.sendMailsHelpDesk(request,structureOrderMap,domainMail,emailSend);
                     }else
                         badRequest(request);
                 });
