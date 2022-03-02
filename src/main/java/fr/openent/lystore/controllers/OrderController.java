@@ -14,10 +14,7 @@ import fr.openent.lystore.security.ManagerRight;
 import fr.openent.lystore.service.*;
 import fr.openent.lystore.service.impl.*;
 import fr.openent.lystore.utils.SqlQueryUtils;
-import fr.wseduc.rs.ApiDoc;
-import fr.wseduc.rs.Delete;
-import fr.wseduc.rs.Get;
-import fr.wseduc.rs.Put;
+import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
@@ -1201,5 +1198,22 @@ public class OrderController extends ControllerHelper {
     public void getRejectOrderComment(HttpServerRequest request) {
         Integer idCampaign = Integer.parseInt(request.getParam("idCampaign"));
         orderService.getRejectOrderComment(idCampaign, arrayResponseHandler(request));
+    }
+    @Post("/orderClient/send/mail/notification/etab")
+    @ApiDoc("Get the pdf of orders")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(ManagerRight.class)
+    public void sendNotificationEtab (final HttpServerRequest request) {
+        RequestUtils.bodyToJson(request, order ->{
+            final String orderNumber = order.getString("bc_number");
+            try{
+               String domainMail =  config.getJsonObject("mail").getString("domainMail");
+                orderService.sendNotification(orderNumber,domainMail,request);
+            }catch (Exception e){
+                badRequest(request,e.getMessage());
+            }
+
+        });
+
     }
 }

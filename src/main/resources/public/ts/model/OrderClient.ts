@@ -261,7 +261,7 @@ export class OrdersClient extends Selection<OrderClient> {
         // }
     }
     async syncWaiting( structures: Structures = new Structures(),contracts : Contracts, contractTypes : ContractTypes,
-                      suppliers : Suppliers, campaigns : Campaigns,projects : Projects, titles : Titles,campaignSelected){
+                       suppliers : Suppliers, campaigns : Campaigns,projects : Projects, titles : Titles,campaignSelected){
         // try {
         this.projects = new Selection<Project>([]);
         this.id_project_use = -1;
@@ -270,9 +270,9 @@ export class OrdersClient extends Selection<OrderClient> {
         let datas;
         if(campaignSelected){
             let campaignFilter="";
-           campaignSelected.forEach(campaign =>{
-               campaignFilter += `idCampaign=${campaign.id}&`;
-           })
+            campaignSelected.forEach(campaign =>{
+                campaignFilter += `idCampaign=${campaign.id}&`;
+            })
             campaignFilter.slice(0, -1)
             const { data } = await http.get(  `/lystore/orders?status=WAITING&${queriesFilter}&${campaignFilter}`);
             datas = data
@@ -380,7 +380,7 @@ export class OrdersClient extends Selection<OrderClient> {
             : _.pluck(this.all, 'id');
         let override_region = [];
         if( _.pluck(this.all,"override_region")[0]!== undefined){
-             override_region = _.pluck(this.all,"override_region")
+            override_region = _.pluck(this.all,"override_region")
         }
         const supplierId = status === 'SENT'
             ? _.pluck(this.all, 'supplierid')[0]
@@ -492,6 +492,14 @@ export class OrdersClient extends Selection<OrderClient> {
             return await http.put(`/lystore/orderClient/reject`, {ordersToReject: rejectOrdersJson});
         }catch (e){
             notify.error('lystore.reject.orders.err');
+            throw e;
+        }
+    }
+    async  notificationEtabl (){
+        try{
+            return await http.post(`/lystore/orderClient/send/mail/notification/etab`,{bc_number:this.bc_number} );
+        }catch (e){
+            notify.error('lystore.order.notification.mail.err');
             throw e;
         }
     }

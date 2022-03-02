@@ -1,9 +1,12 @@
 package fr.openent.lystore.service.impl;
 
+import fr.openent.lystore.model.Order;
+import fr.openent.lystore.model.Structure;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.email.EmailSender;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.LoggerFactory;
@@ -14,16 +17,21 @@ import org.entcore.common.user.UserInfos;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class EmailSendService {
 
     private Neo4j neo4j;
 
-    private static final io.vertx.core.logging.Logger LOGGER = LoggerFactory.getLogger (EmailSendService.class);
+    private static final io.vertx.core.logging.Logger log = LoggerFactory.getLogger (EmailSendService.class);
     private final EmailSender emailSender;
     public EmailSendService(EmailSender emailSender){
         this.emailSender = emailSender;
         this.neo4j = Neo4j.getInstance();
+
     }
 
     public void sendMail(HttpServerRequest request, String eMail, String object, String body) {
@@ -57,29 +65,29 @@ public class EmailSendService {
                 agentMailObject,
                 agentMailBody);
 
-    for(int i = 0 ; i < rows.size(); i++){
-        row = rows.getJsonArray(i);
-        currentIdStruct = row.getString(4);
-        Integer idCampaign = row.getInteger(5);
+        for(int i = 0 ; i < rows.size(); i++){
+            row = rows.getJsonArray(i);
+            currentIdStruct = row.getString(4);
+            Integer idCampaign = row.getInteger(5);
 
-        if(!oldIdStruct.equals(currentIdStruct)){
-            oldIdStruct = currentIdStruct;
-            if(i != 0){
-                mailsToClient(request, result, user, url, nameEtab, idsCampaign, mailsRow);
-                idsCampaign =  new ArrayList<>();
-            }
-            for(int j =0; j < structureRows.size(); j++){
-                structRow = structureRows.getJsonObject(j);
-                if(structRow.getString("id").equals(currentIdStruct)){
-                    nameEtab = structRow.getString("name");
-                    mailsRow = structRow.getJsonArray("mails");
+            if(!oldIdStruct.equals(currentIdStruct)){
+                oldIdStruct = currentIdStruct;
+                if(i != 0){
+                    mailsToClient(request, result, user, url, nameEtab, idsCampaign, mailsRow);
+                    idsCampaign =  new ArrayList<>();
+                }
+                for(int j =0; j < structureRows.size(); j++){
+                    structRow = structureRows.getJsonObject(j);
+                    if(structRow.getString("id").equals(currentIdStruct)){
+                        nameEtab = structRow.getString("name");
+                        mailsRow = structRow.getJsonArray("mails");
+                    }
                 }
             }
+            if(!idsCampaign.contains(idCampaign)){
+                idsCampaign.add(idCampaign);
+            }
         }
-        if(!idsCampaign.contains(idCampaign)){
-            idsCampaign.add(idCampaign);
-        }
-    }
 
         mailsToClient(request, result, user, url, nameEtab, idsCampaign, mailsRow);
 
@@ -93,9 +101,9 @@ public class EmailSendService {
             if (userMail.getString("mail") != null) {
                 String mailBody = getStructureBodyMail(mailsRow.getJsonObject(k), user,
                         result.getString("number_validation"), url, nameEtab,idsCampaign);
-                            sendMail(request, userMail.getString("mail"),
-                                    mailObject,
-                                    mailBody);
+                sendMail(request, userMail.getString("mail"),
+                        mailObject,
+                        mailBody);
             }
         }
     }
@@ -115,7 +123,7 @@ public class EmailSendService {
                                                String name, ArrayList<Integer> idsCampaign){
         StringBuilder listOrders= new StringBuilder();
         for(int i = 0;i < idsCampaign.size(); i++){
-          listOrders.append("<br />").append(url).append("#/campaign/").append(idsCampaign.get(i)).append("/order <br />");
+            listOrders.append("<br />").append(url).append("#/campaign/").append(idsCampaign.get(i)).append("/order <br />");
         }
         String body = "Bonjour " + row.getString("name") + ", <br/> <br/>"
                 + "Une commande sous le numéro \"" + numberOrder + "\" vient d'être validée."
@@ -140,6 +148,59 @@ public class EmailSendService {
                 + "<br /> L'équipe LyStore. ";
         return formatAccentedString(body);
     }
+
+    public void sendMailsNotificationsEtab(HttpServerRequest request, Map<Structure, List<Order>> structureOrderMap, String domainMail){
+        for (Map.Entry<Structure, List<Order>> structureOrderEntry : structureOrderMap.entrySet()) {
+            String userMail = structureOrderEntry.getKey().getUAI();
+            Order order = structureOrderEntry.getValue().get(0);
+            String mailObject = getNotificationObjectMail(order.getBcOrder().getNumber(),order.getMarket().getMarket_number(),
+                    order.getMarket().getName(),structureOrderEntry.getKey().getUAI());
+            if (userMail != null) {
+                String mailBody = getNotificationBodyMail(structureOrderEntry.getValue(),structureOrderEntry.getKey());
+                sendMail(request, structureOrderEntry.getKey().getUAI() + "@" + domainMail ,
+                        mailObject,
+                        mailBody);
+            }
+        }
+
+    }
+
+    private String getNotificationBodyMail(List<Order> orders,Structure structure) {
+        StringBuilder body = new StringBuilder();
+        body = new StringBuilder("Madame, Monsieur <br /> <br />"
+                + "Les équipements ci-dessous demandés sur le système d'information LYSTORE viennent d'être commandés pour votre établissement: " + structure.getName()
+                + "<br/> Liste des matériels à venir: "
+                + "<br/>"
+                + "<table>  ");
+        for(Order order : orders){
+            body.append(" <tr>" + "<td>- ")
+                    .append(order.getName())
+                    .append(" </td>")
+                    .append("<td style=\"padding-left:5px;\">  Quantité: ")
+                    .append(order.getAmount())
+                    .append("</td> ")
+                    .append("</tr>")
+             ;
+        }
+
+        body.append("</table><br/> Cordialement, " + "<br/>" + "<br/> <b> Service de la Transformation Numérique des Lycées </b>" +
+                "<br/> Direction de la Réussite des Élèves | Pôle Lycées");
+        log.info(body);
+        return formatAccentedString(body.toString());
+    }
+
+    private static String getNotificationObjectMail(String bcNumber, String marketNumber, String marketName, String codeUai){
+        String object = null;
+        object = "[LYSTORE - BC N°: " + bcNumber
+                + " - MARCHE N°: "
+                + marketNumber
+                + " - "
+                + marketName
+                + " - Commande dotation équipements informatiques] "
+                + codeUai;
+        return formatAccentedString(object);
+    }
+
 
     private static String getEncodedRedirectUri(String callback) {
         try {

@@ -29,7 +29,8 @@
             "channel": ""
         },
          "mail": {
-            "enableMail": ${lystoreEnableMail}
+            "enableMail": ${lystoreEnableMail},
+            "domainMail": ${lystoreDomainMail}
          }
       }
     }

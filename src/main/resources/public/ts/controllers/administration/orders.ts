@@ -271,6 +271,30 @@ export const orderController = ng.controller('orderController',
             }
             Utils.safeApply($scope);
         };
+        $scope.validateNotifications = async (orders: OrderClient[]) => {
+            let ordersToNotif = new OrdersClient();
+            ordersToNotif.all = Mix.castArrayAs(OrderClient, orders);
+            ordersToNotif.bc_number = orders[0].order_number;
+            let {status, data} = await ordersToNotif.notificationEtabl();
+            if (status === 200) {
+                $scope.orderNotificationData = {
+                    agents: _.uniq(data.agent),
+                    number_validation: data.number_validation,
+                } ;
+                toasts.info("lystore.order.notification.mail.info")
+
+            }else{
+                toasts.warning("lystore.order.notification.mail.error")
+            }
+        }
+        $scope.checkOrderNumber = () => {
+            let ordersSelected = $scope.getSelectedOrders();
+            if (ordersSelected.find(order => order.order_number)) {
+                return true;
+            } else {
+                return false
+            }
+        }
         $scope.cancelBasketDelete = () => {
             $scope.displayedOrders.all =  $scope.displayedOrders.all.filter(order => !order.selected)
             $scope.ordersClient.all =  $scope.ordersClient.all.filter(order => !order.selected)
