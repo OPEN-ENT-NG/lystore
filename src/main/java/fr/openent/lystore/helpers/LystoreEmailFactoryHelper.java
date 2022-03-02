@@ -47,24 +47,9 @@ public class LystoreEmailFactoryHelper {
     }
 
     public LystoreEmailFactoryHelper(Vertx vertx, JsonObject config) {
-        this.log = LoggerFactory.getLogger(org.entcore.common.email.EmailFactory.class);
-        this.vertx = vertx;
-        if (config != null && config.getJsonObject("emailConfig") != null) {
-            this.config = config.getJsonObject("emailConfig");
-            this.moduleConfig = config;
-        } else {
-            LocalMap<Object, Object> server = vertx.sharedData().getLocalMap("server");
-            String s = (String)server.get("emailConfig");
-            if (s != null) {
-                this.config = new JsonObject(s);
-                this.moduleConfig = this.config;
-            } else {
-                this.config = null;
-                this.moduleConfig = null;
-            }
-        }
-
+        this(vertx, config,null);
     }
+
     public LystoreEmailFactoryHelper(Vertx vertx, JsonObject config,String emailSender) {
         this.log = LoggerFactory.getLogger(org.entcore.common.email.EmailFactory.class);
         this.vertx = vertx;
@@ -76,7 +61,8 @@ public class LystoreEmailFactoryHelper {
             String s = (String)server.get("emailConfig");
             if (s != null) {
                 this.config = new JsonObject(s);
-                this.config.put("email",emailSender);
+                if(emailSender != null)
+                    this.config.put("email",emailSender);
                 this.moduleConfig = this.config;
             } else {
                 this.config = null;

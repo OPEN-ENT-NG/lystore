@@ -297,7 +297,6 @@ export const orderController = ng.controller('orderController',
                 $scope.orderNotificationData = {
                     agents: _.uniq(data.agent),
                     number_validation: data.number_validation,
-                    //structures: _.uniq(_.pluck(orderNotificationData.all, 'name_structure'))
                 } ;
                 toasts.info("lystore.order.notification.mail.info")
 

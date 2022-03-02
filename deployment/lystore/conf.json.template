@@ -31,8 +31,9 @@
          "mail": {
             "enableMail": ${lystoreEnableMail},
             "domainMail": ${lystoreDomainMail},
-            "notificationMail":${lystoreNotificationMail}
-            "notificationHelpDeskMail":${lystoreNotificationHelpDeskMail}
+            "notificationMail":${lystoreNotificationMail},
+            "notificationHelpDeskMail":${lystoreNotificationHelpDeskMail},
+            "notificationHelpDeskReceiver":{lystoreNotificationHelpDeskReceiver}
          }
       }
     }

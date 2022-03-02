@@ -230,5 +230,5 @@ public interface OrderService {
 
     void sendNotification(String order, String domainMail, HttpServerRequest request , EmailSender emailSend);
 
-    void sendNotificationHelpDesk(String orderNumber, String domainMail, HttpServerRequest request, EmailSender emailSender);
+    void sendNotificationHelpDesk(String orderNumber, String domainMail, HttpServerRequest request, EmailSender emailSender, String recipientMail);
 }

@@ -1209,8 +1209,8 @@ public class OrderController extends ControllerHelper {
             final String orderNumber = order.getString("bc_number");
             try{
                String domainMail =  config.getJsonObject("mail").getString("domainMail");
-                String emailNotificationHelpDeskSender = config.getJsonObject("mail",new JsonObject()).getString("notificationMail","ne-pas-repondre@ent.iledefrance.fr");
-                LystoreEmailFactoryHelper emailFactory = new LystoreEmailFactoryHelper(vertx, config,emailNotificationHelpDeskSender);
+                String emailNotificationSender = config.getJsonObject("mail",new JsonObject()).getString("notificationMail","ne-pas-repondre@ent.iledefrance.fr");
+                LystoreEmailFactoryHelper emailFactory = new LystoreEmailFactoryHelper(vertx, config,emailNotificationSender);
 
                 EmailSender emailSender = emailFactory.getSender();
                 orderService.sendNotification(orderNumber,domainMail,request,emailSender);
@@ -1232,10 +1232,12 @@ public class OrderController extends ControllerHelper {
             try{
                 String domainMail =  config.getJsonObject("mail").getString("domainMail","lystore.monlycee.net");
                 String emailNotificationHelpDeskSender = config.getJsonObject("mail",new JsonObject()).getString("notificationHelpDeskMail","cesame.lystore@monlycee.net");
+                String emailNotificationHelpDeskReceiver =
+                        config.getJsonObject("mail",new JsonObject()).getString("notificationHelpDeskReceiver","collecteur.lystore@monlycee.net");
                 LystoreEmailFactoryHelper emailFactory = new LystoreEmailFactoryHelper(vertx, config,emailNotificationHelpDeskSender);
 
                 EmailSender emailSender = emailFactory.getSender();
-                orderService.sendNotificationHelpDesk(orderNumber,domainMail,request,emailSender);
+                orderService.sendNotificationHelpDesk(orderNumber,domainMail,request,emailSender,emailNotificationHelpDeskReceiver);
             }catch (Exception e){
                 badRequest(request,e.getMessage());
             }

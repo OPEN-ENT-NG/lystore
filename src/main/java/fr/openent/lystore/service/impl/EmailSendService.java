@@ -213,7 +213,7 @@ public class EmailSendService {
                 + codeUai;
         return formatAccentedString(object);
     }
-    public void sendMailsHelpDesk(HttpServerRequest request, Map<Structure, List<Order>> structureOrderMap, String domainMail, EmailSender emailSend) {
+    public void sendMailsHelpDesk(HttpServerRequest request, Map<Structure, List<Order>> structureOrderMap, String domainMail, EmailSender emailSend, String recipientMail) {
         for (Map.Entry<Structure, List<Order>> structureOrderEntry : structureOrderMap.entrySet()) {
             String userMail = structureOrderEntry.getKey().getUAI();
             Order order = structureOrderEntry.getValue().get(0);
@@ -221,7 +221,7 @@ public class EmailSendService {
                     order.getMarket().getName(),structureOrderEntry.getKey().getUAI());
             if (userMail != null) {
                 String mailBody = getNotificationDeskBodyMail(structureOrderEntry.getValue(),structureOrderEntry.getKey());
-                sendMail(request, "collecteur.lystore@monlycee.net" ,
+                sendMail(request, recipientMail ,
                         structureOrderEntry.getKey().getUAI() + "@" + domainMail,
                         mailObject,
                         mailBody,
