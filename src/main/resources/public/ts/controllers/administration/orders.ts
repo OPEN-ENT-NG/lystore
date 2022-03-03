@@ -286,6 +286,7 @@ export const orderController = ng.controller('orderController',
             }else{
                 toasts.warning("lystore.order.notification.mail.error")
             }
+            unselectOrders();
         }
 
         $scope.validateNotificationsRegion = async (orders:OrderClient[]) =>{
@@ -303,6 +304,7 @@ export const orderController = ng.controller('orderController',
             }else{
                 toasts.warning("lystore.order.notification.mail.error")
             }
+            unselectOrders();
         }
 
         $scope.checkOrderNumber = () => {
@@ -476,7 +478,12 @@ export const orderController = ng.controller('orderController',
                 return true;
             }
         };
-
+        let unselectOrders = () =>{
+            $scope.displayedOrders.selected.map(order => {
+                order.selected = false;
+            });
+            Utils.safeApply($scope);
+        }
         $scope.exportOrder = async (orders: OrderClient[]) => {
 
             if ((_.where(orders, { status : 'SENT' }).length === orders.length || (_.where(orders, { status : 'DONE' }).length === orders.length ) && $scope.validateSentOrders(orders))) {

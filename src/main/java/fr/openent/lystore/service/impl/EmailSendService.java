@@ -21,6 +21,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static fr.wseduc.webutils.http.Renders.badRequest;
+
 public class EmailSendService {
 
     private Neo4j neo4j;
@@ -162,7 +164,7 @@ public class EmailSendService {
     }
 
     public void sendMailsNotificationsEtab(HttpServerRequest request, Map<Structure, List<Order>> structureOrderMap, String domainMail, EmailSender emailSend){
-        for (Map.Entry<Structure, List<Order>> structureOrderEntry : structureOrderMap.entrySet()) {
+        try{ for (Map.Entry<Structure, List<Order>> structureOrderEntry : structureOrderMap.entrySet()) {
             String userMail = structureOrderEntry.getKey().getUAI();
             Order order = structureOrderEntry.getValue().get(0);
             String mailObject = getNotificationObjectMail(order.getBcOrder().getNumber(),order.getMarket().getMarket_number(),
@@ -175,10 +177,15 @@ public class EmailSendService {
                         emailSend);
             }
         }
+            request.response().setStatusCode(200).end();
+        } catch (Exception e) {
+            badRequest(request,e.getMessage());
 
+        }
     }
 
     private String getNotificationBodyMail(List<Order> orders,Structure structure) {
+
         StringBuilder body = new StringBuilder();
         body = new StringBuilder("Madame, Monsieur <br /> <br />"
                 + "Les équipements ci-dessous demandés sur le système d'information LYSTORE viennent d'être commandés pour votre établissement: " + structure.getName()
@@ -193,12 +200,11 @@ public class EmailSendService {
                     .append(order.getAmount())
                     .append("</td> ")
                     .append("</tr>")
-             ;
+            ;
         }
 
         body.append("</table><br/> Cordialement, " + "<br/>" + "<br/> <b> Service de la Transformation Numérique des Lycées </b>" +
                 "<br/> Direction de la Réussite des Élèves | Pôle Lycées");
-        log.info(body);
         return formatAccentedString(body.toString());
     }
 
@@ -214,20 +220,27 @@ public class EmailSendService {
         return formatAccentedString(object);
     }
     public void sendMailsHelpDesk(HttpServerRequest request, Map<Structure, List<Order>> structureOrderMap, String domainMail, EmailSender emailSend, String recipientMail) {
-        for (Map.Entry<Structure, List<Order>> structureOrderEntry : structureOrderMap.entrySet()) {
-            String userMail = structureOrderEntry.getKey().getUAI();
-            Order order = structureOrderEntry.getValue().get(0);
-            String mailObject = getNotificationObjectMail(order.getBcOrder().getNumber(),order.getMarket().getMarket_number(),
-                    order.getMarket().getName(),structureOrderEntry.getKey().getUAI());
-            if (userMail != null) {
-                String mailBody = getNotificationDeskBodyMail(structureOrderEntry.getValue(),structureOrderEntry.getKey());
-                sendMail(request, recipientMail ,
-                        structureOrderEntry.getKey().getUAI() + "@" + domainMail,
-                        mailObject,
-                        mailBody,
-                        emailSend
-                );
+
+        try {
+            for (Map.Entry<Structure, List<Order>> structureOrderEntry : structureOrderMap.entrySet()) {
+                String userMail = structureOrderEntry.getKey().getUAI();
+                Order order = structureOrderEntry.getValue().get(0);
+                String mailObject = getNotificationObjectMail(order.getBcOrder().getNumber(), order.getMarket().getMarket_number(),
+                        order.getMarket().getName(), structureOrderEntry.getKey().getUAI());
+                if (userMail != null) {
+                    String mailBody = getNotificationDeskBodyMail(structureOrderEntry.getValue(), structureOrderEntry.getKey());
+                    sendMail(request, recipientMail,
+                            structureOrderEntry.getKey().getUAI() + "@" + domainMail,
+                            mailObject,
+                            mailBody,
+                            emailSend
+                    );
+                }
             }
+            request.response().setStatusCode(200).end();
+        } catch (Exception e) {
+            badRequest(request,e.getMessage());
+
         }
     }
 
@@ -293,7 +306,7 @@ public class EmailSendService {
                 "Direction de la Réussite des Élèves | Pôle Lycées<br/> " +
                 " <br/> " +
                 "N.B. : Le ticket sera fermé et" +
-            " déclaré « conforme » une fois les livrables (INV,BL,CSF) déposés dans le présent ticket. Le ticket passera alors en « résolu ».<br/> ";
+                " déclaré « conforme » une fois les livrables (INV,BL,CSF) déposés dans le présent ticket. Le ticket passera alors en « résolu ».<br/> ";
 
         return formatAccentedString(body);
     }
