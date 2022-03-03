@@ -217,7 +217,7 @@ public class EmailSendService {
                 + marketName
                 + " - Commande dotation équipements informatiques] "
                 + codeUai;
-        return formatAccentedString(object);
+        return object;
     }
     public void sendMailsHelpDesk(HttpServerRequest request, Map<Structure, List<Order>> structureOrderMap, String domainMail, EmailSender emailSend, String recipientMail) {
 
