@@ -1,7 +1,9 @@
 package fr.openent.lystore.service;
 
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.email.EmailSender;
 import io.vertx.core.Handler;
+import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -226,5 +228,7 @@ public interface OrderService {
 
     void listOrderWaiting(List<String> idCampaigns, List<String> queries, Handler<Either<String, JsonArray>> arrayResponseHandler);
 
-    void sendNotification(String order, String domainMail, HttpServerRequest request);
+    void sendNotification(String order, String domainMail, HttpServerRequest request , EmailSender emailSend);
+
+    void sendNotificationHelpDesk(String orderNumber, String domainMail, HttpServerRequest request, EmailSender emailSender, String recipientMail);
 }

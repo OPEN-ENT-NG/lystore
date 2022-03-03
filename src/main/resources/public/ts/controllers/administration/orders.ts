@@ -287,6 +287,24 @@ export const orderController = ng.controller('orderController',
                 toasts.warning("lystore.order.notification.mail.error")
             }
         }
+
+        $scope.validateNotificationsRegion = async (orders:OrderClient[]) =>{
+            let ordersToNotif = new OrdersClient();
+            ordersToNotif.all = Mix.castArrayAs(OrderClient, orders);
+            ordersToNotif.bc_number = orders[0].order_number;
+            let {status, data} = await ordersToNotif.notificationRegion();
+            if (status === 200) {
+                $scope.orderNotificationData = {
+                    agents: _.uniq(data.agent),
+                    number_validation: data.number_validation,
+                } ;
+                toasts.info("lystore.order.notification.mail.info")
+
+            }else{
+                toasts.warning("lystore.order.notification.mail.error")
+            }
+        }
+
         $scope.checkOrderNumber = () => {
             let ordersSelected = $scope.getSelectedOrders();
             if (ordersSelected.find(order => order.order_number)) {

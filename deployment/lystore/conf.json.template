@@ -30,7 +30,10 @@
         },
          "mail": {
             "enableMail": ${lystoreEnableMail},
-            "domainMail": ${lystoreDomainMail}
+            "domainMail": ${lystoreDomainMail},
+            "notificationMail":${lystoreNotificationMail},
+            "notificationHelpDeskMail":${lystoreNotificationHelpDeskMail},
+            "notificationHelpDeskReceiver":{lystoreNotificationHelpDeskReceiver}
          }
       }
     }
