@@ -6,11 +6,13 @@ import fr.openent.lystore.service.InstructionService;
 import fr.openent.lystore.model.InstructionStatus;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
@@ -23,8 +25,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static fr.openent.lystore.service.impl.DefaultOrderService.getNextValidationNumber;
+import static fr.wseduc.webutils.http.Renders.getHost;
 
 public class DefaultInstructionService  extends SqlCrudService implements InstructionService {
 
@@ -42,7 +46,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
     }
 
 
-    private String getTextFilter(List<String> filters) {
+    private String getTextFilter(List<String> filters, HttpServerRequest request) {
         String filter = "";
         if (filters.size() > 0) {
             filter = "WHERE ";
@@ -53,17 +57,24 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 filter += "(LOWER(instruction.object) ~ LOWER(?) OR " +
                         "LOWER(instruction.service_number) ~ LOWER(?) OR " +
                         "LOWER(instruction.cp_number) ~ LOWER(?) OR " +
+                        "to_char(instruction.date_cp, 'DD/MM/YY') ~ ? OR " +
+                        "LOWER(CASE ";
+                for(InstructionStatus status : InstructionStatus.values()) {
+                    filter += "WHEN instruction.cp_adopted = '" + status.toString().toUpperCase() + "' " +
+                            "THEN '" + I18n.getInstance().translate("lystore.instruction.status." + status.toString().toLowerCase(), getHost(request), I18n.acceptLanguage(request)) + "' ";
+                }
+                    filter += "END) ~ LOWER(?) OR " +
                         "LOWER(exercise.year) ~ LOWER(?)) ";
             }
         }
         return filter;
     }
 
-    public void getInstructions(List<String> filters, Handler<Either<String, JsonArray>> handler){
+    public void getInstructions(List<String> filters, HttpServerRequest request, Handler<Either<String, JsonArray>> handler){
         JsonArray params = new JsonArray();
         if (!filters.isEmpty()) {
             for (String filter : filters) {
-                params.add(filter).add(filter).add(filter).add(filter);
+                params.add(filter).add(filter).add(filter).add(filter).add(filter).add(filter);
             }
         }
         String query =  "SELECT instruction.*, " +
@@ -72,7 +83,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 "FROM  " + Lystore.lystoreSchema +".instruction " +
                 "INNER JOIN " + Lystore.lystoreSchema +".exercise exercise ON exercise.id = instruction.id_exercise " +
                 "LEFT JOIN " + Lystore.lystoreSchema +".operation o ON o.id_instruction = instruction.id " +
-                getTextFilter(filters) +
+                getTextFilter(filters, request) +
                 " GROUP BY (instruction.id, exercise.id);";
 
         Sql.getInstance().prepared(query, params, SqlResult.validResultHandler(instructionsEither -> {
