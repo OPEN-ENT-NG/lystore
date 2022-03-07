@@ -16,6 +16,7 @@ export class Export implements Selectable {
     status: STATUS;
     created?;
     object_name: string;
+    object_id: string;
     constructor(){
         this.status = STATUS.WAITING;
     }

@@ -45,7 +45,7 @@ public class InstructionController extends ControllerHelper {
     @ApiDoc("List all instructions in database")
     @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
     public void getInstructions(HttpServerRequest request) {
-        instructionService.getInstructions(request.params().getAll("q"), either -> {
+        instructionService.getInstructions(request.params().getAll("q"), request, either -> {
             if (either.isLeft()) {
                 if ("404".equals(either.left().getValue())) {
                     notFound(request);

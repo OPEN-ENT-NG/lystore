@@ -1,6 +1,7 @@
 // @ts-ignore
 import {_, moment, idiom as lang, ng, template, toasts} from 'entcore';
 import {Instruction, Notification, Operation, Utils} from "../../model";
+import {element} from "angular";
 
 
 declare let window: any;
@@ -8,11 +9,13 @@ declare let window: any;
 export const instructionController = ng.controller('instructionController',
     ['$scope', '$routeParams', ($scope, $routeParams) => {
 
-        // $scope.tabStatusInstruction = [
-        //     {displayedName:'Adopté',value:"ADOPTED"},
-        //     {displayedName:'En attente',value:"WAITING"},
-        //     {displayedName:'Rejeté',value:"REJECTED"},
-        // ];
+        $scope.instructions.all.forEach(instruction => {
+            instruction.amount = parseFloat(instruction.amount);
+            if(isNaN(instruction.amount)){
+                instruction.amount = 0;
+            }
+        })
+
         $scope.translate = (key: string):string => lang.translate(key);
 
         $scope.tabDisplayStatusInstruction = [

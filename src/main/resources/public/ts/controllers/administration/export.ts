@@ -98,7 +98,7 @@ export const exportCtrl = ng.controller('exportCtrl', [
                     regex = generateRegexp([searchTerm]);
 
                     searchResult = _.filter(searchItems, (exportToHandle: Export) => {
-                        return ('object_name' in exportToHandle ? regex.test(exportToHandle.object_name.toLowerCase()) : false)
+                        return ('object_name' && 'object_id' in exportToHandle ? regex.test(exportToHandle.object_name.toLowerCase() + '_' + exportToHandle.object_id.toLowerCase()) : false)
                             || ('typeObject' in exportToHandle ? regex.test(lang.translate(exportToHandle.typeObject).toLowerCase()) : false)
                             || ('created' in exportToHandle ? regex.test(exportToHandle.created.toLowerCase()) : false)
                             || ('filename' in exportToHandle ? regex.test(exportToHandle.filename.toLowerCase()) : false)

@@ -2,6 +2,7 @@ package fr.openent.lystore.service;
 
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -11,7 +12,7 @@ public interface InstructionService {
 
     void getExercises(Handler<Either<String, JsonArray>> handler);
 
-    void getInstructions(List<String> filters, Handler<Either<String, JsonArray>> handler);
+    void getInstructions(List<String> filters, HttpServerRequest request, Handler<Either<String, JsonArray>> handler);
 
     void create(JsonObject instruction,  Handler<Either<String, JsonObject>> handler);
 

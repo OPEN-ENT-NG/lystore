@@ -1,11 +1,14 @@
 package fr.openent.lystore.service.impl;
 
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.model.EquipmentStatus;
 import fr.openent.lystore.service.EquipmentService;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
 import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -15,6 +18,8 @@ import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 
 import java.util.List;
+
+import static fr.wseduc.webutils.http.Renders.getHost;
 
 public class DefaultEquipmentService extends SqlCrudService implements EquipmentService {
 
@@ -56,7 +61,7 @@ public class DefaultEquipmentService extends SqlCrudService implements Equipment
         return reverse ? "DESC" : "ASC";
     }
 
-    private String getTextFilter(List<String> filters) {
+    private String getTextFilter(List<String> filters, HttpServerRequest request) {
         String filter = "", q;
         if (filters.size() > 0) {
             filter = "WHERE ";
@@ -66,19 +71,28 @@ public class DefaultEquipmentService extends SqlCrudService implements Equipment
                     filter += "AND ";
                 }
 
-                filter += "(LOWER(equip.name) ~ LOWER(?) OR LOWER(equip.reference) ~ LOWER(?) OR LOWER(supplier.name) ~ LOWER(?) OR LOWER(contract.name) ~ LOWER(?)) ";
+                filter += "(LOWER(equip.name) ~ LOWER(?) OR " +
+                        "LOWER(equip.reference) ~ LOWER(?) OR " +
+                        "LOWER(supplier.name) ~ LOWER(?) OR " +
+                        "LOWER(contract.name) ~ LOWER(?) OR " +
+                        "LOWER(CASE ";
+                        for(EquipmentStatus status : EquipmentStatus.values()) {
+                            filter += "WHEN equip.status = '" + status.toString().toUpperCase() + "' " +
+                            "THEN '" + I18n.getInstance().translate("lystore." + status.toString().toUpperCase(), getHost(request), I18n.acceptLanguage(request)) + "' ";
+                        }
+                        filter += "END) ~ LOWER(?)) ";
             }
         }
 
         return filter;
     }
 
-    public void listEquipments(Integer page, String order, Boolean reverse, List<String> filters, Handler<Either<String, JsonArray>> handler) {
+    public void listEquipments(Integer page, String order, Boolean reverse, List<String> filters, HttpServerRequest request, Handler<Either<String, JsonArray>> handler) {
         JsonArray params = new JsonArray();
 
         if (!filters.isEmpty()) {
             for (String filter : filters) {
-                params.add(filter).add(filter).add(filter).add(filter);
+                params.add(filter).add(filter).add(filter).add(filter).add(filter);
             }
         }
 
@@ -87,7 +101,7 @@ public class DefaultEquipmentService extends SqlCrudService implements Equipment
                 "INNER JOIN " + Lystore.lystoreSchema + ".tax ON tax.id = equip.id_tax " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".contract ON (contract.id = equip.id_contract) " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".supplier ON (contract.id_supplier = supplier.id) " +
-                getTextFilter(filters) +
+                getTextFilter(filters, request) +
                 "ORDER by " + getSqlOrderValue(order) + " " + getSqlReverseString(reverse);
 
         if (page != null) {
@@ -421,12 +435,12 @@ public class DefaultEquipmentService extends SqlCrudService implements Equipment
     }
 
     @Override
-    public void getNumberPages(List<String> filters, Handler<Either<String, JsonObject>> handler) {
+    public void getNumberPages(List<String> filters, HttpServerRequest request, Handler<Either<String, JsonObject>> handler) {
         JsonArray params = new JsonArray();
 
         if (!filters.isEmpty()) {
             for (String filter : filters) {
-                params.add(filter).add(filter).add(filter).add(filter);
+                params.add(filter).add(filter).add(filter).add(filter).add(filter);
             }
         }
 
@@ -434,7 +448,7 @@ public class DefaultEquipmentService extends SqlCrudService implements Equipment
                 "FROM " + Lystore.lystoreSchema + ".equipment equip " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".contract ON (contract.id = equip.id_contract) " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".supplier ON (contract.id_supplier = supplier.id) " +
-                getTextFilter(filters);
+                getTextFilter(filters, request);
         Sql.getInstance().prepared(query, params, event -> {
             if (!"ok".equals(event.body().getString("status"))) {
                 handler.handle(new Either.Left<>("An error occurred when collecting equipment count"));

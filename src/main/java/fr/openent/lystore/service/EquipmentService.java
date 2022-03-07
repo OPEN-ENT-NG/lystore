@@ -2,6 +2,7 @@ package fr.openent.lystore.service;
 
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
+import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -17,7 +18,7 @@ public interface EquipmentService {
      * @param filters search queries
      * @param handler function handler returning data
      */
-    void listEquipments(Integer page, String order, Boolean reverse, List<String> filters, Handler<Either<String, JsonArray>> handler);
+    void listEquipments(Integer page, String order, Boolean reverse, List<String> filters, HttpServerRequest request, Handler<Either<String, JsonArray>> handler);
 
     /**
      * List equipments of Campaign and a structure  in database
@@ -107,7 +108,7 @@ public interface EquipmentService {
      * @param filters Filters list
      * @param handler Function handler returning data
      */
-    void getNumberPages(List<String> filters, Handler<Either<String, JsonObject>> handler);
+    void getNumberPages(List<String> filters, HttpServerRequest request, Handler<Either<String, JsonObject>> handler);
 
     /**
      * Get equipment pages number
