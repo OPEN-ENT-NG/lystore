@@ -57,7 +57,7 @@ public class EquipmentController extends ControllerHelper {
         String order = request.params().contains("order") ? request.getParam("order") : "name";
         Boolean reverse = request.params().contains("reverse") ? Boolean.parseBoolean(request.getParam("reverse")) : false;
         List<String> queries = request.params().getAll("q");
-        equipmentService.listEquipments(page, order, reverse, queries, arrayResponseHandler(request));
+        equipmentService.listEquipments(page, order, reverse, queries, request, arrayResponseHandler(request));
     }
 
     @Get("/equipments/pages/count")
@@ -76,7 +76,7 @@ public class EquipmentController extends ControllerHelper {
                 log.error("An error occured while casting campaign identifier", e);
             }
         } else {
-            equipmentService.getNumberPages(queries, defaultResponseHandler(request));
+            equipmentService.getNumberPages(queries, request, defaultResponseHandler(request));
         }
     }
 
