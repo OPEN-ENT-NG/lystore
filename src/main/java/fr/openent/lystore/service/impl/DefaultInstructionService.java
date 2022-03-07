@@ -56,6 +56,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 }
                 filter += "(LOWER(instruction.object) ~ LOWER(?) OR " +
                         "LOWER(instruction.service_number) ~ LOWER(?) OR " +
+                        "LOWER(totalOp::VARCHAR(255)) ~ LOWER(?) OR " +
                         "LOWER(instruction.cp_number) ~ LOWER(?) OR " +
                         "to_char(instruction.date_cp, 'DD/MM/YY') ~ ? OR " +
                         "LOWER(CASE ";
@@ -74,17 +75,27 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
         JsonArray params = new JsonArray();
         if (!filters.isEmpty()) {
             for (String filter : filters) {
-                params.add(filter).add(filter).add(filter).add(filter).add(filter).add(filter);
+                params.add(filter).add(filter).add(filter).add(filter).add(filter).add(filter).add(filter);
             }
         }
-        String query =  "SELECT instruction.*, " +
+        String query =  "WITH values AS (" +
+                "SELECT AllOp.id AS operation_id, operation.id_instruction, operation.id AS op_id, AllOp.amount " +
+                "FROM " + Lystore.lystoreSchema +".operation " +
+                "INNER JOIN " + Lystore.lystoreSchema +".allOperationOrders as AllOp ON AllOp.id = operation.id " +
+                "WHERE operation.id_instruction IS NOT NULL) " +
+                "SELECT instruction.*, " +
                 "to_json(exercise.*) AS exercise, " +
-                "array_to_json(array_agg( o.id )) AS operations " +
-                "FROM  " + Lystore.lystoreSchema +".instruction " +
+                "array_to_json(array_agg( o.id )) AS operations, " +
+                "totalOp " +
+                "FROM " + Lystore.lystoreSchema +".instruction " +
                 "INNER JOIN " + Lystore.lystoreSchema +".exercise exercise ON exercise.id = instruction.id_exercise " +
                 "LEFT JOIN " + Lystore.lystoreSchema +".operation o ON o.id_instruction = instruction.id " +
+                "LEFT JOIN (SELECT Sum(amount) AS totalOp, " +
+                "id_instruction from values " +
+                "GROUP BY id_instruction " +
+                ") AS totalOperation ON totalOperation.id_instruction = instruction.id " +
                 getTextFilter(filters, request) +
-                " GROUP BY (instruction.id, exercise.id);";
+                " GROUP BY (instruction.id, exercise.id, totalOp);";
 
         Sql.getInstance().prepared(query, params, SqlResult.validResultHandler(instructionsEither -> {
             try{
