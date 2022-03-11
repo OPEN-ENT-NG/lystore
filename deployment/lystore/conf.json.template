@@ -33,7 +33,7 @@
             "domainMail": ${lystoreDomainMail},
             "notificationMail":${lystoreNotificationMail},
             "notificationHelpDeskMail":${lystoreNotificationHelpDeskMail},
-            "notificationHelpDeskReceiver":{lystoreNotificationHelpDeskReceiver}
+            "notificationHelpDeskReceiver":${lystoreNotificationHelpDeskReceiver}
          }
       }
     }
