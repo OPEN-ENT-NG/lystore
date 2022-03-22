@@ -204,7 +204,7 @@ public class EmailSendService {
         }
 
         body.append("</table><br/> Cordialement, " + "<br/>" + "<br/> <b> Service de la Transformation Numérique des Lycées </b>" +
-                "<br/> Direction de la Réussite des Élèves | Pôle Lycées");
+                "<br/>Direction Numérique, Innovation et Smart Région | Pôle Transformation Numérique");
         return formatAccentedString(body.toString());
     }
 
@@ -303,7 +303,7 @@ public class EmailSendService {
             ;
         }
         body +=" </table> <br/> Service de la Transformation Numérique des Lycées<br/> " +
-                "Direction de la Réussite des Élèves | Pôle Lycées<br/> " +
+                "Direction Numérique, Innovation et Smart Région | Pôle Transformation Numérique<br/> " +
                 " <br/> " +
                 "N.B. : Le ticket sera fermé et" +
                 " déclaré « conforme » une fois les livrables (INV,BL,CSF) déposés dans le présent ticket. Le ticket passera alors en « résolu ».<br/> ";
