@@ -32,7 +32,11 @@
             "logo-path": "./public/img/ile_de_france.png"
         },
         "mail": {
-            "enableMail": {{ lystoreEnableMail }}
+            "enableMail": {{ lystoreEnableMail }},
+            "domainMail": "{{ lystoreDomainMail | default('') }}",
+            "notificationMail": "{{ lystoreNotificationMail | default('') }}",
+            "notificationHelpDeskMail": "{{ lystoreNotificationHelpDeskMail | default('') }}",
+            "notificationHelpDeskReceiver": "{{ lystoreNotificationHelpDeskReceiver | default('') }}"
         }
     }
 }
