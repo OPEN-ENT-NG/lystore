@@ -1,5 +1,5 @@
 # À propos de l'application LyStore
-* Licence : [AGPL v3](http://www.gnu.org/licenses/agpl.txt)
+* Licence : [AGPL v3](http://www.gnu.org/licenses/agpl.txt) - Copyright Région Ile de France 
 * Développeur : CGI
 * Financeur : Région Ile de France
 * Description : Service de gestion des achats
@@ -42,3 +42,37 @@ Pour ces utilisateurs, il est possible de :
  - Alimenter/gérer les enveloppes budgétaires des établissements tout au long de l'année
  - Instruire les demandes
  - Générer des bons de commande et des certificats de service fait pour les MAC
+
+##Configuration
+<pre>
+{
+  "config": {
+    ...
+    "iteration-worker": ${lystoreIterationWorker},
+    ...
+    "slack": {
+        "token": "",
+        "api-uri": "",
+        "bot-username": "Lystore Bot",
+        "channel": ""
+    },
+     "mail": {
+        "enableMail": ${lystoreEnableMail},
+        "domainMail": ${lystoreDomainMail},
+        "notificationMail":${lystoreNotificationMail},
+        "notificationHelpDeskMail":${lystoreNotificationHelpDeskMail},
+        "notificationHelpDeskReceiver":${lystoreNotificationHelpDeskReceiver}
+     }
+  }
+}
+</pre>
+
+Dans votre springboard, vous devez inclure des variables d'environnement :
+<pre>
+lystoreIterationWorker = Integer
+lystoreEnableMail = boolean
+lystoreDomainMail = ${String}
+lystoreNotificationMail = ${String}
+lystoreNotificationHelpDeskMail = ${String}
+lystoreNotificationHelpDeskReceiver = ${String}
+</pre>
