@@ -43,7 +43,7 @@ Pour ces utilisateurs, il est possible de :
  - Instruire les demandes
  - Générer des bons de commande et des certificats de service fait pour les MAC
 
-##Configuration
+## Configuration
 <pre>
 {
   "config": {
