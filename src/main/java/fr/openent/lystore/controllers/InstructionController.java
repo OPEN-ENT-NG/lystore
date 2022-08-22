@@ -101,6 +101,8 @@ public class InstructionController extends ControllerHelper {
 
     @Get("/instructions/:id/export")
     @ApiDoc("Export given instruction")
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
+    @ResourceFilter(ManagerRight.class)
     public void exportInstruction(HttpServerRequest request) {
         ExportHelper.makeExport(request, eb, exportService, Lystore.INSTRUCTIONS,  Lystore.XLSX, ExportTypes.RME, "_Récapitulatif_mesures_engagées");
     }
