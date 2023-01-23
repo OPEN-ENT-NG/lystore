@@ -32,9 +32,9 @@ import {
     Utils,
 } from '../model';
 import {Mix} from "entcore-toolkit";
-
-export const mainController = ng.controller('MainController', ['$scope', 'route', '$location', '$rootScope',
-    ($scope, route, $location, $rootScope) => {
+declare const window: any;
+export const mainController = ng.controller('MainController', ['$scope', 'route', '$location', '$window', '$rootScope',
+    ($scope, route, $location, $window, $rootScope) => {
         template.open('main', 'main');
 
         $scope.display = {
@@ -76,6 +76,7 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
         $scope.equipments.eventer.on('loading::false', () => Utils.safeApply($scope));
         $scope.loadingArray = false;
         $scope.campaignSelection = [];
+        $scope.isSuperAdmin = Boolean(window.isSuperAdmin);
         route({
             main: async () => {
                 if ($scope.isManager() || $scope.isAdministrator()) {
@@ -492,6 +493,10 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
 
         $scope.redirectTo = (path: string) => {
             $location.path(path);
+        };
+
+        $scope.redirectToHref = (path: string) => {
+            $window.location.href = window.location.origin + window.location.pathname + path
         };
 
         $rootScope.$on('eventEmitedCampaign', function (event, data) {

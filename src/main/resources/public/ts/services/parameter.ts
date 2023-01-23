@@ -2,6 +2,7 @@ import {ng} from 'entcore'
 import http, {AxiosResponse} from 'axios';
 
 export interface StructureLystore {
+    deployed: boolean;
     uai: string;
     name: string;
     structureId: string;

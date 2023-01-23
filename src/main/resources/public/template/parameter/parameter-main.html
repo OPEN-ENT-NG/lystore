@@ -1,0 +1,18 @@
+<div class="parameter">
+    <!--Title-->
+    <h1 class="parameter-title">
+        <i18n>lystore.parameter.title</i18n>
+    </h1>
+    <header class="horizontal-spacing" ng-click="redirectTo('#/')"
+            workflow="lystore.administrator">
+        <i18n>lystore</i18n>
+    </header>
+
+    <div class="row">
+        <div class="loading-bar" ng-class="{loading: loadingArray}"></div>
+    </div>
+    <div ng-if="loadingArray">
+        <h1><i18n>lystore.loading</i18n></h1>
+    </div>
+    <container ng-show="!loadingArray" template="parameter"></container>
+</div>

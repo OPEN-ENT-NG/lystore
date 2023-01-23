@@ -1,6 +1,19 @@
-import {ng} from "entcore";
+import {ng, routes} from "entcore";
 import {ParameterService} from "./services";
-import {parameterController} from "./controllers/parameter"
+import {activeStructureController,parameterMainController} from "./controllers/index"
 
 ng.services.push(ParameterService);
-ng.controllers.push(parameterController);
+ng.controllers.push(activeStructureController);
+ng.controllers.push(parameterMainController);
+
+routes.define(($routeProvider) => {
+    $routeProvider
+        .when('/', {
+            action: 'main'
+        });
+
+    $routeProvider
+        .otherwise({
+        redirectTo: '/'
+    });
+});
