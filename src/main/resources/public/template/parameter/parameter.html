@@ -1,53 +1,50 @@
-<div class="parameter">
-    <!--Title-->
-    <h1 class="parameter-title">
-        <i18n>lystore.parameter.title</i18n>
-    </h1>
+<div class="parameter"  ng-controller="ActiveStructureController as vm">
+
 
     <div class="row">
         <input type="text" class="twelve cell" i18n-placeholder="lystore.parameter.structure.search"
-               ng-model="filter.value">
+               ng-model="vm.filter.value">
     </div>
 
     <div class="row">
-        <div class="loading-bar" ng-class="{loading: loadingArray}"></div>
+        <div class="loading-bar" ng-class="{loading: vm.loadingArray}"></div>
     </div>
-    <div ng-if="loadingArray">
+    <div ng-if="vm.loadingArray">
         <h1><i18n>lystore.loading</i18n></h1>
     </div>
-    <div  ng-show="!loadingArray"  class="responsive-table">
+    <div  ng-show="!vm.loadingArray"  class="responsive-table">
         <!--Table-->
         <table class="twelve">
             <thead>
             <tr>
-                <th  ng-click="filter.property = 'uai'; filter.desc = !filter.desc">
+                <th  ng-click="vm.filter.property = 'uai'; vm.filter.desc = !vm.filter.desc">
                     <span class="sortable">
 						<span class="icons right-spacing">
-							<i class="arrow" ng-class="{'icon-off': !(filter.property === 'uai' && !filter.desc)}"></i>
+							<i class="arrow" ng-class="{'icon-off': !(vm.filter.property === 'uai' && !vm.filter.desc)}"></i>
 							<i class="arrow bottom"
-                               ng-class="{'icon-off': !(filter.property === 'uai' && filter.desc)}"></i>
+                               ng-class="{'icon-off': !(vm.filter.property === 'uai' && vm.filter.desc)}"></i>
 						</span>
 						<span><i18n>lystore.uai</i18n></span>
 					</span>
                 </th>
                 <th  style="text-align: left"
-                    ng-click="filter.property = 'name'; filter.desc = !filter.desc">
+                    ng-click=" vm.filter.property = 'name'; vm.filter.desc = !vm.filter.desc">
                     <span class="sortable">
 						<span class="icons right-spacing">
-							<i class="arrow" ng-class="{'icon-off': !(filter.property === 'name' && !filter.desc)}"></i>
+							<i class="arrow" ng-class="{'icon-off': !(vm.filter.property === 'name' && !vm.filter.desc)}"></i>
 							<i class="arrow bottom"
-                               ng-class="{'icon-off': !(filter.property === 'name' && filter.desc)}"></i>
+                               ng-class="{'icon-off': !(vm.filter.property === 'name' && vm.filter.desc)}"></i>
 						</span>
 						<span><i18n>lystore.name</i18n></span>
 					</span>
                 </th>
-                <th  ng-click="filter.property = 'number_deployed'; filter.desc = !filter.desc">
+                <th  ng-click="vm.filter.property = 'number_deployed'; vm.filter.desc = !vm.filter.desc">
                     <span class="sortable">
 						<span class="icons right-spacing">
 							<i class="arrow"
-                               ng-class="{'icon-off': !(filter.property === 'number_deployed' && !filter.desc)}"></i>
+                               ng-class="{'icon-off': !(vm.filter.property === 'number_deployed' && !vm.filter.desc)}"></i>
 							<i class="arrow bottom"
-                               ng-class="{'icon-off': !(filter.property === 'number_deployed' && filter.desc)}"></i>
+                               ng-class="{'icon-off': !(vm.filter.property === 'number_deployed' && vm.filter.desc)}"></i>
 						</span>
 						<span><i18n>lystore.state</i18n></span>
 					</span>
@@ -58,7 +55,7 @@
             </thead>
 
             <tbody class="parameter-table-body">
-            <tr ng-repeat="item in structureLystoreLists|filter:match()|orderBy:filter.property:filter.desc"
+            <tr ng-repeat="item in vm.structureLystoreLists|filter:vm.match()|orderBy:vm.filter.property:vm.filter.desc"
                 style="height: 40px;">
                 <th style="text-align: left; text-indent: 10px;">[[item.uai]]</th>
                 <th style="text-align: left; text-indent: 10px;">[[item.name]]</th>
@@ -69,7 +66,7 @@
                 </th>
                 <th>
                     <dots-menu style="text-align: left">
-                        <opt data-ng-disabled="createButton" ng-click="createLystoreGroup(item)">
+                        <opt data-ng-disabled="vm.createButton" ng-click="vm.createLystoreGroup(item)">
                             <span ng-if="!item.deployed"><i18n>lystore.parameter.deploy</i18n></span>
                             <span ng-if="item.deployed"><i18n>lystore.parameter.undeploy</i18n></span>
                         </opt>
