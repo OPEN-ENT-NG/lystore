@@ -10,6 +10,9 @@ routes.define(($routeProvider) => {
     $routeProvider
         .when('/', {
             action: 'main'
+        })
+        .when('/parameter',{
+            action: 'parameter'
         });
 
     $routeProvider

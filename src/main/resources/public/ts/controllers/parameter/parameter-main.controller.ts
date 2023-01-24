@@ -1,9 +1,9 @@
 import {ng, template} from "entcore";
-import {IScope} from "angular";
-
-declare let window: any;
+import {IScope, IWindowService} from "angular";
 
 interface IViewModel extends ng.IController {
+    redirectToHref(path: string): void;
+    redirectTo (path: string):void;
 }
 
 interface IMainScope extends IScope {
@@ -11,19 +11,28 @@ interface IMainScope extends IScope {
 }
 
 class Controller implements IViewModel {
-
     constructor(private $scope: IMainScope,
                 private route: any,
+                private $window: any,
+                private $location: any
                 /*  inject service etc..just as we do in controller */) {
         this.$scope.vm = this;
     }
+    redirectToHref = (path: string) => {
+        this.$window.location.href = this.$window.location.origin  + path
+    };
+    redirectTo = (path: string) => {
+        this.$location.path(path);
+    };
 
     $onInit() {
         template.open("main", "parameter/parameter-main");
         this.route({
             main: () => {
-                template.open('parameter', 'parameter/parameter');
-                console.log("main");
+                template.open('parameter', 'parameter/active-structure/active-structure');
+            },
+            parameter: () => {
+                template.open('parameter', 'parameter/parameter/parameter');
             },
         })
     }
@@ -33,4 +42,4 @@ class Controller implements IViewModel {
     }
 }
 
-export const parameterMainController = ng.controller('ParameterMainController', ['$scope', 'route', Controller]);
+export const parameterMainController = ng.controller('ParameterMainController', ['$scope', 'route','$window','$location', Controller]);
