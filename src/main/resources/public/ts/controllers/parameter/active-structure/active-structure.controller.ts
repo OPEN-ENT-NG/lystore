@@ -127,28 +127,3 @@ class Controller implements ng.IController, IViewModel {
 
 export const activeStructureController = ng.controller("ActiveStructureController",  ["$scope", "ParameterService", Controller]);
 
-// export const activeStructureController = ng.controller("ActiveStructureController", [
-//     "$scope", "ParameterService", async ($scope, parameterService: ParameterService) => {
-//         parameterService.getStructuresLystore().then(structures => {
-//             $scope.structureLystoreLists = structures;
-//             $scope.structureLystoreLists.map((structure) => structure.number_deployed = structure.deployed ? 1 : 0);
-//             $scope.loadingArray = false;
-//             Utils.safeApply($scope)
-//         });
-//
-//
-//
-//         /* button handler */
-//
-//         Utils.safeApply($scope)
-//
-//
-//         $scope.$watch(() => $scope.structureLystoreLists, getDeployedCounter);
-//
-//
-//
-//         $scope.showRespAffecLystoreGroup = function ({structureId, id}) {
-//             window.open(`/admin/${structureId}/groups/manual/${id}/details`);
-//         };
-//
-//     }]);

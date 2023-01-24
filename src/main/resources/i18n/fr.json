@@ -641,5 +641,8 @@
   "lystore.order.waiting.notification.etab": "Notification établissement",
   "lystore.order.notification.mail.err": "Erreur lors de la notifcation",
   "lystore.order.notification.mail.info": "La notification a bien été envoyé",
-  "lystore.order.waiting.notification.region": "Notification Helpdesk"
+  "lystore.order.waiting.notification.region": "Notification Helpdesk",
+  "lystore.goTo.parameter.label" : "Paramètres généraux",
+  "lystore.goTo.active.structure" : "Activation des établissements",
+  "lystore.goTo.parameters" : "Paramètrage de lystore"
 }
