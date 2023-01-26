@@ -1,29 +1,193 @@
-<div class="parameter"  ng-controller="ActiveStructureController as vm">
+<div class="parameter">
 
-<div>
-    <div>
-        <i18>parameter.title.valid.command</i18>
-    </div>
-    Lorem ipsum Neque porro quisquam est qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit...
-</div>
-    <div>
-    <div>
-        <i18>parameter.title.BC</i18>
-    </div>
-    <div>
-        <div>
-            bouton img
+    <div class="parameter-valid-command ">
+        <div class="parameter-valid-command-title parameter-subtitle">
+            <i class="tune"></i>
+            <i18n>lystore.parameter.title.valid.command</i18n>
         </div>
-        <div>
-            form Addresse
+        <div class="parameter-valid-command-label">
+            <i18n>lystore.parameter.title.valid.label</i18n>
         </div>
-        <div>
-            aperçu
+        <div class="parameter-valid-command-label-switch">
+            <switch-toggle ng-model="" ng-change="" class="cell">
+            </switch-toggle>
+            <i18n>lystore.parameter.valid.switch</i18n>
         </div>
     </div>
-        <div>boutons</div>
+    <div class="parameter-bc-setting">
+        <div class="parameter-subtitle">
+            <i class="clipboard"></i>
+            <i18n>lystore.parameter.title.BC</i18n>
+        </div>
+        <div class="row">
+            <div class="three cell parameter-bc-setting-img-render">
+                <div class="parameter-bc-setting-title">
+                    <i18n>lystore.parameter.logo</i18n>
+                </div>
+                <div class="parameter-bc-setting-img-render-img center">
+                    <image-select ng-model=""
+                                  visibility="'public'"
+                                  default="/img/illustrations/image-default.svg"></image-select>
+                </div>
+
+            </div>
+            <div class="parameter-bc-setting-form four cell">
+                <div class="parameter-bc-setting-title">
+                    <i18n>lystore.parameter.bc.address.title</i18n>
+                </div>
+                <div class="parameter-bc-setting-form-input-line">
+                    <label>
+                        <i18n>lystore.parameter.bc.name.line1</i18n>
+                    </label>
+                    <input ng-model="vm.bcParams.name.line1" class="right" type="text"/>
+                </div>
+                <div class="parameter-bc-setting-form-input-line">
+                    <label>
+                        <i18n>lystore.parameter.bc.name.line2</i18n>
+                    </label>
+                    <input ng-model="vm.bcParams.name.line2" type="text"/>
+                </div>
+                <div class="parameter-bc-setting-form-input-line">
+                    <label>
+                        <i18n>lystore.parameter.bc.name.line3</i18n>
+                    </label>
+                    <input ng-model="vm.bcParams.name.line3" type="text"/>
+                </div>
+                <div class="parameter-bc-setting-form-input-line">
+                    <label>
+                        <i18n>lystore.parameter.bc.name.line4</i18n>
+                    </label>
+                    <input ng-model="vm.bcParams.name.line4" type="text"/>
+                </div>
+                <div class="parameter-bc-setting-form-input-line">
+                    <label>
+                        <i18n>lystore.parameter.bc.address.line1</i18n>
+                    </label>
+                    <input ng-model="vm.bcParams.address.line1" type="text"/>
+                </div>
+                <div class="parameter-bc-setting-form-input-line">
+                    <label>
+                        <i18n>lystore.parameter.bc.address.line2</i18n>
+                    </label>
+                    <input ng-model="vm.bcParams.address.line2" type="text"/>
+                </div>
+                <div class="parameter-bc-setting-title">
+                    <i18n>lystore.parameter.bc.signature.title</i18n>
+                </div>
+                <div class="parameter-bc-setting-form-input-line">
+                    <label>
+                        <i18n>lystore.parameter.bc.name.line1</i18n>
+                    </label>
+                    <input ng-model="vm.bcParams.signature.line1" type="text"/>
+                </div>
+                <div class="parameter-bc-setting-form-input-line">
+                    <label>
+                        <i18n>lystore.parameter.bc.name.line2</i18n>
+                    </label>
+                    <input ng-model="vm.bcParams.signature.line2" type="text"/>
+                </div>
+            </div>
+            <div class="parameter-bc-setting-preview four cell">
+                <div class="parameter-bc-setting-title">
+                    <i18n>lystore.parameter.bc.preview.address</i18n>
+                </div>
+                <div class="parameter-bc-preview-address">
+                    <div class="parameter-bc-preview-address-text">
+                        <div class="parameter-bc-preview-elem" ng-bind="vm.bcParams.name.line1"></div>
+                        <div class="parameter-bc-preview-elem" ng-bind="vm.bcParams.name.line2"></div>
+                        <div class="parameter-bc-preview-elem" ng-bind="vm.bcParams.name.line3"></div>
+                        <div class="parameter-bc-preview-elem" ng-bind="vm.bcParams.name.line4"></div>
+                        <div class="parameter-bc-preview-elem" ng-bind="vm.bcParams.address.line1"></div>
+                        <div class="parameter-bc-preview-elem" ng-bind="vm.bcParams.address.line2"></div>
+                    </div>
+                </div>
+                <div class="parameter-bc-setting-title">
+                    <i18n>lystore.parameter.bc.preview.signature</i18n>
+                </div>
+                <div class="parameter-bc-preview-signature">
+                    <div class="parameter-bc-preview-signature-text">
+                        <div class="parameter-bc-preview-elem" ng-bind="vm.bcParams.signature.line1"></div>
+                        <div class="parameter-bc-preview-elem" ng-bind="vm.bcParams.signature.line2"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="parameter-bc-setting-buttons row">
+                <input type="submit" class="button" i18n-value="lystore.save"/>
+                <input type="button" class="cancel" i18n-value="cancel"/>
+            </div>
+        </div>
     </div>
+    <div class="parameter-export-options row">
+        <div class="parameter-subtitle">
+            <i class="download"></i>
+            <i18n>lystore.parameter.title.export</i18n>
+        </div>
+        <div class="parameter-export-options-instruction six cell">
+            <div class="parameter-bc-setting-title">
+                <i18n>lystore.parameter.bc.address.title</i18n>
+            </div>
+            <div class="parameter-export-options-instruction-switches">
+                <div class="">
+                    <switch-toggle ng-model="" ng-change="" class="cell">
+                    </switch-toggle>
+                    <i18n>lystore.export.airIris</i18n>
+                </div>
+                <div class="">
+                    <switch-toggle ng-model="" ng-change="" class="cell">
+                    </switch-toggle>
+                    <i18n>lystore.exportRME</i18n>
+                </div>
+                <div class="">
+                    <switch-toggle ng-model="" ng-change="" class="cell">
+                    </switch-toggle>
+                    <i18n>lystore.exportEquipmentRapp</i18n>
+                </div>
+                <div class="">
+                    <switch-toggle ng-model="" ng-change="" class="cell">
+                    </switch-toggle>
+                    <i18n>lystore.export.subvention</i18n>
+                </div>
+                <div class="">
+                    <switch-toggle ng-model="" ng-change="" class="cell">
+                    </switch-toggle>
+                    <i18n>lystore.exportNotificationCP</i18n>
+                </div>
+                <div class="">
+                    <switch-toggle ng-model="" ng-change="" class="cell">
+                    </switch-toggle>
+                    <i18n>lystore.export.publipostage</i18n>
+                </div>
+            </div>
+        </div>
+        <div class="parameter-export-options-bc six cell">
+            <div class="parameter-bc-setting-title">
+                <i18n>lystore.parameter.bc.address.title</i18n>
+            </div>
+            <div class="parameter-export-options-bc-switches">
+                <div class="">
+                    <switch-toggle ng-model="" ng-change="" class="cell">
+                    </switch-toggle>
+                    <i18n>lystore.orders.valid.structure.list.export</i18n>
+                </div>
+                <div class="">
+                    <switch-toggle ng-model="" ng-change="" class="cell">
+                    </switch-toggle>
+                    <i18n>lystore.orders.valid.order.export</i18n>
+                </div>
+                <div class="">
+                    <switch-toggle ng-model="" ng-change="" class="cell">
+                    </switch-toggle>
+                    <i18n>lystore.order.valided.generateBC.struct</i18n>
+                </div>
+                <div class="">
+                    <switch-toggle ng-model="" ng-change="" class="cell">
+                    </switch-toggle>
+                    <i18n>lystore.orders.valid.certificates.export</i18n>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
 </div>
-<div>
-    <i18n>parameter.title.export</i18n>
-</div>
+
