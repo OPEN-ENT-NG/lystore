@@ -1,5 +1,5 @@
 import {ng, toasts} from "entcore";
-import {ParameterService, StructureLystore} from "../../../services"
+import {ActiveStructureService, StructureLystore} from "../../../services"
 import {Utils} from "../../../model";
 import {IScope} from "angular";
 
@@ -53,7 +53,7 @@ class Controller implements ng.IController, IViewModel {
     private GROUP_Lystore_NAME : string;
 
     constructor(private $scope: IActiveStructureScope,
-                private parameterService: ParameterService) {
+                private activeStructureService: ActiveStructureService) {
         this.$scope.vm = this;
         this.GROUP_Lystore_NAME = "Lystore";
         this.loadingArray = true;
@@ -71,7 +71,7 @@ class Controller implements ng.IController, IViewModel {
     }
 
     $onInit() {
-        this.parameterService.getStructuresLystore().then(structures => {
+        this.activeStructureService.getStructuresLystore().then(structures => {
             this.structureLystoreLists = structures;
             this.loadingArray = false;
             Utils.safeApply(this.$scope)
@@ -100,16 +100,16 @@ class Controller implements ng.IController, IViewModel {
         this.createButton = true;
         Utils.safeApply(this.$scope)
         if (!deployed) {
-            response = await this.parameterService.createGroupLystoreToStructure(this.GROUP_Lystore_NAME, structureId);
+            response = await this.activeStructureService.createGroupLystoreToStructure(this.GROUP_Lystore_NAME, structureId);
             toasts.info("lystore.deploy.structure.valid")
         } else {
-            response = await this.parameterService.undeployStructure(structureId);
+            response = await this.activeStructureService.undeployStructure(structureId);
             toasts.info("lystore.undeploy.structure.valid")
         }
         if (response.status === 200) {
             this.loadingArray = true;
             Utils.safeApply(this.$scope);
-            this.structureLystoreLists = await this.parameterService.getStructuresLystore();
+            this.structureLystoreLists = await this.activeStructureService.getStructuresLystore();
             this.loadingArray = false;
             Utils.safeApply(this.$scope);
         } else {
@@ -125,5 +125,5 @@ class Controller implements ng.IController, IViewModel {
     }
 }
 
-export const activeStructureController = ng.controller("ActiveStructureController",  ["$scope", "ParameterService", Controller]);
+export const activeStructureController = ng.controller("ActiveStructureController",  ["$scope", "ActiveStructureService", Controller]);
 
