@@ -9,7 +9,7 @@ export interface StructureLystore {
     id: string;
 }
 
-export interface ParameterService {
+export interface ActiveStructureService {
     getStructuresLystore():Promise<Array<StructureLystore>>;
     createGroupLystoreToStructure(name: string, structureId: string): Promise<any>;
     undeployStructure(id: string);
@@ -17,7 +17,7 @@ export interface ParameterService {
 
 
 
-export const parameterService: ParameterService =  {
+export const activeStructureService: ActiveStructureService =  {
 
     getStructuresLystore: async (): Promise<Array<StructureLystore>> => {
         try {
@@ -39,4 +39,4 @@ export const parameterService: ParameterService =  {
 
     undeployStructure: async (id: string) => await http.delete(`/lystore/structures/${id}`)
 }
-export const ParameterService = ng.service('ParameterService', (): ParameterService => parameterService);
+export const ActiveStructureService = ng.service('ActiveStructureService', (): ActiveStructureService => activeStructureService);

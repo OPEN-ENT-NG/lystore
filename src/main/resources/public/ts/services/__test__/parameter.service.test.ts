@@ -1,5 +1,5 @@
 import axios from 'axios';
-import {parameterService} from "../parameter";
+import {activeStructureService} from "../parameter/active-structure";
 import MockAdapter from 'axios-mock-adapter';
 
 describe('parameter service test', () => {
@@ -8,7 +8,7 @@ describe('parameter service test', () => {
 
     it('calling getStructuresLystore data when retrieve request is correctly called', done => {
         mock.onGet(`structures/lystore`).reply(200, data);
-        parameterService.getStructuresLystore().then(response => {
+        activeStructureService.getStructuresLystore().then(response => {
             expect(response).toEqual(data);
             done();
         });
@@ -16,7 +16,7 @@ describe('parameter service test', () => {
 
     it('calling undeployStructure should return query correctly', done => {
         mock.onDelete(`/lystore/structures/5`).reply(200, data);
-        parameterService.undeployStructure("5").then(response => {
+        activeStructureService.undeployStructure("5").then(response => {
             expect(response.data).toEqual(data);
             done();
         });
