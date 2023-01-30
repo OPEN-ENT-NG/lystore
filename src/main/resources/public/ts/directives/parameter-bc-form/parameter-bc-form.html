@@ -1,0 +1,97 @@
+<div class="row">
+    <div class="three cell parameter-bc-setting-img-render">
+        <div class="parameter-bc-setting-title">
+            <i18n>lystore.parameter.logo</i18n>
+        </div>
+        <div class="parameter-bc-setting-img-render-img center">
+            <image-select ng-model="vm.bcOptions.img"
+                          visibility="'public'"
+                          default="/img/illustrations/image-default.svg"></image-select>
+        </div>
+
+    </div>
+    <div class="parameter-bc-setting-form four cell">
+        <div class="parameter-bc-setting-title">
+            <i18n>lystore.parameter.bc.address.title</i18n>
+        </div>
+        <div class="parameter-bc-setting-form-input-line">
+            <label>
+                <i18n>lystore.parameter.bc.name.line1</i18n>
+            </label>
+            <input ng-model="vm.bcOptions.name.line1" class="right" type="text"/>
+        </div>
+        <div class="parameter-bc-setting-form-input-line">
+            <label>
+                <i18n>lystore.parameter.bc.name.line2</i18n>
+            </label>
+            <input ng-model="vm.bcOptions.name.line2" type="text"/>
+        </div>
+        <div class="parameter-bc-setting-form-input-line">
+            <label>
+                <i18n>lystore.parameter.bc.name.line3</i18n>
+            </label>
+            <input ng-model="vm.bcOptions.name.line3" type="text"/>
+        </div>
+        <div class="parameter-bc-setting-form-input-line">
+            <label>
+                <i18n>lystore.parameter.bc.name.line4</i18n>
+            </label>
+            <input ng-model="vm.bcOptions.name.line4" type="text"/>
+        </div>
+        <div class="parameter-bc-setting-form-input-line">
+            <label>
+                <i18n>lystore.parameter.bc.address.line1</i18n>
+            </label>
+            <input ng-model="vm.bcOptions.address.line1" type="text"/>
+        </div>
+        <div class="parameter-bc-setting-form-input-line">
+            <label>
+                <i18n>lystore.parameter.bc.address.line2</i18n>
+            </label>
+            <input ng-model="vm.bcOptions.address.line2" type="text"/>
+        </div>
+        <div class="parameter-bc-setting-title">
+            <i18n>lystore.parameter.bc.signature.title</i18n>
+        </div>
+        <div class="parameter-bc-setting-form-input-line">
+            <label>
+                <i18n>lystore.parameter.bc.name.line1</i18n>
+            </label>
+            <input ng-model="vm.bcOptions.signature.line1" type="text"/>
+        </div>
+        <div class="parameter-bc-setting-form-input-line">
+            <label>
+                <i18n>lystore.parameter.bc.name.line2</i18n>
+            </label>
+            <input ng-model="vm.bcOptions.signature.line2" type="text"/>
+        </div>
+    </div>
+    <div class="parameter-bc-setting-preview four cell">
+        <div class="parameter-bc-setting-title">
+            <i18n>lystore.parameter.bc.preview.address</i18n>
+        </div>
+        <div class="parameter-bc-preview-address">
+            <div class="parameter-bc-preview-address-text">
+                <div class="parameter-bc-preview-elem" ng-bind="vm.bcOptions.name.line1"></div>
+                <div class="parameter-bc-preview-elem" ng-bind="vm.bcOptions.name.line2"></div>
+                <div class="parameter-bc-preview-elem" ng-bind="vm.bcOptions.name.line3"></div>
+                <div class="parameter-bc-preview-elem" ng-bind="vm.bcOptions.name.line4"></div>
+                <div class="parameter-bc-preview-elem" ng-bind="vm.bcOptions.address.line1"></div>
+                <div class="parameter-bc-preview-elem" ng-bind="vm.bcOptions.address.line2"></div>
+            </div>
+        </div>
+        <div class="parameter-bc-setting-title">
+            <i18n>lystore.parameter.bc.preview.signature</i18n>
+        </div>
+        <div class="parameter-bc-preview-signature">
+            <div class="parameter-bc-preview-signature-text">
+                <div class="parameter-bc-preview-elem" ng-bind="vm.bcOptions.signature.line1"></div>
+                <div class="parameter-bc-preview-elem" ng-bind="vm.bcOptions.signature.line2"></div>
+            </div>
+        </div>
+    </div>
+    <div class="parameter-bc-setting-buttons row">
+        <input type="submit" class="button" i18n-value="lystore.save" ng-click="vm.saveForm()"/>
+        <input type="button" class="cancel" i18n-value="cancel" ng-click="vm.cancelForm()"/>
+    </div>
+</div>

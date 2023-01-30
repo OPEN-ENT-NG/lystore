@@ -9,3 +9,6 @@ export * from './postNgRepeat';
 export * from './searchAndSelect';
 export * from './tabs';
 export * from './contenteditable';
+export * from './parameter-export-choices/parameter-export-choices.directive';
+export * from './parameter-bc-form/parameter-bc-form.directive';
+export * from './parameter-valid-command/parameter-valid-command.directive'

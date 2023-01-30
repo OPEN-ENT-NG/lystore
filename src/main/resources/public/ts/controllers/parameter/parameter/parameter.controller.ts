@@ -1,13 +1,21 @@
-import {ng, template} from "entcore";
-import {IScope, IWindowService} from "angular";
+import {ng, toasts} from "entcore";
+import {IScope} from "angular";
 import {ParameterSettingService} from "../../../services";
-import {LystoreOptions} from "../../../services";
 import {Utils} from "../../../model";
+import {BcOptions} from "../../../model/parameter/bc-options.model";
+import {LystoreOptions} from "../../../model/parameter/lystore-options.model";
 
 interface IViewModel extends ng.IController {
-    lystoreOptions: LystoreOptions
-    saveForm():void;
-    cancelForm():void
+    lystoreOptions: LystoreOptions;
+    oldBcForm: BcOptions;
+
+    saveForm(): void;
+
+    cancelForm(): void;
+
+    updateExportChoices(): void;
+
+    saveValidCommand(): void;
 }
 
 interface IMainScope extends IScope {
@@ -24,10 +32,11 @@ class Controller implements IViewModel {
 
 
     $onInit() {
-            this.parameterSettingService.getOptions().then(options => {
-                this.lystoreOptions = options;
-                Utils.safeApply(this.$scope)
-            })
+        this.parameterSettingService.getOptions().then(options => {
+            this.lystoreOptions = options;
+            this.oldBcForm = options.bcOptions.copy(options.bcOptions);
+            Utils.safeApply(this.$scope)
+        })
 
     }
 
@@ -36,15 +45,30 @@ class Controller implements IViewModel {
     }
 
     lystoreOptions: LystoreOptions;
+    oldBcForm: BcOptions;
 
     cancelForm(): void {
-        console.log("cancel")
+        this.lystoreOptions.bcOptions = this.oldBcForm;
     }
 
     saveForm(): void {
-        console.log(" save")
+        this.parameterSettingService.saveBcForm(this.lystoreOptions.bcOptions).then(
+            () => toasts.confirm("lystore.parameter.save")
+        );
+    }
+
+    updateExportChoices(): void {
+        this.parameterSettingService.saveExportChoices(this.lystoreOptions.exportChoices).then(
+            () => toasts.confirm("lystore.parameter.save")
+        );
+    }
+
+    saveValidCommand(): void {
+        this.parameterSettingService.saveHasOperationsAndInstructions(this.lystoreOptions.hasOperationsAndInstructions).then(
+            () => toasts.confirm("lystore.parameter.save")
+        );
     }
 
 }
 
-export const parameterController = ng.controller('ParameterController', ['$scope', 'ParameterSettingService',Controller]);
+export const parameterController = ng.controller('ParameterController', ['$scope', 'ParameterSettingService', Controller]);

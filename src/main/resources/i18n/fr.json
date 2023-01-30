@@ -661,5 +661,7 @@
   "lystore.parameter.bc.signature.title" : "Signature du bon de commande" ,
   "lystore.parameter.bc.preview.address" : "Aperçu de l'adresse",
   "lystore.parameter.bc.preview.signature": "Aperçu de la signature",
-  "lystore.parameter.bc.name" : "Bons de commandes"
+  "lystore.parameter.bc.name" : "Bons de commandes",
+  "lystore.parameter.save": "Changements sauvegardés",
+  "lystore.access": "Accès Lystore"
 }
