@@ -1,0 +1,66 @@
+<div>
+    <div class="parameter-export-options-instruction six cell">
+        <div class="parameter-bc-setting-title">
+            <i18n>lystore.instructions</i18n>
+        </div>
+        <div class="parameter-export-options-instruction-switches">
+            <div class="">
+                <switch-toggle ng-model="vm.exportChoices.iris" ng-change="vm.onChange()" class="cell">
+                </switch-toggle>
+                <i18n>lystore.export.airIris</i18n>
+            </div>
+            <div class="">
+                <switch-toggle ng-model="vm.exportChoices.rme" ng-change="vm.onChange()" class="cell">
+                </switch-toggle>
+                <i18n>lystore.exportRME</i18n>
+            </div>
+            <div class="">
+                <switch-toggle ng-model="vm.exportChoices.equipmentRapport" ng-change="vm.onChange()" class="cell">
+                </switch-toggle>
+                <i18n>lystore.exportEquipmentRapp</i18n>
+            </div>
+            <div class="">
+                <switch-toggle ng-model="vm.exportChoices.subvention" ng-change="vm.onChange()" class="cell">
+                </switch-toggle>
+                <i18n>lystore.export.subvention</i18n>
+            </div>
+            <div class="">
+                <switch-toggle ng-model="vm.exportChoices.equipmentNotification" ng-change="vm.onChange()" class="cell">
+                </switch-toggle>
+                <i18n>lystore.exportNotificationCP</i18n>
+            </div>
+            <div class="">
+                <switch-toggle ng-model="vm.exportChoices.publipostage" ng-change="vm.onChange()" class="cell">
+                </switch-toggle>
+                <i18n>lystore.export.publipostage</i18n>
+            </div>
+        </div>
+    </div>
+    <div class="parameter-export-options-bc six cell">
+        <div class="parameter-bc-setting-title">
+            <i18n>lystore.parameter.bc.name</i18n>
+        </div>
+        <div class="parameter-export-options-bc-switches">
+            <div class="">
+                <switch-toggle ng-model="vm.exportChoices.listLycee" ng-change="vm.onChange()" class="cell">
+                </switch-toggle>
+                <i18n>lystore.orders.valid.structure.list.export</i18n>
+            </div>
+            <div class="">
+                <switch-toggle ng-model="vm.exportChoices.BC" ng-change="vm.onChange()" class="cell">
+                </switch-toggle>
+                <i18n>lystore.orders.valid.order.export</i18n>
+            </div>
+            <div class="">
+                <switch-toggle ng-model="vm.exportChoices.BCStructure" ng-change="vm.onChange()" class="cell">
+                </switch-toggle>
+                <i18n>lystore.order.valided.generateBC.struct</i18n>
+            </div>
+            <div class="">
+                <switch-toggle ng-model="vm.exportChoices.CSF" ng-change="vm.onChange()" class="cell">
+                </switch-toggle>
+                <i18n>lystore.orders.valid.certificates.export</i18n>
+            </div>
+        </div>
+    </div>
+</div>

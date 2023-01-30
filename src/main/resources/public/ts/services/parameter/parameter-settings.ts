@@ -1,103 +1,55 @@
 import {ng} from 'entcore'
-import http, {AxiosResponse} from 'axios';
+import {BcOptions} from "../../model/parameter/bc-options.model";
+import {ExportChoices} from "../../model/parameter/export-choices.model";
+import {LystoreOptions} from "../../model/parameter/lystore-options.model";
 
-export interface BCAdress {
-    line1: string;
-    line2: string;
-}
-
-export interface BCName {
-    line1: string;
-    line2: string;
-    line3: string;
-    line4: string;
-}
-
-export interface BCSignature {
-    line1: string;
-    line2: string;
-}
-
-export interface BCOptions {
-    img: any;
-    name: BCName;
-    address: BCAdress;
-    signature: BCSignature;
-}
-
-export interface ExportChoices {
-    iris: boolean;
-    rme: boolean;
-    equipmentRapport: boolean;
-    equipmentNotification: boolean;
-    subvention: boolean;
-    publipostage: boolean;
-    listLycee: boolean;
-    BC: boolean;
-    BCStructure: boolean;
-    CSF: boolean;
-}
-
-export interface LystoreOptions {
-    hasOperationsAndInstructions: boolean;
-    bcOptions: BCOptions;
-    exportChoices: ExportChoices
-}
 
 export interface ParameterSettingService {
     getOptions(): Promise<LystoreOptions>;
 
-    getBCoptions(): Promise<BCOptions>;
+    getBCoptions(): Promise<BcOptions>;
 
     getExportChoices(): Promise<ExportChoices>;
 
     getHasOperationsAndInstructions(): Promise<boolean>;
+
+    saveExportChoices(exportChoices: ExportChoices): Promise<void>;
+
+    saveBcForm(bcOptions: BcOptions): Promise<void>
+
+    saveHasOperationsAndInstructions(hasOperationsAndInstructions: boolean): Promise<void>;
 }
 
 
 export const parameterSettingService: ParameterSettingService = {
-    getBCoptions(): Promise<BCOptions> {
-        let address:BCAdress = {line1: "", line2: ""}
-        let name:BCName = {line3: "", line4: "", line1: "", line2: ""}
-        let signature:BCSignature = {line1: "", line2: ""}
-        let bcOptions: BCOptions = {
-            address: address,
-            img: undefined,
-            name: name,
-            signature: signature}
+    getBCoptions(): Promise<BcOptions> {
+        let bcOptions: BcOptions = new BcOptions();
         return Promise.resolve(bcOptions);
     },
     getExportChoices(): Promise<ExportChoices> {
-        let exportChoices: ExportChoices = {
-            BC: false,
-            BCStructure: false,
-            CSF: false,
-            equipmentNotification: false,
-            equipmentRapport: false,
-            iris: false,
-            listLycee: false,
-            publipostage: false,
-            rme: false,
-            subvention: false
-        };
-        return Promise.resolve(exportChoices);
+        return Promise.resolve(new ExportChoices());
     },
     getHasOperationsAndInstructions(): Promise<boolean> {
         return Promise.resolve(true);
     },
-    getOptions (): Promise<LystoreOptions> {
-        let lystoreOptions: LystoreOptions = {
-            bcOptions: undefined,
-            exportChoices: undefined,
-            hasOperationsAndInstructions: false
-        };
-        return  Promise.all([this.getBCoptions(), this.getExportChoices(), this.getHasOperationsAndInstructions()])
-            .then((results: [BCOptions, ExportChoices, boolean]) => {
+    getOptions(): Promise<LystoreOptions> {
+        let lystoreOptions = new LystoreOptions();
+        return Promise.all([this.getBCoptions(), this.getExportChoices(), this.getHasOperationsAndInstructions()])
+            .then((results: [BcOptions, ExportChoices, boolean]) => {
                 lystoreOptions.bcOptions = results[0];
                 lystoreOptions.exportChoices = results [1];
                 lystoreOptions.hasOperationsAndInstructions = results [2];
                 return lystoreOptions;
             });
+    },
+    saveExportChoices(exportChoices: ExportChoices): Promise<void> {
+        return Promise.resolve();
+    },
+    saveBcForm(bcOptions: BcOptions): Promise<void> {
+        return Promise.resolve();
+    },
+    saveHasOperationsAndInstructions(hasOperationsAndInstructions: boolean): Promise<void> {
+        return Promise.resolve();
     }
 
 }
