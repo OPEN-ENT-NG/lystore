@@ -15,7 +15,7 @@ interface IViewModel {
 
     counter: {
         value: number
-    }
+    };
     loadingArray: boolean;
     filter: {
         property: string,
