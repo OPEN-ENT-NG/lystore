@@ -1,5 +1,5 @@
 import {ng, toasts} from "entcore";
-import {ActiveStructureService, StructureLystore} from "../../../services"
+import {ActiveStructureService, StructureLystore} from "../../../services";
 import {Utils} from "../../../model";
 import {IScope} from "angular";
 
@@ -40,7 +40,7 @@ class Controller implements ng.IController, IViewModel {
 
     counter: {
         value: number
-    }
+    };
     loadingArray: boolean;
     filter: {
         property: string,
@@ -74,7 +74,7 @@ class Controller implements ng.IController, IViewModel {
         this.activeStructureService.getStructuresLystore().then(structures => {
             this.structureLystoreLists = structures;
             this.loadingArray = false;
-            Utils.safeApply(this.$scope)
+            Utils.safeApply(this.$scope);
         });
 
         this.$scope.$watch(() => this.structureLystoreLists, this.getDeployedCounter);
@@ -93,18 +93,18 @@ class Controller implements ng.IController, IViewModel {
          if (this && this.counter) {
              this.counter.value = this.structureLystoreLists.filter(({deployed}) => deployed).length;
          }
-    }
+    };
 
     createLystoreGroup = async ({structureId, deployed}) => {
         let response;
         this.createButton = true;
-        Utils.safeApply(this.$scope)
+        Utils.safeApply(this.$scope);
         if (!deployed) {
             response = await this.activeStructureService.createGroupLystoreToStructure(this.GROUP_Lystore_NAME, structureId);
-            toasts.info("lystore.deploy.structure.valid")
+            toasts.info("lystore.deploy.structure.valid");
         } else {
             response = await this.activeStructureService.undeployStructure(structureId);
-            toasts.info("lystore.undeploy.structure.valid")
+            toasts.info("lystore.undeploy.structure.valid");
         }
         if (response.status === 200) {
             this.loadingArray = true;
@@ -113,7 +113,7 @@ class Controller implements ng.IController, IViewModel {
             this.loadingArray = false;
             Utils.safeApply(this.$scope);
         } else {
-            toasts.warning("lystore.parameter.update.error")
+            toasts.warning("lystore.parameter.update.error");
         }
         this.createButton = false;
         Utils.safeApply(this.$scope);
@@ -122,7 +122,7 @@ class Controller implements ng.IController, IViewModel {
 
     showRespAffecLystoreGroup({structureId, id}): void {
         window.open(`/admin/${structureId}/groups/manual/${id}/details`);
-    }
+    };
 }
 
 export const activeStructureController = ng.controller("ActiveStructureController",  ["$scope", "ActiveStructureService", Controller]);

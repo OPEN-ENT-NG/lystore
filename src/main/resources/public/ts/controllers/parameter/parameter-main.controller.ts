@@ -18,10 +18,10 @@ class Controller implements IViewModel {
                 /*  inject service etc..just as we do in controller */) {
         this.$scope.vm = this;
     }
-    redirectToHref = (path: string) => {
-        this.$window.location.href = this.$window.location.origin  + path
+    redirectToHref = (path: string): void => {
+        this.$window.location.href = this.$window.location.origin  + path;
     };
-    redirectTo = (path: string) => {
+    redirectTo = (path: string): void => {
         this.$location.path(path);
     };
 
@@ -34,7 +34,7 @@ class Controller implements IViewModel {
             parameter: () => {
                 template.open('parameter', 'parameter/parameter/parameter');
             },
-        })
+        });
     }
 
     $onDestroy() {

@@ -35,7 +35,7 @@ class Controller implements IViewModel {
         this.parameterSettingService.getOptions().then(options => {
             this.lystoreOptions = options;
             this.oldBcForm = options.bcOptions.copy(options.bcOptions);
-            Utils.safeApply(this.$scope)
+            Utils.safeApply(this.$scope);
         })
 
     }

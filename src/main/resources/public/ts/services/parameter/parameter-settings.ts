@@ -1,4 +1,4 @@
-import {ng} from 'entcore'
+import {ng} from 'entcore';
 import {BcOptions} from "../../model/parameter/bc-options.model";
 import {ExportChoices} from "../../model/parameter/export-choices.model";
 import {LystoreOptions} from "../../model/parameter/lystore-options.model";
@@ -15,7 +15,7 @@ export interface ParameterSettingService {
 
     saveExportChoices(exportChoices: ExportChoices): Promise<void>;
 
-    saveBcForm(bcOptions: BcOptions): Promise<void>
+    saveBcForm(bcOptions: BcOptions): Promise<void>;
 
     saveHasOperationsAndInstructions(hasOperationsAndInstructions: boolean): Promise<void>;
 }

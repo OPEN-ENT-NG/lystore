@@ -13,10 +13,10 @@ export class BCAdress implements IBCAdress {
     }
 
     copy(address: BCAdress): BCAdress {
-        let copyAdress = new BCAdress();
-        copyAdress.line1 = address.line1
-        copyAdress.line2 = address.line2
-        return copyAdress;
+        let copyAddress: BCAdress = new BCAdress();
+        copyAddress.line1 = address.line1;
+        copyAddress.line2 = address.line2;
+        return copyAddress;
     }
 }
 
@@ -43,11 +43,11 @@ export class BCName implements IBCName {
     }
 
     copy(name: BCName): BCName {
-        let copyName = new BCName();
-        copyName.line1 = name.line1
-        copyName.line2 = name.line2
-        copyName.line3 = name.line3
-        copyName.line4 = name.line4
+        let copyName: BCName = new BCName();
+        copyName.line1 = name.line1;
+        copyName.line2 = name.line2;
+        copyName.line3 = name.line3;
+        copyName.line4 = name.line4;
         return copyName;
     }
 }
@@ -68,9 +68,9 @@ export class BCSignature implements IBCSignature {
     }
 
     copy(signature: BCSignature): BCSignature {
-        let copySignature = new BCSignature();
-        copySignature.line1 = signature.line1
-        copySignature.line2 = signature.line2
+        let copySignature: BCSignature = new BCSignature();
+        copySignature.line1 = signature.line1;
+        copySignature.line2 = signature.line2;
         return copySignature;
     }
 }
@@ -99,7 +99,7 @@ export class BcOptions implements IBCOptions {
     signature: BCSignature;
 
     copy(bcOptions: BcOptions): BcOptions {
-        let copyBc = new BcOptions();
+        let copyBc: BcOptions = new BcOptions();
         copyBc.address = copyBc.address.copy(copyBc.address);
         copyBc.name = copyBc.name.copy(copyBc.name);
         copyBc.signature = copyBc.signature.copy(copyBc.signature);

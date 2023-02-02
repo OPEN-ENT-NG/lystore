@@ -1,4 +1,4 @@
-import {ng} from 'entcore'
+import {ng} from 'entcore';
 import http, {AxiosResponse} from 'axios';
 
 export interface StructureLystore {

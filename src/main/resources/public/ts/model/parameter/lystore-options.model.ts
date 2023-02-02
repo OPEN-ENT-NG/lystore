@@ -4,13 +4,13 @@ import {ExportChoices} from "./export-choices.model";
 export interface ILystoreOptions {
     hasOperationsAndInstructions: boolean;
     bcOptions: BcOptions;
-    exportChoices: ExportChoices
+    exportChoices: ExportChoices;
 }
 
 export class LystoreOptions implements ILystoreOptions {
     hasOperationsAndInstructions: boolean;
     bcOptions: BcOptions;
-    exportChoices: ExportChoices
+    exportChoices: ExportChoices;
 
     constructor() {
         this.hasOperationsAndInstructions = false;
