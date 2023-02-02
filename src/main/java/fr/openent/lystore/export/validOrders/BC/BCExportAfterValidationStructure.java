@@ -4,6 +4,7 @@ import fr.openent.lystore.Lystore;
 import fr.openent.lystore.controllers.OrderController;
 import fr.openent.lystore.export.validOrders.PDF_OrderHElper;
 import fr.openent.lystore.helpers.OrderHelper;
+import fr.openent.lystore.utils.LystoreUtils;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -22,6 +23,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
+import static fr.openent.lystore.constants.ParametersConstants.BC_OPTIONS;
 import static fr.openent.lystore.helpers.OrderHelper.getSumWithoutTaxes;
 import static fr.openent.lystore.helpers.OrderHelper.roundWith2Decimals;
 
@@ -34,55 +36,48 @@ public class BCExportAfterValidationStructure extends PDF_OrderHElper {
 
 
     public void create(String nbrBc, Handler<Either<String, Buffer>> exportHandler) {
-        getOrdersDataSql(nbrBc,new Handler<Either<String, JsonArray>>() {
-                    @Override
-                    public void handle(Either<String, JsonArray> event) {
-                        if (event.isRight()) {
-                            JsonArray paramstemp = event.right().getValue();
-                            JsonObject params = paramstemp.getJsonObject(0);
-                            final JsonArray ids = new JsonArray();
-                            JsonArray idsArray =  new JsonArray(params.getString("ids"));
-                            for(int i = 0 ; i < idsArray.size();i++){
-                                ids.add(idsArray.getValue(i).toString());
-                            }
-                            final String nbrEngagement = params.getString("nbr_engagement");
-                            final String dateGeneration = params.getString("date_generation");
-                            Number supplierId = params.getInteger("supplier_id");
-                            getOrdersData(exportHandler, nbrBc, nbrEngagement, dateGeneration, supplierId, ids,true,
-                                    new Handler<JsonObject>() {
-                                        @Override
-                                        public void handle(JsonObject data) {
-                                            data.put("print_order", true);
-                                            data.put("print_certificates", false);
-                                            generatePDF(exportHandler, data,
-                                                    "BC_Struct.xhtml", "Bon_Commande_",
-                                                    new Handler<Buffer>() {
-                                                        @Override
-                                                        public void handle(final Buffer pdf) {
-                                                            exportHandler.handle(new Either.Right<>(pdf));
-                                                        }
-                                                    }
-                                            );
-                                        }
-                                    });
-                        }else{
-                            exportHandler.handle(new Either.Left<>("sql failed"));
+        parameterService.getBcOptions()
+                .onSuccess(bcOptions -> getOrdersDataSql(nbrBc, event -> {
+                    if (event.isRight()) {
+                        JsonArray paramstemp = event.right().getValue();
+                        JsonObject params = paramstemp.getJsonObject(0);
+                        final JsonArray ids = new JsonArray();
+                        JsonArray idsArray = new JsonArray(params.getString("ids"));
+                        for (int i = 0; i < idsArray.size(); i++) {
+                            ids.add(idsArray.getValue(i).toString());
                         }
+                        final String nbrEngagement = params.getString("nbr_engagement");
+                        final String dateGeneration = params.getString("date_generation");
+                        Number supplierId = params.getInteger("supplier_id");
+                        getOrdersData(exportHandler, nbrBc, nbrEngagement, dateGeneration, supplierId, ids, true,
+                                data -> {
+                                    data.put("print_order", true)
+                                    .put("print_certificates", false)
+                                    .put(BC_OPTIONS , bcOptions.toJson());
+                                    generatePDF(exportHandler, data,
+                                            "BC_Struct.xhtml", "Bon_Commande_",
+                                            pdf -> exportHandler.handle(new Either.Right<>(pdf))
+                                    );
+                                });
+                    } else {
+                        exportHandler.handle(new Either.Left<>("sql failed"));
                     }
-                }
+                }))
+                .onFailure(fail -> exportHandler.handle(new Either.Left<>(
+                        LystoreUtils.generateErrorMessage(BCExportDuringValidation.class, "create", "Error when calling getBcOptions", fail))));
 
-        );
 
     }
+
     @Override
-    protected void retrieveOrderData(final Handler<Either<String, Buffer>> exportHandler, JsonArray validationNumbers,boolean groupByStructure,
+    protected void retrieveOrderData(final Handler<Either<String, Buffer>> exportHandler, JsonArray validationNumbers, boolean groupByStructure,
                                      final Handler<JsonObject> handler) {
-        orderService.getOrderByValidatioNumber(validationNumbers,  new Handler<Either<String, JsonArray>>() {
+        orderService.getOrderByValidatioNumber(validationNumbers, new Handler<Either<String, JsonArray>>() {
             @Override
             public void handle(Either<String, JsonArray> event) {
                 if (event.isRight()) {
                     JsonObject order = new JsonObject();
-                    ArrayList <String> listStruct = new ArrayList<>();
+                    ArrayList<String> listStruct = new ArrayList<>();
                     JsonArray orders = OrderHelper.formatOrders(event.right().getValue());
                     orders = sortByUai(orders);
 
@@ -100,7 +95,7 @@ public class BCExportAfterValidationStructure extends PDF_OrderHElper {
     }
 
 
-    private void getOrdersDataSql(String nbrbc, Handler<Either<String,JsonArray>> handler) {
+    private void getOrdersDataSql(String nbrbc, Handler<Either<String, JsonArray>> handler) {
         getOrdersDataQueryByStructure(nbrbc, handler);
     }
 
@@ -119,8 +114,7 @@ public class BCExportAfterValidationStructure extends PDF_OrderHElper {
                 "WHERE  ord.order_number = ? " +
                 "GROUP  BY ord.engagement_number, " +
                 "          ord.date_creation, " +
-                "          supplier_id "
-                ;
+                "          supplier_id ";
 
         Sql.getInstance().prepared(query, new JsonArray().add(nbrbc), new DeliveryOptions().setSendTimeout(Lystore.timeout * 1000000000L), SqlResult.validResultHandler(event -> {
             if (event.isLeft()) {

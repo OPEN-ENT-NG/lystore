@@ -16,6 +16,8 @@ import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 
+import static fr.openent.lystore.constants.ParametersConstants.BC_OPTIONS;
+
 public class BCExportAfterValidation  extends PDF_OrderHElper {
     private Logger log = LoggerFactory.getLogger(BCExport.class);
 
@@ -25,45 +27,38 @@ public class BCExportAfterValidation  extends PDF_OrderHElper {
 
 
     public void create(String nbrBc, Handler<Either<String, Buffer>> exportHandler) {
-        getOrdersDataSql(nbrBc,new Handler<Either<String, JsonArray>>() {
-                    @Override
-                    public void handle(Either<String, JsonArray> event) {
-                        if (event.isRight()) {
-                            JsonArray paramstemp = event.right().getValue();
-                            log.info(paramstemp);
-                            JsonObject params = paramstemp.getJsonObject(0);
-                            final JsonArray ids = new JsonArray();
-                            JsonArray idsArray =  new JsonArray(params.getString("ids"));
-                            for(int i = 0 ; i < idsArray.size();i++){
-                                ids.add(idsArray.getValue(i).toString());
+        parameterService.getBcOptions()
+                .onSuccess(bcOptions -> {
+                    getOrdersDataSql(nbrBc, event -> {
+                                if (event.isRight()) {
+                                    JsonArray paramstemp = event.right().getValue();
+                                    log.info(paramstemp);
+                                    JsonObject params = paramstemp.getJsonObject(0);
+                                    final JsonArray ids = new JsonArray();
+                                    JsonArray idsArray =  new JsonArray(params.getString("ids"));
+                                    for(int i = 0 ; i < idsArray.size();i++){
+                                        ids.add(idsArray.getValue(i).toString());
+                                    }
+                                    final String nbrEngagement = params.getString("nbr_engagement");
+                                    final String dateGeneration = params.getString("date_generation");
+                                    Number supplierId = params.getInteger("supplier_id");
+                                    getOrdersData(exportHandler, nbrBc, nbrEngagement, dateGeneration, supplierId, ids,false,
+                                            data -> {
+                                                data.put("print_order", true)
+                                                .put("print_certificates", false)
+                                                .put(BC_OPTIONS, bcOptions.toJson());
+                                                generatePDF(exportHandler, data,
+                                                        "BC.xhtml", "Bon_Commande_",
+                                                        pdf -> exportHandler.handle(new Either.Right<>(pdf))
+                                                );
+                                            });
+                                }else{
+                                    exportHandler.handle(new Either.Left<>("sql failed"));
+                                }
                             }
-                            final String nbrEngagement = params.getString("nbr_engagement");
-                            final String dateGeneration = params.getString("date_generation");
-                            Number supplierId = params.getInteger("supplier_id");
-                            getOrdersData(exportHandler, nbrBc, nbrEngagement, dateGeneration, supplierId, ids,false,
-                                    new Handler<JsonObject>() {
-                                        @Override
-                                        public void handle(JsonObject data) {
-                                            data.put("print_order", true);
-                                            data.put("print_certificates", false);
-                                            generatePDF(exportHandler, data,
-                                                    "BC.xhtml", "Bon_Commande_",
-                                                    new Handler<Buffer>() {
-                                                        @Override
-                                                        public void handle(final Buffer pdf) {
-                                                            exportHandler.handle(new Either.Right<>(pdf));
-                                                        }
-                                                    }
-                                            );
-                                        }
-                                    });
-                        }else{
-                            exportHandler.handle(new Either.Left<>("sql failed"));
-                        }
-                    }
-                }
 
-        );
+                    );
+                });
 
     }
 

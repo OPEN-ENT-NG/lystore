@@ -9,6 +9,9 @@ import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
 import fr.openent.lystore.service.ProgramService;
 import fr.openent.lystore.service.impl.DefaultProgramService;
+import fr.openent.lystore.service.parameter.ParameterService;
+import fr.openent.lystore.service.parameter.impl.DefaultParameterService;
+import fr.openent.lystore.utils.LystoreUtils;
 import fr.wseduc.webutils.Either;
 
 import io.vertx.core.Handler;
@@ -23,42 +26,38 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.user.UserUtils;
 
+import static fr.openent.lystore.constants.ParametersConstants.BC_OPTIONS;
+
 
 public class BCExportDuringValidation extends PDF_OrderHElper {
+
     private Logger log = LoggerFactory.getLogger(BCExport.class);
-    public BCExportDuringValidation(EventBus eb, Vertx vertx, JsonObject config){
-        super(eb,vertx,config);
+
+    public BCExportDuringValidation(EventBus eb, Vertx vertx, JsonObject config) {
+        super(eb, vertx, config);
     }
 
 
-
-
-
-    public void create(JsonObject params, Handler<Either<String, Buffer>> exportHandler){
+    public void create(JsonObject params, Handler<Either<String, Buffer>> exportHandler) {
         final JsonArray ids = params.getJsonArray("ids");
         final String nbrBc = params.getString("nbrBc");
         final String nbrEngagement = params.getString("nbrEngagement");
         final String dateGeneration = params.getString("dateGeneration");
         Number supplierId = params.getInteger("supplierId");
-        final Number programId = params.getInteger("programId");
-        getOrdersData(exportHandler,nbrBc, nbrEngagement, dateGeneration, supplierId, ids,false,
-                new Handler<JsonObject>() {
-                    @Override
-                    public void handle(JsonObject data) {
-                        data.put("print_order", true);
-                        data.put("print_certificates", false);
+        parameterService.getBcOptions()
+                .onSuccess(bcOptions -> getOrdersData(exportHandler, nbrBc, nbrEngagement, dateGeneration, supplierId, ids, false,
+                        data -> {
+                            data.put("print_order", true)
+                                    .put("print_certificates", false)
+                                    .put(BC_OPTIONS, bcOptions);
+                            generatePDF(exportHandler, data,
+                                    "BC.xhtml", "Bon_Commande_",
+                                    pdf -> exportHandler.handle(new Either.Right<>(pdf))
+                            );
+                        }))
+                .onFailure(fail -> exportHandler.handle(new Either.Left<>(
+                        LystoreUtils.generateErrorMessage(BCExportDuringValidation.class, "create", "Error when calling getBcOptions", fail))));
 
-                        generatePDF( exportHandler,data,
-                                "BC.xhtml", "Bon_Commande_",
-                                new Handler<Buffer>() {
-                                    @Override
-                                    public void handle(final Buffer pdf) {
-                                        exportHandler.handle(new Either.Right<>(pdf));
-                                    }
-                                }
-                        );
-                    }
-                });
     }
 }
 

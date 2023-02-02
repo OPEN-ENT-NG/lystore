@@ -7,6 +7,8 @@ import fr.openent.lystore.helpers.OrderHelper;
 import fr.openent.lystore.helpers.RendersHelper;
 import fr.openent.lystore.service.*;
 import fr.openent.lystore.service.impl.*;
+import fr.openent.lystore.service.parameter.ParameterService;
+import fr.openent.lystore.service.parameter.impl.DefaultParameterService;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.email.EmailSender;
@@ -34,7 +36,7 @@ import static fr.openent.lystore.helpers.OrderHelper.getSumWithoutTaxes;
 import static fr.openent.lystore.helpers.OrderHelper.roundWith2Decimals;
 
 public class PDF_OrderHElper {
-
+    protected ParameterService parameterService;
     protected SupplierService supplierService;
     protected JsonObject config;
     protected Vertx vertx;
@@ -43,7 +45,6 @@ public class PDF_OrderHElper {
     protected Logger log = LoggerFactory.getLogger(BCExport.class);
     protected OrderService orderService;
     protected ProgramService programService;
-
     protected DefaultContractService contractService;
     protected StructureService structureService;
     protected AgentService agentService;
@@ -63,6 +64,7 @@ public class PDF_OrderHElper {
         this.agentService = new DefaultAgentService(Lystore.lystoreSchema, "agent");
         this.renders = new RendersHelper(this.vertx, config);
         programService = new DefaultProgramService(Lystore.lystoreSchema,"program");
+        this.parameterService = new DefaultParameterService(Lystore.lystoreSchema, "parameter_bc_options");
 
 
     }

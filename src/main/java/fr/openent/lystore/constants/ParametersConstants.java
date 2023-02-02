@@ -9,6 +9,7 @@ public class ParametersConstants {
     public static final String ADDRESS = "address";
     public static final String SIGNATURE = "signature";
     public static final String IMG = "img";
+    public static final String BC_OPTIONS = "bc_options";
     public static final String ISSUPERADMIN = "isSuperAdmin";
 
 }
