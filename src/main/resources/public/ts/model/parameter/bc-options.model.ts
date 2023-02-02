@@ -7,9 +7,14 @@ export class BCAdress implements IBCAdress {
     line1: string;
     line2: string;
 
-    constructor() {
-        this.line1 = "";
-        this.line2 = "";
+    constructor(data?:IBCAdress) {
+        if(data){
+            this.build(data)
+        } else{
+            this.line1 = "";
+            this.line2 = "";
+        }
+
     }
 
     copy(address: BCAdress): BCAdress {
@@ -17,6 +22,11 @@ export class BCAdress implements IBCAdress {
         copyAddress.line1 = address.line1;
         copyAddress.line2 = address.line2;
         return copyAddress;
+    }
+
+    private build(data: IBCAdress) {
+        this.line1 = data.line1;
+        this.line2 = data.line2;
     }
 }
 
@@ -35,11 +45,15 @@ export class BCName implements IBCName {
     line3: string;
     line4: string;
 
-    constructor() {
-        this.line1 = "";
-        this.line2 = "";
-        this.line3 = "";
-        this.line4 = "";
+    constructor(data?:IBCName) {
+        if(data){
+            this.build(data)
+        } else {
+            this.line1 = "";
+            this.line2 = "";
+            this.line3 = "";
+            this.line4 = "";
+        }
     }
 
     copy(name: BCName): BCName {
@@ -49,6 +63,13 @@ export class BCName implements IBCName {
         copyName.line3 = name.line3;
         copyName.line4 = name.line4;
         return copyName;
+    }
+
+    private build(data: IBCName) {
+        this.line1 = data.line1
+        this.line2 = data.line2
+        this.line3 = data.line3
+        this.line4 = data.line4
     }
 }
 
@@ -62,9 +83,13 @@ export class BCSignature implements IBCSignature {
     line1: string;
     line2: string;
 
-    constructor() {
-        this.line1 = "";
-        this.line2 = "";
+    constructor(data?:IBCSignature) {
+        if(data){
+            this.build(data)
+        } else{
+            this.line1 = "";
+            this.line2 = "";
+        }
     }
 
     copy(signature: BCSignature): BCSignature {
@@ -73,10 +98,15 @@ export class BCSignature implements IBCSignature {
         copySignature.line2 = signature.line2;
         return copySignature;
     }
+
+    private build(data: IBCSignature) {
+        this.line1 = data.line1
+        this.line2 = data.line2
+    }
 }
 
 export interface IBCOptions {
-    img: any;
+    img: string;
     name: BCName;
     address: BCAdress;
     signature: BCSignature;
@@ -89,20 +119,27 @@ export class BcOptions implements IBCOptions {
         this.address = new BCAdress();
         this.name = new BCName();
         this.signature = new BCSignature();
-        this.img = undefined;
+        this.img = "";
     }
 
-
+    build(data: IBCOptions): BcOptions {
+        this.address = new BCAdress(<IBCAdress>data.address )
+        this.name = new BCName(<IBCName>data.name)
+        this.signature = new BCSignature(<IBCSignature>data.signature)
+        this.img = data.img;
+        return this;
+    }
     address: BCAdress;
-    img: any;
+    img: string;
     name: BCName;
     signature: BCSignature;
 
     copy(bcOptions: BcOptions): BcOptions {
         let copyBc: BcOptions = new BcOptions();
-        copyBc.address = copyBc.address.copy(copyBc.address);
-        copyBc.name = copyBc.name.copy(copyBc.name);
-        copyBc.signature = copyBc.signature.copy(copyBc.signature);
+        copyBc.address = copyBc.address.copy(bcOptions.address);
+        copyBc.name = copyBc.name.copy(bcOptions.name);
+        copyBc.signature = copyBc.signature.copy(bcOptions.signature);
+        copyBc.img = bcOptions.img
         return copyBc;
     }
 }

@@ -1,5 +1,6 @@
 import {ng} from 'entcore';
-import {BcOptions} from "../../model/parameter/bc-options.model";
+import http, {AxiosPromise} from 'axios';
+import {BcOptions, IBCOptions} from "../../model/parameter/bc-options.model";
 import {ExportChoices} from "../../model/parameter/export-choices.model";
 import {LystoreOptions} from "../../model/parameter/lystore-options.model";
 
@@ -15,7 +16,7 @@ export interface ParameterSettingService {
 
     saveExportChoices(exportChoices: ExportChoices): Promise<void>;
 
-    saveBcForm(bcOptions: BcOptions): Promise<void>;
+    saveBcForm(bcOptions: BcOptions):   Promise<AxiosPromise>;
 
     saveHasOperationsAndInstructions(hasOperationsAndInstructions: boolean): Promise<void>;
 }
@@ -23,14 +24,17 @@ export interface ParameterSettingService {
 
 export const parameterSettingService: ParameterSettingService = {
     getBCoptions(): Promise<BcOptions> {
-        let bcOptions: BcOptions = new BcOptions();
-        return Promise.resolve(bcOptions);
+       return http.get(`/lystore/parameter/bc/options`).then(
+             (res) =>            {
+                 let BCOptionsResponse: IBCOptions = res.data;
+                 return new BcOptions().build(BCOptionsResponse);
+             })
     },
     getExportChoices(): Promise<ExportChoices> {
         return Promise.resolve(new ExportChoices());
     },
     getHasOperationsAndInstructions(): Promise<boolean> {
-        return Promise.resolve(true);
+        return Promise.resolve(false);
     },
     getOptions(): Promise<LystoreOptions> {
         let lystoreOptions = new LystoreOptions();
@@ -45,12 +49,11 @@ export const parameterSettingService: ParameterSettingService = {
     saveExportChoices(exportChoices: ExportChoices): Promise<void> {
         return Promise.resolve();
     },
-    saveBcForm(bcOptions: BcOptions): Promise<void> {
-        return Promise.resolve();
-    },
+    saveBcForm : async (bcOptions: BcOptions):  Promise<AxiosPromise> =>
+         http.put(`/lystore/parameter/bc/options`,bcOptions)
+    ,
     saveHasOperationsAndInstructions(hasOperationsAndInstructions: boolean): Promise<void> {
         return Promise.resolve();
-    }
-
+    },
 }
 export const ParameterSettingService = ng.service('ParameterSettingService', (): ParameterSettingService => parameterSettingService);

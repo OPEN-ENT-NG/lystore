@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "img": {
+      "type": "string"
+    },
+    "signature": {
+      "type": "object"
+    },
+    "address": {
+      "type": "object"
+    },
+    "name": {
+      "type": "object"
+    }
+  },
+  "required": [
+    "name",
+    "address",
+    "signature",
+    "img"
+  ]
+}

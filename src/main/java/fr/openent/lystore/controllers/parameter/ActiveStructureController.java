@@ -1,7 +1,7 @@
-package fr.openent.lystore.controllers;
+package fr.openent.lystore.controllers.parameter;
 
-import fr.openent.lystore.service.ParameterService;
-import fr.openent.lystore.service.impl.DefaultParameterService;
+import fr.openent.lystore.service.parameter.ActiveStructureService;
+import fr.openent.lystore.service.parameter.impl.DefaultActiveStructureService;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
@@ -16,12 +16,12 @@ import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.http.response.DefaultResponseHandler;
 
-public class SettingController  extends ControllerHelper {
+public class ActiveStructureController extends ControllerHelper {
 
-    ParameterService parameterService;
-    public SettingController(EventBus eb) {
+    ActiveStructureService activeStructureService;
+    public ActiveStructureController(EventBus eb) {
         super();
-        this.parameterService = new DefaultParameterService(eb);
+        this.activeStructureService = new DefaultActiveStructureService(eb);
     }
 
     @Get("/parameter")
@@ -37,7 +37,7 @@ public class SettingController  extends ControllerHelper {
     @ResourceFilter(SuperAdminFilter.class)
     @ApiDoc("get gar structure")
     public void getStructureGar(final HttpServerRequest request) {
-        parameterService.getStructuresLystore(DefaultResponseHandler.arrayResponseHandler(request));
+        activeStructureService.getStructuresLystore(DefaultResponseHandler.arrayResponseHandler(request));
     }
     @Post("/structure/lystore/group")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
@@ -45,7 +45,7 @@ public class SettingController  extends ControllerHelper {
     @ApiDoc("Create group to gar structure")
     public void createGarGroupToStructure(final HttpServerRequest request) {
         RequestUtils.bodyToJson(request, parameter -> {
-            parameterService.createLystoreGroupToStructure(parameter, DefaultResponseHandler.defaultResponseHandler(request));
+            activeStructureService.createLystoreGroupToStructure(parameter, DefaultResponseHandler.defaultResponseHandler(request));
         });
 
     }
@@ -56,7 +56,7 @@ public class SettingController  extends ControllerHelper {
     @ApiDoc("Undeploy given structure")
     public void undeployStructure(HttpServerRequest request) {
         String structureId = request.getParam("id");
-        parameterService.undeployStructureLystore(structureId, DefaultResponseHandler.defaultResponseHandler(request));
+        activeStructureService.undeployStructureLystore(structureId, DefaultResponseHandler.defaultResponseHandler(request));
     }
 
 }
