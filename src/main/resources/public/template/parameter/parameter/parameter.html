@@ -1,0 +1,37 @@
+<div class="parameter" ng-controller="ParameterController as vm">
+
+    <div class="parameter-valid-command ">
+        <div class="parameter-valid-command-title parameter-subtitle">
+            <i class="tune"></i>
+            <i18n>lystore.parameter.title.valid.command</i18n>
+        </div>
+        <lystore-parameter-valid-command
+                on-change="vm.saveValidCommand()"
+                has-operations-and-instructions="vm.lystoreOptions.hasOperationsAndInstructions"
+        ></lystore-parameter-valid-command>
+    </div>
+    <div class="parameter-bc-setting">
+        <div class="parameter-subtitle">
+            <i class="clipboard"></i>
+            <i18n>lystore.parameter.title.BC</i18n>
+        </div>
+        <lystore-bc-form
+                bc-options="vm.lystoreOptions.bcOptions"
+                save-form="vm.saveForm()"
+                cancel-form="vm.cancelForm()"
+        ></lystore-bc-form>
+    </div>
+    <div class="parameter-export-options row">
+        <div class="parameter-subtitle">
+            <i class="lystore-download"></i>
+            <i18n>lystore.parameter.title.export</i18n>
+        </div>
+        <lystore-parameter-export-choices
+                export-choices="vm.lystoreOptions.exportChoices"
+                on-change="vm.updateExportChoices()"
+        ></lystore-parameter-export-choices>
+
+    </div>
+
+</div>
+
