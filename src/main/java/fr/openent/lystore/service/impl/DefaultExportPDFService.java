@@ -1,5 +1,6 @@
 package fr.openent.lystore.service.impl;
 
+import fr.openent.lystore.constants.ExportConstants;
 import fr.openent.lystore.service.ExportPDFService;
 import fr.wseduc.webutils.http.Renders;
 import io.vertx.core.AsyncResult;
@@ -79,9 +80,9 @@ public class DefaultExportPDFService  implements ExportPDFService {
                     e.printStackTrace();
                     LOGGER.error("[DefaultExportPDFService@generatePDF] An error occurred while encoding logo to base 64");
                 }
-                templateProps.put("logo-data", encodedLogo);
+                templateProps.put(ExportConstants.LOGO_DATA, encodedLogo);
 
-                StringReader reader = new StringReader(result.result().toString("UTF-8"));
+                StringReader reader = new StringReader(result.result().toString(ExportConstants.UTF_8));
                 renders.processTemplate(request, templateProps, templateName, reader, new Handler<Writer>() {
 
                     @Override

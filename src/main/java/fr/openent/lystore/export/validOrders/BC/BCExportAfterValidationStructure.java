@@ -1,7 +1,6 @@
 package fr.openent.lystore.export.validOrders.BC;
 
 import fr.openent.lystore.Lystore;
-import fr.openent.lystore.controllers.OrderController;
 import fr.openent.lystore.export.validOrders.PDF_OrderHElper;
 import fr.openent.lystore.helpers.OrderHelper;
 import fr.openent.lystore.utils.LystoreUtils;
@@ -17,21 +16,17 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
+import org.entcore.common.storage.Storage;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 
 import static fr.openent.lystore.constants.ParametersConstants.BC_OPTIONS;
-import static fr.openent.lystore.helpers.OrderHelper.getSumWithoutTaxes;
-import static fr.openent.lystore.helpers.OrderHelper.roundWith2Decimals;
 
 public class BCExportAfterValidationStructure extends PDF_OrderHElper {
     private Logger log = LoggerFactory.getLogger(BCExport.class);
 
-    public BCExportAfterValidationStructure(EventBus eb, Vertx vertx, JsonObject config) {
-        super(eb, vertx, config);
+    public BCExportAfterValidationStructure(EventBus eb, Vertx vertx, JsonObject config, Storage storage) {
+        super(eb, vertx, config, storage);
     }
 
 
@@ -39,6 +34,7 @@ public class BCExportAfterValidationStructure extends PDF_OrderHElper {
         parameterService.getBcOptions()
                 .onSuccess(bcOptions -> getOrdersDataSql(nbrBc, event -> {
                     if (event.isRight()) {
+                        log.info(bcOptions.toJson());
                         JsonArray paramstemp = event.right().getValue();
                         JsonObject params = paramstemp.getJsonObject(0);
                         final JsonArray ids = new JsonArray();
@@ -55,7 +51,7 @@ public class BCExportAfterValidationStructure extends PDF_OrderHElper {
                                     .put("print_certificates", false)
                                     .put(BC_OPTIONS , bcOptions.toJson());
                                     generatePDF(exportHandler, data,
-                                            "BC_Struct.xhtml", "Bon_Commande_",
+                                            "BC_Struct.xhtml",
                                             pdf -> exportHandler.handle(new Either.Right<>(pdf))
                                     );
                                 });

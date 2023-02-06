@@ -1,28 +1,25 @@
 package fr.openent.lystore.export.validOrders.BC;
 
-import fr.openent.lystore.Lystore;
 import fr.openent.lystore.export.validOrders.PDF_OrderHElper;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.common.sql.Sql;
-import org.entcore.common.sql.SqlResult;
+import org.entcore.common.storage.Storage;
 
 import static fr.openent.lystore.constants.ParametersConstants.BC_OPTIONS;
 
 public class BCExportAfterValidation  extends PDF_OrderHElper {
     private Logger log = LoggerFactory.getLogger(BCExport.class);
 
-    public BCExportAfterValidation(EventBus eb, Vertx vertx, JsonObject config) {
-        super(eb, vertx, config);
+    public BCExportAfterValidation(EventBus eb, Vertx vertx, JsonObject config, Storage storage) {
+        super(eb, vertx, config, storage);
+
     }
 
 
@@ -48,7 +45,7 @@ public class BCExportAfterValidation  extends PDF_OrderHElper {
                                                 .put("print_certificates", false)
                                                 .put(BC_OPTIONS, bcOptions.toJson());
                                                 generatePDF(exportHandler, data,
-                                                        "BC.xhtml", "Bon_Commande_",
+                                                        "BC.xhtml",
                                                         pdf -> exportHandler.handle(new Either.Right<>(pdf))
                                                 );
                                             });

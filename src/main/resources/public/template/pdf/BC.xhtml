@@ -166,15 +166,21 @@
 <div class="header">
     <div>
         <div class="left center-text">
+            {{#bc_options}}
             <img  class="logo-region" src="data:image/png;base64, {{logo-data}}" alt="ile de france" />
-            <h4>REGION ILE DE FRANCE</h4>
-            <h5>PÔLE LYCÉES</h5>
+            {{#name}}
+            <h4>{{line1}}</h4>
+            <h5>{{line2}}</h5>
             <p>
-                <span>Direction de la Performance budgétaire et contractuelle</span><br />
-                Service contrats et conventions<br />
-                2, rue Simone Veil, 93400 Saint-Ouen<br />
-                SIREN : 237 500 079 00312
+                <span>{{line3}}</span><br />
+                {{line4}}<br />
+                {{/name}}
+                {{#address}}
+                {{line1}}<br />
+                {{line2}}
+                {{/address}}
             </p>
+            {{/bc_options}}
         </div>
         <div class="right">
             <h1>
@@ -285,170 +291,19 @@
     </div>
     <div class="right">
         <div class="block text-area center-text bigger fright">
-            Directrice Générale Adjointe des Services
-            de la Région Île-de-France
-            en charge du Pôle Lycées test
+            {{#bc_options}}
+            {{#signature}}
+            {{line1}}
             <br />
             <strong>
-                Sarah KOWAL
+                {{line2}}
             </strong>
+            {{/signature}}
+            {{/bc_options}}
         </div>
 
     </div>
 </div>
 {{/print_order}}
-{{#print_certificates}}
-{{#certificates}}
-<div class="break">
-    <div class="service-fait" >
-        <div class="header">
-            <div>
-                <div class="left center-text">
-                    <img  class="logo-region" src="data:image/png;base64, {{logo-data}}" alt="ile de france" />
-                    <h4>REGION ILE DE FRANCE</h4>
-                    <h5>PÔLE LYCÉES</h5>
-                    <p>
-                        <span class="uppercase">Mission administration, pilotage et projets transverses</span><br />
-                        Service administratif et juridique<br />
-                        2, rue Simone Veil, 93400 Saint-Ouen
-                    </p>
-                </div>
-                <div class="right">
-                    <h1>
-                        CERTIFICAT DE SERVICE FAIT
-                    </h1>
-                    <p>
-                        {{#supplier}}
-                        <h4>Titulaire du marché :</h4>
-                        {{name}} <br/>
-                        {{address}} <br/>
-                        Tel : {{phone}}  <br/>
-                        {{/supplier}}
-                        <h4>Etablissement :</h4>
-                        {{#structure}}
-                        {{name}} <br />
-                        {{address}} <br />
-                        {{zipCode}} - {{city}} <br />
-                        Tel : {{phone}}
-                        {{/structure}}
-                    </p>
-                </div>
-            </div>
-            <div class="order-info">
-                <div class="agent-info">
-                    {{#agent}}
-                    <strong>{{name}} <br/> </strong>
-                    {{email}} <br/>
-                    Tel : {{phone}}  <br/>
-                    {{/agent}}
-                </div>
-            </div>
-        </div>
-
-        <br/>
-        <strong>Description de l'équipement livré et installé</strong>
-        <table class="equipments-table">
-            <thead>
-            <tr>
-                <td>
-                    Nom
-                </td>
-                <td>
-                    Quantité
-                </td>
-                <td style="width: 50%;">
-                    Observations
-                </td>
-            </tr>
-            </thead>
-            <tbody>
-            {{#orders}}
-            <tr>
-                <td>
-                    {{name}}
-                </td>
-                <td class="right-text">
-                    {{amount}}
-                </td>
-                <td style="width: 50%;">
-                    &nbsp;
-                </td>
-            </tr>
-            {{/orders}}
-            </tbody>
-        </table>
-
-        <br/>
-        <div class="center-text"><strong>A remplir par le chef d’établissement ou son représentant</strong></div>
-
-        <div class="block">
-            <strong>DATE DE LIVRAISON DU MATERIEL / SERVICE FAIT : <input type="text"  value = "..../..../........" /> <br/> </strong>
-            <p>
-                La date de mise en service sera prise comme référence au calcul de pénalités en cas de non respect du
-                délai de livraison et de mise en service (voir CCAP).  Tout dépassement de délai non imputable au prestataire devra être dûment justifié par un écrit.
-            </p>
-        </div>
-
-        <div class="block">
-            Le chef d’etablissement certifie que les matériels ont été réceptionnés à la date indiquée ci-dessus en parfait état d'usage. <br/>
-
-            A RENVOYER UNE FOIS LES OBSERVATIONS LEVEES EN ORIGINAL  <br/>
-            <br/>
-            A  <input type="text"  value = "..............." />,  le  <input type="text"   />  <br/>
-            Nom:  <input type="text"  value = "..............." />  <br/>
-            Qualité  <input type="text"  value = "..............." /> <br/>
-            SIGNATURE ET CACHET DU PROVISEUR OU DU GESTIONNAIRE :   <br/>
-            <div class="signature" >
-                &nbsp;
-            </div>
-        </div>
-        <br/>
-        <div class="center-text"><strong>A remplir par les services de la Région  </strong> </div>
-        <div class="block">
-            <table>
-                <tr>
-                    <td>
-                        Référence facture :
-                    </td>
-                    <td colspan="2">
-                        <input type="text"  value = "...................." />
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-
-                    </td>
-                    <td >
-                        <div class="center-text"> Motifs </div>
-                    </td>
-                    <td >
-                        <div class="center-text"> Date </div>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        Rejet facture
-                    </td>
-                    <td >
-                        <input type="text"  value = "...................." />
-                    </td>
-                    <td >
-                        <input type="text"  value = "....../....../........" />
-                    </td>
-                </tr>
-            </table>
-            <br/>
-            Validation du service fait le <input type="text"  value = "....../....../........" /> ,  Par: <input type="text"  value = "..............." />   <br/>
-            A  <input type="text"  value = "..............." /> <br/>
-            SIGNATURE ET CACHET: <br/>
-            <div class="signature" >
-                &nbsp;
-            </div>
-        </div>
-
-    </div>
-</div>
-{{/certificates }}
-{{/print_certificates}}
 </body>
 </html>

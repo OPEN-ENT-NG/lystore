@@ -1,39 +1,20 @@
 package fr.openent.lystore.export.validOrders.BC;
 
-import fr.openent.lystore.Lystore;
-import fr.openent.lystore.controllers.OrderController;
 //import fr.openent.lystore.helpers.RendersHelper;
 import fr.openent.lystore.export.validOrders.PDF_OrderHElper;
-import fr.openent.lystore.helpers.RendersHelper;
-import fr.openent.lystore.service.AgentService;
-import fr.openent.lystore.service.OrderService;
-import fr.openent.lystore.service.StructureService;
-import fr.openent.lystore.service.SupplierService;
-import fr.openent.lystore.service.impl.*;
-import fr.openent.lystore.utils.LystoreUtils;
+        import fr.openent.lystore.utils.LystoreUtils;
 import fr.wseduc.webutils.Either;
-import fr.wseduc.webutils.data.FileResolver;
-import fr.wseduc.webutils.email.EmailSender;
-import fr.wseduc.webutils.http.Renders;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
+        import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.http.impl.Http2ServerRequestImpl;
-import io.vertx.core.json.JsonArray;
+        import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.common.email.EmailFactory;
+        import org.entcore.common.storage.Storage;
 
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import java.util.*;
+        import java.util.*;
 
 import static fr.openent.lystore.constants.ParametersConstants.BC_OPTIONS;
 import static fr.wseduc.webutils.http.Renders.badRequest;
@@ -43,8 +24,8 @@ public class BCExport extends PDF_OrderHElper {
     private Logger log = LoggerFactory.getLogger(BCExport.class);
 
 
-    public BCExport(EventBus eb, Vertx vertx, JsonObject config) {
-        super(eb, vertx, config);
+    public BCExport(EventBus eb, Vertx vertx, JsonObject config, Storage storage) {
+        super(eb, vertx, config, storage);
 
     }
 
@@ -58,13 +39,15 @@ public class BCExport extends PDF_OrderHElper {
                         public void handle(Either<String, JsonObject> event) {
                             if (event.isRight()) {
                                 JsonObject supplier = event.right().getValue();
-                                getOrdersData(exportHandler, "", "", "", supplier.getInteger("id"), new fr.wseduc.webutils.collections.JsonArray(validationNumbers), false,
+                                getOrdersData(exportHandler, "", "", "", supplier.getInteger("id"),
+                                        new JsonArray(validationNumbers), false,
                                         data -> {
+                                            log.info(bcOptions.toJson());
                                             data.put("print_order", true)
                                                     .put("print_certificates", false)
                                                     .put(BC_OPTIONS, bcOptions.toJson());
                                             generatePDF(exportHandler, data,
-                                                    "BC.xhtml", "CSF_",
+                                                    "BC.xhtml",
                                                     pdf -> exportHandler.handle(new Either.Right(pdf))
                                             );
                                         });

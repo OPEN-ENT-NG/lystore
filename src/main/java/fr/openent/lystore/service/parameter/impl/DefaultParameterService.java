@@ -136,7 +136,6 @@ public class DefaultParameterService extends SqlCrudService implements Parameter
         for (String elem : list) {
             result.append(elem).append("\n");
         }
-        result.delete(result.length() - 2, result.length() - 1);
         return result.toString();
     }
 }

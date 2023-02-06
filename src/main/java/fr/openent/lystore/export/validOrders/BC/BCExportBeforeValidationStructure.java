@@ -1,9 +1,7 @@
 package fr.openent.lystore.export.validOrders.BC;
 
 import fr.openent.lystore.Lystore;
-import fr.openent.lystore.controllers.OrderController;
 import fr.openent.lystore.export.validOrders.PDF_OrderHElper;
-import fr.openent.lystore.helpers.OrderHelper;
 import fr.openent.lystore.utils.LystoreUtils;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
@@ -17,10 +15,9 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
+import org.entcore.common.storage.Storage;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import static fr.openent.lystore.constants.ParametersConstants.BC_OPTIONS;
@@ -29,8 +26,8 @@ import static fr.openent.lystore.helpers.OrderHelper.*;
 public class BCExportBeforeValidationStructure extends PDF_OrderHElper {
     private Logger log = LoggerFactory.getLogger(BCExportBeforeValidationStructure.class);
 
-    public BCExportBeforeValidationStructure(EventBus eb, Vertx vertx, JsonObject config) {
-        super(eb, vertx, config);
+    public BCExportBeforeValidationStructure(EventBus eb, Vertx vertx, JsonObject config, Storage storage) {
+        super(eb, vertx, config, storage);
     }
 
 
@@ -49,7 +46,7 @@ public class BCExportBeforeValidationStructure extends PDF_OrderHElper {
                                                 .put("print_order", true)
                                                 .put("print_certificates", false);
                                         generatePDF(exportHandler, data,
-                                                "BC_Struct.xhtml", "CSF_",
+                                                "BC_Struct.xhtml",
                                                 pdf -> exportHandler.handle(new Either.Right(pdf))
                                         );
                                     });

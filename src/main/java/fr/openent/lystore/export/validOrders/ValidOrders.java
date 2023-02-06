@@ -20,6 +20,7 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.entcore.common.storage.Storage;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,25 +37,27 @@ public class ValidOrders extends ExportObject {
     private JsonObject config;
     private Vertx vertx;
     private EventBus eb;
+    private Storage storage;
 
-    public ValidOrders(ExportService exportService, String idNewFile,EventBus eb, Vertx vertx, JsonObject config){
+    public ValidOrders(ExportService exportService, String idNewFile, EventBus eb, Vertx vertx, JsonObject config , Storage storage){
         super(exportService,idNewFile);
         this.vertx = vertx;
         this.config = config;
         this.eb = eb;
         this.supplierService = new DefaultSupplierService(Lystore.lystoreSchema, "supplier");
+        this.storage = storage;
 
     }
-    public ValidOrders(ExportService exportService, String param, String idNewFile,EventBus eb, Vertx vertx, JsonObject config,boolean HasNumberValidation) {
-        this(exportService,idNewFile,eb,vertx,config);
+    public ValidOrders(ExportService exportService, String param, String idNewFile,EventBus eb, Vertx vertx, JsonObject config,boolean HasNumberValidation, Storage storage) {
+        this(exportService,idNewFile,eb,vertx,config,storage);
         if(HasNumberValidation)
             this.numberValidation = param;
         else
             this.bcNumber = param;
 
     }
-    public ValidOrders(ExportService exportService, JsonObject params, String idNewFile,EventBus eb, Vertx vertx, JsonObject config) {
-        this(exportService,idNewFile,eb,vertx,config);
+    public ValidOrders(ExportService exportService, JsonObject params, String idNewFile,EventBus eb, Vertx vertx, JsonObject config, Storage storage) {
+        this(exportService,idNewFile,eb,vertx,config,storage);
         this.params = params;
     }
 
@@ -86,7 +89,7 @@ public class ValidOrders extends ExportObject {
                 ExportHelper.catchError(exportService, idFile, "number validations is not nullable");
                 handler.handle(new Either.Left<>("number validations is not nullable"));
             }else{
-                new BCExport(eb,vertx,config).create(params.getJsonArray("numberValidations"),handler);
+                new BCExport(eb,vertx,config, storage).create(params.getJsonArray("numberValidations"),handler);
             }
         }
 
@@ -99,7 +102,7 @@ public class ValidOrders extends ExportObject {
                 ExportHelper.catchError(exportService, idFile, "number validations is not nullable");
                 handler.handle(new Either.Left<>("number validations is not nullable"));
             }else{
-                new BCExportDuringValidation(eb,vertx,config).create(params,handler);
+                new BCExportDuringValidation(eb,vertx,config, storage).create(params,handler);
             }
 
         }
@@ -110,7 +113,7 @@ public class ValidOrders extends ExportObject {
                 ExportHelper.catchError(exportService, idFile, "number validations is not nullable");
                 handler.handle(new Either.Left<>("number validations is not nullable"));
             }else{
-                new BCExportAfterValidationStructure(eb,vertx,config).create(bcNumber,handler);
+                new BCExportAfterValidationStructure(eb,vertx,config, storage).create(bcNumber,handler);
             }
         }
         public void exportBCBeforeValidationByStructures(Handler<Either<String, Buffer>> handler) {
@@ -118,7 +121,7 @@ public class ValidOrders extends ExportObject {
                 ExportHelper.catchError(exportService, idFile, "number validations is not nullable");
                 handler.handle(new Either.Left<>("number validations is not nullable"));
             }else{
-                new BCExportBeforeValidationStructure(eb,vertx,config).create(params.getJsonArray("numberValidations"),handler);
+                new BCExportBeforeValidationStructure(eb,vertx,config, storage).create(params.getJsonArray("numberValidations"),handler);
             }
         }
         public void exportBCAfterValidation(Handler<Either<String, Buffer>> handler) {
@@ -126,7 +129,7 @@ public class ValidOrders extends ExportObject {
                 ExportHelper.catchError(exportService, idFile, "number validations is not nullable");
                 handler.handle(new Either.Left<>("number validations is not nullable"));
             }else{
-                new BCExportAfterValidation(eb,vertx,config).create(bcNumber,handler);
+                new BCExportAfterValidation(eb,vertx,config,storage).create(bcNumber,handler);
             }
         }
     }

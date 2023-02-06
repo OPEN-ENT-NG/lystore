@@ -210,14 +210,21 @@
         <div class="header">
             <div class="left">
                 <div class=" center-text">
+                    {{#bc_options}}
                     <img  class="logo-region" src="data:image/png;base64, {{logo-data}}" alt="ile de france" />
-                    <h4>REGION ILE DE FRANCE</h4>
-                    <h5>PÔLE LYCÉES</h5>
+                    {{#name}}
+                    <h4>{{line1}}</h4>
+                    <h5>{{line2}}</h5>
                     <p>
-                        <span class="uppercase">Mission administration, pilotage et projets transverses</span><br />
-                        Service administratif et juridique<br />
-                        2, rue Simone Veil, 93400 Saint-Ouen
+                        <span>{{line3}}</span><br />
+                        {{line4}}<br />
+                        {{/name}}
+                        {{#address}}
+                        {{line1}}<br />
+                        {{line2}}
+                        {{/address}}
                     </p>
+                    {{/bc_options}}
                 </div>
                 <div class="order-info">
                     <div class="agent-info">
