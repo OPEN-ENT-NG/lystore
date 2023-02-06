@@ -1,7 +1,7 @@
 package fr.openent.lystore.controllers.parameter;
 
 import fr.openent.lystore.Lystore;
-import fr.openent.lystore.service.parameter.ActiveStructureService;
+import fr.openent.lystore.security.LystoreManagerAdminAccesOrSuperAdminRight;
 import fr.openent.lystore.service.parameter.ParameterService;
 import fr.openent.lystore.service.parameter.impl.DefaultParameterService;
 import fr.wseduc.rs.ApiDoc;
@@ -21,7 +21,7 @@ public class ParameterController extends ControllerHelper {
 
     @Get("/parameter/bc/options")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
-    @ResourceFilter(SuperAdminFilter.class)
+    @ResourceFilter(LystoreManagerAdminAccesOrSuperAdminRight.class)
     @ApiDoc("get bc options")
     public void getBcOptions(final HttpServerRequest request) {
         parameterService.getBcOptions(DefaultResponseHandler.defaultResponseHandler(request));
