@@ -444,7 +444,6 @@ public class PDF_OrderHElper {
         final String templatePath = exportConfig.getString("template-path");
         final String baseUrl = config.getString("host") +
                 config.getString("app-address") + "/public/";
-        final String logo = exportConfig.getString("logo-path");
 
         node = (String) vertx.sharedData().getLocalMap("server").get("node");
         if (node == null) {

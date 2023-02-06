@@ -48,12 +48,10 @@ public class DefaultExportPDFService  implements ExportPDFService {
     public void generatePDF(final HttpServerRequest request, final JsonObject templateProps, final String templateName,
                             final String prefixPdfName,  final Handler<Buffer> handler) {
 
-        final String dateDebut = new SimpleDateFormat("dd.MM.yyyy").format(new Date().getTime());
         final JsonObject exportConfig = config.getJsonObject("exports");
         final String templatePath = exportConfig.getString("template-path");
         final String baseUrl = getScheme(request) + "://" + Renders.getHost(request) +
                 config.getString("app-address") + "/public/";
-        final String logo = exportConfig.getString("logo-path");
 
         node = (String) vertx.sharedData().getLocalMap("server").get("node");
         if (node == null) {
@@ -61,66 +59,44 @@ public class DefaultExportPDFService  implements ExportPDFService {
         }
 
         final String path = FileResolver.absolutePath(templatePath + templateName);
-        final String logoPath = FileResolver.absolutePath(logo);
 
-        vertx.fileSystem().readFile(path, new Handler<AsyncResult<Buffer>>() {
+        vertx.fileSystem().readFile(path, result -> {
+            if (!result.succeeded()) {
+                badRequest(request);
+                return;
+            }
 
-            @Override
-            public void handle(AsyncResult<Buffer> result) {
-                if (!result.succeeded()) {
+            StringReader reader = new StringReader(result.result().toString(ExportConstants.UTF_8));
+            renders.processTemplate(request, templateProps, templateName, reader, writer -> {
+                String processedTemplate = ((StringWriter) writer).getBuffer().toString();
+                if (processedTemplate == null) {
                     badRequest(request);
                     return;
                 }
-
-                Buffer logoBuffer = vertx.fileSystem().readFileBlocking(logoPath);
-                String encodedLogo = "";
+                JsonObject actionObject = new JsonObject();
+                byte[] bytes;
                 try {
-                    encodedLogo = new String(Base64.getMimeEncoder().encode(logoBuffer.getBytes()), "UTF-8");
+                    bytes = processedTemplate.getBytes("UTF-8");
                 } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                    LOGGER.error("[DefaultExportPDFService@generatePDF] An error occurred while encoding logo to base 64");
+                    bytes = processedTemplate.getBytes();
+                    LOGGER.error(e.getMessage(), e);
                 }
-                templateProps.put(ExportConstants.LOGO_DATA, encodedLogo);
 
-                StringReader reader = new StringReader(result.result().toString(ExportConstants.UTF_8));
-                renders.processTemplate(request, templateProps, templateName, reader, new Handler<Writer>() {
-
-                    @Override
-                    public void handle(Writer writer) {
-                        String processedTemplate = ((StringWriter) writer).getBuffer().toString();
-                        if (processedTemplate == null) {
-                            badRequest(request);
-                            return;
-                        }
-                        JsonObject actionObject = new JsonObject();
-                        byte[] bytes;
-                        try {
-                            bytes = processedTemplate.getBytes("UTF-8");
-                        } catch (UnsupportedEncodingException e) {
-                            bytes = processedTemplate.getBytes();
-                            LOGGER.error(e.getMessage(), e);
-                        }
-
-                        actionObject
-                                .put("content", bytes)
-                                .put("baseUrl", baseUrl);
-                        eb.send(node + "entcore.pdf.generator", actionObject, new Handler<AsyncResult<Message<JsonObject>>>() {
-                            @Override
-                            public void handle(AsyncResult<Message<JsonObject>> reply) {
-                                JsonObject pdfResponse = reply.result().body();
-                                if (!"ok".equals(pdfResponse.getString("status"))) {
-                                    badRequest(request, pdfResponse.getString("message"));
-                                    return;
-                                }
-                                byte[] pdf = pdfResponse.getBinary("content");
-                                Buffer either = Buffer.buffer(pdf);
-                                handler.handle(either);
-                            }
-                        });
+                actionObject
+                        .put("content", bytes)
+                        .put("baseUrl", baseUrl);
+                eb.send(node + "entcore.pdf.generator", actionObject, (Handler<AsyncResult<Message<JsonObject>>>) reply -> {
+                    JsonObject pdfResponse = reply.result().body();
+                    if (!"ok".equals(pdfResponse.getString("status"))) {
+                        badRequest(request, pdfResponse.getString("message"));
+                        return;
                     }
+                    byte[] pdf = pdfResponse.getBinary("content");
+                    Buffer either = Buffer.buffer(pdf);
+                    handler.handle(either);
                 });
+            });
 
-            }
         });
 
     }

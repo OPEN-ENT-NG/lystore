@@ -21,10 +21,13 @@
             margin-top: 3%;
         }
         .logo-region{
-            height: auto;
+            height: 150px;
             width: 300px;
             border-bottom: 1px #f6f6f6 solid ;
             margin-bottom: 5px;
+        }
+        .logo-region > img{
+            height: 100%;
         }
         .left {
             position: relative;
@@ -167,8 +170,9 @@
     <div>
         <div class="left center-text">
             {{#bc_options}}
-            <img  class="logo-region" src="data:image/png;base64, {{logo-data}}" alt="ile de france" />
-            {{#name}}
+            <div class="logo-region" >
+                <img  src="data:image/png;base64, {{logo-data}}" alt="Logo" />
+            </div>            {{#name}}
             <h4>{{line1}}</h4>
             <h5>{{line2}}</h5>
             <p>
