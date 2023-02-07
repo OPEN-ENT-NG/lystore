@@ -1,0 +1,120 @@
+<article class="eight twelve-mobile centered">
+    <div class="order-preview">
+        <div class="header">
+            <div>
+                <div class="left center-text">
+                    <img  class="logo-region" ng-src="[[vm.bcOptions.img]]" alt="ile de france" />
+                    <h4>[[vm.bcOptions.name.line1]]</h4>
+                    <h5>[[vm.bcOptions.name.line2]]</h5>
+                    <p>
+                        <span >[[vm.bcOptions.name.line3]]</span><br />
+                        [[vm.bcOptions.name.line4]]<br />
+                        [[vm.bcOptions.address.line1]]<br />
+                        [[vm.bcOptions.address.line2]]
+                    </p>
+                </div>
+                <div class="right">
+                    <h1>
+                        BON DE COMMANDE
+                    </h1>
+                    <strong>
+                        N°: <span ng-bind="vm.orderToSend.bc_number"></span> <br/>
+                    </strong>
+                    <p>
+                        Du: <span ng-bind="formatDate(vm.orderToSend.dateGeneration, 'DD/MM/YYYY')"></span><br/>
+                        <br/>
+                        [[ vm.orderToSend.preview.supplier.name ]] <br/>
+                        [[ vm.orderToSend.preview.supplier.address ]]  <br/>
+                        Tel : [[ vm.orderToSend.preview.supplier.phone ]]  <br/>
+
+                        N° ENGAGEMENT:  <span ng-bind="vm.orderToSend.engagement_number"></span>
+                    </p>
+                </div>
+            </div>
+            <div class="order-info">
+                <div class="contract-info">
+                    <h2>
+                        MARCHE N° : [[ vm.orderToSend.preview.contract.reference ]]
+                    </h2>
+                </div>
+                <div class="agent-info">
+                    <strong>[[ vm.orderToSend.preview.agent.name ]] <br/> </strong>
+                    [[ vm.orderToSend.preview.agent.email ]] <br/>
+                    Tel : [[ vm.orderToSend.preview.agent.phone ]] <br/>
+                </div>
+            </div>
+        </div>
+        <table class="equipments-table">
+            <thead>
+            <tr>
+                <td>
+                    Description
+                </td>
+                <td class="right-text">
+                    Quantité
+                </td>
+                <td class="right-text">
+                    PU HT (€)
+                </td>
+                <td class="right-text">
+                    Total HT (€)
+                </td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="order in vm.orderToSend.preview.order.orders">
+                <td>
+                    [[ order.name ]]
+                </td>
+                <td class="right-text">
+                    [[ order.amount ]]
+                </td>
+                <td class="right-text">
+                    [[ order.priceLocale ]]
+                </td>
+                <td class="right-text">
+                    [[ order.totalPriceLocale ]]
+                </td>
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr>
+                <td colspan="3">Total HT</td>
+                <td class="right-text"> [[ vm.orderToSend.preview.order.sumLocale ]] </td>
+            </tr>
+            <tr>
+                <td colspan="3">TVA </td>
+                <td class="right-text"> [[ vm.orderToSend.preview.order.totalTaxesLocale ]]</td>
+            </tr>
+            <tr>
+                <td colspan="3">TOTAL TTC </td>
+                <td class="right-text">[[ vm.orderToSend.preview.order.totalPriceTaxeIncludedLocal ]]</td>
+            </tr>
+            </tfoot>
+        </table>
+
+        <div class="foot">
+            <div class="left">
+                <p class="bigger">
+                    Lieu de Livraison, personne à contacter  tel : voir liste des lycées ci-jointe <br/>
+                    Date de  livraison: Délai contractuel - <span>....................</span> <br/> <br/>
+                    Reçu par l'entreprise le :  <span>....../....../........</span> <br/>
+                    (Cachet - Signature)
+                </p>
+                <div class="signature">
+                    &nbsp;
+                </div>
+            </div>
+            <div class="right">
+                <div class="block text-area center-text bigger fright">
+                    [[vm.bcOptions.signature.line1]]
+                    <br />
+                    <strong>
+                        [[vm.bcOptions.signature.line2]]
+                    </strong>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</article>

@@ -42,7 +42,7 @@ public class BCExportDuringValidation extends PDF_OrderHElper {
                             log.info(bcOptions.toJson());
                             data.put("print_order", true)
                                     .put("print_certificates", false)
-                                    .put(BC_OPTIONS, bcOptions);
+                                    .put(BC_OPTIONS, bcOptions.toJson());
                             generatePDF(exportHandler, data,
                                     "BC.xhtml",
                                     pdf -> exportHandler.handle(new Either.Right<>(pdf))

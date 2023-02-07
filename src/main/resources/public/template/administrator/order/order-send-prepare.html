@@ -50,11 +50,16 @@
         </div>
     </article>
 
-    <article class="eight twelve-mobile centered">
-        <div class="row">
-            <container template="sendOrder.preview"></container>
-        </div>
-    </article>
+    <lystore-bc-preview
+     bc-options="bcOptions"
+     order-to-send="orderToSend">
+    </lystore-bc-preview>
+
+<!--    <article class="eight twelve-mobile centered">-->
+<!--        <div class="row">-->
+<!--            <container template="sendOrder.preview"></container>-->
+<!--        </div>-->
+<!--    </article>-->
 
     <lightbox show="display.lightbox.sendOrder" on-close="display.lightbox.sendOrder = false">
         <h1>

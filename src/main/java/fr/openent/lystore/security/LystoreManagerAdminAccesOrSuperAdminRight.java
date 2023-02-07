@@ -13,7 +13,8 @@ public class LystoreManagerAdminAccesOrSuperAdminRight extends SuperAdminFilter 
     public void authorize(HttpServerRequest resourceRequest, Binding binding,
                           UserInfos user, Handler<Boolean> handler) {
         super.authorize(resourceRequest, binding, user, event -> handler.handle(
-                WorkflowActionUtils.hasRight(user, WorkflowActions.MANAGER_RIGHT.toString())
+                event
+                        || WorkflowActionUtils.hasRight(user, WorkflowActions.MANAGER_RIGHT.toString())
                         || WorkflowActionUtils.hasRight(user, WorkflowActions.ADMINISTRATOR_RIGHT.toString())));
     }
 }

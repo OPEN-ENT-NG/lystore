@@ -5,6 +5,7 @@ import {
     Utils, RejectOrders
 } from '../../model';
 import {Mix} from 'entcore-toolkit';
+import {parameterSettingService} from "../../services";
 
 
 declare let window: any;
@@ -19,6 +20,10 @@ export const orderController = ng.controller('orderController',
         // Don't forget to modify the number in attribute "bottom-scroll" in html page "order-waiting.html" if you modify this number
         const NBDISPLAYEDORDERS = 25;
 
+        parameterSettingService.getBCoptions().then(bcOptions =>{
+            $scope.bcOptions = bcOptions;
+            Utils.safeApply($scope);
+        })
         $scope.rejectedOrders = new RejectOrders();
         if(isPageOrderSent)
             $scope.displayedOrdersSent = $scope.displayedOrders;
@@ -412,7 +417,7 @@ export const orderController = ng.controller('orderController',
                     toasts.warning('lystore.order.pdf.preview.error');
                 } finally {
                     if ($scope.orderToSend.hasOwnProperty('preview')) {
-                        $scope.redirectTo('/order/preview');
+                        template.open('administrator-main', 'administrator/order/order-send-prepare');
                     }
                     Utils.safeApply($scope);
                 }
@@ -427,10 +432,12 @@ export const orderController = ng.controller('orderController',
         $scope.sendOrders = async (orders: OrdersClient) => {
             let { status, data } = await orders.updateStatus('SENT');
             if (status === 201) {
+                await $scope.initOrders('VALID', $scope.campaignSelection);
+                template.open('administrator-main', 'administrator/order/order-valided');
                 toasts.confirm( 'lystore.sent.order');
                 toasts.info( 'lystore.sent.export.BC');
             }
-            $scope.redirectTo('/order/valid');
+            $scope.display.lightbox.sendOrder = false;
             Utils.safeApply($scope);
         };
 

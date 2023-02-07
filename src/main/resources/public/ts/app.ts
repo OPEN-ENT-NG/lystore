@@ -84,9 +84,7 @@ routes.define(($routeProvider) => {
             .when('/order/valid', {
                 action: 'orderClientValided'
             })
-            .when('/order/preview', {
-                action: 'previewOrder'
-            })
+
             .when('/order/operation/update/:idOrder/:typeOrder', {
                 action: 'updateLinkedOrder'
             })
