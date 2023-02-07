@@ -1,6 +1,8 @@
 package fr.openent.lystore.export.validOrders.BC;
 
 //import fr.openent.lystore.helpers.RendersHelper;
+import fr.openent.lystore.constants.CommonConstants;
+import fr.openent.lystore.constants.ExportConstants;
 import fr.openent.lystore.export.validOrders.PDF_OrderHElper;
         import fr.openent.lystore.utils.LystoreUtils;
 import fr.wseduc.webutils.Either;
@@ -34,26 +36,22 @@ public class BCExport extends PDF_OrderHElper {
         parameterService.getBcOptions()
                 .onSuccess(bcOptions -> {
                     List<String> validationNumbers = validationNumbersArray.getList();
-                    supplierService.getSupplierByValidationNumbers(new fr.wseduc.webutils.collections.JsonArray(validationNumbers), new Handler<Either<String, JsonObject>>() {
-                        @Override
-                        public void handle(Either<String, JsonObject> event) {
-                            if (event.isRight()) {
-                                JsonObject supplier = event.right().getValue();
-                                getOrdersData(exportHandler, "", "", "", supplier.getInteger("id"),
-                                        new JsonArray(validationNumbers), false,
-                                        data -> {
-                                            log.info(bcOptions.toJson());
-                                            data.put("print_order", true)
-                                                    .put("print_certificates", false)
-                                                    .put(BC_OPTIONS, bcOptions.toJson());
-                                            generatePDF(exportHandler, data,
-                                                    "BC.xhtml",
-                                                    pdf -> exportHandler.handle(new Either.Right(pdf))
-                                            );
-                                        });
-                            } else {
-                                log.error("error when getting supplier");
-                            }
+                    supplierService.getSupplierByValidationNumbers(new fr.wseduc.webutils.collections.JsonArray(validationNumbers), event -> {
+                        if (event.isRight()) {
+                            JsonObject supplier = event.right().getValue();
+                            getOrdersData(exportHandler, "", "", "", supplier.getInteger(CommonConstants.ID),
+                                    new JsonArray(validationNumbers), false,
+                                    data -> {
+                                        data.put(ExportConstants.PRINT_ORDER, true)
+                                                .put(ExportConstants.PRINT_CERTIFICATES, false)
+                                                .put(BC_OPTIONS, bcOptions.toJson());
+                                        generatePDF(exportHandler, data,
+                                                ExportConstants.BC_TEMPLATE,
+                                                pdf -> exportHandler.handle(new Either.Right(pdf))
+                                        );
+                                    });
+                        } else {
+                            log.error("error when getting supplier");
                         }
                     });
                 })

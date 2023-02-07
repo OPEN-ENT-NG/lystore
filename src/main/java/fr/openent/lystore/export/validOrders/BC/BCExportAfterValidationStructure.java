@@ -1,6 +1,9 @@
 package fr.openent.lystore.export.validOrders.BC;
 
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.constants.CommonConstants;
+import fr.openent.lystore.constants.ExportConstants;
+import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.export.validOrders.PDF_OrderHElper;
 import fr.openent.lystore.helpers.OrderHelper;
 import fr.openent.lystore.utils.LystoreUtils;
@@ -34,24 +37,23 @@ public class BCExportAfterValidationStructure extends PDF_OrderHElper {
         parameterService.getBcOptions()
                 .onSuccess(bcOptions -> getOrdersDataSql(nbrBc, event -> {
                     if (event.isRight()) {
-                        log.info(bcOptions.toJson());
                         JsonArray paramstemp = event.right().getValue();
                         JsonObject params = paramstemp.getJsonObject(0);
                         final JsonArray ids = new JsonArray();
-                        JsonArray idsArray = new JsonArray(params.getString("ids"));
+                        JsonArray idsArray =  new JsonArray(params.getString(CommonConstants.IDS));
                         for (int i = 0; i < idsArray.size(); i++) {
                             ids.add(idsArray.getValue(i).toString());
                         }
-                        final String nbrEngagement = params.getString("nbr_engagement");
-                        final String dateGeneration = params.getString("date_generation");
-                        Number supplierId = params.getInteger("supplier_id");
+                        final String nbrEngagement = params.getString(LystoreBDD.NBR_ENGAGEMENT);
+                        final String dateGeneration = params.getString(LystoreBDD.DATE_GENERATION);
+                        Number supplierId = params.getInteger(LystoreBDD.SUPPLIER_ID);
                         getOrdersData(exportHandler, nbrBc, nbrEngagement, dateGeneration, supplierId, ids, true,
                                 data -> {
-                                    data.put("print_order", true)
-                                    .put("print_certificates", false)
-                                    .put(BC_OPTIONS , bcOptions.toJson());
+                                    data.put(ExportConstants.PRINT_ORDER, true)
+                                            .put(ExportConstants.PRINT_CERTIFICATES, false)
+                                            .put(BC_OPTIONS , bcOptions.toJson());
                                     generatePDF(exportHandler, data,
-                                            "BC_Struct.xhtml",
+                                            ExportConstants.BC_STRUCTURE_TEMPLATE,
                                             pdf -> exportHandler.handle(new Either.Right<>(pdf))
                                     );
                                 });

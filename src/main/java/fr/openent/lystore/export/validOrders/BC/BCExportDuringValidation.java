@@ -1,6 +1,9 @@
 package fr.openent.lystore.export.validOrders.BC;
 
 
+import fr.openent.lystore.constants.CommonConstants;
+import fr.openent.lystore.constants.ExportConstants;
+import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.export.validOrders.PDF_OrderHElper;
 
 import fr.openent.lystore.utils.LystoreUtils;
@@ -31,20 +34,19 @@ public class BCExportDuringValidation extends PDF_OrderHElper {
 
 
     public void create(JsonObject params, Handler<Either<String, Buffer>> exportHandler) {
-        final JsonArray ids = params.getJsonArray("ids");
-        final String nbrBc = params.getString("nbrBc");
-        final String nbrEngagement = params.getString("nbrEngagement");
-        final String dateGeneration = params.getString("dateGeneration");
-        Number supplierId = params.getInteger("supplierId");
+        final JsonArray ids = params.getJsonArray(CommonConstants.IDS);
+        final String nbrBc = params.getString(LystoreBDD.NBRBC);
+        final String nbrEngagement = params.getString(LystoreBDD.NBRENGAGEMENT);
+        final String dateGeneration = params.getString(LystoreBDD.DATEGENERATION);
+        Number supplierId = params.getInteger(LystoreBDD.SUPPLIERID);
         parameterService.getBcOptions()
                 .onSuccess(bcOptions -> getOrdersData(exportHandler, nbrBc, nbrEngagement, dateGeneration, supplierId, ids, false,
                         data -> {
-                            log.info(bcOptions.toJson());
-                            data.put("print_order", true)
-                                    .put("print_certificates", false)
+                            data.put(ExportConstants.PRINT_ORDER, true)
+                                    .put(ExportConstants.PRINT_CERTIFICATES, false)
                                     .put(BC_OPTIONS, bcOptions.toJson());
                             generatePDF(exportHandler, data,
-                                    "BC.xhtml",
+                                    ExportConstants.BC_TEMPLATE,
                                     pdf -> exportHandler.handle(new Either.Right<>(pdf))
                             );
                         }))

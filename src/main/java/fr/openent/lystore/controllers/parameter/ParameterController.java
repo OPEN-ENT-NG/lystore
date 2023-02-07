@@ -1,6 +1,7 @@
 package fr.openent.lystore.controllers.parameter;
 
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.security.LystoreManagerAdminAccesOrSuperAdminRight;
 import fr.openent.lystore.service.parameter.ParameterService;
 import fr.openent.lystore.service.parameter.impl.DefaultParameterService;
@@ -16,8 +17,10 @@ import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.http.response.DefaultResponseHandler;
 
+import static fr.openent.lystore.constants.ParametersConstants.BCOPTIONS;
+
 public class ParameterController extends ControllerHelper {
-    ParameterService parameterService = new DefaultParameterService(Lystore.lystoreSchema, "parameter_bc_options");
+    ParameterService parameterService = new DefaultParameterService(Lystore.lystoreSchema, LystoreBDD.PARAMETER_BC_OPTIONS);
 
     @Get("/parameter/bc/options")
     @SecuredAction(value = "", type = ActionType.RESOURCE)
@@ -32,7 +35,7 @@ public class ParameterController extends ControllerHelper {
     @ResourceFilter(SuperAdminFilter.class)
     @ApiDoc("update bs options")
     public void putBcOptions(final HttpServerRequest request) {
-        RequestUtils.bodyToJson(request, pathPrefix + "bcOptions",
+        RequestUtils.bodyToJson(request, pathPrefix + BCOPTIONS,
                 parameter -> parameterService.putBcOptions(parameter, DefaultResponseHandler.arrayResponseHandler(request)));
     }
 }

@@ -1,6 +1,7 @@
 package fr.openent.lystore.export.validOrders.BC;
 
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.constants.ExportConstants;
 import fr.openent.lystore.export.validOrders.PDF_OrderHElper;
 import fr.openent.lystore.utils.LystoreUtils;
 import fr.wseduc.webutils.Either;
@@ -34,7 +35,6 @@ public class BCExportBeforeValidationStructure extends PDF_OrderHElper {
     public void create(JsonArray validationNumbersArray, Handler<Either<String, Buffer>> exportHandler) {
         parameterService.getBcOptions()
                 .onSuccess(bcOptions -> {
-                    log.info(bcOptions.toJson());
                     List<String> validationNumbers = validationNumbersArray.getList();
                     supplierService.getSupplierByValidationNumbers(new fr.wseduc.webutils.collections.JsonArray(validationNumbers), event -> {
                         if (event.isRight()) {
@@ -43,10 +43,10 @@ public class BCExportBeforeValidationStructure extends PDF_OrderHElper {
                                     new JsonArray(validationNumbers), false,
                                     data -> {
                                         data.put(BC_OPTIONS, bcOptions.toJson())
-                                                .put("print_order", true)
-                                                .put("print_certificates", false);
+                                                .put(ExportConstants.PRINT_ORDER, true)
+                                                .put(ExportConstants.PRINT_CERTIFICATES, false);
                                         generatePDF(exportHandler, data,
-                                                "BC_Struct.xhtml",
+                                                ExportConstants.BC_STRUCTURE_TEMPLATE,
                                                 pdf -> exportHandler.handle(new Either.Right(pdf))
                                         );
                                     });
