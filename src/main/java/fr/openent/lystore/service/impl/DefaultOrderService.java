@@ -280,7 +280,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
         query += " GROUP BY equipment_key, \"price TTC\",  name, id_contract,id_structure,tax_amount " +
                 "UNION " +
                 "SELECT " +
-                "  opt.price + ( opt.tax_amount * opt.price) as pricettc,tax_amount, " +
+                "  opt.price + ( opt.tax_amount * opt.price /100) as pricettc,tax_amount, " +
                 "  opt.name, " +
                 "  opt.id_contract," +
                 "  id_structure, " +
