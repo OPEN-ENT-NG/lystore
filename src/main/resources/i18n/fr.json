@@ -663,5 +663,22 @@
   "lystore.parameter.bc.preview.signature": "Aperçu de la signature",
   "lystore.parameter.bc.name" : "Bons de commandes",
   "lystore.parameter.save": "Changements sauvegardés",
-  "lystore.access": "Accès Lystore"
+  "lystore.access": "Accès Lystore",
+  "lystore.bc.preview.name.bc" : "BON DE COMMANDE",
+  "lystore.bc.preview.number" : "N°",
+  "lystore.bc.preview.of" : "DU",
+  "lystore.bc.preview.tel" : "Tel",
+  "lystore.bc.preview.number.engagement" : "N° ENGAGEMENT",
+  "lystore.bc.preview.market.number": "MARCHE N° ",
+  "lystore.bc.preview.description": "Description",
+  "lystore.bc.preview.quantity": "Quantité",
+  "lystore.bc.preview.price.unit.ht": "PU HT (€)",
+  "lystore.bc.preview.price.total.ht": "Total HT (€)",
+  "lystore.bc.preview.price.total.ht.label": "Total HT",
+  "lystore.bc.preview.price.tax": "TVA",
+  "lystore.bc.preview.total.ttc": "TOTAL TTC",
+  "lystore.bc.preview.footer.line1": "Lieu de Livraison, personne à contacter  tel : voir liste des lycées ci-jointe ",
+  "lystore.bc.preview.footer.line2": "Date de  livraison: Délai contractuel ",
+  "lystore.bc.preview.footer.line3": "Reçu par l'entreprise le ",
+  "lystore.bc.preview.footer.line4" : " (Cachet - Signature)"
 }

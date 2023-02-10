@@ -2,8 +2,6 @@ package fr.openent.lystore.model.parameter;
 
 import io.vertx.core.json.JsonObject;
 
-import javax.swing.*;
-
 import static fr.openent.lystore.constants.ParametersConstants.LINE1;
 import static fr.openent.lystore.constants.ParametersConstants.LINE2;
 

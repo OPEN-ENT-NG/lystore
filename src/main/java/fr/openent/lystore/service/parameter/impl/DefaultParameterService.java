@@ -1,7 +1,6 @@
 package fr.openent.lystore.service.parameter.impl;
 
-import fr.openent.lystore.Lystore;
-import fr.openent.lystore.model.parameter.*;
+import fr.openent.lystore.model.parameter.BCOptions;
 import fr.openent.lystore.service.parameter.ParameterService;
 import fr.openent.lystore.utils.LystoreUtils;
 import fr.wseduc.webutils.Either;
@@ -41,7 +40,7 @@ public class DefaultParameterService extends SqlCrudService implements Parameter
             if (event.isRight()) {
                 try {
                     JsonObject result = event.right().getValue().getJsonObject(0);
-                    promise.complete(setBcOptionsToSend(result));
+                    promise.complete(new BCOptions(result));
                 } catch (Exception e) {
                     log.error(LystoreUtils.generateErrorMessage(DefaultParameterService.class,
                             "getBcOptions","error when casting sql result", e));
@@ -50,8 +49,6 @@ public class DefaultParameterService extends SqlCrudService implements Parameter
                                     "getBcOptions","error when getting sql result", e));
                 }
             } else {
-                log.error(LystoreUtils.generateErrorMessage(DefaultParameterService.class,
-                        "getBcOptions","error when getting sql result", event.left().getValue()));
                 promise.fail(LystoreUtils.generateErrorMessage(DefaultParameterService.class,
                         "getBcOptions","error when getting sql result", event.left().getValue()));
             }
@@ -59,57 +56,7 @@ public class DefaultParameterService extends SqlCrudService implements Parameter
         return promise.future();
     }
 
-    private BCOptions setBcOptionsToSend(JsonObject result) {
-        BCOptionsAddress adress = new BCOptionsAddress();
-        BCOptionsName name = new BCOptionsName();
-        BCOptionsSignature signature = new BCOptionsSignature();
-        BCOptions bcOptions = new BCOptions();
-        bcOptions.setAddress(adress);
-        bcOptions.setName(name);
-        bcOptions.setSignature(signature);
-        bcOptions.setImg(result.getString(IMG));
-        setBCOptionsName(result, name);
-        setBCOptionsAddress(adress, result);
-        setBCOptionsSignature(signature, result);
-        return bcOptions;
-    }
 
-    private void setBCOptionsSignature(BCOptionsSignature signature, JsonObject result) {
-        setBCOptionsFormData(signature, result, SIGNATURE);
-    }
-
-    private void setBCOptionsAddress(BCOptionsAddress adress, JsonObject result) {
-        setBCOptionsFormData(adress, result, ADDRESS);
-    }
-
-    private String[] setBCOptionsFormData(BCOptionsFormData optionsFormData, JsonObject result, String key) {
-        String[] split = result.getString(key).split("\n");
-        try {
-            optionsFormData.setLine1(split[0]);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            optionsFormData.setLine1("");
-        }
-        try {
-            optionsFormData.setLine2(split[1]);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            optionsFormData.setLine2("");
-        }
-        return split;
-    }
-
-    private void setBCOptionsName(JsonObject result, BCOptionsName name) {
-        String[] split = setBCOptionsFormData(name, result, NAME);
-        try {
-            name.setLine3(split[2]);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            name.setLine3("");
-        }
-        try {
-            name.setLine4(split[3]);
-        } catch (ArrayIndexOutOfBoundsException e) {
-            name.setLine4("");
-        }
-    }
 
     @Override
     public void putBcOptions(JsonObject parameter, Handler<Either<String, JsonArray>> handler) {

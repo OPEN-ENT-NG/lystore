@@ -58,7 +58,9 @@ public class BCExportAfterValidationStructure extends PDF_OrderHElper {
                                     );
                                 });
                     } else {
-                        exportHandler.handle(new Either.Left<>("sql failed"));
+                        exportHandler.handle(new Either.Left<>(
+                                LystoreUtils.generateErrorMessage(BCExportAfterValidationStructure.class,
+                                        "create","sql failed" ,event.left().getValue())));
                     }
                 }))
                 .onFailure(fail -> exportHandler.handle(new Either.Left<>(

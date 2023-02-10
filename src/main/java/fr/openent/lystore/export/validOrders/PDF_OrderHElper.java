@@ -11,6 +11,7 @@ import fr.openent.lystore.service.*;
 import fr.openent.lystore.service.impl.*;
 import fr.openent.lystore.service.parameter.ParameterService;
 import fr.openent.lystore.service.parameter.impl.DefaultParameterService;
+import fr.openent.lystore.utils.LystoreUtils;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.email.EmailSender;
@@ -456,7 +457,8 @@ public class PDF_OrderHElper {
         String imgId = imgIdString[imgIdString.length - 1];
         workspaceHelper.readDocument(imgId, document -> {
             if (document == null){
-                log.error("Cannot load image in getBase64File for id : " + imgId);
+                log.error(LystoreUtils.generateErrorMessage(PDF_OrderHElper.class,"generatePDF" ,
+                        "Cannot load image in getBase64File for id : " + imgId,"document is null"));
                 get64BaseImgFromWorkspace.complete("");
             } else {
                 String base64 = Base64.getEncoder().encodeToString(document.getData().getBytes());

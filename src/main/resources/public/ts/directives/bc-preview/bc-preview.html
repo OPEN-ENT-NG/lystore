@@ -15,32 +15,32 @@
                 </div>
                 <div class="right">
                     <h1>
-                        BON DE COMMANDE
+                        <i18n>lystore.bc.preview.name.bc</i18n>
                     </h1>
                     <strong>
-                        N°: <span ng-bind="vm.orderToSend.bc_number"></span> <br/>
+                        <i18n>lystore.bc.preview.number</i18n> <span ng-bind="vm.orderToSend.bc_number"></span> <br/>
                     </strong>
                     <p>
-                        Du: <span ng-bind="formatDate(vm.orderToSend.dateGeneration, 'DD/MM/YYYY')"></span><br/>
+                        <i18n>lystore.bc.preview.of</i18n> <span ng-bind="formatDate(vm.orderToSend.dateGeneration, 'DD/MM/YYYY')"></span><br/>
                         <br/>
                         [[ vm.orderToSend.preview.supplier.name ]] <br/>
                         [[ vm.orderToSend.preview.supplier.address ]]  <br/>
-                        Tel : [[ vm.orderToSend.preview.supplier.phone ]]  <br/>
+                        <i18n>lystore.bc.preview.tel</i18n> : [[ vm.orderToSend.preview.supplier.phone ]]  <br/>
 
-                        N° ENGAGEMENT:  <span ng-bind="vm.orderToSend.engagement_number"></span>
+                        <i18n>lystore.bc.preview.number.engagement</i18n>:  <span ng-bind="vm.orderToSend.engagement_number"></span>
                     </p>
                 </div>
             </div>
             <div class="order-info">
                 <div class="contract-info">
                     <h2>
-                        MARCHE N° : [[ vm.orderToSend.preview.contract.reference ]]
+                        <i18n>lystore.bc.preview.market.number</i18n>: [[ vm.orderToSend.preview.contract.reference ]]
                     </h2>
                 </div>
                 <div class="agent-info">
                     <strong>[[ vm.orderToSend.preview.agent.name ]] <br/> </strong>
                     [[ vm.orderToSend.preview.agent.email ]] <br/>
-                    Tel : [[ vm.orderToSend.preview.agent.phone ]] <br/>
+                    <i18n>lystore.bc.preview.tel</i18n> : [[ vm.orderToSend.preview.agent.phone ]] <br/>
                 </div>
             </div>
         </div>
@@ -48,16 +48,17 @@
             <thead>
             <tr>
                 <td>
-                    Description
+                    <i18n>lystore.bc.preview.description</i18n>
                 </td>
                 <td class="right-text">
-                    Quantité
+                    <i18n>lystore.bc.preview.quantity</i18n>
+
                 </td>
                 <td class="right-text">
-                    PU HT (€)
+                    <i18n>lystore.bc.preview.price.unit.ht</i18n>
                 </td>
                 <td class="right-text">
-                    Total HT (€)
+                    <i18n>lystore.bc.preview.price.total.ht</i18n>
                 </td>
             </tr>
             </thead>
@@ -79,15 +80,15 @@
             </tbody>
             <tfoot>
             <tr>
-                <td colspan="3">Total HT</td>
+                <td colspan="3"><i18n>lystore.bc.preview.price.total.ht.label</i18n></td>
                 <td class="right-text"> [[ vm.orderToSend.preview.order.sumLocale ]] </td>
             </tr>
             <tr>
-                <td colspan="3">TVA </td>
+                <td colspan="3"><i18n>lystore.bc.preview.price.tax</i18n> </td>
                 <td class="right-text"> [[ vm.orderToSend.preview.order.totalTaxesLocale ]]</td>
             </tr>
             <tr>
-                <td colspan="3">TOTAL TTC </td>
+                <td colspan="3"><i18n>lystore.bc.preview.total.ttc</i18n> </td>
                 <td class="right-text">[[ vm.orderToSend.preview.order.totalPriceTaxeIncludedLocal ]]</td>
             </tr>
             </tfoot>
@@ -96,10 +97,10 @@
         <div class="foot">
             <div class="left">
                 <p class="bigger">
-                    Lieu de Livraison, personne à contacter  tel : voir liste des lycées ci-jointe <br/>
-                    Date de  livraison: Délai contractuel - <span>....................</span> <br/> <br/>
-                    Reçu par l'entreprise le :  <span>....../....../........</span> <br/>
-                    (Cachet - Signature)
+                   <i18n>lystore.bc.preview.footer.line1</i18n> <br/>
+                    <i18n>lystore.bc.preview.footer.line2</i18n> - <span>....................</span> <br/> <br/>
+                    <i18n>lystore.bc.preview.footer.line3</i18n> :  <span>....../....../........</span> <br/>
+                    <i18n>lystore.bc.preview.footer.line4</i18n>
                 </p>
                 <div class="signature">
                     &nbsp;

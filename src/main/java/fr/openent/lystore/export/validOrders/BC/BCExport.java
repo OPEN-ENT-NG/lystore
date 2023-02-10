@@ -51,11 +51,14 @@ public class BCExport extends PDF_OrderHElper {
                                         );
                                     });
                         } else {
-                            log.error("error when getting supplier");
+                           log.error(LystoreUtils.generateErrorMessage(BCExport.class, "create",
+                                   "error when getting supplier", event.left().getValue()
+                                    ));
                         }
                     });
                 })
                 .onFailure(fail -> exportHandler.handle(new Either.Left<>(
-                        LystoreUtils.generateErrorMessage(BCExportDuringValidation.class, "create", "Error when calling getBcOptions", fail))));
+                        LystoreUtils.generateErrorMessage(BCExport.class, "create", "Error when calling getBcOptions",
+                                fail))));
     }
 }
