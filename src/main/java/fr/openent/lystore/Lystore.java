@@ -1,6 +1,8 @@
 package fr.openent.lystore;
 
 import fr.openent.lystore.controllers.*;
+import fr.openent.lystore.controllers.parameter.ActiveStructureController;
+import fr.openent.lystore.controllers.parameter.ParameterController;
 import fr.openent.lystore.export.ExportLystoreWorker;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -72,8 +74,9 @@ public class Lystore extends BaseServer {
         addController(new InstructionController(storage));
         addController(new OrderRegionController(storage));
         addController(new ExportController(storage));
-        addController(new SettingController(eb));
+        addController(new ActiveStructureController(eb));
         addController(new LabelOperationController());
+        addController(new ParameterController());
         CONFIG = config;
         vertx.deployVerticle(ExportLystoreWorker.class, new DeploymentOptions().setConfig(config).setWorker(true));
         launchWorker(eb);

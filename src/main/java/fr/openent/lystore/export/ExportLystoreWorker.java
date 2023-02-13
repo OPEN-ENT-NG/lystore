@@ -217,7 +217,7 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
 
         logger.info("Export BC per structures from Orders before validation started : ");
 
-        this.validOrders = new ValidOrders(exportService,params,idNewFile,this.eb,this.vertx,this.config);
+        this.validOrders = new ValidOrders(exportService,params,idNewFile,this.eb,this.vertx,this.config, this.storage);
         this.validOrders.exportBCBeforeValidationByStructures(event1 -> {
             saveExportHandler(titleFile, exportHandler, event1, "error when creating BCOrdersBeforeValidationStruct PDF ", PDFHEADER);
         });
@@ -226,7 +226,7 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
 
         logger.info("Export BC per structures from Orders after validation started BC : "+ object_id);
 
-        this.validOrders = new ValidOrders(exportService,object_id,idNewFile,this.eb,this.vertx,this.config,false);
+        this.validOrders = new ValidOrders(exportService,object_id,idNewFile,this.eb,this.vertx,this.config,false, this.storage);
         this.validOrders.exportBCAfterValidationByStructures(event1 -> {
             saveExportHandler(titleFile, exportHandler, event1, "error when creating BCOrdersAfterValidationStruct PDF ", PDFHEADER);
         });
@@ -235,7 +235,7 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
     private void exportBCOrdersAfterValidation(String object_id, String titleFile, Handler<Either<String, Boolean>> handler) {
         logger.info("Export BC per structures from Orders after validation started BC : "+ object_id);
 
-        this.validOrders = new ValidOrders(exportService,object_id,idNewFile,this.eb,this.vertx,this.config,false);
+        this.validOrders = new ValidOrders(exportService,object_id,idNewFile,this.eb,this.vertx,this.config,false, this.storage);
         this.validOrders.exportBCAfterValidation(event1 -> {
             saveExportHandler(titleFile, handler, event1, "error when creating BCOrdersAfterValidation PDF ", PDFHEADER);
         });
@@ -243,7 +243,7 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
 
     private void exportBCOrdersDuringValidation(JsonObject params, String titleFile, Handler<Either<String, Boolean>> handler) {
         logger.info("Export BC from Orders during validation started");
-        this.validOrders = new ValidOrders(exportService,params,idNewFile,this.eb,this.vertx,this.config);
+        this.validOrders = new ValidOrders(exportService,params,idNewFile,this.eb,this.vertx,this.config, this.storage);
         this.validOrders.exportBCDuringValidation(event1 -> {
             saveExportHandler(titleFile, handler, event1, "error when creating BCOrdersDuringValidation PDF ", PDFHEADER);
         });
@@ -251,7 +251,7 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
 
     private void exportBCOrders(JsonObject params, String titleFile, Handler<Either<String, Boolean>> handler) {
         logger.info("Export BC from Orders started");
-        this.validOrders = new ValidOrders(exportService,params,idNewFile,this.eb,this.vertx,this.config);
+        this.validOrders = new ValidOrders(exportService,params,idNewFile,this.eb,this.vertx,this.config, this.storage);
         this.validOrders.exportBC(event1 -> {
             saveExportHandler(titleFile, handler, event1, "error when creating BCorders PDF ", PDFHEADER);
         });
@@ -259,7 +259,7 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
 
     private void exportListLycOrders(String object_id, String titleFile, Handler<Either<String, Boolean>> handler) {
         logger.info("Export list lycee from Orders started");
-        this.validOrders = new ValidOrders(exportService,object_id,idNewFile,this.eb,this.vertx,this.config,true);
+        this.validOrders = new ValidOrders(exportService,object_id,idNewFile,this.eb,this.vertx,this.config,true, this.storage );
         this.validOrders.exportListLycee(event1 -> {
             saveExportHandler(titleFile, handler, event1, "error when creating ListLycOrder xlsx :", XLSXHEADER);
         });

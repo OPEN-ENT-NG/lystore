@@ -1,6 +1,10 @@
 package fr.openent.lystore.controllers;
 
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.constants.CommonConstants;
+import fr.openent.lystore.constants.ExportConstants;
+import fr.openent.lystore.constants.LystoreBDD;
+import fr.openent.lystore.constants.ParametersConstants;
 import fr.openent.lystore.export.ExportTypes;
 import fr.openent.lystore.export.helpers.ExportHelper;
 import fr.openent.lystore.helpers.LystoreEmailFactoryHelper;
@@ -8,12 +12,15 @@ import fr.openent.lystore.helpers.OrderHelper;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
+import fr.openent.lystore.model.parameter.BCOptions;
 import fr.openent.lystore.security.AccessOrderCommentRight;
 import fr.openent.lystore.security.AccessOrderRight;
 import fr.openent.lystore.security.AccessUpdateOrderOnClosedCampaigne;
 import fr.openent.lystore.security.ManagerRight;
 import fr.openent.lystore.service.*;
 import fr.openent.lystore.service.impl.*;
+import fr.openent.lystore.service.parameter.ParameterService;
+import fr.openent.lystore.service.parameter.impl.DefaultParameterService;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
@@ -24,12 +31,14 @@ import fr.wseduc.webutils.email.EmailSender;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.filter.ResourceFilter;
@@ -41,7 +50,9 @@ import java.math.BigDecimal;
 import java.text.*;
 import java.util.*;
 
+import static fr.openent.lystore.constants.ParametersConstants.BC_OPTIONS;
 import static fr.openent.lystore.helpers.OrderHelper.*;
+import static fr.openent.lystore.utils.LystoreUtils.generateErrorMessage;
 import static fr.openent.lystore.utils.OrderUtils.getValidOrdersCSVExportHeader;
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultResponseHandler;
@@ -62,7 +73,8 @@ public class OrderController extends ControllerHelper {
     LystoreEmailFactoryHelper notificationHelpDeskEmailFactory;
     LystoreEmailFactoryHelper notificationEmailFactory;
     public static final String UTF8_BOM = "\uFEFF";
-
+    ParameterService parameterService;
+    WorkspaceHelper workspaceHelper;
     private static DecimalFormat decimals = new DecimalFormat("0.00");
 
     public OrderController (Storage storage, Vertx vertx, JsonObject config, EventBus eb) {
@@ -77,6 +89,8 @@ public class OrderController extends ControllerHelper {
         this.agentService = new DefaultAgentService(Lystore.lystoreSchema, "agent");
         this.programService = new DefaultProgramService(Lystore.lystoreSchema, "program");
         exportService = new DefaultExportServiceService(storage);
+        workspaceHelper  = new WorkspaceHelper(eb,storage);
+        this.parameterService = new DefaultParameterService(Lystore.lystoreSchema, LystoreBDD.PARAMETER_BC_OPTIONS);
 
         String emailNotificationHelpDeskSender = config.getJsonObject("mail",new JsonObject()).getString("notificationHelpDeskMail","cesame.lystore@monlycee.net");
         this.notificationHelpDeskEmailFactory = new LystoreEmailFactoryHelper(vertx, config,emailNotificationHelpDeskSender);
@@ -536,43 +550,59 @@ public class OrderController extends ControllerHelper {
 
     private void exportDocuments(final HttpServerRequest request, final Boolean printOrder,
                                  final Boolean printCertificates, final List<String> validationNumbers) {
-        if(printOrder){
-            ExportHelper.makeExport(request,eb,exportService,Lystore.ORDERS,  Lystore.PDF, ExportTypes.BC_BEFORE_VALIDATION, "_BC");
-        }else {
-            supplierService.getSupplierByValidationNumbers(new fr.wseduc.webutils.collections.JsonArray(validationNumbers), new Handler<Either<String, JsonObject>>() {
-                @Override
-                public void handle(Either<String, JsonObject> event) {
+        if (printOrder) {
+            ExportHelper.makeExport(request, eb, exportService, Lystore.ORDERS, Lystore.PDF, ExportTypes.BC_BEFORE_VALIDATION, ExportConstants.BC_SUFFIX);
+        } else {
+            generateCSF(request, printCertificates, validationNumbers);
+        }
+    }
+
+    private void generateCSF(HttpServerRequest request, Boolean printCertificates, List<String> validationNumbers) {
+        parameterService.getBcOptions().onSuccess(bcOptions ->
+                supplierService.getSupplierByValidationNumbers(new JsonArray(validationNumbers), event -> {
                     if (event.isRight()) {
                         JsonObject supplier = event.right().getValue();
-                        getOrdersData(request, "", "", "", supplier.getInteger("id"),
+
+                        Promise<String> get64BaseImgFromWorkspace = Promise.promise();
+
+                        String[] imgIdString = bcOptions.getImg().split("/");
+                        String imgId = imgIdString[imgIdString.length - 1];
+                        workspaceHelper.readDocument(imgId, document -> {
+                            if (document == null) {
+                                log.error("Cannot load image in getBase64File for id : " + imgId);
+                                get64BaseImgFromWorkspace.complete("");
+                            } else {
+                                String base64 = Base64.getEncoder().encodeToString(document.getData().getBytes());
+                                get64BaseImgFromWorkspace.complete(base64);
+                            }
+                        });
+                        get64BaseImgFromWorkspace.future().onSuccess(img ->
+                                getOrdersData(request, "", "", "", supplier.getInteger(CommonConstants.ID),
                                 new JsonArray(validationNumbers),
-                                new Handler<JsonObject>() {
-                                    @Override
-                                    public void handle(JsonObject data) {
-                                        data.put("print_certificates", printCertificates);
-                                        exportPDFService.generatePDF(request, data,
-                                                "BC_CSF.xhtml", "CSF_",
-                                                new Handler<Buffer>() {
-                                                    @Override
-                                                    public void handle(final Buffer pdf) {
-                                                        request.response()
-                                                                .putHeader("Content-Type", "application/pdf; charset=utf-8")
-                                                                .putHeader("Content-Disposition", "attachment; filename="
-                                                                        + generateExportName(validationNumbers, "" +
-                                                                        (printCertificates ? "CSF" : "")) + ".pdf")
-                                                                .end(pdf);
-                                                    }
-                                                }
-                                        );
-                                    }
-                                });
+                                data -> {
+                                    callExportCSF(request, printCertificates, validationNumbers, bcOptions, img, data);
+                                }));
                     } else {
-                        log.error("An error occurred when collecting supplier Id", new Throwable(event.left().getValue()));
+                        generateErrorMessage(this.getClass() , "exportDocuments",
+                                "An error occurred when collecting supplier Id" , event.left().getValue());
                         badRequest(request);
                     }
-                }
-            });
-        }
+                }));
+    }
+
+    private void callExportCSF(HttpServerRequest request, Boolean printCertificates, List<String> validationNumbers, BCOptions bcOptions, String img, JsonObject data) {
+        data.put(ExportConstants.PRINT_CERTIFICATES, printCertificates)
+                .put(ParametersConstants.BC_OPTIONS, bcOptions.toJson())
+                .put(ExportConstants.LOGO_DATA, img);
+        exportPDFService.generatePDF(request, data,
+                ExportConstants.CSF_FILENAME,  ExportConstants.CSF_PREFIX,
+                pdf -> request.response()
+                        .putHeader(ExportConstants.CONTENT_TYPE, ExportConstants.PDF_CONTENT_TYPE)
+                        .putHeader(ExportConstants.CONTENT_DISPOSITION, ExportConstants.FILE_CONTENT_DISPOSITION
+                                + generateExportName(validationNumbers, "" +
+                                (printCertificates ? ExportConstants.CSF : "")) + ExportConstants.PDF_EXTENSION)
+                        .end(pdf)
+        );
     }
 
     private String generateExportName(List<String> validationNumbers, String prefix) {
@@ -968,11 +998,11 @@ public class OrderController extends ControllerHelper {
                     orderService.windUpOrders(ids,
                             override_region,
                             Logging.defaultResponsesHandler(eb,
-                            request,
-                            Contexts.ORDER.toString(),
-                            Actions.UPDATE.toString(),
-                            params,
-                            null)
+                                    request,
+                                    Contexts.ORDER.toString(),
+                                    Actions.UPDATE.toString(),
+                                    params,
+                                    null)
                     );
                 } catch (ClassCastException e) {
                     log.error("An error occurred when casting order id", e);
@@ -1215,7 +1245,7 @@ public class OrderController extends ControllerHelper {
         RequestUtils.bodyToJson(request, order ->{
             final String orderNumber = order.getString("bc_number");
             try{
-               String domainMail =  config.getJsonObject("mail").getString("domainMail");
+                String domainMail =  config.getJsonObject("mail").getString("domainMail");
                 EmailSender emailSender = notificationEmailFactory.getSender();
                 orderService.sendNotification(orderNumber,domainMail,request,emailSender);
             }catch (Exception e){

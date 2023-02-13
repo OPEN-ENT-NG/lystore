@@ -1,0 +1,121 @@
+<article class="eight twelve-mobile centered">
+    <div class="order-preview">
+        <div class="header">
+            <div>
+                <div class="left center-text">
+                    <img  class="logo-region" ng-src="[[vm.bcOptions.img]]" alt="ile de france" />
+                    <h4>[[vm.bcOptions.name.line1]]</h4>
+                    <h5>[[vm.bcOptions.name.line2]]</h5>
+                    <p>
+                        <span >[[vm.bcOptions.name.line3]]</span><br />
+                        [[vm.bcOptions.name.line4]]<br />
+                        [[vm.bcOptions.address.line1]]<br />
+                        [[vm.bcOptions.address.line2]]
+                    </p>
+                </div>
+                <div class="right">
+                    <h1>
+                        <i18n>lystore.bc.preview.name.bc</i18n>
+                    </h1>
+                    <strong>
+                        <i18n>lystore.bc.preview.number</i18n> <span ng-bind="vm.orderToSend.bc_number"></span> <br/>
+                    </strong>
+                    <p>
+                        <i18n>lystore.bc.preview.of</i18n> <span ng-bind="formatDate(vm.orderToSend.dateGeneration, 'DD/MM/YYYY')"></span><br/>
+                        <br/>
+                        [[ vm.orderToSend.preview.supplier.name ]] <br/>
+                        [[ vm.orderToSend.preview.supplier.address ]]  <br/>
+                        <i18n>lystore.bc.preview.tel</i18n> : [[ vm.orderToSend.preview.supplier.phone ]]  <br/>
+
+                        <i18n>lystore.bc.preview.number.engagement</i18n>:  <span ng-bind="vm.orderToSend.engagement_number"></span>
+                    </p>
+                </div>
+            </div>
+            <div class="order-info">
+                <div class="contract-info">
+                    <h2>
+                        <i18n>lystore.bc.preview.market.number</i18n>: [[ vm.orderToSend.preview.contract.reference ]]
+                    </h2>
+                </div>
+                <div class="agent-info">
+                    <strong>[[ vm.orderToSend.preview.agent.name ]] <br/> </strong>
+                    [[ vm.orderToSend.preview.agent.email ]] <br/>
+                    <i18n>lystore.bc.preview.tel</i18n> : [[ vm.orderToSend.preview.agent.phone ]] <br/>
+                </div>
+            </div>
+        </div>
+        <table class="equipments-table">
+            <thead>
+            <tr>
+                <td>
+                    <i18n>lystore.bc.preview.description</i18n>
+                </td>
+                <td class="right-text">
+                    <i18n>lystore.bc.preview.quantity</i18n>
+
+                </td>
+                <td class="right-text">
+                    <i18n>lystore.bc.preview.price.unit.ht</i18n>
+                </td>
+                <td class="right-text">
+                    <i18n>lystore.bc.preview.price.total.ht</i18n>
+                </td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="order in vm.orderToSend.preview.order.orders">
+                <td>
+                    [[ order.name ]]
+                </td>
+                <td class="right-text">
+                    [[ order.amount ]]
+                </td>
+                <td class="right-text">
+                    [[ order.priceLocale ]]
+                </td>
+                <td class="right-text">
+                    [[ order.totalPriceLocale ]]
+                </td>
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr>
+                <td colspan="3"><i18n>lystore.bc.preview.price.total.ht.label</i18n></td>
+                <td class="right-text"> [[ vm.orderToSend.preview.order.sumLocale ]] </td>
+            </tr>
+            <tr>
+                <td colspan="3"><i18n>lystore.bc.preview.price.tax</i18n> </td>
+                <td class="right-text"> [[ vm.orderToSend.preview.order.totalTaxesLocale ]]</td>
+            </tr>
+            <tr>
+                <td colspan="3"><i18n>lystore.bc.preview.total.ttc</i18n> </td>
+                <td class="right-text">[[ vm.orderToSend.preview.order.totalPriceTaxeIncludedLocal ]]</td>
+            </tr>
+            </tfoot>
+        </table>
+
+        <div class="foot">
+            <div class="left">
+                <p class="bigger">
+                   <i18n>lystore.bc.preview.footer.line1</i18n> <br/>
+                    <i18n>lystore.bc.preview.footer.line2</i18n> - <span>....................</span> <br/> <br/>
+                    <i18n>lystore.bc.preview.footer.line3</i18n> :  <span>....../....../........</span> <br/>
+                    <i18n>lystore.bc.preview.footer.line4</i18n>
+                </p>
+                <div class="signature">
+                    &nbsp;
+                </div>
+            </div>
+            <div class="right">
+                <div class="block text-area center-text bigger fright">
+                    [[vm.bcOptions.signature.line1]]
+                    <br />
+                    <strong>
+                        [[vm.bcOptions.signature.line2]]
+                    </strong>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</article>

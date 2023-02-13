@@ -1,17 +1,23 @@
 package fr.openent.lystore.export.validOrders;
 
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.constants.CommonConstants;
+import fr.openent.lystore.constants.ExportConstants;
 import fr.openent.lystore.controllers.OrderController;
 import fr.openent.lystore.export.validOrders.BC.BCExport;
 import fr.openent.lystore.helpers.OrderHelper;
 import fr.openent.lystore.helpers.RendersHelper;
 import fr.openent.lystore.service.*;
 import fr.openent.lystore.service.impl.*;
+import fr.openent.lystore.service.parameter.ParameterService;
+import fr.openent.lystore.service.parameter.impl.DefaultParameterService;
+import fr.openent.lystore.utils.LystoreUtils;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.email.EmailSender;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
@@ -20,7 +26,9 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.email.EmailFactory;
+import org.entcore.common.storage.Storage;
 
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -30,11 +38,12 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static fr.openent.lystore.constants.ParametersConstants.BC_OPTIONS;
 import static fr.openent.lystore.helpers.OrderHelper.getSumWithoutTaxes;
 import static fr.openent.lystore.helpers.OrderHelper.roundWith2Decimals;
 
 public class PDF_OrderHElper {
-
+    protected ParameterService parameterService;
     protected SupplierService supplierService;
     protected JsonObject config;
     protected Vertx vertx;
@@ -43,13 +52,13 @@ public class PDF_OrderHElper {
     protected Logger log = LoggerFactory.getLogger(BCExport.class);
     protected OrderService orderService;
     protected ProgramService programService;
-
     protected DefaultContractService contractService;
     protected StructureService structureService;
     protected AgentService agentService;
     protected RendersHelper renders ;
+    private WorkspaceHelper workspaceHelper;
 
-    public PDF_OrderHElper(EventBus eb, Vertx vertx, JsonObject config){
+    public PDF_OrderHElper(EventBus eb, Vertx vertx, JsonObject config, Storage storage){
         this.vertx = vertx;
         this.config = config;
         EmailFactory emailFactory = new EmailFactory(vertx, config);
@@ -63,6 +72,8 @@ public class PDF_OrderHElper {
         this.agentService = new DefaultAgentService(Lystore.lystoreSchema, "agent");
         this.renders = new RendersHelper(this.vertx, config);
         programService = new DefaultProgramService(Lystore.lystoreSchema,"program");
+        this.parameterService = new DefaultParameterService(Lystore.lystoreSchema, "parameter_bc_options");
+        this.workspaceHelper = new WorkspaceHelper(eb,storage);
 
 
     }
@@ -427,46 +438,44 @@ public class PDF_OrderHElper {
 
 
 
-    public void generatePDF( Handler<Either<String, Buffer>> exportHandler,final JsonObject templateProps, final String templateName,
-                             final String prefixPdfName, final Handler<Buffer> handler) {
+    public void generatePDF(Handler<Either<String, Buffer>> exportHandler, final JsonObject templateProps, final String templateName,
+                            final Handler<Buffer> handler) {
 
         final JsonObject exportConfig = config.getJsonObject("exports");
         final String templatePath = exportConfig.getString("template-path");
         final String baseUrl = config.getString("host") +
                 config.getString("app-address") + "/public/";
-        final String logo = exportConfig.getString("logo-path");
 
         node = (String) vertx.sharedData().getLocalMap("server").get("node");
         if (node == null) {
             node = "";
         }
 
+        Promise<String> get64BaseImgFromWorkspace = Promise.promise();
+
+        String[] imgIdString =  templateProps.getJsonObject(BC_OPTIONS).getString(ExportConstants.IMG).split("/");
+        String imgId = imgIdString[imgIdString.length - 1];
+        workspaceHelper.readDocument(imgId, document -> {
+            if (document == null){
+                log.error(LystoreUtils.generateErrorMessage(PDF_OrderHElper.class,"generatePDF" ,
+                        "Cannot load image in getBase64File for id : " + imgId,"document is null"));
+                get64BaseImgFromWorkspace.complete("");
+            } else {
+                String base64 = Base64.getEncoder().encodeToString(document.getData().getBytes());
+                get64BaseImgFromWorkspace.complete(base64);
+            }
+        });
         final String path = FileResolver.absolutePath(templatePath + templateName);
-        final String logoPath = FileResolver.absolutePath(logo);
+        get64BaseImgFromWorkspace.future().onSuccess(base64 ->
+                vertx.fileSystem().readFile(path, result -> {
+            if (!result.succeeded()) {
+                return;
+            }
+            templateProps.put(ExportConstants.LOGO_DATA, base64);
 
-        vertx.fileSystem().readFile(path, new Handler<AsyncResult<Buffer>>() {
-
-            @Override
-            public void handle(AsyncResult<Buffer> result) {
-                if (!result.succeeded()) {
-                    return;
-                }
-
-                Buffer logoBuffer = vertx.fileSystem().readFileBlocking(logoPath);
-                String encodedLogo = "";
-                try {
-                    encodedLogo = new String(Base64.getMimeEncoder().encode(logoBuffer.getBytes()), "UTF-8");
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
-                    log.error("[DefaultExportPDFService@generatePDF] An error occurred while encoding logo to base 64");
-                }
-                templateProps.put("logo-data", encodedLogo);
-
-                StringReader reader = new StringReader(result.result().toString("UTF-8"));
-                renders.processTemplate(exportHandler, templateProps, templateName, reader, new Handler<Writer>() {
+            StringReader reader = new StringReader(result.result().toString(ExportConstants.UTF_8));
                     //
-                    @Override
-                    public void handle(Writer writer) {
+                    renders.processTemplate(exportHandler, templateProps, templateName, reader, writer -> {
                         String processedTemplate = ((StringWriter) writer).getBuffer().toString();
                         if (processedTemplate == null) {
                             exportHandler.handle(new Either.Left<>("processed template is null"));
@@ -482,25 +491,21 @@ public class PDF_OrderHElper {
                         }
 
                         actionObject
-                                .put("content", bytes)
-                                .put("baseUrl", baseUrl);
-                        eb.send(node + "entcore.pdf.generator", actionObject, new Handler<AsyncResult<Message<JsonObject>>>() {
-                            @Override
-                            public void handle(AsyncResult<Message<JsonObject>> reply) {
-                                JsonObject pdfResponse = reply.result().body();
-                                if (!"ok".equals(pdfResponse.getString("status"))) {
-                                    exportHandler.handle(new Either.Left<>("wrong status when calling bus (pdf) "));
-                                    return;
-                                }
-                                byte[] pdf = pdfResponse.getBinary("content");
-                                Buffer either = Buffer.buffer(pdf);
-                                handler.handle(either);
+                                .put(ExportConstants.CONTENT, bytes)
+                                .put(ExportConstants.BASEURL, baseUrl);
+                        eb.request(node + ExportConstants.ENTCORE_PDF_GENERATOR_NAME, actionObject, (Handler<AsyncResult<Message<JsonObject>>>) reply -> {
+                            JsonObject pdfResponse = reply.result().body();
+                            if (!CommonConstants.OK.equals(pdfResponse.getString(CommonConstants.STATUS))) {
+                                exportHandler.handle(new Either.Left<>("wrong status when calling bus (pdf) "));
+                                return;
                             }
+                            byte[] pdf = pdfResponse.getBinary(ExportConstants.CONTENT);
+                            Buffer either = Buffer.buffer(pdf);
+                            handler.handle(either);
                         });
-                    }
-                });
-            }
-        });
+                    });
+        }));
+
 
     }
 }

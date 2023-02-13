@@ -1,6 +1,6 @@
-package fr.openent.lystore.service.impl;
+package fr.openent.lystore.service.parameter.impl;
 
-import fr.openent.lystore.service.ParameterService;
+import fr.openent.lystore.service.parameter.ActiveStructureService;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -13,13 +13,13 @@ import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.neo4j.Neo4jResult;
 
-public class DefaultParameterService  implements ParameterService {
+public class DefaultActiveStructureService implements ActiveStructureService {
 
-    private Logger log = LoggerFactory.getLogger(DefaultParameterService.class);
+    private Logger log = LoggerFactory.getLogger(DefaultActiveStructureService.class);
     EventBus eb;
     private final String LystoreGroupName = "Lystore";
 
-    public DefaultParameterService(EventBus eb) {
+    public DefaultActiveStructureService(EventBus eb) {
         this.eb = eb;
     }
 

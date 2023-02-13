@@ -76,7 +76,7 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
         $scope.equipments.eventer.on('loading::false', () => Utils.safeApply($scope));
         $scope.loadingArray = false;
         $scope.campaignSelection = [];
-        $scope.isSuperAdmin = Boolean(window.isSuperAdmin);
+        $scope.isSuperAdmin = JSON.parse(window.isSuperAdmin);
         route({
             main: async () => {
                 if ($scope.isManager() || $scope.isAdministrator()) {
@@ -321,10 +321,6 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                 $scope.initOrders('VALID', $scope.campaignSelection);
                 template.open('administrator-main', 'administrator/order/order-valided');
                 Utils.safeApply($scope);
-            },
-            previewOrder: async () => {
-                template.open('administrator-main', 'administrator/order/order-send-prepare');
-                template.open('sendOrder.preview', 'pdf/preview');
             },
             updateOrder: async (params:any):Promise<void> => {
                 template.open('administrator-main', 'administrator/order/order-update-form');
