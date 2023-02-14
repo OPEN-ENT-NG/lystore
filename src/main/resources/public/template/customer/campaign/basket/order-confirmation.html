@@ -5,9 +5,11 @@
         <p class="nine cell twelve-mobile">
             <i18n>lystore.confirm.order.message1</i18n>
             <strong ng-bind="totalPriceOrder | currency"></strong>
-            <i18n>lystore.confirm.order.message2</i18n>
-            <i18n>lystore.order.tracking</i18n>
+            <i18n>lystore.confirm.order.message2</i18n> [[regionTypeName]] .
             <i18n>lystore.confirm.order.message3</i18n>
+            <i18n>lystore.order.tracking</i18n>
+            <i18n>lystore.confirm.order.message4</i18n>
+
         </p>
     </div>
     <div class="row vertical-spacing">
@@ -36,10 +38,7 @@
     </h1>
     <div class="three cell twelve-mobile"><img class=" centered " src="/lystore/public/img/thumb_up.png"/></div>
     <p class="nine cell twelve-mobile">
-        <i18n>lystore.confirm.request.message1</i18n>
-        <i18n>lystore.confirm.request.message2</i18n>
-        <i18n>lystore.request.tracking</i18n>
-        <i18n>lystore.confirm.request.message3</i18n>
+        [[getRequestMessage()]]
     </p>
     <div class="row">
         <input type="button" class="cancel right-magnet " ng-click="cancelConfirmOrder()" i18n-value="ok"/>

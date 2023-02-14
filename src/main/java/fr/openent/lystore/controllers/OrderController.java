@@ -51,6 +51,7 @@ import java.text.*;
 import java.util.*;
 
 import static fr.openent.lystore.constants.ParametersConstants.BC_OPTIONS;
+import static fr.openent.lystore.constants.ParametersConstants.REGION_TYPE_NAME;
 import static fr.openent.lystore.helpers.OrderHelper.*;
 import static fr.openent.lystore.utils.LystoreUtils.generateErrorMessage;
 import static fr.openent.lystore.utils.OrderUtils.getValidOrdersCSVExportHeader;
@@ -864,7 +865,8 @@ public class OrderController extends ControllerHelper {
                                                                 .put("contract", contract)
                                                                 .put("nbr_bc", nbrBc)
                                                                 .put("nbr_engagement", nbrEngagement)
-                                                                .put("date_generation", dateGeneration);
+                                                                .put("date_generation", dateGeneration)
+                                                                .put(REGION_TYPE_NAME, I18n.getInstance().translate(config.getString(REGION_TYPE_NAME), getHost(request), I18n.acceptLanguage(request)));
                                                         if( nbrBc == null || nbrBc.equals("")){
                                                             data.put("nbr_bc",  event.getString("order_number"))
                                                                     .put("nbr_engagement", event.getString("engagement_number"));

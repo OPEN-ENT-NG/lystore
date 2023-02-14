@@ -77,6 +77,7 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
         $scope.loadingArray = false;
         $scope.campaignSelection = [];
         $scope.isSuperAdmin = JSON.parse(window.isSuperAdmin);
+        $scope.regionTypeName = lang.translate(window.regionTypeName);
         route({
             main: async () => {
                 if ($scope.isManager() || $scope.isAdministrator()) {

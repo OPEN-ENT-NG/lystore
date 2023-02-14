@@ -9,7 +9,7 @@ import io.vertx.core.http.HttpServerRequest;
 import org.entcore.common.http.filter.SuperAdminFilter;
 import org.entcore.common.user.UserUtils;
 
-import static fr.openent.lystore.constants.ParametersConstants.ISSUPERADMIN;
+import static fr.openent.lystore.constants.ParametersConstants.*;
 
 
 public class LystoreController extends ControllerHelper {
@@ -23,12 +23,13 @@ public class LystoreController extends ControllerHelper {
     @SecuredAction("lystore.access")
     public void view(HttpServerRequest request) {
         UserUtils.getUserInfos(eb, request, user -> {
-                    new SuperAdminFilter().authorize(null, null, user, isAuthorized -> {
-                        JsonObject params = new JsonObject();
-                                    params.put(ISSUPERADMIN, isAuthorized);
-                                    renderView(request, params);
-                    });
-                });
+            new SuperAdminFilter().authorize(null, null, user, isAuthorized -> {
+                JsonObject params = new JsonObject();
+                params.put(ISSUPERADMIN, isAuthorized)
+                        .put(REGIONTYPENAME, config.getString(REGION_TYPE_NAME));
+                renderView(request, params);
+            });
+        });
     }
 
 }

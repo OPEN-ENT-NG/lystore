@@ -12,5 +12,7 @@ public class ParametersConstants {
     public static final String BC_OPTIONS = "bc_options";
     public static final String BCOPTIONS = "bcOptions";
     public static final String ISSUPERADMIN = "isSuperAdmin";
+    public static final String REGION_TYPE_NAME = "region-type-name";
+    public static final String REGIONTYPENAME = "regionTypeName";
 
 }
