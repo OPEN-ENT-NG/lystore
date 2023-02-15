@@ -1,23 +1,76 @@
 <div class="parameter">
     <!--Title-->
     <h1 class="parameter-title">
+        <i18n>lystore.title</i18n>
+    </h1>
+    <nav class="vertical twelve-mobile mobile-navigation" side-nav>
+        <ul>
+            <li><i18n>lystore.operations</i18n></li>
+            <li><i18n>lystore.instructions</i18n></li>
+            <li><i18n>lystore.orders.validations.waiting</i18n></li>
+            <li><i18n>lystore.order.form.generate</i18n></li>
+            <li><i18n>lystore.end.expedited.requests</i18n></li>
+            <li><i18n>lystore.tag.management</i18n></li>
+            <li><i18n>lystore.catalog.management</i18n></li>
+            <li><i18n>lystore.manage.campaigns</i18n></li>
+            <li><i18n>lystore.structureGroups.management</i18n></li>
+            <li><i18n>lystore.suppliers.management</i18n></li>
+            <li><i18n>lystore.contracts.management</i18n></li>
+            <li><i18n>lystore.agents.management</i18n></li>
+            <li><header class="horizontal-spacing">
+                workflow="lystore.administrator">
+                <i18n>lystore.logs</i18n>
+            </header></li>
+        </ul>
+    </nav>
+
+    <div class="twelve tabs vertical-spacing heading-tabs zero-mobile">
+        <header class="horizontal-spacing">
+            <drop-down-menu title="[[vm.lang.translate('lystore.orders')]]">
+                <opt ng-click="vm.redirectToHref('/lystore#/operation')"><i18n>lystore.operations</i18n></opt>
+                <opt ng-click="vm.redirectToHref('/lystore#/instruction')"><i18n>lystore.instructions</i18n></opt>
+                <opt ng-click="vm.redirectToHref('/lystore#/order/waiting')"><i18n>lystore.orders.validations.waiting</i18n></opt>
+                <opt ng-click="vm.redirectToHref('/lystore#/order/valid')"><i18n>lystore.order.form.generate</i18n></opt>
+                <opt ng-click="vm.redirectToHref('/lystore#/order/sent')"><i18n>lystore.end.expedited.requests</i18n></opt>
+                <opt ng-click="vm.redirectToHref('/lystore#/order/region/create')"><i18n>lystore.order.region.create</i18n></opt>
+                <opt ng-click="vm.redirectToHref('/lystore#/exports')"><i18n>lystore.goTo.exports</i18n></opt>
+
+
+            </drop-down-menu>
+        </header>
+        <header class="horizontal-spacing">
+            <drop-down-menu title="[[vm.lang.translate('lystore.equipments')]]">
+                <opt ng-click="vm.redirectToHref('/lystore#/tags')"><i18n>lystore.tag.management</i18n></opt>
+                <opt ng-click="vm.redirectToHref('/lystore#/equipments')"><i18n>lystore.catalog.management</i18n></opt>
+            </drop-down-menu></header>
+        <header class="horizontal-spacing">
+            <drop-down-menu title="[[vm.lang.translate('lystore.campaigns')]]">
+                <opt ng-click="vm.redirectToHref('/lystore#/campaigns')"><i18n>lystore.manage.campaigns</i18n></opt>
+                <opt ng-click="vm.redirectToHref('/lystore#/structureGroups')"><i18n>lystore.structureGroups.management</i18n></opt>
+            </drop-down-menu>
+        </header>
+        <header class="horizontal-spacing">
+            <drop-down-menu title="[[vm.lang.translate('lystore.contracts')]]">
+                <opt ng-click="vm.redirectToHref('/lystore#/suppliers')"><i18n>lystore.suppliers.management</i18n></opt>
+                <opt ng-click="vm.redirectToHref('/lystore#/contracts')"><i18n>lystore.contracts.management</i18n></opt>
+                <opt ng-click="vm.redirectToHref('/lystore#/agents')"><i18n>lystore.agents.management</i18n></opt>
+            </drop-down-menu>
+        </header>
+        <header class="horizontal-spacing" ng-click="vm.redirectToHref('/lystore#/logs')"
+                workflow="lystore.administrator">
+            <i18n>lystore.logs</i18n>
+        </header>
+        <header class="horizontal-spacing">
+            <drop-down-menu title="[[vm.lang.translate('lystore.goTo.parameter.label')]]">
+                <opt  ng-click="vm.redirectTo('/')"><i18n>lystore.goTo.active.structure</i18n></opt>
+                <opt  ng-click="vm.redirectTo('/parameter')"><i18n>lystore.goTo.parameters</i18n></opt>
+            </drop-down-menu>
+        </header>
+
+    </div>
+    <h1 class="parameter-title">
         <i18n>lystore.parameter.title</i18n>
     </h1>
-    <div class="twelve tabs vertical-spacing heading-tabs zero-mobile">
-        <header class="horizontal-spacing" ng-click="vm.redirectToHref('/lystore#')"
-                workflow="lystore.administrator">
-            <i18n>lystore.access</i18n>
-        </header>
-        <header class="horizontal-spacing" ng-click="vm.redirectTo('/')"
-              >
-            <i18n>lystore.goTo.active.structure</i18n>
-        </header>
-        <header class="horizontal-spacing" ng-click="vm.redirectTo('/parameter#')"
-               >
-            <i18n>lystore.goTo.parameters</i18n>
-        </header>
-    </div>
-
     <div class="row">
         <div class="loading-bar" ng-class="{loading: loadingArray}"></div>
     </div>
