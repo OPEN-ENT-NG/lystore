@@ -852,25 +852,24 @@ public class OrderController extends ControllerHelper {
                                                         JsonObject certificate;
                                                         for (int i = 0; i < certificates.size(); i++) {
                                                             certificate = certificates.getJsonObject(i);
-                                                            certificate.put("agent", managmentInfo.getJsonObject("userInfo"));
-                                                            certificate.put("supplier",
+                                                            certificate.put(LystoreBDD.AGENT, managmentInfo.getJsonObject("userInfo"));
+                                                            certificate.put(LystoreBDD.SUPPLIER,
                                                                     managmentInfo.getJsonObject("supplierInfo"));
-                                                            addStructureToOrders(certificate.getJsonArray("orders"),
-                                                                    certificate.getJsonObject("structure"));
+                                                            addStructureToOrders(certificate.getJsonArray(LystoreBDD.ORDERS),
+                                                                    certificate.getJsonObject(CommonConstants.STRUCTURE));
                                                         }
-                                                        data.put("supplier", managmentInfo.getJsonObject("supplierInfo"))
-                                                                .put("agent", managmentInfo.getJsonObject("userInfo"))
-                                                                .put("order", order)
-                                                                .put("certificates", certificates)
-                                                                .put("contract", contract)
-                                                                .put("nbr_bc", nbrBc)
-                                                                .put("nbr_engagement", nbrEngagement)
-                                                                .put("date_generation", dateGeneration)
+                                                        data.put(LystoreBDD.SUPPLIER, managmentInfo.getJsonObject("supplierInfo"))
+                                                                .put(LystoreBDD.AGENT, managmentInfo.getJsonObject("userInfo"))
+                                                                .put(LystoreBDD.ORDER, order)
+                                                                .put(LystoreBDD.CERTIFICATES, certificates)
+                                                                .put(LystoreBDD.CONTRACT, contract)
+                                                                .put(LystoreBDD.NBR_BC, nbrBc)
+                                                                .put(LystoreBDD.NBR_ENGAGEMENT, nbrEngagement)
+                                                                .put(LystoreBDD.DATE_GENERATION, dateGeneration)
                                                                 .put(REGION_TYPE_NAME, I18n.getInstance().translate(config.getString(REGION_TYPE_NAME), getHost(request), I18n.acceptLanguage(request)));
                                                         if( nbrBc == null || nbrBc.equals("")){
-                                                            data.put("nbr_bc",  event.getString("order_number"))
-                                                                    .put("nbr_engagement", event.getString("engagement_number"));
-
+                                                            data.put(LystoreBDD.NBR_BC,  event.getString("order_number"))
+                                                                    .put(LystoreBDD.NBR_ENGAGEMENT, event.getString("engagement_number"));
 
                                                         }
                                                         handler.handle(data);

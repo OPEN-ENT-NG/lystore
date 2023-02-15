@@ -5,4 +5,5 @@ public class CommonConstants {
     public final static String STATUS = "status";
     public final static String OK = "ok";
     public final static String IDS = "ids";
+    public final static String STRUCTURE = "structure";
 }
