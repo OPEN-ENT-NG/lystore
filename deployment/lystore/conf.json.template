@@ -33,6 +33,7 @@
             "notificationMail":${lystoreNotificationMail},
             "notificationHelpDeskMail":${lystoreNotificationHelpDeskMail},
             "notificationHelpDeskReceiver":${lystoreNotificationHelpDeskReceiver}
-         }
+         },
+         "region-type-name": ${lystoreRegionTypeName}
       }
     }

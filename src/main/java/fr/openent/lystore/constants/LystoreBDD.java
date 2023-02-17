@@ -10,4 +10,11 @@ public class LystoreBDD {
     public static final String DATEGENERATION = "dateGeneration";
     public static final String SUPPLIER_ID = "supplier_id";
     public static final String SUPPLIERID = "supplierId";
+    public static final String NBR_BC = "nbr_bc";
+    public static final String CONTRACT = "contract";
+    public static final String CERTIFICATES = "certificates";
+    public static final String ORDER = "order";
+    public static final String ORDERS = "orders";
+    public static final String AGENT = "agent";
+    public static final String SUPPLIER = "supplier";
 }

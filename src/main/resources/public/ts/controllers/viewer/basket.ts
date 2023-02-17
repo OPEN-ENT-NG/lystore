@@ -1,4 +1,4 @@
-import {_, moment, ng, template, toasts} from 'entcore';
+import {_, moment, ng, idiom as lang,template, toasts} from 'entcore';
 import {Basket, Baskets, Notification, Utils} from '../../model';
 
 export const basketController = ng.controller('basketController',
@@ -259,5 +259,18 @@ export const basketController = ng.controller('basketController',
                 Utils.safeApply($scope);
             }
         };
+        $scope.getRequestMessage = () =>{
+            return `${lang.translate('lystore.confirm.request.message1')} ${$scope.regionTypeName}.
+                    ${lang.translate('lystore.confirm.request.message2')} 
+                    "${lang.translate('lystore.request.tracking')}"
+                    ${lang.translate('lystore.confirm.request.message3')}`
+        }
 
+
+        $scope.getOrderMessage = () =>{
+            return `${lang.translate('lystore.confirm.request.message1')} ${$scope.regionTypeName}.
+                    ${lang.translate('lystore.confirm.request.message2')} 
+                    "${lang.translate('lystore.request.tracking')}"
+                    ${lang.translate('lystore.confirm.request.message3')}`
+        }
     }]);

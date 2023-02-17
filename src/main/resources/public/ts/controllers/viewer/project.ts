@@ -1,5 +1,5 @@
 // @ts-ignore
-import {ng, template} from 'entcore';
+import {ng,idiom as lang, template} from 'entcore';
 import {Project, Utils} from '../../model';
 
 export const projectController = ng.controller("projectController",
@@ -21,6 +21,9 @@ export const projectController = ng.controller("projectController",
             Utils.safeApply($scope);
         };
 
+        $scope.getPlaceholder = () =>{
+            return `${lang.translate("lysore.project.placeholder")} ${$scope.regionTypeName}`;
+        } ;
         $scope.project.eventer.on('create:end', () => {
             $scope.takeClientOrder($scope.baskets, $scope.project.id);
         });
