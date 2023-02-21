@@ -34,6 +34,11 @@
             "notificationHelpDeskMail":${lystoreNotificationHelpDeskMail},
             "notificationHelpDeskReceiver":${lystoreNotificationHelpDeskReceiver}
          },
+          "node-pdf-generator" : {
+                   "pdf-connector-id": "exportpdf",
+                   "auth": "${nodePdfToken}",
+                   "url" : "${nodePdfUri}"
+         },
          "region-type-name": ${lystoreRegionTypeName}
       }
     }

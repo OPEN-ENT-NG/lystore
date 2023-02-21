@@ -20,4 +20,5 @@ public class ExportConstants {
     public static final String ENTCORE_PDF_GENERATOR_NAME = "entcore.pdf.generator";
     public static final String IMG = "img";
     public static final String PRINT_ORDER = "print_order";
+    public static final String NODE_PDF_GENERATOR= "node-pdf-generator";
 }

@@ -8,38 +8,48 @@
     <style type="text/css">
         body {
             font-family: "Calibri", sans-serif;
-            font-size: 13px ;
+            font-size: 13px;
             align-content: center;
         }
+
+         .word-break {
+            word-break: break-word;
+        }
+
         .page {
             display: block;
         }
+
         @page {
-            size:  A4 ;
+            size: A4 ;
             margin-left: 5%;
             margin-right: 5%;
             margin-top: 3%;
         }
-        .logo-region{
+
+        .logo-region {
             height: 150px;
             width: 300px;
-            border-bottom: 1px #f6f6f6 solid ;
+            border-bottom: 1px #f6f6f6 solid;
             margin-bottom: 5px;
         }
-        .logo-region > img{
+
+        .logo-region > img {
             height: 100%;
         }
+
         .left {
-            position: relative;
-            width: 40%;
-            margin-right: 5%;
-            display: inline-block;
+            display: flex;
+            width: 50%;
+            flex-direction: column;
+            margin-right: 15px;
         }
+
         .right {
-            position: relative;
-            margin-left: 5%;
-            width: 44%;
-            display: inline-block;
+            display: flex;
+            flex:1;
+            width: 50%;
+            flex-direction: column;
         }
 
         .order-info {
@@ -50,28 +60,17 @@
         .right > input {
             width: 90%;
         }
-        .right > h1{
-            font-size: 20px ;
+
+        .right > h1 {
+            font-size: 20px;
         }
+
         .header {
             width: 100%;
             vertical-align: top;
             display: flex;
             align-items: start;
-            justify-content: center;
-        }
-        .foot {
-            width: 100%;
-            margin-top: 35px;
-        }
-        .seven {
-            width: 58.33333%;
-        }
-        .five {
-            width: 41.66667%;
-        }
-        .fright {
-            float: right;
+            justify-content: space-between;
         }
 
         .break {
@@ -85,18 +84,21 @@
         .signature {
             height: 60px;
         }
-        .equipments-table  {
+
+        .equipments-table {
             width: 100%;
             margin-top: 10px;
             border-collapse: collapse;
         }
-        .equipments-table tfoot tr td:first-child  {
+
+        .equipments-table tfoot tr td:first-child {
             font-weight: bold;
         }
-        .equipments-table tr  td {
-            padding-top:1px;
-            padding-left: 5px ;
-            padding-bottom:1px;
+
+        .equipments-table tr td {
+            padding-top: 1px;
+            padding-left: 5px;
+            padding-bottom: 1px;
             border: 1px solid #ddd;
         }
 
@@ -106,60 +108,62 @@
             clear: both;
             box-sizing: border-box;
         }
-        .six {
-            width: 50%;
-        }
-        .cell{
-            box-sizing: border-box;
-            float: left;
-            display: block;
-            position: relative;
-        }
-        .top{
+
+        .top {
             vertical-align: top;
         }
 
         table.equipments-table > tbody tr:nth-child(odd) td {
             background-color: #efefef;
         }
+
         table.equipments-table > tbody tr:nth-child(even) td {
             background-color: #f2f4f6;
         }
 
         table > thead {
-            font-size: 14px ;
+            font-size: 14px;
             font-weight: bold;
             text-align: center;
         }
+
         input {
-            min-width: 150px ;
-            width: 150px;
+            min-width: 150px;
             max-width: 100%;
             margin-left: 5px;
-            padding-left: 5px ;
+            padding-left: 5px;
         }
 
         table > tfoot > tr {
             margin-top: 20px;
         }
+
         div.service-fait > table.header {
-            margin-bottom: 10px ;
+            margin-bottom: 10px;
         }
+
         div.service-fait > table.equipments-table {
             margin-top: 5px;
             margin-bottom: 10px;
         }
+
         div.service-fait > div.signature {
             width: 100%;
             height: 400px;
         }
+
         div.block {
             border: 0.5px #aaaaaa solid;
-            margin-bottom: 5px ;
-            margin-top: 5px ;
+            margin-bottom: 5px;
+            margin-top: 5px;
             padding: 5px;
             page-break-after: avoid;
             page-break-inside: avoid;
+        }
+
+        .date-input{
+            min-width: 80px;
+            width: 80px;
         }
         .center-text {
             text-align: center;
@@ -170,36 +174,19 @@
             padding-right: 5px;
         }
 
-        .bigger {
-            width: 70%;
-        }
-
-        .smaller {
-            width: 25%;
-        }
-
-        .uppercase {
-            text-transform: uppercase;
-        }
-
-        .orders {
-            margin-bottom: 50px;
-        }
-
         .header h4, .header h5 {
-            margin: 5px;
+            /*margin: 5px;*/
         }
-        .signatureTable{
+
+        .signatureTable {
             width: 100%;
-            table-layout: fixed ;
+            table-layout: fixed;
             margin-top: 10px;
             border-collapse: collapse;
         }
 
-        .signatureTable tr  td {
-            padding-top:1px;
-            padding-left: 5px ;
-            padding-bottom:1px;
+        .signatureTable tr td {
+            padding: 1px 10px 10px;
             border: 1px solid #ddd;
         }
     </style>
@@ -209,23 +196,23 @@
 {{#print_certificates}}
 {{#certificates}}
 <div class="break">
-    <div class="service-fait" >
+    <div class="service-fait">
         <div class="header">
             <div class="left">
-                <div class=" center-text">
+                <div class=" enter-text word-break">
                     {{#bc_options}}
-                    <div class="logo-region" >
-                        <img  src="data:image/png;base64, {{logo-data}}" alt="Logo" />
+                    <div class="logo-region">
+                        <img src="data:image/png;base64, {{logo-data}}" alt="Logo"/>
                     </div>
                     {{#name}}
                     <h4>{{line1}}</h4>
                     <h5>{{line2}}</h5>
                     <p>
-                        <span>{{line3}}</span><br />
-                        {{line4}}<br />
+                        <span>{{line3}}</span><br/>
+                        {{line4}}<br/>
                         {{/name}}
                         {{#address}}
-                        {{line1}}<br />
+                        {{line1}}<br/>
                         {{line2}}
                         {{/address}}
                     </p>
@@ -236,7 +223,7 @@
                         {{#agent}}
                         <strong>{{name}} <br/> </strong>
                         {{email}} <br/>
-                        Tel : {{phone}}  <br/>
+                        Tel : {{phone}} <br/>
                         {{/agent}}
                     </div>
                 </div>
@@ -251,18 +238,18 @@
                     <h4>Titulaire du marché :</h4>
                     {{name}} <br/>
                     {{address}} <br/>
-                    Tel : {{phone}}  <br/>
+                    Tel : {{phone}} <br/>
                     {{/supplier}}
                     <h4>Etablissement :</h4>
                     {{#structure}}
-                    {{name}} <br />
-                    {{address}} <br />
-                    {{zipCode}} - {{city}} <br />
+                    {{name}} <br/>
+                    {{address}} <br/>
+                    {{zipCode}} - {{city}} <br/>
                     Tel : {{phone}}
                     {{/structure}}
                 </p>
                 <strong>
-                    N° Bon de commande : <input type="text"  value = "{{nbr_bc}}" /> <br/>
+                    N° Bon de commande : <input type="text" value="{{nbr_bc}}"/> <br/>
                 </strong>
             </div>
         </div>
@@ -304,56 +291,64 @@
         <div class="break ">
             <table class="signatureTable">
 
-                <tr >
-                    <td class="  center-text "><strong>A remplir par le chef d’établissement ou son représentant</strong></td>
-                    <td class=" center-text"><strong>A remplir par les services de la {{region-type-name}}  </strong> </td>
-                </tr>
-                <tr >
-                    <td class="">
-                        <strong>Date de livraison du matériel / Service fait :<input type="text"  value = "..../..../........" /> <br/> </strong>
-                    </td>
-                    <td class="">
-                        <strong> Référence facture :</strong>
-                        <input type="text"  value = "...................." />
+                <tr>
+                    <td class="  center-text "><strong>A remplir par le chef d’établissement ou son
+                        représentant</strong></td>
+                    <td class=" center-text"><strong>A remplir par les services de la {{region-type-name}} </strong>
                     </td>
                 </tr>
                 <tr>
-                    <td >
+                    <td class="">
+                        <strong>Date de livraison du matériel / Service fait :<input class="date-input" type="text"
+                                                                                     value="..../..../........"/> <br/>
+                        </strong>
+                    </td>
+                    <td class="">
+                        <strong> Référence facture :</strong>
+                        <input type="text" value="...................."/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
                         <p>
-                            La date de mise en service sera prise comme référence au calcul de pénalités en cas de non respect du
-                            délai de livraison et de mise en service (voir CCAP).  Tout dépassement de délai non imputable au prestataire devra être dûment justifié par un écrit.
+                            La date de mise en service sera prise comme référence au calcul de pénalités en cas de non
+                            respect du
+                            délai de livraison et de mise en service (voir CCAP). Tout dépassement de délai non
+                            imputable au prestataire devra être dûment justifié par un écrit.
                         </p>
-                        Le chef d’etablissement certifie que les matériels ont été réceptionnés à la date indiquée ci-dessus en parfait état d'usage. <br/>
+                        Le chef d’etablissement certifie que les matériels ont été réceptionnés à la date indiquée
+                        ci-dessus en parfait état d'usage. <br/>
 
                         <strong>A renvoyer une fois les observations levées en original</strong>
                     </td>
-                    <td >
+                    <td>
                         <strong> Rejet facture</strong><br/>
-                        <span class="top">Motifs :</span>  <input type="text"  value = ".............................................." />
+                        <span class="top">Motifs :</span> <input type="text"
+                                                                 value=".............................................."/>
                         <br>
                         </br>
-                        Date : <input type="text"  value = "....../....../........" />
+                        Date : <input class="date-input" type="text" value="..../..../........"/>
                     </td>
                 </tr>
 
                 <tr class="row">
-                    <td >
+                    <td>
 
-                        A  <input type="text"  value = "..............." />,  le  <input type="text"   />  <br/>
-                        Nom:  <input type="text"  value = "..............." />  <br/>
-                        Qualité  <input type="text"  value = "..............." /> <br/>
+                        A <input type="text" value="..............."/>, le <input type="text"/> <br/>
+                        Nom: <input type="text" value="..............."/> <br/>
+                        Qualité <input type="text" value="..............."/> <br/>
                         <strong>Signature et cachet</strong>
-                        <div class="signature" >
+                        <div class="signature">
                             &nbsp;
                         </div>
                     </td>
-                    <td >
-                        Validation du service fait  A  <input type="text"  value = "..............." />,
-                        le<input type="text"  value = "....../....../........" />   <br/>
-                        Par: <input type="text"  value = "..............." />   <br/>
+                    <td>
+                        Validation du service fait A <input type="text" value="..............."/>,
+                        le<input type="text" class="date-input" value="..../..../........"/> <br/>
+                        Par: <input type="text" value="..............."/> <br/>
                         <br/>
                         <strong>Signature et cachet</strong> <br/>
-                        <div class="signature" >
+                        <div class="signature">
                         </div>
                     </td>
                 </tr>

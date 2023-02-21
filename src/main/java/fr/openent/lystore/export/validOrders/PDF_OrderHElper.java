@@ -28,6 +28,8 @@ import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.email.EmailFactory;
+import org.entcore.common.pdf.PdfFactory;
+import org.entcore.common.pdf.PdfGenerator;
 import org.entcore.common.storage.Storage;
 
 import java.io.StringReader;
@@ -38,9 +40,11 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import static fr.openent.lystore.constants.ExportConstants.NODE_PDF_GENERATOR;
 import static fr.openent.lystore.constants.ParametersConstants.BC_OPTIONS;
 import static fr.openent.lystore.helpers.OrderHelper.getSumWithoutTaxes;
 import static fr.openent.lystore.helpers.OrderHelper.roundWith2Decimals;
+import static fr.wseduc.webutils.http.Renders.badRequest;
 
 public class PDF_OrderHElper {
     protected ParameterService parameterService;
@@ -57,7 +61,7 @@ public class PDF_OrderHElper {
     protected AgentService agentService;
     protected RendersHelper renders ;
     private WorkspaceHelper workspaceHelper;
-
+    private PdfFactory pdfFactory;
     public PDF_OrderHElper(EventBus eb, Vertx vertx, JsonObject config, Storage storage){
         this.vertx = vertx;
         this.config = config;
@@ -74,6 +78,8 @@ public class PDF_OrderHElper {
         programService = new DefaultProgramService(Lystore.lystoreSchema,"program");
         this.parameterService = new DefaultParameterService(Lystore.lystoreSchema, "parameter_bc_options");
         this.workspaceHelper = new WorkspaceHelper(eb,storage);
+        pdfFactory = new PdfFactory(vertx, new JsonObject().put(NODE_PDF_GENERATOR,
+                config.getJsonObject(NODE_PDF_GENERATOR, new JsonObject())));
 
 
     }
@@ -438,13 +444,10 @@ public class PDF_OrderHElper {
 
 
 
-    public void generatePDF(Handler<Either<String, Buffer>> exportHandler, final JsonObject templateProps, final String templateName,
-                            final Handler<Buffer> handler) {
+    public void generatePDF(Handler<Either<String, Buffer>> exportHandler, final JsonObject templateProps, final String templateName) {
 
         final JsonObject exportConfig = config.getJsonObject("exports");
         final String templatePath = exportConfig.getString("template-path");
-        final String baseUrl = config.getString("host") +
-                config.getString("app-address") + "/public/";
 
         node = (String) vertx.sharedData().getLocalMap("server").get("node");
         if (node == null) {
@@ -468,43 +471,38 @@ public class PDF_OrderHElper {
         final String path = FileResolver.absolutePath(templatePath + templateName);
         get64BaseImgFromWorkspace.future().onSuccess(base64 ->
                 vertx.fileSystem().readFile(path, result -> {
-            if (!result.succeeded()) {
-                return;
-            }
-            templateProps.put(ExportConstants.LOGO_DATA, base64);
+                    if (!result.succeeded()) {
+                        return;
+                    }
+                    templateProps.put(ExportConstants.LOGO_DATA, base64);
 
-            StringReader reader = new StringReader(result.result().toString(ExportConstants.UTF_8));
+                    StringReader reader = new StringReader(result.result().toString(ExportConstants.UTF_8));
                     //
                     renders.processTemplate(exportHandler, templateProps, templateName, reader, writer -> {
                         String processedTemplate = ((StringWriter) writer).getBuffer().toString();
-                        if (processedTemplate == null) {
+                        if (processedTemplate.isEmpty()) {
+                            log.error(LystoreUtils.generateErrorMessage(PDF_OrderHElper.class,"generatePDF","Processed Template is empty" ,""));
                             exportHandler.handle(new Either.Left<>("processed template is null"));
                             return;
                         }
-                        JsonObject actionObject = new JsonObject();
-                        byte[] bytes;
+                        PdfGenerator pdfGenerator;
                         try {
-                            bytes = processedTemplate.getBytes("UTF-8");
-                        } catch (UnsupportedEncodingException e) {
-                            bytes = processedTemplate.getBytes();
-                            log.error(e.getMessage(), e);
-                        }
+                            pdfGenerator = pdfFactory.getPdfGenerator();
+                            pdfGenerator.generatePdfFromTemplate("", processedTemplate)
+                                    .onSuccess(pdf -> exportHandler.handle(new Either.Right<>(pdf.getContent())))
+                                    .onFailure(error -> {
+                                        exportHandler.handle(new Either.Left<>(
+                                                LystoreUtils.generateErrorMessage(PDF_OrderHElper.class,"generatePDF",error.getMessage() ,
+                                                        "error when generatePdfFromTemplate")));
+                                        log.error(LystoreUtils.generateErrorMessage(PDF_OrderHElper.class,"generatePDF",error.getMessage() ,"error when generatePdfFromTemplate"));
 
-                        actionObject
-                                .put(ExportConstants.CONTENT, bytes)
-                                .put(ExportConstants.BASEURL, baseUrl);
-                        eb.request(node + ExportConstants.ENTCORE_PDF_GENERATOR_NAME, actionObject, (Handler<AsyncResult<Message<JsonObject>>>) reply -> {
-                            JsonObject pdfResponse = reply.result().body();
-                            if (!CommonConstants.OK.equals(pdfResponse.getString(CommonConstants.STATUS))) {
-                                exportHandler.handle(new Either.Left<>("wrong status when calling bus (pdf) "));
-                                return;
-                            }
-                            byte[] pdf = pdfResponse.getBinary(ExportConstants.CONTENT);
-                            Buffer either = Buffer.buffer(pdf);
-                            handler.handle(either);
-                        });
+                                    });
+                        } catch (Exception exception) {
+                            log.error(LystoreUtils.generateErrorMessage(PDF_OrderHElper.class,"generatePDF",exception.getMessage() ,"PdfGenerator is null"));
+                            exportHandler.handle(new Either.Left<>(LystoreUtils.generateErrorMessage(DefaultExportPDFService.class,"generatePDF",exception.getMessage() ,"PdfGenerator is null")));
+                        }
                     });
-        }));
+                }));
 
 
     }

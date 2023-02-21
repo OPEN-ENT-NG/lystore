@@ -33,7 +33,6 @@ import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -46,15 +45,12 @@ import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 
-import java.math.BigDecimal;
 import java.text.*;
 import java.util.*;
 
-import static fr.openent.lystore.constants.ParametersConstants.BC_OPTIONS;
 import static fr.openent.lystore.constants.ParametersConstants.REGION_TYPE_NAME;
 import static fr.openent.lystore.helpers.OrderHelper.*;
 import static fr.openent.lystore.utils.LystoreUtils.generateErrorMessage;
-import static fr.openent.lystore.utils.OrderUtils.getValidOrdersCSVExportHeader;
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultResponseHandler;
 
@@ -83,7 +79,7 @@ public class OrderController extends ControllerHelper {
         EmailFactory emailFactory = new EmailFactory(vertx, config);
         EmailSender emailSender = emailFactory.getSender();
         this.orderService = new DefaultOrderService(Lystore.lystoreSchema, "order_client_equipment", emailSender);
-        this.exportPDFService = new DefaultExportPDFService(eb, vertx, config);
+        this.exportPDFService = new DefaultExportPDFService(vertx, config);
         this.structureService = new DefaultStructureService(Lystore.lystoreSchema);
         this.supplierService = new DefaultSupplierService(Lystore.lystoreSchema, "supplier");
         this.contractService = new DefaultContractService(Lystore.lystoreSchema, "contract");
