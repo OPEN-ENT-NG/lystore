@@ -14,11 +14,12 @@
         .page {
             display: block;
         }
+        .word-break {
+            word-break: break-word;
+        }
         @page {
             size:  A4 ;
-            margin-left: 5%;
-            margin-right: 5%;
-            margin-top: 3%;
+            margin: 3% 5% 5%;
         }
         .logo-region{
             height: 150px;
@@ -29,17 +30,19 @@
         .logo-region > img{
             height: 100%;
         }
+
         .left {
-            position: relative;
-            width: 45%;
-            margin-right: 5%;
-            display: inline-block;
+            display: flex;
+            width: 50%;
+            flex-direction: column;
+            margin-right: 15px;
         }
+
         .right {
-            position: relative;
-            margin-left: 5%;
-            width: 44%;
-            display: inline-block;
+            display: flex;
+            flex:1;
+            width: 50%;
+            flex-direction: column;
         }
 
         .order-info {
@@ -55,6 +58,13 @@
         }
         .header {
             width: 100%;
+        }
+        .sub-header{
+            width: 100%;
+            vertical-align: top;
+            display: flex;
+            align-items: start;
+            justify-content: space-between;
         }
         .foot {
             width: 100%;
@@ -104,11 +114,14 @@
             text-align: center;
         }
         input {
-            min-width: 150px ;
-            width: 150px;
+            min-width: 150px;
             max-width: 100%;
             margin-left: 5px;
-            padding-left: 5px ;
+            padding-left: 5px;
+        }
+        .date-input{
+            min-width: 80px;
+            width: 80px;
         }
 
         table > tfoot > tr {
@@ -171,8 +184,8 @@
 <div class="page break">
 
     <div class="header">
-        <div>
-            <div class="left center-text">
+        <div class="sub-header">
+            <div class="left center-text word-break">
                 {{#bc_options}}
                 <div class="logo-region" >
                     <img  src="data:image/png;base64, {{logo-data}}" alt="Logo" />
@@ -288,12 +301,12 @@
         </tfoot>
     </table>
 
-    <div class="foot">
-        <div class="left" style="break-after: page;">
+    <div class="foot break">
+        <div class="left" >
             <p class="bigger">
                 Lieu de Livraison, personne à contacter  tel : voir liste des lycées ci-jointe <br/>
-                Date de  livraison: Délai contractuel - <input type="text" value="...................." /><br/> <br/>
-                Reçu par l'entreprise le :  <input type="text"  value = "....../....../........" /> <br/>
+                Date de  livraison: Délai contractuel - <input class="date-input" type="text" value="..../..../........" /><br/> <br/>
+                Reçu par l'entreprise le :  <input class="date-input" type="text"  value = "..../..../........" /> <br/>
                 (Cachet - Signature)
             </p>
             <div class="signature">
@@ -301,7 +314,7 @@
             </div>
         </div>
         <div class="right">
-            <div class="block text-area center-text bigger fright">
+            <div class="block text-area center-text bigger fright word-break">
                 {{#bc_options}}
                 {{#signature}}
                 {{line1}}

@@ -8,38 +8,47 @@
     <style type="text/css">
         body {
             font-family: "Calibri", sans-serif;
-            font-size: 13px ;
+            font-size: 13px;
             align-content: center;
         }
+
         .page {
             display: block;
         }
-        @page {
-            size:  A4 ;
-            margin-left: 5%;
-            margin-right: 5%;
-            margin-top: 3%;
+
+        .word-break {
+            word-break: break-word;
         }
-        .logo-region{
+
+        @page {
+            size: A4 ;
+            margin: 3% 5% 5%;
+        }
+
+        .logo-region {
             height: 150px;
             width: 300px;
-            border-bottom: 1px #f6f6f6 solid ;
+            border-bottom: 1px #f6f6f6 solid;
             margin-bottom: 5px;
         }
-        .logo-region > img{
+
+        .logo-region > img {
             height: 100%;
         }
+
         .left {
-            position: relative;
-            width: 45%;
-            margin-right: 5%;
-            display: inline-block;
+            display: flex;
+            width: 50%;
+            flex-direction: column;
+            align-items: center;
+            margin-right: 15px;
         }
+
         .right {
-            position: relative;
-            margin-left: 5%;
-            width: 44%;
-            display: inline-block;
+            display: flex;
+            flex: 1;
+            width: 50%;
+            flex-direction: column;
         }
 
         .order-info {
@@ -50,15 +59,28 @@
         .right > input {
             width: 90%;
         }
-        .right > h1{
-            font-size: 20px ;
+
+        .right > h1 {
+            font-size: 20px;
         }
+
         .header {
             width: 100%;
         }
+
+        .sub-header {
+            width: 100%;
+            vertical-align: top;
+            display: flex;
+            align-items: start;
+            justify-content: space-between;
+        }
+
         .foot {
             width: 100%;
+            display: flex;
             margin-top: 35px;
+            justify-content: space-between;
         }
 
         .fright {
@@ -76,62 +98,78 @@
         .signature {
             height: 60px;
         }
-        .equipments-table  {
+
+        .equipments-table {
             width: 100%;
             margin-top: 15px;
             border-collapse: collapse;
         }
-        .equipments-table tfoot tr td:first-child  {
+
+        .table-foot td:first-child {
             font-weight: bold;
         }
-        .equipments-table tr  td {
-            padding-top:10px;
-            padding-left: 10px ;
-            padding-bottom:10px;
+
+        .equipments-table tr td {
+            padding-top: 10px;
+            padding-left: 10px;
+            padding-bottom: 10px;
             border: 1px solid #ddd;
+            page-break-inside: avoid;
         }
 
         table.equipments-table > tbody tr:nth-child(odd) td {
             background-color: #efefef;
         }
+
         table.equipments-table > tbody tr:nth-child(even) td {
             background-color: #f2f4f6;
         }
 
         table > thead {
-            font-size: 14px ;
+            font-size: 14px;
             font-weight: bold;
             text-align: center;
         }
+
         input {
-            min-width: 150px ;
-            width: 150px;
+            min-width: 150px;
             max-width: 100%;
             margin-left: 5px;
-            padding-left: 5px ;
+            padding-left: 5px;
         }
 
-        table > tfoot > tr {
+        .date-input {
+            min-width: 80px;
+            width: 80px;
+        }
+
+        .table-foot > tr {
+            page-break-inside: avoid;
             margin-top: 20px;
         }
+
         div.service-fait > table.header {
-            margin-bottom: 10px ;
+            margin-bottom: 10px;
         }
+
         div.service-fait > table.equipments-table {
             margin-top: 5px;
             margin-bottom: 10px;
         }
+
         div.service-fait > div.signature {
             width: 100%;
             height: 400px;
         }
+
         div.block {
             border: 0.5px #aaaaaa solid;
-            margin-bottom: 5px ;
-            margin-top: 5px ;
+            margin-bottom: 5px;
+            margin-top: 5px;
             padding: 5px;
             page-break-after: avoid;
         }
+
         .center-text {
             text-align: center;
         }
@@ -167,20 +205,21 @@
 <body class="page">
 {{#print_order}}
 <div class="header">
-    <div>
-        <div class="left center-text">
+    <div class="sub-header">
+        <div class="left center-text word-break">
             {{#bc_options}}
-            <div class="logo-region" >
-                <img  src="data:image/png;base64, {{logo-data}}" alt="Logo" />
-            </div>            {{#name}}
+            <div class="logo-region">
+                <img src="data:image/png;base64, {{logo-data}}" alt="Logo"/>
+            </div>
+            {{#name}}
             <h4>{{line1}}</h4>
             <h5>{{line2}}</h5>
             <p>
-                <span>{{line3}}</span><br />
-                {{line4}}<br />
+                <span>{{line3}}</span><br/>
+                {{line4}}<br/>
                 {{/name}}
                 {{#address}}
-                {{line1}}<br />
+                {{line1}}<br/>
                 {{line2}}
                 {{/address}}
             </p>
@@ -191,24 +230,23 @@
                 BON DE COMMANDE
             </h1>
             <strong>
-                N°: <input type="text"  value = "{{nbr_bc}}" /> <br/>
+                N°: <input type="text" value="{{nbr_bc}}"/> <br/>
             </strong>
             <p>
-                Du: <input type="text" value = "{{date_generation}}" /><br/>
+                Du: <input type="text" value="{{date_generation}}"/><br/>
                 <br/>
                 {{#supplier}}
                 {{name}} <br/>
                 {{address}} <br/>
-                Tel : {{phone}}  <br/>
+                Tel : {{phone}} <br/>
                 {{/supplier}}
 
-                N° ENGAGEMENT:  <input type="text" value = "{{nbr_engagement}}" />
+                N° ENGAGEMENT: <input type="text" value="{{nbr_engagement}}"/>
             </p>
         </div>
     </div>
     <div class="order-info">
         <div class="contract-info">
-            <input type="text" style="width: 300px;"/>
             {{#contract}}
             <h2>
                 {{name}}
@@ -222,7 +260,7 @@
             {{#agent}}
             <strong>{{name}} <br/> </strong>
             {{email}} <br/>
-            Tel : {{phone}}  <br/>
+            Tel : {{phone}} <br/>
             {{/agent}}
         </div>
     </div>
@@ -232,7 +270,6 @@
     <thead>
     <tr>
         <td>
-
             Description
         </td>
         <td class="right-text">
@@ -263,42 +300,42 @@
         </td>
     </tr>
     {{/orders}}
-    </tbody>
-    <tfoot>
-    <tr>
+    <tr class="table-foot">
         <td colspan="3">Total HT</td>
-        <td class="right-text"> {{sumLocale}} </td>
+        <td class="right-text"> {{sumLocale}}</td>
     </tr>
-    <tr>
-        <td colspan="3">TVA </td>
+    <tr class="table-foot">
+        <td colspan="3">TVA</td>
         <td class="right-text"> {{totalTaxesLocale}}</td>
     </tr>
-    <tr>
-        <td colspan="3">TOTAL TTC </td>
+    <tr class="table-foot">
+        <td colspan="3">TOTAL TTC</td>
         <td class="right-text">{{totalPriceTaxeIncludedLocal}}</td>
     </tr>
-    </tfoot>
+    </tbody>
+
 </table>
 {{/order}}
 
 <div class="foot">
     <div class="left">
         <p class="bigger">
-            Lieu de Livraison, personne à contacter  tel : voir liste des lycées ci-jointe <br/>
-            Date de  livraison: Délai contractuel - <input type="text" value="...................." /><br/> <br/>
-            Reçu par l'entreprise le :  <input type="text"  value = "....../....../........" /> <br/>
+            Lieu de Livraison, personne à contacter tel : voir liste des lycées ci-jointe <br/>
+            Date de livraison: Délai contractuel - <input type="text" class="date-input"
+                                                          value="..../..../........"/><br/> <br/>
+            Reçu par l'entreprise le : <input type="text" class="date-input" value="..../..../........"/> <br/>
             (Cachet - Signature)
         </p>
         <div class="signature">
             &nbsp;
         </div>
     </div>
-    <div class="right">
+    <div class="right word-break">
         <div class="block text-area center-text bigger fright">
             {{#bc_options}}
             {{#signature}}
             {{line1}}
-            <br />
+            <br/>
             <strong>
                 {{line2}}
             </strong>

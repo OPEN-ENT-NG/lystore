@@ -53,8 +53,7 @@ public class BCExportAfterValidationStructure extends PDF_OrderHElper {
                                             .put(ExportConstants.PRINT_CERTIFICATES, false)
                                             .put(BC_OPTIONS , bcOptions.toJson());
                                     generatePDF(exportHandler, data,
-                                            ExportConstants.BC_STRUCTURE_TEMPLATE,
-                                            pdf -> exportHandler.handle(new Either.Right<>(pdf))
+                                            ExportConstants.BC_STRUCTURE_TEMPLATE
                                     );
                                 });
                     } else {

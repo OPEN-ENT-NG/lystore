@@ -46,8 +46,7 @@ public class BCExportBeforeValidationStructure extends PDF_OrderHElper {
                                                 .put(ExportConstants.PRINT_ORDER, true)
                                                 .put(ExportConstants.PRINT_CERTIFICATES, false);
                                         generatePDF(exportHandler, data,
-                                                ExportConstants.BC_STRUCTURE_TEMPLATE,
-                                                pdf -> exportHandler.handle(new Either.Right(pdf))
+                                                ExportConstants.BC_STRUCTURE_TEMPLATE
                                         );
                                     });
                         } else {
