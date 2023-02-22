@@ -3,34 +3,23 @@ package fr.openent.lystore.service.impl;
 import fr.openent.lystore.constants.ExportConstants;
 import fr.openent.lystore.service.ExportPDFService;
 import fr.openent.lystore.utils.LystoreUtils;
+import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.http.Renders;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
-import fr.wseduc.webutils.data.FileResolver;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-import org.entcore.common.pdf.Pdf;
 import org.entcore.common.pdf.PdfFactory;
 import org.entcore.common.pdf.PdfGenerator;
 
-
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import java.text.SimpleDateFormat;
-import java.util.Base64;
-import java.util.Date;
 
 import static fr.openent.lystore.constants.ExportConstants.NODE_PDF_GENERATOR;
 import static fr.wseduc.webutils.http.Renders.badRequest;
-import static fr.wseduc.webutils.http.Renders.getScheme;
 
 
 public class DefaultExportPDFService implements ExportPDFService {
@@ -68,7 +57,7 @@ public class DefaultExportPDFService implements ExportPDFService {
                 String processedTemplate = ((StringWriter) writer).getBuffer().toString();
                 if (processedTemplate.isEmpty()) {
                     badRequest(request);
-                    LOGGER.error(LystoreUtils.generateErrorMessage(DefaultExportPDFService.class,"generatePDF","Processed Template is empty" ,""));
+                    LOGGER.error(LystoreUtils.generateErrorMessage(DefaultExportPDFService.class, "generatePDF", "Processed Template is empty", ""));
                     return;
                 }
                 PdfGenerator pdfGenerator;
@@ -76,12 +65,12 @@ public class DefaultExportPDFService implements ExportPDFService {
                     pdfGenerator = pdfFactory.getPdfGenerator();
                     pdfGenerator.generatePdfFromTemplate("", processedTemplate)
                             .onSuccess(pdf -> handler.handle(pdf.getContent()))
-                            .onFailure(error -> {badRequest(request, error.getMessage());
-                                LOGGER.error(LystoreUtils.generateErrorMessage(DefaultExportPDFService.class,"generatePDF",error.getMessage() ,"error when generatePdfFromTemplate"));
-
+                            .onFailure(error -> {
+                                badRequest(request, error.getMessage());
+                                LOGGER.error(LystoreUtils.generateErrorMessage(DefaultExportPDFService.class, "generatePDF", error.getMessage(), "error when generatePdfFromTemplate"));
                             });
                 } catch (Exception exception) {
-                    LOGGER.error(LystoreUtils.generateErrorMessage(DefaultExportPDFService.class,"generatePDF",exception.getMessage() ,"PdfGenerator is null"));
+                    LOGGER.error(LystoreUtils.generateErrorMessage(DefaultExportPDFService.class, "generatePDF", exception.getMessage(), "PdfGenerator is null"));
                     badRequest(request, exception.getMessage());
                 }
             });
