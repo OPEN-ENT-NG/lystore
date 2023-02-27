@@ -29,9 +29,10 @@ export class Equipment implements Selectable {
     eventer: Eventer;
     _loading: boolean;
     priceTTC?: number;
-    contract_type_name:string;
+    contract_type_name: string;
+    private price_proposal: number;
 
-    constructor (name?: string, price?: number) {
+    constructor(name?: string, price?: number) {
         this.eventer = new Eventer();
         this._loading = false;
         if (name) this.name = name;
@@ -48,8 +49,26 @@ export class Equipment implements Selectable {
         return `${this.reference} - ${this.name}`;
     }
 
-    toJson () {
-        let optionList =  this.options.map((option: EquipmentOption) => option.toJson());
+    calculatePriceHT =
+        (selectedOptions: boolean) => {
+            let price = (this.price_proposal) ? this.price_proposal : this.price;
+            if (!this.price_proposal) {
+                this.options.map((option) => {
+                    (option.required === true || (selectedOptions ? option.selected === true : false))
+                        ? price += option.price
+                        : null;
+                });
+            }
+
+            return price;
+        };
+
+    calculatePriceTTC = (selectedOptions: boolean) => {
+        return this.calculatePriceHT(selectedOptions) * ( 100 + this.tax_amount) / 100 ;
+    }
+
+    toJson() {
+        let optionList = this.options.map((option: EquipmentOption) => option.toJson());
         return {
             name: this.name,
             summary: this.summary || null,
@@ -61,19 +80,23 @@ export class Equipment implements Selectable {
             catalog_enabled: this.catalog_enabled,
             option_enabled: this.option_enabled,
             id_type: this.id_type,
-            reference : this.reference,
+            reference: this.reference,
             price_editable: this.price_editable,
             image: this.image || null,
             id_contract: this.id_contract,
-            technical_specs:  (this.technical_specs!=null) ? this.technical_specs.map((spec: TechnicalSpec) => spec.toJson()) : [],
+            technical_specs: (this.technical_specs != null) ? this.technical_specs.map((spec: TechnicalSpec) => spec.toJson()) : [],
             tags: this.tags.map((tag: Tag) => tag.id),
-            optionsCreate : _.filter(optionList, function(option) { return option.id === null ; }) ,
-            optionsUpdate : _.filter(optionList, function(option) { return option.id !== null ; }) ,
-            deletedOptions : this.deletedOptions || null,
+            optionsCreate: _.filter(optionList, function (option) {
+                return option.id === null;
+            }),
+            optionsUpdate: _.filter(optionList, function (option) {
+                return option.id !== null;
+            }),
+            deletedOptions: this.deletedOptions || null,
         };
     }
 
-    async save () {
+    async save() {
         if (this.id) {
             await this.update();
         } else {
@@ -81,7 +104,7 @@ export class Equipment implements Selectable {
         }
     }
 
-    async create () {
+    async create() {
         try {
             await http.post(`/lystore/equipment`, this.toJson());
         } catch (e) {
@@ -89,7 +112,7 @@ export class Equipment implements Selectable {
         }
     }
 
-    async update () {
+    async update() {
         try {
             await http.put(`/lystore/equipment/${this.id}`, this.toJson());
         } catch (e) {
@@ -98,7 +121,7 @@ export class Equipment implements Selectable {
         }
     }
 
-    async delete () {
+    async delete() {
         try {
             await http.delete(`/lystore/equipment/${this.id}`);
         } catch (e) {
@@ -106,11 +129,11 @@ export class Equipment implements Selectable {
         }
     }
 
-    async sync (id) {
+    async sync(id) {
         this.loading = true;
 
         try {
-            let { data } =  await http.get(`/lystore/equipment/${id}`);
+            let {data} = await http.get(`/lystore/equipment/${id}`);
             Mix.extend(this, data[0]);
             this.price = parseFloat(this.price.toString());
             this.tax_amount = parseFloat(this.tax_amount.toString());
@@ -126,8 +149,7 @@ export class Equipment implements Selectable {
         } catch (e) {
             console.error(e);
             notify.error('lystore.equipment.sync.err');
-        }
-        finally {
+        } finally {
             this.loading = false;
         }
     }
@@ -146,15 +168,18 @@ export class Equipment implements Selectable {
 export class TechnicalSpec {
     name: string;
     value: string;
-    constructor(){
+
+    constructor() {
     }
-    toJson () {
+
+    toJson() {
         return {
             name: this.name,
             value: this.value
         };
     }
-    toString () {
+
+    toString() {
         return this.name + ' ' + this.value;
     }
 }
@@ -188,7 +213,7 @@ export class Equipments extends Selection<Equipment> {
     }
 
 
-    async delete (equipments: Equipment[]): Promise<void> {
+    async delete(equipments: Equipment[]): Promise<void> {
         try {
             let filter = '';
             equipments.map((equipment) => filter += `id=${equipment.id}&`);
@@ -284,7 +309,7 @@ export class Equipments extends Selection<Equipment> {
         return this.sync(idCampaign, idStructure, --this.page, filter);
     }
 
-    async setStatus (status: string): Promise<void> {
+    async setStatus(status: string): Promise<void> {
         try {
             let params = Utils.formatKeyToParameter(this.selected, 'id');
             await http.put(`/lystore/equipments/${status}?${params}`);
@@ -316,18 +341,19 @@ export class EquipmentOption implements Selectable {
     id_option: number;
     search?: Equipment[];
     searchReference?: Equipment[];
+    price: number;
 
 
-    constructor () {
+    constructor() {
         this.amount = 1;
         this.required = true;
     }
 
-    toJson () {
+    toJson() {
         return {
             id: this.id ? this.id : null,
             amount: parseInt(this.amount.toString()),
-            required : this.required,
+            required: this.required,
             id_option: this.id_option
         };
     }
@@ -372,8 +398,7 @@ export class EquipmentImporter {
         } catch (err) {
             this.err = err;
             throw err;
-        }
-        finally {
+        } finally {
             this.loading = false;
         }
     }
