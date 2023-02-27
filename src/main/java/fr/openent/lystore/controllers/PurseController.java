@@ -2,10 +2,10 @@ package fr.openent.lystore.controllers;
 
 import com.opencsv.CSVReader;
 import fr.openent.lystore.Lystore;
-import fr.openent.lystore.helpers.ImportCSVHelper;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
+import fr.openent.lystore.model.Structure;
 import fr.openent.lystore.security.AdministratorRight;
 import fr.openent.lystore.service.CampaignService;
 import fr.openent.lystore.service.PurseService;
@@ -25,7 +25,6 @@ import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -34,14 +33,13 @@ import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.storage.Storage;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.DecimalFormat;
-import java.util.UUID;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import static fr.wseduc.webutils.http.response.DefaultResponseHandler.arrayResponseHandler;
-import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultResponseHandler;
+import static fr.openent.lystore.constants.CommonConstants.ID;
 import static org.entcore.common.utils.FileUtils.deleteImportPath;
 
 public class PurseController extends ControllerHelper {
@@ -261,24 +259,21 @@ public class PurseController extends ControllerHelper {
     public void export(final HttpServerRequest request) {
         try {
             Integer idCampaign = Integer.parseInt(request.params().get("id"));
-            purseService.getPursesByCampaignId(idCampaign, new Handler<Either<String, JsonArray>>() {
-                @Override
-                public void handle(Either<String, JsonArray> event) {
-                    if (event.isRight()) {
-                        JsonArray ids = new fr.wseduc.webutils.collections.JsonArray();
-                        JsonObject exportValues = new JsonObject();
-                        JsonArray purses = event.right().getValue();
-                        JsonObject purse;
-                        for (int i = 0; i < purses.size(); i++) {
-                            purse = purses.getJsonObject(i);
-                            exportValues.put(purse.getString("id_structure"),
-                                    Double.parseDouble(purse.getString("amount")));
-                            ids.add(purse.getString("id_structure"));
-                        }
-                        retrieveUAIs(ids, exportValues, request);
-                    } else {
-                        badRequest(request);
+            purseService.getPursesByCampaignId(idCampaign, event -> {
+                if (event.isRight()) {
+                    JsonArray ids = new fr.wseduc.webutils.collections.JsonArray();
+                    JsonObject exportValues = new JsonObject();
+                    JsonArray purses = event.right().getValue();
+                    JsonObject purse;
+                    for (int i = 0; i < purses.size(); i++) {
+                        purse = purses.getJsonObject(i);
+                        exportValues.put(purse.getString("id_structure"),
+                                Double.parseDouble(purse.getString("amount")));
+                        ids.add(purse.getString("id_structure"));
                     }
+                    retrieveUAIs(ids, exportValues, request);
+                } else {
+                    badRequest(request);
                 }
             });
         } catch (NumberFormatException e) {
@@ -438,23 +433,32 @@ public class PurseController extends ControllerHelper {
      */
     private void retrieveUAIs(JsonArray ids, final JsonObject exportValues,
                               final HttpServerRequest request) {
-        structureService.getStructureById(ids, new Handler<Either<String, JsonArray>>() {
-            @Override
-            public void handle(Either<String, JsonArray> event) {
-                if (event.isRight()) {
-                    JsonObject values = new JsonObject();
-                    JsonArray uais = event.right().getValue();
-                    JsonObject uai;
-                    for (int i = 0; i < uais.size(); i++) {
-                        uai = uais.getJsonObject(i);
-                        values.put(uai.getString("uai"),
-                                exportValues.getDouble(uai.getString("id")));
-                    }
-                    launchExport(values, request);
-                } else {
-                    renderError(request, new JsonObject().put("message",
-                            event.left().getValue()));
-                }
+        structureService.getStructureById(ids, event -> {
+            if (event.isRight()) {
+
+                JsonObject values = new JsonObject();
+                JsonArray structuresJa = event.right().getValue();
+                List<Structure> structures = structuresJa.stream().map(structureObject -> {
+                    JsonObject structureJo =  (JsonObject) structureObject;
+                    Structure structure = new Structure();
+                    structure.setId(structureJo.getString(ID));
+                    structure.setAcademy(structureJo.getString("academy"));
+                    structure.setUAI(structureJo.getString("uai"));
+                    structure.setType(structureJo.getString("type"));
+                    structure.setName(structureJo.getString("nameEtab"));
+                    structure.setZipCode(structureJo.getString("zipCode"));
+                    structure.setCity(structureJo.getString("city"));
+                    structure.setCiteMixte(structureJo.getString("cite_mixte"));
+                    return structure;
+                }).collect(Collectors.toList());
+
+//                    uai = uais.getJsonObject(i);
+//                    values.put(uai.getString("uai"),
+//                            exportValues.getDouble(uai.getString("id")));
+                launchExport(values, request);
+            } else {
+                renderError(request, new JsonObject().put("message",
+                        event.left().getValue()));
             }
         });
     }
