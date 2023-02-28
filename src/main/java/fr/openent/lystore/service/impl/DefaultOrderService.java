@@ -153,7 +153,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 " oce.cause_status, oce.number_validation, oce.id_order, oce.comment, oce.price_proposal, oce.id_project, oce.rank, oce.program," +
                 " oce.action, array_to_json(array_agg( distinct structure_group.name)) as structure_groups, " +
                 " oce.id_operation, oce.override_region, oce.id_type,  " +
-                Lystore.lystoreSchema + ".order_total(oce.id) AS Total"+
+                Lystore.lystoreSchema + ".order_total(oce.id ,false) AS Total"+
                 " FROM " + Lystore.lystoreSchema + ".order_client_equipment oce " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".project ON (oce.id_project = project.id) " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".title ON (project.id_title = title.id) " +
@@ -1352,7 +1352,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "       orders.id_operation, " +
                 "       orders.override_region, " +
                 "       orders.id_type, " +
-                Lystore.lystoreSchema + ".order_total(orders.id) AS Total " +
+                Lystore.lystoreSchema + ".order_total(orders.id ,false) AS Total " +
                 "FROM   " + Lystore.lystoreSchema + ".allorders orders " +
                 "       INNER JOIN " + Lystore.lystoreSchema + ".rel_group_campaign " +
                 "               ON ( orders.id_campaign = rel_group_campaign.id_campaign ) " +
@@ -1614,7 +1614,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 " oce.cause_status, oce.number_validation, oce.id_order, oce.comment, oce.price_proposal, oce.id_project, oce.rank, oce.program," +
                 " oce.action, array_to_json(array_agg( distinct structure_group.name)) as structure_groups, " +
                 " oce.id_operation, oce.override_region, oce.id_type,  " +
-                Lystore.lystoreSchema + ".order_total(oce.id) AS Total " +
+                Lystore.lystoreSchema + ".order_total(oce.id , false) AS Total " +
                 " FROM lystore.order_client_equipment oce " +
                 "INNER JOIN lystore.project ON (oce.id_project = project.id) " +
                 "INNER JOIN lystore.title ON (project.id_title = title.id) " +
