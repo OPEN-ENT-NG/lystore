@@ -50,7 +50,7 @@ export class Equipment implements Selectable {
     }
 
     calculatePriceHT(selectedOptions: boolean) :number {
-        let price = (this.price_proposal) ? this.price_proposal : this.price;
+        let price: number = (this.price_proposal) ? this.price_proposal : this.price;
         if (!this.price_proposal) {
             this.options
                 .filter((option: EquipmentOption) => (option.required === true || (selectedOptions ? option.selected === true : false)))
