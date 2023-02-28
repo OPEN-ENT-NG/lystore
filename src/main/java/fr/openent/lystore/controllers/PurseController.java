@@ -5,6 +5,7 @@ import fr.openent.lystore.Lystore;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
+import fr.openent.lystore.model.Purse;
 import fr.openent.lystore.model.Structure;
 import fr.openent.lystore.security.AdministratorRight;
 import fr.openent.lystore.service.CampaignService;
@@ -36,7 +37,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.DecimalFormat;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static fr.openent.lystore.constants.CommonConstants.ID;
@@ -261,15 +264,16 @@ public class PurseController extends ControllerHelper {
             Integer idCampaign = Integer.parseInt(request.params().get("id"));
             purseService.getPursesByCampaignId(idCampaign, event -> {
                 if (event.isRight()) {
-                    JsonArray ids = new fr.wseduc.webutils.collections.JsonArray();
-                    JsonObject exportValues = new JsonObject();
+                    JsonArray ids = new JsonArray();
+                    Map<String, Purse> exportValues = new HashMap<>();
                     JsonArray purses = event.right().getValue();
-                    JsonObject purse;
+                    JsonObject purseJO;
                     for (int i = 0; i < purses.size(); i++) {
-                        purse = purses.getJsonObject(i);
-                        exportValues.put(purse.getString("id_structure"),
-                                Double.parseDouble(purse.getString("amount")));
-                        ids.add(purse.getString("id_structure"));
+                        purseJO = purses.getJsonObject(i);
+                        Purse purse = new Purse(purseJO);
+                        exportValues.put(purseJO.getString("id_structure"),
+                                purse);
+                        ids.add(purseJO.getString("id_structure"));
                     }
                     retrieveUAIs(ids, exportValues, request);
                 } else {
@@ -431,12 +435,12 @@ public class PurseController extends ControllerHelper {
      * @param exportValues Values to exports
      * @param request Http request
      */
-    private void retrieveUAIs(JsonArray ids, final JsonObject exportValues,
+    private void retrieveUAIs(JsonArray ids, final Map<String, Purse> exportValues,
                               final HttpServerRequest request) {
         structureService.getStructureById(ids, event -> {
             if (event.isRight()) {
 
-                JsonObject values = new JsonObject();
+                Map<String , Purse> values = new HashMap<>();
                 JsonArray structuresJa = event.right().getValue();
                 List<Structure> structures = structuresJa.stream().map(structureObject -> {
                     JsonObject structureJo =  (JsonObject) structureObject;
@@ -452,9 +456,12 @@ public class PurseController extends ControllerHelper {
                     return structure;
                 }).collect(Collectors.toList());
 
-//                    uai = uais.getJsonObject(i);
-//                    values.put(uai.getString("uai"),
-//                            exportValues.getDouble(uai.getString("id")));
+                for(Structure structure : structures){
+                    exportValues.get(structure.getId()).setStructure(structure);
+                    values.put(structure.getUAI(),
+                            exportValues.get(structure.getId()));
+                }
+
                 launchExport(values, request);
             } else {
                 renderError(request, new JsonObject().put("message",
@@ -468,11 +475,10 @@ public class PurseController extends ControllerHelper {
      * @param values values to export
      * @param request Http request
      */
-    private static void launchExport(JsonObject values, HttpServerRequest request) {
-        String[] uais = values.fieldNames().toArray(new String[0]);
+    private static void launchExport(Map<String, Purse> values, HttpServerRequest request) {
         StringBuilder exportString = new StringBuilder(getCSVHeader(request));
-        for (String uai : uais) {
-            exportString.append(getCSVLine(uai, values.getDouble(uai)));
+        for (Map.Entry<String, Purse> entry : values.entrySet()) {
+            exportString.append(getCSVLine(entry.getKey(), entry.getValue()));
         }
         request.response()
                 .putHeader("Content-Type", "text/csv; charset=utf-8")
@@ -495,13 +501,16 @@ public class PurseController extends ControllerHelper {
     /**
      * Get CSV Line
      * @param uai Structure UAI
-     * @param amount Structure purse amount
+     * @param purse Structure purse
      * @return CSV Line
      */
     //a déplacer hors du controller
-    private static String getCSVLine(String uai, Number amount) {
+    private static String getCSVLine(String uai, Purse purse) {
         DecimalFormat df = new DecimalFormat("####0.00");
-        return uai + ";" + df.format(amount) + "\n";
+        return uai + ";" + df.format(purse.getAmount())
+                + ";" + purse.getStructure().getName()
+                + ";" + df.format(purse.getInitialAmount())
+                +";" + df.format(purse.getTotalOrder()) +  "\n";
     }
 
     /**
