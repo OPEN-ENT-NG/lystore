@@ -449,10 +449,9 @@ public class PurseController extends ControllerHelper {
                     structure.setAcademy(structureJo.getString("academy"));
                     structure.setUAI(structureJo.getString("uai"));
                     structure.setType(structureJo.getString("type"));
-                    structure.setName(structureJo.getString("nameEtab"));
+                    structure.setName(structureJo.getString("name"));
                     structure.setZipCode(structureJo.getString("zipCode"));
                     structure.setCity(structureJo.getString("city"));
-                    structure.setCiteMixte(structureJo.getString("cite_mixte"));
                     return structure;
                 }).collect(Collectors.toList());
 
@@ -492,9 +491,11 @@ public class PurseController extends ControllerHelper {
      * @return CSV file Header
      */
     private static String getCSVHeader(HttpServerRequest request) {
-        return I18n.getInstance().translate("UAI", getHost(request), I18n.acceptLanguage(request)) +
-                ";" +
-                I18n.getInstance().translate("purse", getHost(request), I18n.acceptLanguage(request)) +
+        return I18n.getInstance().translate("UAI", getHost(request), I18n.acceptLanguage(request)) + ";" +
+                I18n.getInstance().translate("lystore.name", getHost(request), I18n.acceptLanguage(request)) + ";"+
+                I18n.getInstance().translate("purse", getHost(request), I18n.acceptLanguage(request)) + ";" +
+                I18n.getInstance().translate("lystore.campaign.purse.init",getHost(request),I18n.acceptLanguage(request)) + ";"+
+                I18n.getInstance().translate("lystore.campaign.purse.total_order",getHost(request),I18n.acceptLanguage(request)) + ";"+
                 "\n";
     }
 
@@ -507,10 +508,11 @@ public class PurseController extends ControllerHelper {
     //a déplacer hors du controller
     private static String getCSVLine(String uai, Purse purse) {
         DecimalFormat df = new DecimalFormat("####0.00");
-        return uai + ";" + df.format(purse.getAmount())
+        return uai
                 + ";" + purse.getStructure().getName()
+                + ";" + df.format(purse.getAmount())
                 + ";" + df.format(purse.getInitialAmount())
-                +";" + df.format(purse.getTotalOrder()) +  "\n";
+                + ";" + df.format(purse.getTotalOrder()) + "\n";
     }
 
     /**
