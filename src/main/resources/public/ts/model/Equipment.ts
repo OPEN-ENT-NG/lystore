@@ -49,26 +49,22 @@ export class Equipment implements Selectable {
         return `${this.reference} - ${this.name}`;
     }
 
-    calculatePriceHT =
-        (selectedOptions: boolean) => {
-            let price = (this.price_proposal) ? this.price_proposal : this.price;
-            if (!this.price_proposal) {
-                this.options.map((option) => {
-                    (option.required === true || (selectedOptions ? option.selected === true : false))
-                        ? price += option.price
-                        : null;
-                });
-            }
+    calculatePriceHT(selectedOptions: boolean) :number {
+        let price = (this.price_proposal) ? this.price_proposal : this.price;
+        if (!this.price_proposal) {
+            this.options
+                .filter((option: EquipmentOption) => (option.required === true || (selectedOptions ? option.selected === true : false)))
+                .forEach((option: EquipmentOption) => price += option.price);
+        }
+        return price;
+    }
 
-            return price;
-        };
-
-    calculatePriceTTC = (selectedOptions: boolean) => {
-        return this.calculatePriceHT(selectedOptions) * ( 100 + this.tax_amount) / 100 ;
+    calculatePriceTTC (selectedOptions: boolean):number{
+        return this.calculatePriceHT(selectedOptions) * (100 + this.tax_amount) / 100;
     }
 
     toJson() {
-        let optionList = this.options.map((option: EquipmentOption) => option.toJson());
+        let optionList: EquipmentOption[] = this.options;
         return {
             name: this.name,
             summary: this.summary || null,
@@ -86,12 +82,12 @@ export class Equipment implements Selectable {
             id_contract: this.id_contract,
             technical_specs: (this.technical_specs != null) ? this.technical_specs.map((spec: TechnicalSpec) => spec.toJson()) : [],
             tags: this.tags.map((tag: Tag) => tag.id),
-            optionsCreate: _.filter(optionList, function (option) {
-                return option.id === null;
-            }),
-            optionsUpdate: _.filter(optionList, function (option) {
-                return option.id !== null;
-            }),
+            optionsCreate: optionList.filter(option =>
+                 option.id === null
+            ).map(option => option.toJson()),
+            optionsUpdate: optionList.filter(option =>
+                option.id !== null
+            ).map(option => option.toJson()),
             deletedOptions: this.deletedOptions || null,
         };
     }
