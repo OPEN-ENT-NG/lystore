@@ -6,6 +6,6 @@ export const currency = ng.filter('currency', () =>
             0 :
             parseFloat(amount).toLocaleString(undefined,
                 {minimumFractionDigits: 2, maximumFractionDigits: 2})) +
-            ' ' + idiom.translate('money.symbol');
+             idiom.translate('money.symbol');
     }
 );

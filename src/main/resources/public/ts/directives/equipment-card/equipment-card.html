@@ -1,0 +1,26 @@
+<article class="domino row equipment-card" ng-class="{ disabled: vm.equipment.status !==  vm.equipmentStatusConst.available }">
+    <h1 ng-class="{disabled: vm.equipment.status !== vm.equipmentStatusConst.available} "
+        class="equipment-card-status"
+        ng-show="vm.equipment.status!==  vm.equipmentStatusConst.available">
+        <i18n ng-show="vm.equipment.status === vm.equipmentStatusConst.unavailable">lystore.UNAVAILABLE</i18n>
+        <i18n ng-show="vm.equipment.status === vm.equipmentStatusConst.outOfStock">lystore.OUT_OF_STOCK</i18n>
+    </h1>
+
+
+    <h2 class="equipment-card-price-ht" ng-bind="vm.displayPrice(vm.equipment.calculatePriceHT(false), 'lystore.ht.label')"></h2>
+    <div class="equipment-card-price-ttc"
+         ng-bind="vm.displayPrice(vm.equipment.calculatePriceTTC(false), 'lystore.ttc.label')"></div>
+    <div class="equipment-card-tax">
+        <i18n>lystore.tax.label</i18n>
+        : [[vm.equipment.tax_amount]]%
+    </div>
+    <div class="twelve cell top equipment-card-equipment" ng-class="{ item: display.equipment }">
+        <img ng-src="[[vm.equipment.image]]"
+             ng-show="vm.equipment.image !== null && vm.equipment.image !== undefined "/>
+        <img skin-src="/img/illustrations/pages-default.png"
+             ng-show="vm.equipment.image === null || vm.equipment.image === undefined "/>
+        <strong class="ellipsis equipment-card-equipment-name">[[vm.equipment.name]]</strong>
+        <em class="metadata">[[vm.equipment.contract_name]]</em>
+        <p class="description ellipsis">[[vm.equipment.summary]]</p>
+    </div>
+</article>
