@@ -1,6 +1,11 @@
 package fr.openent.lystore.model;
 
+import fr.openent.lystore.Lystore;
+import fr.openent.lystore.constants.CommonConstants;
+import fr.openent.lystore.constants.LystoreBDD;
 import io.vertx.core.json.JsonObject;
+
+import static fr.openent.lystore.constants.CommonConstants.ID;
 
 public class Structure  extends  Model{
 
@@ -16,6 +21,21 @@ public class Structure  extends  Model{
     private String type;
     public Structure(){
         super();
+    }
+    
+    public Structure (JsonObject data){
+        super();
+        this.build(data);
+    }
+
+    private void build(JsonObject data) {
+        this.setId(data.getString(ID));
+        this.setAcademy(data.getString("academy"));
+        this.setUAI(data.getString("uai"));
+        this.setType(data.getString("type"));
+        this.setName(data.getString("name"));
+        this.setZipCode(data.getString("zipCode"));
+        this.setCity(data.getString("city"));
     }
 
     public String getUAI() {
@@ -92,7 +112,14 @@ public class Structure  extends  Model{
 
     @Override
     public JsonObject toJsonObject() {
-        return null;
+        return new JsonObject()
+                .put(ID,id)
+                .put(LystoreBDD.UAI,UAI)
+                .put(LystoreBDD.NAME,name)
+                .put(LystoreBDD.ACADEMY, academy)
+                .put(LystoreBDD.ZIPCODE,zipCode)
+                .put(LystoreBDD.ADDRESS,address)
+                .put(LystoreBDD.TYPE,type);
     }
 
 }

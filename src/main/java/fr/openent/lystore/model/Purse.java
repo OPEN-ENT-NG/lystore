@@ -1,6 +1,7 @@
 package fr.openent.lystore.model;
 
 import fr.openent.lystore.constants.CommonConstants;
+import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.utils.OrderUtils;
 import io.vertx.core.json.JsonObject;
 
@@ -17,13 +18,13 @@ public class Purse extends Model{
 
     private void build(JsonObject purseJO) {
         this.id = purseJO.getValue(CommonConstants.ID).toString();
-        this.amount = OrderUtils.safeGetDouble(purseJO, "amount");
-        this.initialAmount = OrderUtils.safeGetDouble(purseJO, "initial_amount");
+        this.amount = OrderUtils.safeGetDouble(purseJO, LystoreBDD.AMOUNT);
+        this.initialAmount = OrderUtils.safeGetDouble(purseJO, LystoreBDD.INITIAL_AMOUNT);
         this.campaign = new Campaign();
-        campaign.setId(purseJO.getValue("id_campaign").toString());
+        campaign.setId(purseJO.getValue(LystoreBDD.ID_CAMPAIGN).toString());
         this.structure = new Structure();
-        this.structure.setId(purseJO.getString("id_structure"));
-        this.totalOrder = OrderUtils.safeGetDouble(purseJO, "total_order");
+        this.structure.setId(purseJO.getString(LystoreBDD.ID_STRUCTURE));
+        this.totalOrder = OrderUtils.safeGetDouble(purseJO, LystoreBDD.TOTAL_ORDER);
     }
 
     public double getTotalOrder() {
@@ -68,6 +69,12 @@ public class Purse extends Model{
 
     @Override
     public JsonObject toJsonObject() {
-        return null;
+        return new JsonObject()
+                .put(CommonConstants.ID,id)
+                .put(LystoreBDD.AMOUNT,amount)
+                .put(LystoreBDD.INITIAL_AMOUNT,initialAmount)
+                .put(LystoreBDD.ID_CAMPAIGN,campaign.getId())
+                .put(LystoreBDD.ID_STRUCTURE, structure.getId())
+                .put(LystoreBDD.TOTAL_ORDER , totalOrder);
     }
 }

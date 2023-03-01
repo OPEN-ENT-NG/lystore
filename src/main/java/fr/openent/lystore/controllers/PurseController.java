@@ -2,11 +2,14 @@ package fr.openent.lystore.controllers;
 
 import com.opencsv.CSVReader;
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.constants.CommonConstants;
+import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
 import fr.openent.lystore.model.Purse;
 import fr.openent.lystore.model.Structure;
+import fr.openent.lystore.model.utils.Domain;
 import fr.openent.lystore.security.AdministratorRight;
 import fr.openent.lystore.service.CampaignService;
 import fr.openent.lystore.service.PurseService;
@@ -24,6 +27,7 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
@@ -36,7 +40,10 @@ import org.entcore.common.storage.Storage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Array;
+import java.sql.Struct;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -262,24 +269,28 @@ public class PurseController extends ControllerHelper {
     public void export(final HttpServerRequest request) {
         try {
             Integer idCampaign = Integer.parseInt(request.params().get("id"));
-            purseService.getPursesByCampaignId(idCampaign, event -> {
-                if (event.isRight()) {
-                    JsonArray ids = new JsonArray();
-                    Map<String, Purse> exportValues = new HashMap<>();
-                    JsonArray purses = event.right().getValue();
-                    JsonObject purseJO;
-                    for (int i = 0; i < purses.size(); i++) {
-                        purseJO = purses.getJsonObject(i);
-                        Purse purse = new Purse(purseJO);
-                        exportValues.put(purseJO.getString("id_structure"),
-                                purse);
-                        ids.add(purseJO.getString("id_structure"));
-                    }
-                    retrieveUAIs(ids, exportValues, request);
-                } else {
-                    badRequest(request);
-                }
-            });
+            Domain domain = new Domain(getHost(request),I18n.acceptLanguage(request));
+            List<Purse> purseArrayList = new ArrayList<>();
+             purseService.getPursesByCampaignId(idCampaign)
+                    .compose(purses -> {
+                        purseArrayList.addAll(purses);
+                       return structureService.getStructureById(
+                                new JsonArray(purses.stream()
+                                        .map(purse -> purse.getStructure().getId())
+                                        .collect(Collectors.toList())));
+                    })
+                    .compose(structures -> {
+                        Map<Structure, Purse> values = new HashMap<>();
+                        structures.forEach(structure -> values.put(structure,
+                                purseArrayList.stream().filter(purse ->
+                                        purse.getStructure().getId().equals(structure.getId())).findFirst().orElse(null)));
+                     return    purseService.getExport(values, domain);
+            }).onSuccess(fileStr ->{
+                 request.response()
+                         .putHeader("Content-Type", "text/csv; charset=utf-8")
+                         .putHeader("Content-Disposition", "attachment; filename=" + getFileExportName(request))
+                         .end(fileStr);
+             });
         } catch (NumberFormatException e) {
             log.error("[Lystore@CSVExport] : An error occurred when casting campaign id", e);
             badRequest(request);
@@ -393,126 +404,30 @@ public class PurseController extends ControllerHelper {
      * @param request Http request
      */
     private void retrieveStructuresData(JsonArray ids, final JsonArray purses, final HttpServerRequest request) {
-        structureService.getStructureById(ids, new Handler<Either<String, JsonArray>>() {
-            @Override
-            public void handle(Either<String, JsonArray> event) {
-                if (event.isRight()) {
-                    JsonArray structures = event.right().getValue();
-                    JsonObject structure;
-                    JsonObject purse;
-
-                    // put structure name / uai on the purse according to structure id
-                    for (int i = 0; i < structures.size(); i++) {
-                        structure = structures.getJsonObject(i);
-                        for (int j = 0; j < purses.size(); j++) {
-                            purse = purses.getJsonObject(j);
-
-                            if(purse.getString("id_structure").equals(structure.getString("id"))) {
-                                purse.put("name", structure.getString("name"));
-                                purse.put("uai", structure.getString("uai"));
-
-                                // we also convert amount to get a number instead of a string
-                                String amount = purse.getString("amount");
-                                purse.remove("amount");
-                                purse.put("amount",Double.parseDouble(amount));
-                            }
-                        }
-                    }
-
-                    Renders.renderJson(request, purses);
-
-                } else {
-                    renderError(request, new JsonObject().put("message",
-                            event.left().getValue()));
-                }
-            }
-        });
-    }
-
-    /**
-     * Retrieve structure uais based on ids list
-     * @param ids JsonArray containing ids list
-     * @param exportValues Values to exports
-     * @param request Http request
-     */
-    private void retrieveUAIs(JsonArray ids, final Map<String, Purse> exportValues,
-                              final HttpServerRequest request) {
         structureService.getStructureById(ids, event -> {
             if (event.isRight()) {
+                JsonArray structures = event.right().getValue();
+                JsonObject structure;
+                JsonObject purse;
+                for (int i = 0; i < structures.size(); i++) {
+                    structure = structures.getJsonObject(i);
+                    for (int j = 0; j < purses.size(); j++) {
+                        purse = purses.getJsonObject(j);
 
-                Map<String , Purse> values = new HashMap<>();
-                JsonArray structuresJa = event.right().getValue();
-                List<Structure> structures = structuresJa.stream().map(structureObject -> {
-                    JsonObject structureJo =  (JsonObject) structureObject;
-                    Structure structure = new Structure();
-                    structure.setId(structureJo.getString(ID));
-                    structure.setAcademy(structureJo.getString("academy"));
-                    structure.setUAI(structureJo.getString("uai"));
-                    structure.setType(structureJo.getString("type"));
-                    structure.setName(structureJo.getString("name"));
-                    structure.setZipCode(structureJo.getString("zipCode"));
-                    structure.setCity(structureJo.getString("city"));
-                    return structure;
-                }).collect(Collectors.toList());
-
-                for(Structure structure : structures){
-                    exportValues.get(structure.getId()).setStructure(structure);
-                    values.put(structure.getUAI(),
-                            exportValues.get(structure.getId()));
+                        if(purse.getString(LystoreBDD.ID_STRUCTURE).equals(structure.getString(ID))) {
+                            purse.put(LystoreBDD.NAME, structure.getString(LystoreBDD.NAME));
+                            purse.put(LystoreBDD.UAI, structure.getString(LystoreBDD.UAI));
+                            Double amount = purse.getDouble(LystoreBDD.AMOUNT);
+                            purse.put(LystoreBDD.AMOUNT,amount);
+                        }
+                    }
                 }
-
-                launchExport(values, request);
+                Renders.renderJson(request, purses);
             } else {
-                renderError(request, new JsonObject().put("message",
+                renderError(request, new JsonObject().put(CommonConstants.MESSAGE,
                         event.left().getValue()));
             }
         });
-    }
-
-    /**
-     * Launch export. Build CSV based on values parameter
-     * @param values values to export
-     * @param request Http request
-     */
-    private static void launchExport(Map<String, Purse> values, HttpServerRequest request) {
-        StringBuilder exportString = new StringBuilder(getCSVHeader(request));
-        for (Map.Entry<String, Purse> entry : values.entrySet()) {
-            exportString.append(getCSVLine(entry.getKey(), entry.getValue()));
-        }
-        request.response()
-                .putHeader("Content-Type", "text/csv; charset=utf-8")
-                .putHeader("Content-Disposition", "attachment; filename=" + getFileExportName(request))
-                .end(exportString.toString());
-    }
-
-    /**
-     * Get CSV Header using internationalization
-     * @param request Http request
-     * @return CSV file Header
-     */
-    private static String getCSVHeader(HttpServerRequest request) {
-        return I18n.getInstance().translate("UAI", getHost(request), I18n.acceptLanguage(request)) + ";" +
-                I18n.getInstance().translate("lystore.name", getHost(request), I18n.acceptLanguage(request)) + ";"+
-                I18n.getInstance().translate("purse", getHost(request), I18n.acceptLanguage(request)) + ";" +
-                I18n.getInstance().translate("lystore.campaign.purse.init",getHost(request),I18n.acceptLanguage(request)) + ";"+
-                I18n.getInstance().translate("lystore.campaign.purse.total_order",getHost(request),I18n.acceptLanguage(request)) + ";"+
-                "\n";
-    }
-
-    /**
-     * Get CSV Line
-     * @param uai Structure UAI
-     * @param purse Structure purse
-     * @return CSV Line
-     */
-    //a déplacer hors du controller
-    private static String getCSVLine(String uai, Purse purse) {
-        DecimalFormat df = new DecimalFormat("####0.00");
-        return uai
-                + ";" + purse.getStructure().getName()
-                + ";" + df.format(purse.getAmount())
-                + ";" + df.format(purse.getInitialAmount())
-                + ";" + df.format(purse.getTotalOrder()) + "\n";
     }
 
     /**
