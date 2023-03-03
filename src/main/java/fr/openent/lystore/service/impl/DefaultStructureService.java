@@ -2,7 +2,6 @@ package fr.openent.lystore.service.impl;
 
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.constants.LystoreBDD;
-import fr.openent.lystore.export.validOrders.BC.BCExportDuringValidation;
 import fr.openent.lystore.model.Structure;
 import fr.openent.lystore.service.StructureService;
 import fr.openent.lystore.utils.LystoreUtils;
@@ -10,8 +9,6 @@ import fr.wseduc.webutils.Either;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
-import io.vertx.core.VertxException;
-import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.neo4j.Neo4j;

@@ -1,7 +1,6 @@
 package fr.openent.lystore.service.impl;
 
 import fr.openent.lystore.Lystore;
-import fr.openent.lystore.helpers.ImportCSVHelper;
 import fr.openent.lystore.model.Purse;
 import fr.openent.lystore.model.Structure;
 import fr.openent.lystore.model.utils.Domain;
@@ -9,26 +8,22 @@ import fr.openent.lystore.service.PurseService;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import io.vertx.core.Future;
+import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
-import io.vertx.core.Handler;
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-
-import static fr.wseduc.webutils.http.Renders.getHost;
 
 public class DefaultPurseService implements PurseService {
     private Boolean invalidDatas= false;
@@ -114,12 +109,11 @@ public class DefaultPurseService implements PurseService {
 
         Sql.getInstance().prepared(query, params, SqlResult.validResultHandler(event -> {
             if (event.isRight()) {
-                List<Purse> purses = new ArrayList<>();
-                JsonArray pursesJA = event.right().getValue();
-                for (int i = 0; i < pursesJA.size(); i++) {
-                    Purse purse = new Purse(pursesJA.getJsonObject(i));
-                    purses.add(purse);
-                }
+                List<Purse> purses = event.right().getValue().stream()
+                        .filter(JsonObject.class::isInstance)
+                        .map(JsonObject.class::cast)
+                        .map(Purse::new)
+                        .collect(Collectors.toList());
                 promise.complete(purses);
             } else {
                 promise.fail(event.left().getValue());

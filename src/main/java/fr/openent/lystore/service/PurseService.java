@@ -6,7 +6,6 @@ import fr.openent.lystore.model.utils.Domain;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
-import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
@@ -25,8 +24,8 @@ public interface PurseService {
 
     /**
      * Get all the purses of a campaign
-     * @param campaignId
-     * @return
+     * @param campaignId campaign identifier
+     * @return Future of List {@link Purse}
      */
     Future<List<Purse>> getPursesByCampaignId(Integer campaignId);
 

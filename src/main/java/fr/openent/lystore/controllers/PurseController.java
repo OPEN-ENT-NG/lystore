@@ -27,7 +27,6 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
-import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
@@ -40,9 +39,6 @@ import org.entcore.common.storage.Storage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.reflect.Array;
-import java.sql.Struct;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -269,12 +265,12 @@ public class PurseController extends ControllerHelper {
     public void export(final HttpServerRequest request) {
         try {
             Integer idCampaign = Integer.parseInt(request.params().get("id"));
-            Domain domain = new Domain(getHost(request),I18n.acceptLanguage(request));
+            Domain domain = new Domain(getHost(request), I18n.acceptLanguage(request));
             List<Purse> purseArrayList = new ArrayList<>();
-             purseService.getPursesByCampaignId(idCampaign)
+            purseService.getPursesByCampaignId(idCampaign)
                     .compose(purses -> {
                         purseArrayList.addAll(purses);
-                       return structureService.getStructureById(
+                        return structureService.getStructureById(
                                 new JsonArray(purses.stream()
                                         .map(purse -> purse.getStructure().getId())
                                         .collect(Collectors.toList())));
@@ -284,13 +280,12 @@ public class PurseController extends ControllerHelper {
                         structures.forEach(structure -> values.put(structure,
                                 purseArrayList.stream().filter(purse ->
                                         purse.getStructure().getId().equals(structure.getId())).findFirst().orElse(null)));
-                     return    purseService.getExport(values, domain);
-            }).onSuccess(fileStr ->{
-                 request.response()
-                         .putHeader("Content-Type", "text/csv; charset=utf-8")
-                         .putHeader("Content-Disposition", "attachment; filename=" + getFileExportName(request))
-                         .end(fileStr);
-             });
+                        return purseService.getExport(values, domain);
+                    })
+                    .onSuccess(fileStr -> request.response()
+                            .putHeader("Content-Type", "text/csv; charset=utf-8")
+                            .putHeader("Content-Disposition", "attachment; filename=" + getFileExportName(request))
+                            .end(fileStr));
         } catch (NumberFormatException e) {
             log.error("[Lystore@CSVExport] : An error occurred when casting campaign id", e);
             badRequest(request);

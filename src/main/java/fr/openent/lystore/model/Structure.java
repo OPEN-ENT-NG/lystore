@@ -30,12 +30,12 @@ public class Structure  extends  Model{
 
     private void build(JsonObject data) {
         this.setId(data.getString(ID));
-        this.setAcademy(data.getString("academy"));
-        this.setUAI(data.getString("uai"));
-        this.setType(data.getString("type"));
-        this.setName(data.getString("name"));
-        this.setZipCode(data.getString("zipCode"));
-        this.setCity(data.getString("city"));
+        this.setAcademy(data.getString(LystoreBDD.ACADEMY));
+        this.setUAI(data.getString(LystoreBDD.UAI));
+        this.setType(data.getString(LystoreBDD.TYPE));
+        this.setName(data.getString(LystoreBDD.NAME));
+        this.setZipCode(data.getString(LystoreBDD.ZIPCODE));
+        this.setCity(data.getString(LystoreBDD.CITY));
     }
 
     public String getUAI() {

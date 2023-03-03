@@ -83,7 +83,7 @@ public class DefaultPurseServiceTest {
         });
 
         try {
-            Whitebox.invokeMethod(this.campaignService, "getCampaignsPurses",(Handler) e -> {
+            Whitebox.invokeMethod(this.campaignService, "getPursesByCampaignId",(Handler) e -> {
             });
         } catch (Exception e) {
             ctx.assertNotNull(e);

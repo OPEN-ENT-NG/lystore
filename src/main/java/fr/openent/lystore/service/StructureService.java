@@ -20,17 +20,17 @@ public interface StructureService {
 
     void getStructureByUAI(JsonArray uais, Handler<Either<String, JsonArray>> handler);
 
-    /**
-     * renvoie un JsonArray
-     * @param ids
-     * @param handler
+    /** get structure by id
+     *
+     * @param ids list of structure identifier (JsonArray containing of list {@link String}
+     * @param handler JsonArray of Structure (see Structure model)
      */
     void getStructureById(JsonArray ids, Handler<Either<String, JsonArray>> handler);
 
-    /**
-     *  renvoi une list<Structure>
-     * @param ids
-     * @return
+    /** get structure by id
+     *
+     * @param ids list of structure identifier (JsonArray containing of list {@link String}
+     * @return Future of list {@link Structure}
      */
     Future<List<Structure>> getStructureById(JsonArray ids);
 }
