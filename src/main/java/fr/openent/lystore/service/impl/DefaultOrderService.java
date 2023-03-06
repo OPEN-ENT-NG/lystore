@@ -669,7 +669,8 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     }
 
     @Override
-    public void updateStatusToSent(final List<String> validationNumbers, String status, final String engagementNumber, final String labelProgram, final String dateCreation,
+    public void updateStatusToSent(final List<String> validationNumbers, String status, final String engagementNumber,
+                                   final String labelProgram, final String dateCreation,
                                    final String orderNumber, final Handler<Either<String, JsonObject>> handler) {
         String query = "SELECT distinct id_order " +
                 "FROM " + Lystore.lystoreSchema + ".allOrders orders " +
@@ -689,10 +690,10 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                                     Number orderId = eventId.right().getValue().getInteger("id");
                                     JsonArray statements = new fr.wseduc.webutils.collections.JsonArray()
                                             .add(getOrderCreateStatement(orderId, engagementNumber, labelProgram, dateCreation, orderNumber))
-                                            .add(getAddOrderClientRef(orderId, validationNumbers))
                                             .add(getAddOrderRegionRef(orderId, validationNumbers))
-                                            .add(getUpdateClientOrderStatement(new JsonArray(validationNumbers), "SENT"))
-                                            .add(getUpdateRegionOrderStatement(new JsonArray(validationNumbers), "SENT"));
+                                            .add(getAddOrderClientRef(orderId, validationNumbers))
+                                            .add(getUpdateRegionOrderStatement(new JsonArray(validationNumbers), "SENT"))
+                                            .add(getUpdateClientOrderStatement(new JsonArray(validationNumbers), "SENT"));
 
                                     Sql.getInstance().transaction(statements, SqlResult.validRowsResultHandler(handler));
                                 } else {
@@ -739,7 +740,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "SET id_order = ? " +
                 "WHERE number_validation IN " + Sql.listPrepared(validationNumbers.toArray());
 
-        JsonArray params = new fr.wseduc.webutils.collections.JsonArray().add(orderId);
+        JsonArray params = new JsonArray().add(orderId);
         for (String number : validationNumbers)  {
             params.add(number);
         }
