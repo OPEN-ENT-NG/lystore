@@ -1,7 +1,7 @@
 package fr.openent.lystore.service;
 
 import fr.openent.lystore.Lystore;
-import fr.openent.lystore.service.impl.DefaultCampaignService;
+import fr.openent.lystore.service.impl.DefaultPurseService;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
@@ -21,13 +21,13 @@ import static org.mockito.Mockito.mock;
 public class DefaultPurseServiceTest {
     private Vertx vertx;
     private final Sql sql = mock(Sql.class);
-    private CampaignService campaignService;
+    private PurseService purseService;
 
     @Before
     public void setUp() {
         vertx = Vertx.vertx();
         Sql.getInstance().init(vertx.eventBus(), "fr.openent.lystore");
-        this.campaignService = new DefaultCampaignService(Lystore.lystoreSchema, "campaign");
+        this.purseService = new DefaultPurseService();
     }
 
     @Test
@@ -83,7 +83,7 @@ public class DefaultPurseServiceTest {
         });
 
         try {
-            Whitebox.invokeMethod(this.campaignService, "getPursesByCampaignId",(Handler) e -> {
+            Whitebox.invokeMethod(this.purseService, "getPursesByCampaignId",(Handler) e -> {
             });
         } catch (Exception e) {
             ctx.assertNotNull(e);
