@@ -34,11 +34,13 @@
             "notificationHelpDeskMail":${lystoreNotificationHelpDeskMail},
             "notificationHelpDeskReceiver":${lystoreNotificationHelpDeskReceiver}
          },
-          "node-pdf-generator" : {
-                   "pdf-connector-id": "exportpdf",
-                   "auth": "${nodePdfToken}",
-                   "url" : "${nodePdfUri}"
-         },
-         "region-type-name": ${lystoreRegionTypeName}
+		 <% if (nodePdfUri != null && !nodePdfUri.trim().isEmpty()) { %>
+			  "node-pdf-generator" : {
+					   "pdf-connector-id": "exportpdf",
+					   "auth": "${nodePdfToken}",
+					   "url" : "${nodePdfUri}"
+			 },
+		 <% } %>
+         "region-type-name": "${lystoreRegionTypeName}"
       }
     }

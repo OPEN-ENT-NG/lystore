@@ -42,7 +42,7 @@
                 "auth": "{{ nodePdfToken }}",
                 "url" : "{{ nodePdfUrl }}"
              },
-        "region-type-name":  {{ lystoreRegionTypeName  | default('lystore.config.region.type.name') }}
+        "region-type-name":  "{{ lystoreRegionTypeName  | default('lystore.config.region.type.name') }}"
 
     }
 }
