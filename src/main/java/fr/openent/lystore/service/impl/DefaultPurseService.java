@@ -5,6 +5,7 @@ import fr.openent.lystore.model.Purse;
 import fr.openent.lystore.model.Structure;
 import fr.openent.lystore.model.utils.Domain;
 import fr.openent.lystore.service.PurseService;
+import fr.openent.lystore.utils.LystoreUtils;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import io.vertx.core.Future;
@@ -116,6 +117,8 @@ public class DefaultPurseService implements PurseService {
                         .collect(Collectors.toList());
                 promise.complete(purses);
             } else {
+                log.error(LystoreUtils.generateErrorMessage(this.getClass(),"getPursesByCampaignId",
+                        "error when getting purses" , event.left().getValue()));
                 promise.fail(event.left().getValue());
             }
         }));
@@ -128,7 +131,11 @@ public class DefaultPurseService implements PurseService {
         getPursesByCampaignId(campaignId)
                 .onSuccess(result ->
                         handler.handle(new Either.Right<>(new JsonArray(result.stream().map(Purse::toJsonObject).collect(Collectors.toList())))))
-                .onFailure(error -> handler.handle(new Either.Left<>(error.getMessage())));
+                .onFailure(error -> {
+                    log.error(LystoreUtils.generateErrorMessage(this.getClass(),"getPursesByCampaignId",
+                            "error when getting purses" , error));
+                    handler.handle(new Either.Left<>(error.getMessage()));
+                });
     }
 
     private JsonObject getImportStatement(Integer campaignId, String structureId, String amount) {
@@ -302,7 +309,8 @@ public class DefaultPurseService implements PurseService {
         Promise<String> promise = Promise.promise();
         StringBuilder exportString = new StringBuilder(getCSVHeader(domain));
         for (Map.Entry<Structure, Purse> entry : values.entrySet()) {
-            exportString.append(getCSVLine(entry.getKey(), entry.getValue()));
+            if(entry.getValue() != null )
+                exportString.append(getCSVLine(entry.getKey(), entry.getValue()));
         }
         promise.complete(exportString.toString());
         return promise.future();

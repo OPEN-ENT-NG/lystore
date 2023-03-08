@@ -72,7 +72,7 @@ public class DefaultPurseServiceTest {
                 "WHERE  " +
                 "        purse.id_campaign = ? ;  " ;
 
-        JsonArray expectedParams = new JsonArray();
+        JsonArray expectedParams = new JsonArray().add(5);
 
         vertx.eventBus().consumer("fr.openent.lystore", message -> {
             JsonObject body = (JsonObject) message.body();
@@ -81,13 +81,7 @@ public class DefaultPurseServiceTest {
             ctx.assertEquals(expectedParams.toString(), body.getJsonArray("values").toString());
             async.complete();
         });
-
-        try {
-            Whitebox.invokeMethod(this.purseService, "getPursesByCampaignId",(Handler) e -> {
-            });
-        } catch (Exception e) {
-            ctx.assertNotNull(e);
-        }
+        this.purseService.getPursesByCampaignId(5);
     }
 
 }

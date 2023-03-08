@@ -280,6 +280,7 @@ public class PurseController extends ControllerHelper {
                         structures.forEach(structure -> values.put(structure,
                                 purseArrayList.stream().filter(purse ->
                                         purse.getStructure().getId().equals(structure.getId())).findFirst().orElse(null)));
+
                         return purseService.getExport(values, domain);
                     })
                     .onSuccess(fileStr -> request.response()
@@ -402,21 +403,18 @@ public class PurseController extends ControllerHelper {
         structureService.getStructureById(ids, event -> {
             if (event.isRight()) {
                 JsonArray structures = event.right().getValue();
-                JsonObject structure;
-                JsonObject purse;
-                for (int i = 0; i < structures.size(); i++) {
-                    structure = structures.getJsonObject(i);
-                    for (int j = 0; j < purses.size(); j++) {
-                        purse = purses.getJsonObject(j);
-
+                structures.stream().forEach(structureO ->{
+                    JsonObject structure =  (JsonObject) structureO;
+                    purses.stream().forEach(purseO ->{
+                        JsonObject purse = (JsonObject) purseO;
                         if(purse.getString(LystoreBDD.ID_STRUCTURE).equals(structure.getString(ID))) {
                             purse.put(LystoreBDD.NAME, structure.getString(LystoreBDD.NAME));
                             purse.put(LystoreBDD.UAI, structure.getString(LystoreBDD.UAI));
                             Double amount = purse.getDouble(LystoreBDD.AMOUNT);
                             purse.put(LystoreBDD.AMOUNT,amount);
                         }
-                    }
-                }
+                    });
+                });
                 Renders.renderJson(request, purses);
             } else {
                 renderError(request, new JsonObject().put(CommonConstants.MESSAGE,

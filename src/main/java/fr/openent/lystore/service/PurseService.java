@@ -56,5 +56,11 @@ public interface PurseService {
 
     void checkPurses(Integer id, Handler<Either<String, JsonArray>> handler);
 
+    /**
+     * get csv string of the purses of a campaign
+     * @param values
+     * @param domain
+     * @return
+     */
      Future<String> getExport(Map<Structure, Purse> values, Domain domain);
 }

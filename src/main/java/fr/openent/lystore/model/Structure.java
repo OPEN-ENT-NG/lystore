@@ -1,7 +1,5 @@
 package fr.openent.lystore.model;
 
-import fr.openent.lystore.Lystore;
-import fr.openent.lystore.constants.CommonConstants;
 import fr.openent.lystore.constants.LystoreBDD;
 import io.vertx.core.json.JsonObject;
 
