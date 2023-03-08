@@ -14,3 +14,4 @@ export * from './parameter-bc-form/parameter-bc-form.directive';
 export * from './parameter-valid-command/parameter-valid-command.directive';
 export * from './bc-preview/bc-preview.directive';
 export * from './equipment-card/equipment-card.directive';
+export * from './campaign-titles-table/campaign-titles-table.directive';
