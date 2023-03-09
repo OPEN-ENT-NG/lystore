@@ -1,18 +1,30 @@
 package fr.openent.lystore.service.impl;
 
 import fr.openent.lystore.Lystore;
-import fr.openent.lystore.helpers.ImportCSVHelper;
+import fr.openent.lystore.model.Purse;
+import fr.openent.lystore.model.Structure;
+import fr.openent.lystore.model.utils.Domain;
 import fr.openent.lystore.service.PurseService;
+import fr.openent.lystore.utils.LystoreUtils;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
+import io.vertx.core.Future;
+import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
+import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
-import io.vertx.core.Handler;
-import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
+
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class DefaultPurseService implements PurseService {
     private Boolean invalidDatas= false;
@@ -53,7 +65,8 @@ public class DefaultPurseService implements PurseService {
     }
 
     @Override
-    public void getPursesByCampaignId(Integer campaignId, Handler<Either<String, JsonArray>> handler) {
+    public Future<List<Purse>> getPursesByCampaignId(Integer campaignId) {
+        Promise<List<Purse>> promise = Promise.promise();
         String query = "   " +
                 " WITH orders as (SELECT oce.id_structure, " +
                 "               oce.id_campaign, " +
@@ -90,12 +103,39 @@ public class DefaultPurseService implements PurseService {
                 "left join orders " +
                 "               ON orders.id_structure = purse.id_structure AND  orders.id_campaign = purse.id_campaign " +
                 "WHERE  " +
-                "        purse.id_campaign = ? ;  " ;
+                "        purse.id_campaign = ? ;  ";
 
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray()
                 .add(campaignId);
 
-        Sql.getInstance().prepared(query, params, SqlResult.validResultHandler(handler));
+        Sql.getInstance().prepared(query, params, SqlResult.validResultHandler(event -> {
+            if (event.isRight()) {
+                List<Purse> purses = event.right().getValue().stream()
+                        .filter(JsonObject.class::isInstance)
+                        .map(JsonObject.class::cast)
+                        .map(Purse::new)
+                        .collect(Collectors.toList());
+                promise.complete(purses);
+            } else {
+                log.error(LystoreUtils.generateErrorMessage(this.getClass(),"getPursesByCampaignId",
+                        "error when getting purses" , event.left().getValue()));
+                promise.fail(event.left().getValue());
+            }
+        }));
+        return promise.future();
+    }
+
+    @Override
+    @Deprecated
+    public void getPursesByCampaignId(Integer campaignId, Handler<Either<String, JsonArray>> handler) {
+        getPursesByCampaignId(campaignId)
+                .onSuccess(result ->
+                        handler.handle(new Either.Right<>(new JsonArray(result.stream().map(Purse::toJsonObject).collect(Collectors.toList())))))
+                .onFailure(error -> {
+                    log.error(LystoreUtils.generateErrorMessage(this.getClass(),"getPursesByCampaignId",
+                            "error when getting purses" , error));
+                    handler.handle(new Either.Left<>(error.getMessage()));
+                });
     }
 
     private JsonObject getImportStatement(Integer campaignId, String structureId, String amount) {
@@ -239,4 +279,41 @@ public class DefaultPurseService implements PurseService {
             }
         }));
     }
+
+    private static String getCSVLine(Structure structure, Purse purse) {
+        DecimalFormat df = new DecimalFormat("####0.00");
+        return structure.getUAI()
+                + ";" + structure.getName()
+                + ";" + df.format(purse.getAmount())
+                + ";" + df.format(purse.getInitialAmount())
+                + ";" + df.format(purse.getTotalOrder()) + "\n";
+    }
+
+
+    private static String getCSVHeader(Domain domain) {
+        return I18n.getInstance().translate("UAI", domain.getHost(), domain.getLang()) + ";" +
+                I18n.getInstance().translate("lystore.name", domain.getHost(), domain.getLang()) + ";" +
+                I18n.getInstance().translate("purse", domain.getHost(), domain.getLang()) + ";" +
+                I18n.getInstance().translate("lystore.campaign.purse.init", domain.getHost(), domain.getLang()) + ";" +
+                I18n.getInstance().translate("lystore.campaign.purse.total_order", domain.getHost(), domain.getLang()) + ";" +
+                "\n";
+    }
+
+    /**
+     * Launch export. Build CSV based on values parameter
+     * @param values values to export
+     * @param domain domain to get i18n
+     */
+    @Override
+    public Future<String> getExport(Map<Structure, Purse> values, Domain domain) {
+        Promise<String> promise = Promise.promise();
+        StringBuilder exportString = new StringBuilder(getCSVHeader(domain));
+        for (Map.Entry<Structure, Purse> entry : values.entrySet()) {
+            if(entry.getValue() != null )
+                exportString.append(getCSVLine(entry.getKey(), entry.getValue()));
+        }
+        promise.complete(exportString.toString());
+        return promise.future();
+    }
+
 }

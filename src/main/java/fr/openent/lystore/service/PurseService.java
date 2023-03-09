@@ -1,9 +1,16 @@
 package fr.openent.lystore.service;
 
+import fr.openent.lystore.model.Purse;
+import fr.openent.lystore.model.Structure;
+import fr.openent.lystore.model.utils.Domain;
 import fr.wseduc.webutils.Either;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+
+import java.util.List;
+import java.util.Map;
 
 public interface PurseService {
 
@@ -14,6 +21,13 @@ public interface PurseService {
      * @param handler Function handler
      */
     void launchImport(Integer campaignId, JsonObject statementsValues, Handler<Either<String, JsonObject>> handler);
+
+    /**
+     * Get all the purses of a campaign
+     * @param campaignId campaign identifier
+     * @return Future of List {@link Purse}
+     */
+    Future<List<Purse>> getPursesByCampaignId(Integer campaignId);
 
     /**
      * Get purses by campaign id
@@ -41,4 +55,12 @@ public interface PurseService {
      JsonObject updatePurseAmountStatement(Double price,Integer idCampaign, String idStructure, String operation);
 
     void checkPurses(Integer id, Handler<Either<String, JsonArray>> handler);
+
+    /**
+     * get csv string of the purses of a campaign
+     * @param values
+     * @param domain
+     * @return
+     */
+     Future<String> getExport(Map<Structure, Purse> values, Domain domain);
 }
