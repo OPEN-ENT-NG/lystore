@@ -30,10 +30,26 @@
                             <label class="label-cell">
                                 <h4>
                                     <i18n>lystore.amount.HT</i18n>
+                                    <span ng-bind="calculatePriceOfEquipmentHT(basket.equipment, false, 2) | currency" ></span>
+                                </h4>
+                            </label>
+                        </div>
+                        <div class="twelve row">
+                            <label class="label-cell">
+                                <h4>
+                                    <i18n>lystore.amount.HT.total</i18n>
                                     <span ng-bind="calculatePriceOfEquipmentHT(basket.equipment, true, 2) | currency" ></span>
                                 </h4>
                             </label>
                         </div>
+                        <div class="twelve row">
+                        <label class="label-cell">
+                            <h4>
+                                <i18n>lystore.amount.HT.total</i18n>
+                                <span ng-bind="(calculatePriceTTC(calculatePriceOfEquipmentHT(basket.equipment, false, 2), taxes.all[0].value, 2) | currency) + 'TTC'"></span>
+                            </h4>
+                        </label>
+                    </div>
                         <div class="twelve row">
                             <label class="label-cell">
                                 <h4>
@@ -44,7 +60,7 @@
                         </div>
                     </div>
                     <div class="six cell">
-                        <h1 class="right-magnet" ng-bind="(calculatePriceTTC(basket.equipment.price, taxes.all[0].value, 2) | currency) + 'TTC'"></h1>
+                        <h1 class="right-magnet" ng-bind="(calculatePriceTTC(calculatePriceOfEquipmentHT(basket.equipment, true, 2), taxes.all[0].value, 2) | currency) + 'TTC'"></h1>
                     </div>
                 </div>
             </article>
