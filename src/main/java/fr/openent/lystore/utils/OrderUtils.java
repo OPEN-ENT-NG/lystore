@@ -7,12 +7,14 @@ import io.vertx.core.json.JsonObject;
 import static fr.wseduc.webutils.http.Renders.getHost;
 
 public class OrderUtils {
-    public static Double safeGetDouble(JsonObject jo, String key) {
-        Double result;
+    public static double safeGetDouble(JsonObject jo, String key) {
+        double result;
         try {
             result = jo.getDouble(key);
-        }catch (Exception e){
+        }catch (ClassCastException e){
             result = Double.parseDouble(jo.getString(key).replaceAll(",", "."));
+        }catch (Exception e){
+            result = 0.d;
         }
         return  result;
     }

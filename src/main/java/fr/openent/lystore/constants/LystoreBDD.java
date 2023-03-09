@@ -17,4 +17,20 @@ public class LystoreBDD {
     public static final String ORDERS = "orders";
     public static final String AGENT = "agent";
     public static final String SUPPLIER = "supplier";
+
+    public static final String INITIAL_AMOUNT = "initial_amount";
+    public static final String ID_CAMPAIGN = "id_campaign";
+    public static final String ID_STRUCTURE = "id_structure";
+    public static final String TOTAL_ORDER = "total_order";
+    public static final String AMOUNT = "amount";
+
+
+    //STRUCTURE NEO
+    public static final String ACADEMY = "academy";
+    public static final String UAI = "uai";
+    public static final String NAME = "name";
+    public static final String TYPE = "type";
+    public static final String ZIPCODE = "zipCode";
+    public static final String CITY = "city";
+    public static final String ADDRESS = "address";
 }

@@ -2,10 +2,14 @@ package fr.openent.lystore.controllers;
 
 import com.opencsv.CSVReader;
 import fr.openent.lystore.Lystore;
-import fr.openent.lystore.helpers.ImportCSVHelper;
+import fr.openent.lystore.constants.CommonConstants;
+import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
+import fr.openent.lystore.model.Purse;
+import fr.openent.lystore.model.Structure;
+import fr.openent.lystore.model.utils.Domain;
 import fr.openent.lystore.security.AdministratorRight;
 import fr.openent.lystore.service.CampaignService;
 import fr.openent.lystore.service.PurseService;
@@ -25,7 +29,6 @@ import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -34,14 +37,15 @@ import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.storage.Storage;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.text.DecimalFormat;
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-import static fr.wseduc.webutils.http.response.DefaultResponseHandler.arrayResponseHandler;
-import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultResponseHandler;
+import static fr.openent.lystore.constants.CommonConstants.ID;
 import static org.entcore.common.utils.FileUtils.deleteImportPath;
 
 public class PurseController extends ControllerHelper {
@@ -261,26 +265,28 @@ public class PurseController extends ControllerHelper {
     public void export(final HttpServerRequest request) {
         try {
             Integer idCampaign = Integer.parseInt(request.params().get("id"));
-            purseService.getPursesByCampaignId(idCampaign, new Handler<Either<String, JsonArray>>() {
-                @Override
-                public void handle(Either<String, JsonArray> event) {
-                    if (event.isRight()) {
-                        JsonArray ids = new fr.wseduc.webutils.collections.JsonArray();
-                        JsonObject exportValues = new JsonObject();
-                        JsonArray purses = event.right().getValue();
-                        JsonObject purse;
-                        for (int i = 0; i < purses.size(); i++) {
-                            purse = purses.getJsonObject(i);
-                            exportValues.put(purse.getString("id_structure"),
-                                    Double.parseDouble(purse.getString("amount")));
-                            ids.add(purse.getString("id_structure"));
-                        }
-                        retrieveUAIs(ids, exportValues, request);
-                    } else {
-                        badRequest(request);
-                    }
-                }
-            });
+            Domain domain = new Domain(getHost(request), I18n.acceptLanguage(request));
+            List<Purse> purseArrayList = new ArrayList<>();
+            purseService.getPursesByCampaignId(idCampaign)
+                    .compose(purses -> {
+                        purseArrayList.addAll(purses);
+                        return structureService.getStructureById(
+                                new JsonArray(purses.stream()
+                                        .map(purse -> purse.getStructure().getId())
+                                        .collect(Collectors.toList())));
+                    })
+                    .compose(structures -> {
+                        Map<Structure, Purse> values = new HashMap<>();
+                        structures.forEach(structure -> values.put(structure,
+                                purseArrayList.stream().filter(purse ->
+                                        purse.getStructure().getId().equals(structure.getId())).findFirst().orElse(null)));
+
+                        return purseService.getExport(values, domain);
+                    })
+                    .onSuccess(fileStr -> request.response()
+                            .putHeader("Content-Type", "text/csv; charset=utf-8")
+                            .putHeader("Content-Disposition", "attachment; filename=" + getFileExportName(request))
+                            .end(fileStr));
         } catch (NumberFormatException e) {
             log.error("[Lystore@CSVExport] : An error occurred when casting campaign id", e);
             badRequest(request);
@@ -394,110 +400,27 @@ public class PurseController extends ControllerHelper {
      * @param request Http request
      */
     private void retrieveStructuresData(JsonArray ids, final JsonArray purses, final HttpServerRequest request) {
-        structureService.getStructureById(ids, new Handler<Either<String, JsonArray>>() {
-            @Override
-            public void handle(Either<String, JsonArray> event) {
-                if (event.isRight()) {
-                    JsonArray structures = event.right().getValue();
-                    JsonObject structure;
-                    JsonObject purse;
-
-                    // put structure name / uai on the purse according to structure id
-                    for (int i = 0; i < structures.size(); i++) {
-                        structure = structures.getJsonObject(i);
-                        for (int j = 0; j < purses.size(); j++) {
-                            purse = purses.getJsonObject(j);
-
-                            if(purse.getString("id_structure").equals(structure.getString("id"))) {
-                                purse.put("name", structure.getString("name"));
-                                purse.put("uai", structure.getString("uai"));
-
-                                // we also convert amount to get a number instead of a string
-                                String amount = purse.getString("amount");
-                                purse.remove("amount");
-                                purse.put("amount",Double.parseDouble(amount));
-                            }
+        structureService.getStructureById(ids, event -> {
+            if (event.isRight()) {
+                JsonArray structures = event.right().getValue();
+                structures.stream().forEach(structureO ->{
+                    JsonObject structure =  (JsonObject) structureO;
+                    purses.stream().forEach(purseO ->{
+                        JsonObject purse = (JsonObject) purseO;
+                        if(purse.getString(LystoreBDD.ID_STRUCTURE).equals(structure.getString(ID))) {
+                            purse.put(LystoreBDD.NAME, structure.getString(LystoreBDD.NAME));
+                            purse.put(LystoreBDD.UAI, structure.getString(LystoreBDD.UAI));
+                            Double amount = purse.getDouble(LystoreBDD.AMOUNT);
+                            purse.put(LystoreBDD.AMOUNT,amount);
                         }
-                    }
-
-                    Renders.renderJson(request, purses);
-
-                } else {
-                    renderError(request, new JsonObject().put("message",
-                            event.left().getValue()));
-                }
+                    });
+                });
+                Renders.renderJson(request, purses);
+            } else {
+                renderError(request, new JsonObject().put(CommonConstants.MESSAGE,
+                        event.left().getValue()));
             }
         });
-    }
-
-    /**
-     * Retrieve structure uais based on ids list
-     * @param ids JsonArray containing ids list
-     * @param exportValues Values to exports
-     * @param request Http request
-     */
-    private void retrieveUAIs(JsonArray ids, final JsonObject exportValues,
-                              final HttpServerRequest request) {
-        structureService.getStructureById(ids, new Handler<Either<String, JsonArray>>() {
-            @Override
-            public void handle(Either<String, JsonArray> event) {
-                if (event.isRight()) {
-                    JsonObject values = new JsonObject();
-                    JsonArray uais = event.right().getValue();
-                    JsonObject uai;
-                    for (int i = 0; i < uais.size(); i++) {
-                        uai = uais.getJsonObject(i);
-                        values.put(uai.getString("uai"),
-                                exportValues.getDouble(uai.getString("id")));
-                    }
-                    launchExport(values, request);
-                } else {
-                    renderError(request, new JsonObject().put("message",
-                            event.left().getValue()));
-                }
-            }
-        });
-    }
-
-    /**
-     * Launch export. Build CSV based on values parameter
-     * @param values values to export
-     * @param request Http request
-     */
-    private static void launchExport(JsonObject values, HttpServerRequest request) {
-        String[] uais = values.fieldNames().toArray(new String[0]);
-        StringBuilder exportString = new StringBuilder(getCSVHeader(request));
-        for (String uai : uais) {
-            exportString.append(getCSVLine(uai, values.getDouble(uai)));
-        }
-        request.response()
-                .putHeader("Content-Type", "text/csv; charset=utf-8")
-                .putHeader("Content-Disposition", "attachment; filename=" + getFileExportName(request))
-                .end(exportString.toString());
-    }
-
-    /**
-     * Get CSV Header using internationalization
-     * @param request Http request
-     * @return CSV file Header
-     */
-    private static String getCSVHeader(HttpServerRequest request) {
-        return I18n.getInstance().translate("UAI", getHost(request), I18n.acceptLanguage(request)) +
-                ";" +
-                I18n.getInstance().translate("purse", getHost(request), I18n.acceptLanguage(request)) +
-                "\n";
-    }
-
-    /**
-     * Get CSV Line
-     * @param uai Structure UAI
-     * @param amount Structure purse amount
-     * @return CSV Line
-     */
-    //a déplacer hors du controller
-    private static String getCSVLine(String uai, Number amount) {
-        DecimalFormat df = new DecimalFormat("####0.00");
-        return uai + ";" + df.format(amount) + "\n";
     }
 
     /**
