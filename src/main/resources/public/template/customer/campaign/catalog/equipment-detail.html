@@ -24,16 +24,25 @@
         </div>
         <div class="seven cell twelve-mobile" >
             <article class="add-basket centered row twelve vertical-spacing twelve-mobile">
-                <div class="six row twelve-mobile">
+                <div class="six row twelve-mobile equipment-detail ">
                     <div class="six cell">
                         <div class="twelve row">
                             <label class="label-cell">
                                 <h4>
-                                    <i18n>lystore.amount.HT</i18n>
-                                    <span ng-bind="calculatePriceOfEquipmentHT(basket.equipment, true, 2) | currency" ></span>
+                                    <i18n>lystore.amount.HT.equipment</i18n>
+                                    <span ng-bind="calculatePriceOfEquipmentHT(basket.equipment, false, 2) | currency" ></span>
                                 </h4>
                             </label>
                         </div>
+
+                        <div class="twelve row">
+                        <label class="label-cell">
+                            <h4>
+                                <i18n>lystore.amount.TTC.equipment</i18n>
+                                <span ng-bind="calculatePriceTTC(calculatePriceOfEquipmentHT(basket.equipment, false, 2), taxes.all[0].value, 2) | currency "></span>
+                            </h4>
+                        </label>
+                    </div>
                         <div class="twelve row">
                             <label class="label-cell">
                                 <h4>
@@ -44,7 +53,10 @@
                         </div>
                     </div>
                     <div class="six cell">
-                        <h1 class="right-magnet" ng-bind="(calculatePriceTTC(basket.equipment.price, taxes.all[0].value, 2) | currency) + 'TTC'"></h1>
+                        <div class="right-magnet">
+                            <h1 class="row" ng-bind="(calculatePriceTTC(calculatePriceOfEquipmentHT(basket.equipment, true, 2), taxes.all[0].value, 2) | currency) + ' TTC'"></h1>
+                            <span class="row equipment-detail-recap-ht" ng-bind="(calculatePriceOfEquipmentHT(basket.equipment, true, 2) | currency) + ' HT'"></span>
+                        </div>
                     </div>
                 </div>
             </article>
