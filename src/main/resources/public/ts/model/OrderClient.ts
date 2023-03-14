@@ -15,7 +15,7 @@ import {
     Utils,
     Grade,
     Title,
-    Project, Contracts, ContractTypes, Suppliers, Campaigns, Projects, Titles, label, Purse
+    Project, Contracts, ContractTypes, Suppliers, Campaigns, Projects, Titles, label, Purse, EquipmentOption
 } from './index';
 import http from 'axios';
 
@@ -176,6 +176,20 @@ export class OrderClient implements Order  {
         } catch (e) {
             notify.error("lystore.order.get.err")
         }
+    }
+
+    calculatePriceHT(selectedOptions: boolean) :number {
+        let price: number = (this.price_proposal) ? this.price_proposal : this.price;
+        if (!this.price_proposal) {
+            this.options
+                .filter((option: OrderOptionClient) => (option.required === true || (selectedOptions ? option.selected === true : false)))
+                .forEach((option: OrderOptionClient) => price += option.price);
+        }
+        return price;
+    }
+
+    calculatePriceTTC (selectedOptions: boolean):number{
+        return this.calculatePriceHT(selectedOptions) * (100 + this.tax_amount) / 100;
     }
 }
 export class OrdersClient extends Selection<OrderClient> {

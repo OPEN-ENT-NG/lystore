@@ -73,7 +73,7 @@
                                       ng-bind="orderClient.price_proposal | currency"
                                       class="price-label"></span>
                                 <span ng-if="!hasAProposalPrice(orderClient)"
-                                      ng-bind="calculateTotal(orderClient,2) | currency"
+                                      ng-bind="orderClient.calculatePriceTTC(true) | currency"
                                       class="price-label"></span>
                             </div>
                             <div class="vertical-spacing-twice">
