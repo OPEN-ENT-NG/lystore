@@ -159,10 +159,8 @@ export class OrderClient implements Order  {
         try{
             const {data} = await http.get(`/lystore/orderClient/${id}/order/`);
             let order = new Order(Object.assign(data, {typeOrder:"client"}), structures);
-            console.log(data)
             order.files = data.files !== '[null]' ? Utils.parsePostgreSQLJson(data.files) : [];
-            console.log(order.files)
-
+            order.price_single_ttc = Number(order.price_single_ttc.toFixed(2))
             return order;
         } catch (e) {
             notify.error('lystore.admin.order.get.err');
@@ -185,11 +183,11 @@ export class OrderClient implements Order  {
                 .filter((option: OrderOptionClient) => (option.required === true || (selectedOptions ? option.selected === true : false)))
                 .forEach((option: OrderOptionClient) => price += option.price);
         }
-        return price;
+        return Number(price.toFixed(2));
     }
 
     calculatePriceTTC (selectedOptions: boolean):number{
-        return this.calculatePriceHT(selectedOptions) * (100 + this.tax_amount) / 100;
+        return  Number((this.calculatePriceHT(selectedOptions) * (100 + this.tax_amount) / 100).toFixed(2));
     }
 }
 export class OrdersClient extends Selection<OrderClient> {
