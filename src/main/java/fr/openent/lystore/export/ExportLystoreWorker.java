@@ -1,5 +1,6 @@
 package fr.openent.lystore.export;
 
+import fr.openent.lystore.constants.CommonConstants;
 import fr.openent.lystore.export.campaign.CampaignExport;
 import fr.openent.lystore.export.instructions.Instruction;
 import fr.openent.lystore.export.validOrders.ValidOrders;
@@ -7,6 +8,7 @@ import fr.openent.lystore.export.helpers.ExportHelper;
 import fr.openent.lystore.service.ExportService;
 import fr.openent.lystore.service.impl.DefaultExportServiceService;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
@@ -18,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static fr.openent.lystore.Lystore.*;
+import static fr.openent.lystore.constants.ParametersConstants.REGION_TYPE_NAME;
 
 public class ExportLystoreWorker extends BusModBase implements Handler<Message<JsonObject>> {
     private Instruction instruction;
@@ -195,7 +198,12 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
                 exportBCOrdersBeforeValidationStruct(params,fileName,exportHandler);
                 break;
             case ExportTypes.CAMPAIGN_ORDERS:
-                exportCampaignOrder(object_id,fileName,ids,exportHandler);
+                exportCampaignOrder(object_id,
+                        fileName,
+                        ids,
+                        body.getString(CommonConstants.HOST),
+                        body.getString(CommonConstants.LANGUAGE),
+                        exportHandler);
                 break;
             default:
                 ExportHelper.catchError(exportService, idNewFile, "Invalid action in worker : " + action,exportHandler);
@@ -203,11 +211,11 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
         }
     }
 
-    private void exportCampaignOrder(Integer cmapaign_id, String titleFile, List<Integer> ids,  Handler<Either<String, Boolean>> exportHandler) {
+    private void exportCampaignOrder(Integer campaignId, String titleFile, List<Integer> ids, String host, String language, Handler<Either<String, Boolean>> exportHandler) {
 
         logger.info("Export orders from campaign : ");
 
-        this.campaign = new CampaignExport(exportService, idNewFile, cmapaign_id,ids);
+        this.campaign = new CampaignExport(exportService, idNewFile, campaignId, ids, I18n.getInstance().translate(config.getString(REGION_TYPE_NAME),host,language));
         this.campaign.exportOrders(event1 -> {
             saveExportHandler(titleFile, exportHandler, event1, "error when creating export order Campaign xlsx :", XLSXHEADER);
         });
