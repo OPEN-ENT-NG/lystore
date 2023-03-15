@@ -27,10 +27,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
-import static fr.openent.lystore.constants.ParametersConstants.REGION_TYPE_NAME;
 import static fr.wseduc.webutils.http.Renders.getHost;
 import static fr.wseduc.webutils.http.Renders.getScheme;
-import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultResponseHandler;
 
 //Refacto un de ces 4
 public class ExportHelper {
