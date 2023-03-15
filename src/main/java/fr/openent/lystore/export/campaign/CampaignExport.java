@@ -43,7 +43,6 @@ public class CampaignExport extends ExportObject {
 
 
     public void exportOrders(Handler<Either<String, Buffer>> handler) {
-        log.info(regionTypeName);
         if (this.id == null) {
             ExportHelper.catchError(exportService, idFile, "Instruction identifier is not nullable");
             handler.handle(new Either.Left<>("Instruction identifier is not nullable"));
