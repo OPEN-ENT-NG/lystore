@@ -18,9 +18,12 @@ import java.util.*;
 public class RecapStructOrder  extends TabHelper {
     List<Integer> ids_campaigns;
     ArrayList<Campaign> campaigns = new ArrayList<>();
-    public RecapStructOrder(Workbook workbook, List<Integer> ids, Map<String, JsonObject> structuresMap) {
+    private final String regionTypeName;
+
+    public RecapStructOrder(Workbook workbook, List<Integer> ids, Map<String, JsonObject> structuresMap, String regionTypeName) {
         super(workbook,"Récap_Extraction");
         ids_campaigns = ids;
+        this.regionTypeName = regionTypeName;
     }
 
 
@@ -127,7 +130,7 @@ public class RecapStructOrder  extends TabHelper {
                 "  DISTINCT orders.id_campaign,  " +
                 "  Count(orders.id) AS nb_orders,  " +
                 "  campaign.NAME,  " +
-                "  CASE when orders.override_region IS NULL THEN 'REGION' ELSE 'EPLE' END as order_origin,  " +
+                "  CASE when orders.override_region IS NULL THEN '"+ regionTypeName.toUpperCase()  + "' ELSE 'EPLE' END as order_origin,  " +
                 "  orders.status  " +
                 "FROM  " +
                   Lystore.lystoreSchema + ".allorders orders  " +

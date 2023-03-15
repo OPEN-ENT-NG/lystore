@@ -1,12 +1,14 @@
 package fr.openent.lystore.export.helpers;
 
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.constants.CommonConstants;
 import fr.openent.lystore.export.ExportTypes;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
 import fr.openent.lystore.service.ExportService;
 import fr.wseduc.webutils.Either;
+import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.Server;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
@@ -25,6 +27,8 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 
+import static fr.openent.lystore.constants.ParametersConstants.REGION_TYPE_NAME;
+import static fr.wseduc.webutils.http.Renders.getHost;
 import static fr.wseduc.webutils.http.Renders.getScheme;
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultResponseHandler;
 
@@ -93,6 +97,8 @@ public class ExportHelper {
         }
 
         if(action.equals(ExportTypes.CAMPAIGN_ORDERS)){
+            infoFile.put(CommonConstants.HOST , getHost(request));
+            infoFile.put(CommonConstants.LANGUAGE ,  I18n.acceptLanguage(request));
             List<String> ids = request.params().getAll("id");
             infoFile.put("ids",ids);
             for(String idList : ids){
