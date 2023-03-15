@@ -21,9 +21,12 @@ import java.util.*;
 public class ExtractionOrder extends TabHelper {
     List<Integer> ids_campaigns;
     List<Order> orders = new ArrayList<>();
-    public ExtractionOrder(Workbook workbook, List<Integer> ids, Map<String, JsonObject> structuresMap) {
+    private final String regionTypeName;
+
+    public ExtractionOrder(Workbook workbook, List<Integer> ids, Map<String, JsonObject> structuresMap, String regionTypeName) {
         super(workbook,"Extraction",structuresMap);
         ids_campaigns = ids;
+        this.regionTypeName = regionTypeName;
     }
 
 
@@ -603,7 +606,7 @@ public class ExtractionOrder extends TabHelper {
                 "  CASE when orders.number_validation is NULL then FALSE else TRUE END as isValid,  " +
                 "  CASE when project.room is NULL THEN '' ELSE project.room END as project_room,  " +
                 "  CASE when project.building is NULL THEN '' ELSE project.building END as project_building,  " +
-                "  CASE when orders.override_region IS NULL THEN 'REGION' ELSE 'EPLE' END as order_origin,  " +
+                "  CASE when orders.override_region IS NULL THEN '"+ regionTypeName.toUpperCase()  + "' ELSE 'EPLE' END as order_origin,  " +
                 "  CASE when orders.id_order_client_equipment IS NULL THEN -1 ELSE orders.id_order_client_equipment END as id_order_client_equipment,  " +
                 "  campaign.start_date as campaign_start_date,  " +
                 "  campaign.end_date campaign_end_date,  " +
