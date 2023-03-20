@@ -144,8 +144,8 @@ export class OrderUtils {
         }
     }
     static findGoodPrice(order:Order):Number{
-        if(order.price_single_ttc) return order.price_single_ttc;
-        if(order.price_proposal) return order.price_proposal;
+        if(order.price_single_ttc) return Number(order.price_single_ttc.toFixed(2));
+        if(order.price_proposal) return Number(order.price_proposal.toFixed(2));
         if(order.price) return OrderUtils.calculatePriceTTC(2,order);
         return 0;
     }

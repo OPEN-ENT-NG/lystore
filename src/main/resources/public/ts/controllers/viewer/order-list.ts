@@ -61,7 +61,7 @@ export const orderPersonnelController = ng.controller('orderPersonnelController'
         };
 
         $scope.calculateTotal = (orderClient: OrderClient, roundNumber: number) => {
-            let totalPrice = $scope.calculatePriceOfEquipment(orderClient, true, roundNumber) * orderClient.amount;
+            let totalPrice = $scope.calculatePriceOfOrderClient(orderClient, true, roundNumber) * orderClient.amount;
             return totalPrice.toFixed(roundNumber);
         };
 

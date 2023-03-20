@@ -533,13 +533,21 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
          * @returns {string | number}
          */
         $scope.calculatePriceOfEquipment = (equipment: Equipment, selectedOptions: boolean, roundNumber: number = 2) => {
-
             return (!isNaN(equipment.calculatePriceTTC(selectedOptions)))
                 ? (roundNumber
                     ? equipment.calculatePriceTTC(selectedOptions).toFixed(roundNumber)
                     : equipment.calculatePriceTTC(selectedOptions))
                 : equipment.calculatePriceTTC(selectedOptions);
         };
+
+        $scope.calculatePriceOfOrderClient = (orderClient: OrderClient, selectedOptions: boolean, roundNumber: number = 2) => {
+            return (!isNaN(orderClient.calculatePriceTTC(selectedOptions)))
+                ? (roundNumber
+                    ? orderClient.calculatePriceTTC(selectedOptions).toFixed(roundNumber)
+                    : orderClient.calculatePriceTTC(selectedOptions))
+                : orderClient.calculatePriceTTC(selectedOptions);
+        };
+
         $scope.initStructures = async () => {
             await $scope.structures.syncUserStructures();
             $scope.current.structure = $scope.structures.all[0];
