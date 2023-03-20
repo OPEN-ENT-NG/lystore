@@ -111,7 +111,7 @@
   "lystore.orders.valid.certificates.export": "Export CSF",
   "lystore.orders.valid.order.export": "Export BC",
   "lystore.orders.order.number": "N° BC",
-  "lystore.orders.valid.structure.list.export": "Export liste établissements",
+  "lystore.orders.valid.structure.list.export": "Export liste lycées",
   "lystore.manage.campaigns": "Gestion des campagnes",
   "lystore.campaigns.add": "Ajouter une campagne",
   "lystore.campaigns.modify": "Modifier une campagne",
@@ -314,7 +314,7 @@
   "windUp": "Clôturer",
   "lystore.options": "Options",
   "lystore.contract.file": "Pièces jointes autorisées",
-  "lystore.contract.price_editable": "Prix des demandes éditables par l'établissement",
+  "lystore.contract.price_editable": "Prix des demandes éditables par le lycée",
   "lystore.contract.price_editable.label": "Prix éditable",
   "lystore.windUp.notif": "Commande(s) clôturée(s)",
   "lystore.sent.notif": "Commande(s) envoyée(s)",
@@ -680,7 +680,7 @@
   "lystore.bc.preview.price.total.ht.label": "Total HT",
   "lystore.bc.preview.price.tax": "TVA",
   "lystore.bc.preview.total.ttc": "TOTAL TTC",
-  "lystore.bc.preview.footer.line1": "Lieu de Livraison, personne à contacter  tel : voir liste des établissements ci-jointe ",
+  "lystore.bc.preview.footer.line1": "Lieu de Livraison, personne à contacter  tel : voir liste des lycées ci-jointe ",
   "lystore.bc.preview.footer.line2": "Date de  livraison: Délai contractuel ",
   "lystore.bc.preview.footer.line3": "Reçu par l'entreprise le ",
   "lystore.bc.preview.footer.line4" : " (Cachet - Signature)",
@@ -689,6 +689,7 @@
   "lysore.project.placeholder": "Objectifs pédagogiques / informations à transmettre à la",
   "lystore.tax.label" : "Taxe",
   "lystore.ht.label": "HT",
-  "lystore.ttc.label": "TTC"
+  "lystore.ttc.label": "TTC",
+  "total.price": "Prix total"
 
 }
