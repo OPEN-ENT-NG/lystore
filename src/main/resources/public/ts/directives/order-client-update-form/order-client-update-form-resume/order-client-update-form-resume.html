@@ -1,0 +1,84 @@
+<div class="six cell order-client-update-form-resume">
+    <div class="row">
+        <span class="row"><i18n>lystore.initial.values</i18n></span>
+    </div>
+    <div class="row">
+        <label class="two right-padding-form-field cell">
+            <i18n>lystore.amountTTC</i18n>
+            :
+        </label>
+    </div>
+
+    <div
+            class="four cell horizontal-margin"
+            ng-if="vm.orderParent"
+    >
+                <span ng-bind="vm.orderParent.price_single_ttc * vm.orderParent.amount | currency"></span>
+
+    </div>
+    <div class="row">
+        <label class="two right-padding-form-field cell">
+            <i18n>EQUIPMENT</i18n>
+            :
+        </label>
+        <span
+                class="four cell horizontal-margin"
+                ng-if="orderParent"
+        >
+                [[vm.orderParent.equipment.contract_type_name]]&nbsp
+                -&nbsp
+                [[vm.orderParent.equipment.name]]
+            </span>
+    </div>
+    <div class="row">
+        <span
+                class="four cell horizontal-margin"
+                ng-if="orderParent"
+        >
+                [[vm.orderParent.amount]]
+            </span>
+    </div>
+    <div class="row">
+        <label class="two right-padding-form-field cell">
+            <i18n>lystore.price.TTC</i18n>
+            :
+        </label>
+        <span
+                class="four cell horizontal-margin"
+                ng-if="orderParent"
+        >
+                [[vm.orderParent.price_single_ttc]] €
+            </span>
+    </div>
+    <div ng-if="vm.orderToUpdate.campaign.orderPriorityEnable()"
+         class="row vertical-spacing-four">
+        <label class="two right-padding-form-field cell">
+            <i18n>lystore.project.priority.order</i18n>
+            :
+        </label>
+        <span
+                class="four cell horizontal-margin"
+                ng-if="vm.orderParent"
+        >
+                [[vm.orderParent.rank]]
+            </span>
+    </div>
+    <div class="row vertical-spacing-four">
+        <label class="twelve right-padding-form-field cell">
+            <i18n>lystore.basket.file.name</i18n>
+            :
+        </label>
+    </div>
+    <div class="row vertical-spacing-four">
+        <label class="two right-padding-form-field cell">
+            <i18n>comment</i18n>
+            :
+        </label>
+        <div
+                class="comment ng-pristine ng-valid ng-touched four cell horizontal-margin"
+                ng-if="vm.orderParent"
+        >
+            [[vm.orderParent.comment]]
+        </div>
+    </div>
+</div>

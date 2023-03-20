@@ -1,18 +1,15 @@
 import {ng} from "entcore";
 import {IDirective, IScope,} from "angular";
 import {RootsConst} from "../../../core/constants/roots.const";
-import {BcOptions} from "../../../model/parameter/bc-options.model";
+import {OrderClient, OrderRegion} from "../../../model";
 
 interface IViewModel {
 }
 
 
 interface IDirectiveProperties {
-    bcOptions: BcOptions;
-
-    saveForm(): void;
-
-    cancelForm(): void;
+    orderParent: OrderClient;
+    orderToUpdate: OrderRegion;
 }
 
 interface IDirectiveScope extends IScope {
@@ -37,11 +34,10 @@ function directive(): IDirective {
     return {
         replace: true,
         restrict: 'E',
-        templateUrl: `${RootsConst.directive}/order-client-update-form/order-client-update-form.html`,
+        templateUrl: `${RootsConst.directive}/order-client-update-form/order-client-update-form-resume/order-client-update-form-resume.html`,
         scope: {
-            bcOptions: '=',
-            saveForm: '&',
-            cancelForm: '&'
+            orderParent: '=',
+            orderToUpdate:'='
         },
         controllerAs: 'vm',
         bindToController: true,

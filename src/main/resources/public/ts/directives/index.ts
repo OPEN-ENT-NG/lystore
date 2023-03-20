@@ -13,4 +13,7 @@ export * from './parameter-export-choices/parameter-export-choices.directive';
 export * from './parameter-bc-form/parameter-bc-form.directive';
 export * from './parameter-valid-command/parameter-valid-command.directive';
 export * from './bc-preview/bc-preview.directive';
-export * from './equipment-card/equipment-card.directive';
+export * from './equipment-card/equipment-card.directive'
+export * from './order-client-update-form/order-client-update-form.directive';
+export * from './order-client-update-form/order-client-update-form-resume/order-client-update-form-resume.directive';
+export * from './order-client-update-form/order-client-update-form-input/order-client-update-form-input.directive';
