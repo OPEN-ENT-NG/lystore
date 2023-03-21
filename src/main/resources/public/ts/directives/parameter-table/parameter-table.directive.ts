@@ -1,6 +1,7 @@
 import {ng, idiom as lang} from 'entcore';
 import {RootsConst} from "../../core/constants/roots.const";
 import {IAttributes, IDirective, IScope} from "angular";
+import {IDisplayModel} from "../../model/utils/displayModel";
 
 
 interface IViewModel {
@@ -13,7 +14,7 @@ interface IViewModel {
 
 
 interface IDirectiveProperties {
-    ngModel: any[];
+    ngModel: IDisplayModel[];
 
     ngChange(): void;
 
