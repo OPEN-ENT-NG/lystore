@@ -67,20 +67,17 @@
             >
                 <i18n>
                     lystore.initial.values
-                </i18n>
-                :
+                </i18n>&nbsp;&#58;
             </h2>
             <h2 class="six right-padding-form-field cell">
                 <i18n>
                     lystore.new.values
-                </i18n>
-                :
+                </i18n>&nbsp;&#58;
             </h2>
         </div>
         <div class="row vertical-spacing-four">
             <label class="two right-padding-form-field cell">
-                <i18n>lystore.amountTTC</i18n>
-                :
+                <i18n>lystore.amountTTC</i18n>&nbsp;&#58;
             </label>
             <span
                     class="four cell horizontal-margin"
@@ -93,8 +90,7 @@
                     ng-class="{'two': orderParent, 'six': !orderParent}"
             >
                 <span  ng-if="orderParent">
-                   <i18n>lystore.amountTTC</i18n>
-                    :
+                   <i18n>lystore.amountTTC</i18n>&nbsp;&#58;
                 </span>
                 <span ng-bind="orderToUpdate.price_single_ttc * orderToUpdate.amount | currency"></span>
             </label>
@@ -102,8 +98,7 @@
 
         <div class="row vertical-spacing-four">
             <label class="two right-padding-form-field cell">
-                <i18n>EQUIPMENT</i18n>
-                :
+                <i18n>EQUIPMENT</i18n>&nbsp;&#58;
             </label>
             <span
                     class="four cell horizontal-margin"
@@ -115,8 +110,9 @@
             </span>
 
 
-            <span class="one cell" ng-if="orderParent">     <i18n>EQUIPMENT</i18n>
-            :</span>
+            <span class="one cell" ng-if="orderParent">
+                <i18n>EQUIPMENT</i18n>&nbsp;&#58;
+            </span>
 
             <search-and-select
                     class="three cell"
@@ -134,8 +130,7 @@
 
         <div class="row vertical-spacing-four">
             <label class="two right-padding-form-field cell">
-                <i18n>quantity.full</i18n>
-                :
+                <i18n>quantity.full</i18n>&nbsp;&#58;
             </label>
             <span
                     class="four cell horizontal-margin"
@@ -161,8 +156,7 @@
 
         <div class="row vertical-spacing-four">
             <label class="two right-padding-form-field cell">
-                <i18n>lystore.price.TTC</i18n>
-                :
+                <i18n>lystore.price.TTC</i18n>&nbsp;&#58;
             </label>
             <span
                     class="four cell horizontal-margin"
@@ -173,8 +167,7 @@
             <span class="cell horizontal-margin"
                   ng-class="{'two': orderParent}">
            <span  ng-if="orderParent">
-                     <i18n>lystore.price.TTC</i18n>
-            :
+                     <i18n>lystore.price.TTC</i18n>&nbsp;&#58;
         </span>
             <input type="number"
                    step="any"
@@ -190,8 +183,7 @@
         <div ng-if="orderToUpdate.campaign.orderPriorityEnable()"
              class="row vertical-spacing-four">
             <label class="two right-padding-form-field cell">
-                <i18n>lystore.project.priority.order</i18n>
-                :
+                <i18n>lystore.project.priority.order</i18n>&nbsp;&#58;
             </label>
             <span
                     class="four cell horizontal-margin"
@@ -209,8 +201,7 @@
 
         <div class="row vertical-spacing-four">
             <label class="twelve right-padding-form-field cell">
-                <i18n>lystore.basket.file.name</i18n>
-                :
+                <i18n>lystore.basket.file.name</i18n>&nbsp;&#58;
             </label>
             <div
                     ng-if="orderToUpdate.files"
