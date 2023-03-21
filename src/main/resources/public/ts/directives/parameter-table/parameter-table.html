@@ -1,0 +1,13 @@
+<div class="parameter-table" ng-class="{'show':vm.showArticle, 'hide':!vm.showArticle && vm.hideArticle }" ng-click="vm.hideArticle = true">
+    <div class="button-puce cell" ng-click="vm.showArticle= !vm.showArticle">
+        <i class="param"></i>
+    </div>
+    <article class="cell" ng-show="vm.showArticle">
+        <div ng-repeat=" field in vm.ngModel" class="vertical-spacing-5">
+            <label >
+                <input type="checkbox" ng-model="field.display" ng-change="vm.valueChange()" ng-disabled="ngDisabled"/>
+                <span><i18n>[[vm.lang.translate(field.name)]]</i18n></span>
+            </label>
+        </div>
+    </article>
+</div>
