@@ -690,6 +690,8 @@
   "lystore.tax.label" : "Taxe",
   "lystore.ht.label": "HT",
   "lystore.ttc.label": "TTC",
+  "lystore.initial.values": "Valeurs initiales",
+  "lystore.new.values": "Nouvelles valeurs",
   "total.price": "Prix total"
 
 }
