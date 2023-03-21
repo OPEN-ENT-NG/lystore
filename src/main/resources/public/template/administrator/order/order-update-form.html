@@ -60,8 +60,11 @@
             <label class="six cell">[[orderToUpdate.contract_type.name || '-']]</label>
         </div>
 
-        <div class="row vertical-spacing-four">
-            <h2 class="six initial-value-h4 right-padding-form-field cell">
+        <div class="row vertical-spacing-four"
+             ng-if="orderParent">
+            <h2 class="six initial-value-h4 right-padding-form-field cell"
+
+            >
                 <i18n>
                     lystore.initial.values
                 </i18n>
@@ -89,8 +92,10 @@
                     class="cell horizontal-margin"
                     ng-class="{'two': orderParent, 'six': !orderParent}"
             >
-                <i18n>lystore.amountTTC</i18n>
-                :
+                <span  ng-if="orderParent">
+                   <i18n>lystore.amountTTC</i18n>
+                    :
+                </span>
                 <span ng-bind="orderToUpdate.price_single_ttc * orderToUpdate.amount | currency"></span>
             </label>
         </div>
@@ -110,7 +115,7 @@
             </span>
 
 
-            <span class="one cell">     <i18n>EQUIPMENT</i18n>
+            <span class="one cell" ng-if="orderParent">     <i18n>EQUIPMENT</i18n>
             :</span>
 
             <search-and-select
@@ -141,8 +146,10 @@
             <span class="cell horizontal-margin"
                   ng-class="{'two': orderParent}">
 
+          <span ng-if="orderParent">
             <i18n>quantity.full</i18n>
             :
+          </span>
             <input
                     min="0"
                     type="number"
@@ -165,8 +172,10 @@
             </span>
             <span class="cell horizontal-margin"
                   ng-class="{'two': orderParent}">
+           <span  ng-if="orderParent">
                      <i18n>lystore.price.TTC</i18n>
             :
+        </span>
             <input type="number"
                    step="any"
                    min="0"
