@@ -60,10 +60,24 @@
             <label class="six cell">[[orderToUpdate.contract_type.name || '-']]</label>
         </div>
 
+        <div class="row vertical-spacing-four"
+             ng-if="orderParent">
+            <h2 class="six initial-value-h4 right-padding-form-field cell"
+
+            >
+                <i18n>
+                    lystore.initial.values
+                </i18n>&nbsp;&#58;
+            </h2>
+            <h2 class="six right-padding-form-field cell">
+                <i18n>
+                    lystore.new.values
+                </i18n>&nbsp;&#58;
+            </h2>
+        </div>
         <div class="row vertical-spacing-four">
             <label class="two right-padding-form-field cell">
-                <i18n>lystore.amountTTC</i18n>
-                :
+                <i18n>lystore.amountTTC</i18n>&nbsp;&#58;
             </label>
             <span
                     class="four cell horizontal-margin"
@@ -75,14 +89,16 @@
                     class="cell horizontal-margin"
                     ng-class="{'two': orderParent, 'six': !orderParent}"
             >
+                <span  ng-if="orderParent">
+                   <i18n>lystore.amountTTC</i18n>&nbsp;&#58;
+                </span>
                 <span ng-bind="orderToUpdate.price_single_ttc * orderToUpdate.amount | currency"></span>
             </label>
         </div>
 
         <div class="row vertical-spacing-four">
             <label class="two right-padding-form-field cell">
-                <i18n>EQUIPMENT</i18n>
-                :
+                <i18n>EQUIPMENT</i18n>&nbsp;&#58;
             </label>
             <span
                     class="four cell horizontal-margin"
@@ -92,8 +108,14 @@
                 -&nbsp
                 [[orderParent.equipment.name]]
             </span>
+
+
+            <span class="one cell" ng-if="orderParent">
+                <i18n>EQUIPMENT</i18n>&nbsp;&#58;
+            </span>
+
             <search-and-select
-                    class="four cell"
+                    class="three cell"
                     options="equipments.all"
                     param1="contract_type_name"
                     param2="name"
@@ -108,8 +130,7 @@
 
         <div class="row vertical-spacing-four">
             <label class="two right-padding-form-field cell">
-                <i18n>quantity.full</i18n>
-                :
+                <i18n>quantity.full</i18n>&nbsp;&#58;
             </label>
             <span
                     class="four cell horizontal-margin"
@@ -117,20 +138,24 @@
             >
                 [[orderParent.amount]]
             </span>
+            <span class="cell horizontal-margin"
+                  ng-class="{'two': orderParent}">
+
+          <span ng-if="orderParent">
+            <i18n>quantity.full</i18n>&nbsp;&#58;
+          </span>
             <input
                     min="0"
                     type="number"
                     ng-model="orderToUpdate.amount"
-                    class="cell horizontal-margin"
-                    ng-class="{'two': orderParent}"
-            />
 
+            />
+            </span>
         </div>
 
         <div class="row vertical-spacing-four">
             <label class="two right-padding-form-field cell">
-                <i18n>lystore.price.TTC</i18n>
-                :
+                <i18n>lystore.price.TTC</i18n>&nbsp;&#58;
             </label>
             <span
                     class="four cell horizontal-margin"
@@ -138,21 +163,26 @@
             >
                 [[orderParent.price_single_ttc]] €
             </span>
+            <span class="cell horizontal-margin"
+                  ng-class="{'two': orderParent}">
+           <span  ng-if="orderParent">
+                     <i18n>lystore.price.TTC</i18n>&nbsp;&#58;
+        </span>
             <input type="number"
                    step="any"
                    min="0"
                    ng-model="orderToUpdate.price_single_ttc "
-                   class="cell horizontal-margin"
-                   ng-class="{'two': orderParent}"
+
             />
+            </span>
+
         </div>
 
 
         <div ng-if="orderToUpdate.campaign.orderPriorityEnable()"
              class="row vertical-spacing-four">
             <label class="two right-padding-form-field cell">
-                <i18n>lystore.project.priority.order</i18n>
-                :
+                <i18n>lystore.project.priority.order</i18n>&nbsp;&#58;
             </label>
             <span
                     class="four cell horizontal-margin"
@@ -170,14 +200,13 @@
 
         <div class="row vertical-spacing-four">
             <label class="twelve right-padding-form-field cell">
-                <i18n>lystore.basket.file.name</i18n>
-                :
+                <i18n>lystore.basket.file.name</i18n>&nbsp;&#58;
             </label>
             <div
                     ng-if="orderToUpdate.files"
                     class="six cell horizontal-margin"
             >
-               <span ng-if="orderToUpdate.files.length === 0 ">- </span>
+                <span ng-if="orderToUpdate.files.length === 0 ">- </span>
                 <ul ng-if="orderToUpdate.files.length !== 0 ">
                     <li ng-repeat="file in orderToUpdate.files" class="twelve row">
                         <div class="eleven">
@@ -188,13 +217,8 @@
             </div>
 
 
-
-
-
-
-
             <div class="order-region  five cell"
-                 >
+            >
                 <ul class="twelve order-region">
                     <li ng-repeat="file in filesMetadataTemp" class="twelve row">
                         <div class="eleven">
@@ -217,7 +241,8 @@
 
                 <div class="three right-magnet cell">
                     <a ng-click="openAddDocumentsLightbox(orderParent)">
-                        <!--<i class="attachment" />--><i18n>lystore.basket.add-file</i18n>
+                        <!--<i class="attachment" />-->
+                        <i18n>lystore.basket.add-file</i18n>
                     </a>
                 </div>
             </div>
@@ -256,11 +281,13 @@
                 <input type="button" class=" cancel" ng-click="cancelUpdate()"
                        i18n-value="cancel"/>
 
-                <input type="button" ng-if="!orderToUpdate.id_operation" class=" button" ng-disabled="!isValidFormUpdate()"
+                <input type="button" ng-if="!orderToUpdate.id_operation" class=" button"
+                       ng-disabled="!isValidFormUpdate()"
                        ng-click="updateOrderConfirm()"
                        i18n-value="lystore.order.operation.select"/>
 
-                <input type="button" ng-if="orderToUpdate.id_operation" ng-disabled="!isValidFormUpdate()" class=" button"
+                <input type="button" ng-if="orderToUpdate.id_operation" ng-disabled="!isValidFormUpdate()"
+                       class=" button"
                        ng-click="updateLinkedOrderConfirm()"
                        i18n-value="confirm"/>
 
