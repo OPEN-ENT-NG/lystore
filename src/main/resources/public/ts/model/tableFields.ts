@@ -1,4 +1,4 @@
-export const orderWaiting = [
+export const orderWaitingPreferences = [
     {
         name: 'UAI',
         fieldName: 'structure.uai',

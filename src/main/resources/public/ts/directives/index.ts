@@ -4,7 +4,7 @@ export * from './integer_input';
 export * from './async-autocomplete';
 export * from './upload-files';
 export * from './auto-height';
-export * from './parameter-table';
+export * from './parameter-table/parameter-table.directive';
 export * from './postNgRepeat';
 export * from './searchAndSelect';
 export * from './tabs';

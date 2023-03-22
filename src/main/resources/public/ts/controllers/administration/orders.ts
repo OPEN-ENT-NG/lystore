@@ -1,7 +1,7 @@
 import {_, $,idiom as lang,angular, model, ng, template, toasts,moment} from 'entcore';
 import http from "axios";
 import {
-    Campaign, Notification, Operation, OrderClient, OrdersClient, orderWaiting, PRIORITY_FIELD, Userbook, Order,
+    Campaign, Operation, OrderClient, OrdersClient, orderWaitingPreferences, PRIORITY_FIELD, Userbook, Order,
     Utils, RejectOrders
 } from '../../model';
 import {Mix} from 'entcore-toolkit';
@@ -13,7 +13,7 @@ export const orderController = ng.controller('orderController',
     ['$scope', '$location', ($scope, $location,) => {
         ($scope.ordersClient.selected[0]) ? $scope.orderToUpdate = $scope.ordersClient.selected[0] : $scope.orderToUpdate = new OrderClient();
         $scope.allOrdersSelected = false;
-        $scope.tableFields = orderWaiting;
+        $scope.tableFields = orderWaitingPreferences;
         $scope.campaignSelectionMulti = [];
         let isPageOrderWaiting = $location.path() === "/order/waiting";
         let isPageOrderSent = $location.path() === "/order/sent";
