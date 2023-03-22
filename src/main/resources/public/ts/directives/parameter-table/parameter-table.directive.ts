@@ -8,7 +8,6 @@ interface IViewModel {
     valueChange(): void;
 
     showArticle: boolean;
-    hideArticle: boolean;
     lang: typeof lang;
 }
 
@@ -28,12 +27,10 @@ interface IDirectiveScope extends IScope {
 class Controller implements ng.IController, IViewModel {
     lang: typeof lang;
 
-    hideArticle: boolean;
     showArticle: boolean;
 
     constructor(private $scope: IDirectiveScope, $attrs: IAttributes) {
         this.lang = lang;
-        this.hideArticle = false;
         this.showArticle = false;
     }
 
