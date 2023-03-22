@@ -691,7 +691,7 @@
   "lystore.ht.label": "HT",
   "lystore.ttc.label": "TTC",
   "lystore.initial.values": "Valeurs initiales",
-  "lystore.new.values": "Nouvelles valeurs",
+  "lystore.updated.values": "Valeurs modifiées",
   "total.price": "Prix total"
 
 }
