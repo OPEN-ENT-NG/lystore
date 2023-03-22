@@ -171,8 +171,8 @@ public class ExtractionOrder extends TabHelper {
 
     private void setOrderData(JsonObject data, Order order) {
 
-        if(data.getString("order_origin").equals("REGION"))
-            order.setId("R-" + data.getInteger("id").toString());
+        if(data.getString("order_origin").equals(regionTypeName.toUpperCase()))
+            order.setId( regionTypeName.toUpperCase().charAt(0) + "-" + data.getInteger("id").toString());
         else
             order.setId("E-" + data.getInteger("id").toString());
 
@@ -492,7 +492,7 @@ public class ExtractionOrder extends TabHelper {
         excel.insertWithStyle(35,4,"Marché support",excel.labelOnYellow);
         excel.insertWithStyle(36,4,"Numéro Marché",excel.labelOnYellow);
         excel.insertWithStyle(37,4,"Titulaire Marché",excel.labelOnYellow);
-        excel.insertWithStyle(38,4,"Correspondant Région",excel.labelOnYellow);
+        excel.insertWithStyle(38, 4, "Correspondant " + regionTypeName, excel.labelOnYellow);
         excel.insertWithStyle(39,4,"Nature Compable",excel.labelOnYellow);
         excel.insertWithStyle(40,4,"Libellé Nature Compable",excel.labelOnYellow);
         excel.insertWithStyle(41,4,"Chapitre Budgétaire",excel.labelOnYellow);
@@ -505,7 +505,7 @@ public class ExtractionOrder extends TabHelper {
 
     private void setEquipmentLabel() {
         excel.insertWithStyle(18,4,"N° Demande",excel.labelOnOrange);
-        excel.insertWithStyle(19,4,"Origine EPLE/REGION",excel.labelOnOrange);
+        excel.insertWithStyle(19,4,"Origine EPLE/" + regionTypeName.toUpperCase() ,excel.labelOnOrange);
         excel.insertWithStyle(20,4,"Demande Modif.",excel.labelOnOrange);
         excel.insertWithStyle(21,4,"Date création",excel.labelOnOrange);
         excel.insertWithStyle(22,4,"Status Demande",excel.labelOnOrange);
