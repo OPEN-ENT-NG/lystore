@@ -83,7 +83,7 @@ export class Equipment implements Selectable {
             technical_specs: (this.technical_specs != null) ? this.technical_specs.map((spec: TechnicalSpec) => spec.toJson()) : [],
             tags: this.tags.map((tag: Tag) => tag.id),
             optionsCreate: optionList.filter(option =>
-                 option.id === null
+                option.id === undefined || option.id === null
             ).map(option => option.toJson()),
             optionsUpdate: optionList.filter(option =>
                 option.id !== null
