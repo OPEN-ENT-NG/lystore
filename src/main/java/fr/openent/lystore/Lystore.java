@@ -8,6 +8,8 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.events.EventStore;
+import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.BaseServer;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
@@ -48,8 +50,9 @@ public class Lystore extends BaseServer {
         JsonObject mail = config.getJsonObject("mail", new JsonObject());
 
 
+        EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Lystore.class.getSimpleName());
 
-        addController(new LystoreController());
+        addController(new LystoreController(eventStore));
         addController(new AgentController());
         addController(new SupplierController());
         addController(new ProgramController());

@@ -5,7 +5,8 @@ public enum Actions {
     UPDATE ("UPDATE"),
     DELETE ("DELETE"),
     IMPORT ("IMPORT"),
-    REJECT ("REJECT");
+    REJECT ("REJECT"),
+    ACCESS ("ACCESS");
 
     private final String actionName;
 
