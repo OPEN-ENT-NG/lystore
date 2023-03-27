@@ -1,0 +1,7 @@
+<div class=" campaign-titles-card">
+    <div ng-repeat="title in vm.titles.all"
+         ng-click="title.selected = !title.selected"
+         class="labels-in-ligne campaign-titles-card-elem" ng-class="{'campaign-titles-card-elem-selected': title.selected} ">
+        <div> [[ title.name ]]</div>
+    </div>
+</div>

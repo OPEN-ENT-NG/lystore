@@ -1,6 +1,7 @@
 import {_} from "entcore";
 import { Selectable, Mix, Selection } from 'entcore-toolkit';
 import http from 'axios';
+import {Titles} from "./title";
 
 export class Structure implements Selectable {
     id: string;
@@ -11,13 +12,14 @@ export class Structure implements Selectable {
     type:string;
     department:number;
     selected: boolean;
-
+    titles:Titles;
     constructor (name?: string, uai?: string, city?: string, department?: number) {
        if (name) this.name = name;
        if (uai) this.uai = uai;
        if (city) this.city = city;
        if(department) this.department = department;
        this.selected = false;
+       this.titles = new Titles();
     }
 
     toJson () {

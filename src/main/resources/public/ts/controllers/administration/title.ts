@@ -1,13 +1,23 @@
 import {ng, template, toasts} from 'entcore';
 import {Notification, TitleImporter, Utils} from '../../model';
+import {titleService} from "../../services";
 
 declare let window: any;
 
 export const titleController = ng.controller('TitleController',
     ['$scope', '$routeParams', ($scope, $routeParams) => {
         $scope.campaign = $scope.campaigns.get(parseInt($routeParams.idCampaign));
-        $scope.campaign.titles.sync($scope.campaign.id).then($scope.$apply);
+        // $scope.campaign.titles.sync($scope.campaign.id).then($scope.$apply);
+        titleService.syncStructuresTitle($scope.campaign.id).then( result =>{
+            $scope.structures = result;
+            $scope.$apply();
+        } );
 
+        $scope.checkIfTitleSelected = () : boolean =>{
+           return $scope.structures.all.find(structure => {
+                return structure.titles.selected.length !== 0;
+            }) !== undefined;
+        }
         $scope.lightbox = {
             open: false
         };
@@ -55,14 +65,14 @@ export const titleController = ng.controller('TitleController',
             }
         };
 
-        $scope.openDeleteConfirmation = (structure, title) => {
-            $scope.title = {
-                name: title.name,
-                id: title.id,
-                structure_id: structure.id_structure,
-                structure_name: structure.name,
-                id_campaign: $scope.campaign.id
-            };
+        $scope.openDeleteConfirmation = () => {
+            // $scope.title = {
+            //     name: title.name,
+            //     id: title.id,
+            //     structure_id: structure.id_structure,
+            //     structure_name: structure.name,
+            //     id_campaign: $scope.campaign.id
+            // };
             template.open('title.lightbox', 'administrator/campaign/title/title-deletion-confirmation');
             $scope.lightbox.open = true;
             Utils.safeApply($scope);

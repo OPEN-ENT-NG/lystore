@@ -1,4 +1,4 @@
-<table class="twelve">
+<table class="twelve campaign-titles-table">
     <thead>
     <td ng-click="sort.title.type = 'name';
                         sort.title.reverse = !sort.title.reverse">
@@ -12,16 +12,12 @@
     </td>
     </thead>
     <tbody>
-    <tr ng-repeat="structure in campaign.titles.all | orderBy:sort.title.type:sort.title.reverse">
+    <tr ng-repeat="structure in vm.structures.all | orderBy:sort.title.type:sort.title.reverse">
         <td>[[structure.name]]</td>
         <td>
-            <div class="select-blocks">
-                <div ng-repeat="title in structure.titles"
-                     ng-click="openDeleteConfirmation(structure, title)"
-                     class="labels-in-ligne">
-                    <div> [[ title.name ]]</div>
-                </div>
-            </div>
+          <lystore-campaign-title-card
+                  titles="structure.titles" >
+          </lystore-campaign-title-card>
         </td>
     </tr>
     </tbody>

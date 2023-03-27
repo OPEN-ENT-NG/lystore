@@ -1,15 +1,15 @@
 import {ng} from "entcore";
 import {IDirective, IScope,} from "angular";
-import {RootsConst} from "../../core/constants/roots.const";
-import {Structures} from "../../model";
+import {RootsConst} from "../../../core/constants/roots.const";
+import {Titles} from "../../../model";
 
 interface IViewModel {
 }
 
 
 interface IDirectiveProperties {
-    structures : Structures
-    selectFunction()
+    titles : Titles
+
 }
 
 interface IDirectiveScope extends IScope {
@@ -22,7 +22,6 @@ class Controller implements ng.IController, IViewModel {
     }
 
     $onInit() {
-
     }
 
     $onDestroy() {
@@ -34,10 +33,9 @@ function directive(): IDirective {
     return {
         replace: false,
         restrict: 'E',
-        templateUrl: `${RootsConst.directive}/campaign-titles-table/campaign-titles-table.html`,
+        templateUrl: `${RootsConst.directive}/campaign-titles-table/campaign-titles-card/campaign-titles-card.html`,
         scope: {
-            structures: '=',
-            selectFunction:'@'
+            titles: '='
         },
         controllerAs: 'vm',
         bindToController: true,
@@ -51,4 +49,4 @@ function directive(): IDirective {
     }
 }
 
-export const lystoreCampaignTitlesTable = ng.directive('lystoreCampaignTitlesTable', directive);
+export const lystoreCampaignTitleCard = ng.directive('lystoreCampaignTitleCard', directive);

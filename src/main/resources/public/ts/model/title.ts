@@ -1,5 +1,6 @@
 import {Mix, Selectable, Selection} from 'entcore-toolkit';
 import http from "axios";
+import {Structure, Structures} from "./Structure";
 
 export interface Title {
     id: number;
@@ -19,8 +20,38 @@ export class Title implements Selectable {
     }
 }
 
-export class Titles extends Selection<Title> {
+export interface IStructureTitles {
+    id_structure:string;
+    name:string;
+    titles:[{
+        id:number,
+        name:string
+    }]
 
+}
+
+export class StructureTitles {
+
+    build(StructureTitlesResponse: IStructureTitles[]): Promise<Structures> {
+        let structures: Structures = new Structures();
+        StructureTitlesResponse.forEach(structureResponse => {
+            let structure: Structure = new Structure();
+            structure.id = structureResponse.id_structure;
+            structure.name = structureResponse.name;
+            structureResponse.titles.forEach(titleResponse => {
+                let title: Title = new Title();
+                title.id = titleResponse.id
+                title.name = titleResponse.name
+                title.selected = false
+                structure.titles.all.push(title)
+            })
+            structures.all.push(structure)
+        })
+        return Promise.resolve(structures);
+    }
+}
+
+export class Titles extends Selection<Title> {
     constructor() {
         super([]);
     }
@@ -50,6 +81,7 @@ export class Titles extends Selection<Title> {
         return http.delete(`/lystore/titles/${idTitle}/campaigns/${idCampaign}/structures/${idStructure}`);
     }
 }
+
 
 export class TitleImporter {
     files: File[];
