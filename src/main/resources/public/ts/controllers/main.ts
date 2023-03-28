@@ -169,7 +169,6 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
             },
             manageTitles: async (params) => {
                 const campaign = $scope.campaigns.get(parseInt(params.idCampaign));
-                campaign.titles = new Titles();
                 if (template.isEmpty('administrator-main') || campaign === undefined) {
                     $scope.redirectTo('/campaigns');
                 }

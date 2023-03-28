@@ -77,8 +77,8 @@ export class Titles extends Selection<Title> {
         }
     }
 
-    delete(idCampaign: number, idTitle: number, idStructure: string) {
-        return http.delete(`/lystore/titles/${idTitle}/campaigns/${idCampaign}/structures/${idStructure}`);
+    toJson() {
+        return {};
     }
 }
 

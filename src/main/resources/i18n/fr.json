@@ -142,8 +142,8 @@
   "lystore.campaign.titles": "Intitulés",
   "lystore.campaign.titles.delete.error": "Une erreur est survenue lors de la suppression du rattachement",
   "lystore.campaign.titles.delete.success": "Rattachement supprimé",
-  "lystore.campaign.titles.delete": "Suppression d'un rattachement",
-  "lystore.campaign.titles.delete.description": "Êtes-vous sur de vouloir supprimer le rattachement suivant ?",
+  "lystore.campaign.titles.delete": "Suppression d'intitulés",
+  "lystore.campaign.titles.delete.description": "Êtes-vous sur de vouloir supprimer ces intitulés des rattachements suivants ?",
   "lystore.project.update.success": "Le projet a été mis à jour avec succès",
   "lystore.campaign.purse.import.skeleton": "Squelette d'import :",
   "lystore.structureGroups.management": "Regroupements",
@@ -647,7 +647,7 @@
   "lystore.order.waiting.notification.region": "Notification Helpdesk",
   "lystore.goTo.parameter.label" : "Paramètres généraux",
   "lystore.goTo.active.structure" : "Activation des établissements",
-  "lystore.goTo.parameters" : "Paramètrage de lystore",
+  "lystore.goTo.parameters" : "Paramétrage de lystore",
   "lystore.parameter.title.valid.command": "Paramètrage de la chaîne de validation des commandes",
   "lystore.parameter.title.valid.label": "Lystore permet aux établissements de passer des commandes aux collectivités. Ces commandes peuvent être validées directement par les collectivités ou bien passer dans des rapports et des opérations afin d'être étudiées en commission",
   "lystore.parameter.title.BC" : "Paramétrage du bon de commande",
@@ -692,6 +692,8 @@
   "lystore.ttc.label": "TTC",
   "lystore.initial.values": "Valeurs initiales",
   "lystore.updated.values": "Valeurs modifiées",
-  "total.price": "Prix total"
+  "total.price": "Prix total",
+  "select.all": "Tout sélectionner",
+  "deselect.all": "Tout désélectionner"
 
 }

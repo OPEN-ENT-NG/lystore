@@ -1,6 +1,6 @@
 import {ng} from "entcore";
-import {IStructureTitles, Structure, Structures, StructureTitles} from "../../model";
-import http from "axios";
+import {IStructureTitles, Structures, StructureTitles, Titles} from "../../model";
+import http, {AxiosPromise} from "axios";
 
 export interface Title {
     name: string;
@@ -11,18 +11,23 @@ export interface Title {
 
 export interface TitleService {
     syncStructuresTitle(idCampaign: number): Promise<Structures>
+
+    delete(idCampaign: number, titles: Titles): AxiosPromise
 }
 
 export const titleService: TitleService = {
 
     syncStructuresTitle(idCampaign: number): Promise<Structures> {
         return http.get(`/lystore/titles/campaigns/${idCampaign}`).then(
-            (res) =>            {
+            (res) => {
                 let StructureTitlesResponse: IStructureTitles[] = res.data;
-                console.log(res.data)
                 return new StructureTitles().build(StructureTitlesResponse);
-                //    return Promise.resolve(undefined);
             })
+    },
+
+    delete(idCampaign: number, titles: Titles): AxiosPromise {
+        console.log("plop")
+        return http.delete(`/lystore/titles/${idCampaign}`, titles.toJson());
     }
 
 }

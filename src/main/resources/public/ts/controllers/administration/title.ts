@@ -1,5 +1,5 @@
 import {ng, template, toasts} from 'entcore';
-import {Notification, TitleImporter, Utils} from '../../model';
+import {Notification, Structure, TitleImporter, Utils} from '../../model';
 import {titleService} from "../../services";
 
 declare let window: any;
@@ -53,28 +53,50 @@ export const titleController = ng.controller('TitleController',
             }
         };
 
-        $scope.deleteTitle = async ({id_campaign, id, structure_id}) => {
+        $scope.deleteTitles = async () => {
             try {
-                await $scope.campaign.titles.delete(id_campaign, id, structure_id);
-                await $scope.campaign.titles.sync($scope.campaign.id);
-                $scope.lightbox.open = false;
-                toasts.confirm('lystore.campaign.titles.delete.success');
-                Utils.safeApply($scope);
+                titleService.delete($scope.campaign.id, $scope.getStructureWithSelectedTitle());
+            //     await $scope.campaign.titles.sync($scope.campaign.id);
+            //     $scope.lightbox.open = false;
+            //     toasts.confirm('lystore.campaign.titles.delete.success');
+            //     Utils.safeApply($scope);
             } catch (err) {
-                toasts.warning('lystore.campaign.titles.delete.error');
+                console.log(err)
+                // toasts.warning('lystore.campaign.titles.delete.error');
             }
         };
 
-        $scope.openDeleteConfirmation = () => {
-            // $scope.title = {
-            //     name: title.name,
-            //     id: title.id,
-            //     structure_id: structure.id_structure,
-            //     structure_name: structure.name,
-            //     id_campaign: $scope.campaign.id
-            // };
+        $scope.openDeleteConfirmation = ():void => {
             template.open('title.lightbox', 'administrator/campaign/title/title-deletion-confirmation');
             $scope.lightbox.open = true;
             Utils.safeApply($scope);
         };
+
+        $scope.getStructureWithSelectedTitle = ():Structure[] =>{
+
+            return $scope.structures.all.filter(structure => {
+                return structure.titles.selected.length !== 0;
+            })
+        }
+
+        $scope.deselectAllTitles = ():void =>{
+            $scope.structures.forEach(structure =>{
+                structure.titles.all.forEach(title =>{
+                    title.selected = false;
+                });
+            });
+            Utils.safeApply($scope)
+        }
+
+        $scope.selectAllTitles = ():void =>{
+            $scope.structures.forEach(structure =>{
+                structure.titles.all.forEach(title =>{
+                    title.selected = true;
+                });
+            });
+            Utils.safeApply($scope)
+
+        }
+
+
     }]);
