@@ -1,5 +1,5 @@
 import {ng, template, toasts} from 'entcore';
-import {Notification, Structure, TitleImporter, Utils} from '../../model';
+import {Structure, TitleImporter, Titles, Utils} from '../../model';
 import {titleService} from "../../services";
 
 declare let window: any;
@@ -55,14 +55,19 @@ export const titleController = ng.controller('TitleController',
 
         $scope.deleteTitles = async () => {
             try {
-                titleService.delete($scope.campaign.id, $scope.getStructureWithSelectedTitle());
-            //     await $scope.campaign.titles.sync($scope.campaign.id);
-            //     $scope.lightbox.open = false;
-            //     toasts.confirm('lystore.campaign.titles.delete.success');
-            //     Utils.safeApply($scope);
+                let titles:Titles = new Titles();
+                $scope.getStructureWithSelectedTitle().forEach(structure =>{
+                    structure.titles.selected.forEach(title =>{
+                        titles.push(title);
+                    })
+                })
+                titleService.delete($scope.campaign.id, titles);
+                await $scope.campaign.titles.sync($scope.campaign.id);
+                $scope.lightbox.open = false;
+                toasts.confirm('lystore.campaign.titles.delete.success');
+                Utils.safeApply($scope);
             } catch (err) {
-                console.log(err)
-                // toasts.warning('lystore.campaign.titles.delete.error');
+                toasts.warning('lystore.campaign.titles.delete.error');
             }
         };
 

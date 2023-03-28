@@ -26,8 +26,7 @@ export const titleService: TitleService = {
     },
 
     delete(idCampaign: number, titles: Titles): AxiosPromise {
-        console.log("plop")
-        return http.delete(`/lystore/titles/${idCampaign}`, titles.toJson());
+        return http.post(`/lystore/delete/titles/${idCampaign}`, titles.toJson());
     }
 
 }

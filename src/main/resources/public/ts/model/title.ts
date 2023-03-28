@@ -5,17 +5,29 @@ import {Structure, Structures} from "./Structure";
 export interface Title {
     id: number;
     name: string;
+    selected: boolean;
 }
 
-export class Title implements Selectable {
-    selected: boolean;
+interface TitlePayload {
+    id: number;
+    name: string;
+}
 
+
+export class Title implements Selectable {
     constructor(id?: number, name?: string) {
         if (id) {
             this.id = id;
         }
         if (name) {
             this.name = name;
+        }
+    }
+
+    toJson() :TitlePayload{
+        return {
+            id: this.id,
+            name: this.name
         }
     }
 }
@@ -77,11 +89,20 @@ export class Titles extends Selection<Title> {
         }
     }
 
-    toJson() {
-        return {};
+    toJson() :TitlesPayload {
+        let result : TitlesPayload = {
+            titles:[]
+        };
+        this.all.forEach(title =>{
+            result.titles.push(title.toJson());
+        })
+        return result;
     }
 }
 
+export interface TitlesPayload {
+    titles : TitlePayload[]
+}
 
 export class TitleImporter {
     files: File[];
