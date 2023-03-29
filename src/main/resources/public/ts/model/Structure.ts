@@ -1,7 +1,7 @@
 import {_} from "entcore";
 import { Selectable, Mix, Selection } from 'entcore-toolkit';
 import http from 'axios';
-import {Titles} from "./title";
+import {IStructureTitlesResponse, Titles} from "./title";
 
 export class Structure implements Selectable {
     id: string;
@@ -37,6 +37,17 @@ export class Structures  extends Selection<Structure> {
 
     constructor () {
         super([]);
+    }
+
+    buildWithTitle(StructureTitlesResponse: IStructureTitlesResponse[]): Structures {
+
+        this.all = StructureTitlesResponse.map((structureResponse: IStructureTitlesResponse) => {
+            let structure: Structure = new Structure(structureResponse.name);
+            structure.id = structureResponse.id_structure;
+            structure.titles = new Titles().build(structureResponse.titles);
+            return structure;
+        });
+        return this;
     }
 
     async sync (): Promise<void> {

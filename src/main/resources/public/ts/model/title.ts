@@ -8,7 +8,7 @@ export interface Title {
     selected: boolean;
 }
 
-interface TitlePayload {
+interface ITitleResponse {
     id: number;
     name: string;
 }
@@ -24,48 +24,34 @@ export class Title implements Selectable {
         }
     }
 
-    toJson() :TitlePayload{
+    toJson() :ITitleResponse{
         return {
             id: this.id,
             name: this.name
         }
     }
 }
-
-export interface IStructureTitles {
+export interface IStructureTitlesResponse {
     id_structure:string;
     name:string;
-    titles:[{
-        id:number,
-        name:string
-    }]
+    titles: Array<ITitleResponse>;
 
 }
 
-export class StructureTitles {
 
-    build(StructureTitlesResponse: IStructureTitles[]): Promise<Structures> {
-        let structures: Structures = new Structures();
-        StructureTitlesResponse.forEach(structureResponse => {
-            let structure: Structure = new Structure();
-            structure.id = structureResponse.id_structure;
-            structure.name = structureResponse.name;
-            structureResponse.titles.forEach(titleResponse => {
-                let title: Title = new Title();
-                title.id = titleResponse.id
-                title.name = titleResponse.name
-                title.selected = false
-                structure.titles.all.push(title)
-            })
-            structures.all.push(structure)
-        })
-        return Promise.resolve(structures);
-    }
-}
 
 export class Titles extends Selection<Title> {
     constructor() {
         super([]);
+    }
+
+    build(titlesResponse: Array<ITitleResponse>): Titles {
+        this.all = titlesResponse.map((titleResponse: ITitleResponse) => {
+            let title: Title = new Title(titleResponse.id, titleResponse.name);
+            title.selected = false;
+            return title;
+        });
+        return this;
     }
 
     async sync(idCampaign?: number, idStructure?: string): Promise<void> {
@@ -90,18 +76,14 @@ export class Titles extends Selection<Title> {
     }
 
     toJson() :TitlesPayload {
-        let result : TitlesPayload = {
-            titles:[]
-        };
-        this.all.forEach(title =>{
-            result.titles.push(title.toJson());
-        })
-        return result;
+        return {
+            titles: this.all.map((title: Title) => title.toJson())
+        }
     }
 }
 
 export interface TitlesPayload {
-    titles : TitlePayload[]
+    titles : ITitleResponse[];
 }
 
 export class TitleImporter {

@@ -8,8 +8,8 @@ interface IViewModel {
 
 
 interface IDirectiveProperties {
-    structures : Structures
-    selectFunction()
+    structures : Structures;
+    selectFunction() :void;
 }
 
 interface IDirectiveScope extends IScope {

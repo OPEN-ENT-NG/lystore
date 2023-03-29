@@ -8,7 +8,7 @@ interface IViewModel {
 
 
 interface IDirectiveProperties {
-    titles : Titles
+    titles : Titles;
 
 }
 
