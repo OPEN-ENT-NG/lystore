@@ -1,7 +1,7 @@
 import {_} from "entcore";
 import { Selectable, Mix, Selection } from 'entcore-toolkit';
 import http from 'axios';
-import {IStructureTitlesResponse, Titles} from "./title";
+import {IStructureTitlesResponse, Titles} from "./Title";
 
 export class Structure implements Selectable {
     id: string;
