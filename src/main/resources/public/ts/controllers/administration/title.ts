@@ -1,5 +1,5 @@
 import {ng, template, toasts} from 'entcore';
-import {Structure, TitleImporter, Titles, Utils} from '../../model';
+import {Structure, Structures, Title, TitleImporter, Titles, Utils} from '../../model';
 import {titleService} from "../../services";
 
 declare let window: any;
@@ -7,8 +7,7 @@ declare let window: any;
 export const titleController = ng.controller('TitleController',
     ['$scope', '$routeParams', ($scope, $routeParams) => {
         $scope.campaign = $scope.campaigns.get(parseInt($routeParams.idCampaign));
-        // $scope.campaign.titles.sync($scope.campaign.id).then($scope.$apply);
-        titleService.syncStructuresTitle($scope.campaign.id).then( result =>{
+        titleService.syncStructuresTitle($scope.campaign.id).then( (result:Structures) =>{
             $scope.structures = result;
             $scope.$apply();
         } );
@@ -56,11 +55,7 @@ export const titleController = ng.controller('TitleController',
         $scope.deleteTitles = async () => {
             try {
                 let titles:Titles = new Titles();
-                $scope.getStructureWithSelectedTitle().forEach(structure =>{
-                    structure.titles.selected.forEach(title =>{
-                        titles.push(title);
-                    })
-                })
+                titles.all = $scope.getStructureWithSelectedTitle().flatMap((structure: Structure) => structure.titles.selected)
                 titleService.delete($scope.campaign.id, titles);
                 await $scope.campaign.titles.sync($scope.campaign.id);
                 $scope.lightbox.open = false;
@@ -85,20 +80,16 @@ export const titleController = ng.controller('TitleController',
         }
 
         $scope.deselectAllTitles = ():void =>{
-            $scope.structures.forEach(structure =>{
-                structure.titles.all.forEach(title =>{
-                    title.selected = false;
-                });
-            });
+            $scope.getStructureWithSelectedTitle()
+                .flatMap((structure: Structure) => structure.titles)
+                .forEach((title: Title) => title.selected = false)
             Utils.safeApply($scope)
         }
 
         $scope.selectAllTitles = ():void =>{
-            $scope.structures.forEach(structure =>{
-                structure.titles.all.forEach(title =>{
-                    title.selected = true;
-                });
-            });
+            $scope.getStructureWithSelectedTitle()
+                .flatMap((structure: Structure) => structure.titles)
+                .forEach((title: Title) => title.selected = true)
             Utils.safeApply($scope)
 
         }
