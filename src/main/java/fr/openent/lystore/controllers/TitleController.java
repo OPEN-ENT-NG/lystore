@@ -2,6 +2,8 @@ package fr.openent.lystore.controllers;
 
 import com.opencsv.CSVReader;
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.constants.CommonConstants;
+import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.helpers.ImportCSVHelper;
 import fr.openent.lystore.service.CampaignService;
 import fr.openent.lystore.service.StructureService;
@@ -15,6 +17,7 @@ import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
+import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
@@ -22,6 +25,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.controller.ControllerHelper;
+import org.entcore.common.http.response.DefaultResponseHandler;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -128,16 +132,19 @@ public class TitleController extends ControllerHelper {
         }
     }
 
-    @Delete("/titles/:idTitle/campaigns/:idCampaign/structures/:idStructure")
+    @Post("/delete/titles/:idCampaign")
     @ApiDoc("Delete a relationship between campaign, title and structure")
     @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
-    public void deleteRelation(HttpServerRequest request) {
+    public void deleteTitlesRelation(HttpServerRequest request) {
         try {
-            String idStructure = request.getParam("idStructure");
             Integer idCampaign = Integer.parseInt(request.getParam("idCampaign"));
-            Integer idTitle = Integer.parseInt(request.getParam("idTitle"));
-            
-            titleService.deleteRelation(idCampaign, idTitle, idStructure, defaultResponseHandler(request));
+            RequestUtils.bodyToJson(request, body ->
+                    titleService.deleteTitlesRelations(
+                            idCampaign,
+                            body.getJsonArray(CommonConstants.STRUCTURES))
+                            .onSuccess(s -> request.response().setStatusCode(200).end())
+                            .onFailure(err -> badRequest(request, err.getMessage()))
+            );
         } catch (NumberFormatException e) {
             badRequest(request);
         }

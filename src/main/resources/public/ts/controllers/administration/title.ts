@@ -5,17 +5,23 @@ import {TitleService} from "../../services";
 declare let window: any;
 
 export const titleController = ng.controller('TitleController',
-    ['$scope', '$routeParams', 'TitleService', ($scope, $routeParams,titleService :TitleService) => {
+    ['$scope', '$routeParams', 'TitleService', ($scope, $routeParams, titleService: TitleService) => {
         $scope.campaign = $scope.campaigns.get(parseInt($routeParams.idCampaign));
-        titleService.syncStructuresTitle($scope.campaign.id).then( (result:Structures) =>{
-            $scope.structures = result;
-            $scope.$apply();
-        } );
 
-        $scope.checkIfTitleSelected = () : boolean =>{
-           return $scope.structures.all.find( (structure:Structure) =>
+
+        $scope.syncStructuresTitle = async () => {
+            await titleService.syncStructuresTitle($scope.campaign.id).then((result: Structures) => {
+                $scope.structures = result;
+                $scope.$apply();
+            });
+        }
+
+        $scope.syncStructuresTitle();
+
+        $scope.checkIfTitleSelected = (): boolean => {
+            return $scope.structures.all.find((structure: Structure) =>
                 structure.titles.selected.length !== 0
-           ) !== undefined;
+            ) !== undefined;
         }
         $scope.lightbox = {
             open: false
@@ -53,17 +59,17 @@ export const titleController = ng.controller('TitleController',
         };
 
         $scope.deleteTitles = async () => {
-            try {
-                let structures: Structures = new Structures();
-                structures.all = $scope.getStructureWithSelectedTitle()
-                await titleService.delete($scope.campaign.id, structures);
-                await $scope.campaign.titles.sync($scope.campaign.id);
-                $scope.lightbox.open = false;
-                toasts.confirm('lystore.campaign.titles.delete.success');
-                Utils.safeApply($scope);
-            } catch (err) {
-                toasts.warning('lystore.campaign.titles.delete.error');
-            }
+            // try {
+            let structures: Structures = new Structures();
+            structures.all = $scope.getStructureWithSelectedTitle()
+            await titleService.delete($scope.campaign.id, structures);
+            await $scope.syncStructuresTitle();
+            $scope.lightbox.open = false;
+            toasts.confirm('lystore.campaign.titles.delete.success');
+            Utils.safeApply($scope);
+            // } catch (err) {
+            //     toasts.warning('lystore.campaign.titles.delete.error');
+            // }
         };
 
         $scope.openDeleteConfirmation = ():void => {
@@ -75,8 +81,8 @@ export const titleController = ng.controller('TitleController',
         $scope.getStructureWithSelectedTitle = ():Structure[] =>{
 
             return $scope.structures.all.filter( (structure :Structure) =>
-                 structure.titles.selected.length !== 0
-           );
+                structure.titles.selected.length !== 0
+            );
         }
 
         $scope.deselectAllTitles = ():void =>{

@@ -1,16 +1,24 @@
 package fr.openent.lystore.service.impl;
 
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.constants.CommonConstants;
+import fr.openent.lystore.constants.LystoreBDD;
+import fr.openent.lystore.model.Structure;
+import fr.openent.lystore.model.Title;
 import fr.openent.lystore.service.TitleService;
 import fr.wseduc.webutils.Either;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DefaultTitleService extends SqlCrudService implements TitleService {
 
@@ -164,4 +172,51 @@ public class DefaultTitleService extends SqlCrudService implements TitleService 
     }
 
 
+    @Override
+    public Future<Void> deleteTitlesRelations(Integer idCampaign, JsonArray structuresJA) {
+        Promise<Void> promise = Promise.promise();
+        JsonArray statements = new JsonArray();
+
+        List<Structure> structures = initStructuresTitleRelation(structuresJA);
+        structures.forEach(structure ->
+                structure.getTitles().forEach(title ->
+                        statements.add(getDeletionStatement(idCampaign, title.getId(), structure.getId()))
+                )
+        );
+        Sql.getInstance().transaction(statements, message -> {
+            if (CommonConstants.OK.equals(message.body().getString(CommonConstants.STATUS))) {
+                promise.complete();
+            } else {
+                promise.fail(message.body().getString(CommonConstants.MESSAGE));
+            }
+        });
+        return promise.future();
+    }
+
+    private List<Structure> initStructuresTitleRelation(JsonArray structuresJA) {
+        return structuresJA.stream().map(structureObject -> {
+            JsonObject structureParams = (JsonObject) structureObject;
+            Structure structure = new Structure();
+            structure.setId(structureParams.getString("id_structure"));
+            structureParams.getJsonArray(LystoreBDD.TITLES).forEach(titleObject -> structure.addTitle(new Title((JsonObject) titleObject)));
+            return structure;
+        }).collect(Collectors.toList());
+    }
+
+    private JsonObject getDeletionStatement(Integer idCampaign, int idTitle, String idStructure) {
+        String query = "DELETE FROM " + Lystore.lystoreSchema + ".rel_title_campaign_structure " +
+                "WHERE id_campaign = ? " +
+                "AND id_title = ? " +
+                "AND id_structure = ?;";
+
+        JsonArray params = new JsonArray()
+                .add(idCampaign)
+                .add(idTitle)
+                .add(idStructure);
+
+        return new JsonObject()
+                .put(CommonConstants.STATEMENT, query)
+                .put(CommonConstants.VALUES, params)
+                .put(CommonConstants.ACTION, CommonConstants.PREPARED);
+    }
 }
