@@ -1,7 +1,7 @@
 import {_} from "entcore";
 import { Selectable, Mix, Selection } from 'entcore-toolkit';
 import http from 'axios';
-import {IStructureTitlesResponse, Titles} from "./Title";
+import {IStructuresTitlesResponse, IStructureTitlesResponse, Titles} from "./Title";
 
 export class Structure implements Selectable {
     id: string;
@@ -31,6 +31,12 @@ export class Structure implements Selectable {
         };
     }
 
+    getTitleJson() :IStructureTitlesResponse{
+        return {
+            id_structure : this.id,
+            titles: this.titles.selected.map(titles => titles.toJson())
+        }
+    }
 }
 
 export class Structures  extends Selection<Structure> {
@@ -67,4 +73,9 @@ export class Structures  extends Selection<Structure> {
         this.all = Mix.castArrayAs(Structure, data);
     }
 
+    getTitlesJson():IStructuresTitlesResponse {
+        return {
+            structures : this.all.map((structure:Structure) => structure.getTitleJson())
+        };
+    }
 }

@@ -33,9 +33,13 @@ export class Title implements Selectable {
 }
 export interface IStructureTitlesResponse {
     id_structure:string;
-    name:string;
+    name?:string;
     titles: Array<ITitleResponse>;
 
+}
+
+export interface IStructuresTitlesResponse {
+    structures: Array<IStructureTitlesResponse>;
 }
 
 

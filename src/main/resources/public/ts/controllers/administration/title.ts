@@ -54,9 +54,9 @@ export const titleController = ng.controller('TitleController',
 
         $scope.deleteTitles = async () => {
             try {
-                let titles:Titles = new Titles();
-                titles.all = $scope.getStructureWithSelectedTitle().flatMap((structure: Structure) => structure.titles.selected)
-                await titleService.delete($scope.campaign.id, titles);
+                let structures: Structures = new Structures();
+                structures.all = $scope.getStructureWithSelectedTitle()
+                await titleService.delete($scope.campaign.id, structures);
                 await $scope.campaign.titles.sync($scope.campaign.id);
                 $scope.lightbox.open = false;
                 toasts.confirm('lystore.campaign.titles.delete.success');
