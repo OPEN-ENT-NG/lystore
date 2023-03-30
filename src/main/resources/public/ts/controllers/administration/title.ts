@@ -59,17 +59,17 @@ export const titleController = ng.controller('TitleController',
         };
 
         $scope.deleteTitles = async () => {
-            // try {
-            let structures: Structures = new Structures();
-            structures.all = $scope.getStructureWithSelectedTitle()
-            await titleService.delete($scope.campaign.id, structures);
-            await $scope.syncStructuresTitle();
-            $scope.lightbox.open = false;
-            toasts.confirm('lystore.campaign.titles.delete.success');
-            Utils.safeApply($scope);
-            // } catch (err) {
-            //     toasts.warning('lystore.campaign.titles.delete.error');
-            // }
+            try {
+                let structures: Structures = new Structures();
+                structures.all = $scope.getStructureWithSelectedTitle()
+                await titleService.delete($scope.campaign.id, structures);
+                await $scope.syncStructuresTitle();
+                $scope.lightbox.open = false;
+                toasts.confirm('lystore.campaign.titles.delete.success');
+                Utils.safeApply($scope);
+            } catch (err) {
+                toasts.warning('lystore.campaign.titles.delete.error');
+            }
         };
 
         $scope.openDeleteConfirmation = ():void => {

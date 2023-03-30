@@ -6,21 +6,27 @@ import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.model.Structure;
 import fr.openent.lystore.model.Title;
 import fr.openent.lystore.service.TitleService;
+import fr.openent.lystore.utils.LystoreUtils;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 public class DefaultTitleService extends SqlCrudService implements TitleService {
+
+    private static final Logger log = LoggerFactory.getLogger(DefaultTitleService.class);
 
     public DefaultTitleService(String schema, String table) {
         super(schema, table);
@@ -178,29 +184,41 @@ public class DefaultTitleService extends SqlCrudService implements TitleService 
         JsonArray statements = new JsonArray();
 
         List<Structure> structures = initStructuresTitleRelation(structuresJA);
-        structures.forEach(structure ->
-                structure.getTitles().forEach(title ->
-                        statements.add(getDeletionStatement(idCampaign, title.getId(), structure.getId()))
-                )
-        );
-        Sql.getInstance().transaction(statements, message -> {
-            if (CommonConstants.OK.equals(message.body().getString(CommonConstants.STATUS))) {
-                promise.complete();
-            } else {
-                promise.fail(message.body().getString(CommonConstants.MESSAGE));
-            }
-        });
+        if(structures.size() > 0) {
+            structures.forEach(structure ->
+                    structure.getTitles().forEach(title ->
+                            statements.add(getDeletionStatement(idCampaign, title.getId(), structure.getId()))
+                    )
+            );
+            Sql.getInstance().transaction(statements, message -> {
+                if (CommonConstants.OK.equals(message.body().getString(CommonConstants.STATUS))) {
+                    promise.complete();
+                } else {
+                    promise.fail(message.body().getString(CommonConstants.MESSAGE));
+                }
+            });
+        }else {
+            promise.fail(LystoreUtils.generateErrorMessage(this.getClass(),"delteTitlesRelations","Structures Array is empty", ""));
+        }
         return promise.future();
     }
 
     private List<Structure> initStructuresTitleRelation(JsonArray structuresJA) {
-        return structuresJA.stream().map(structureObject -> {
+        try{
+            return structuresJA.stream().map(structureObject -> {
             JsonObject structureParams = (JsonObject) structureObject;
             Structure structure = new Structure();
-            structure.setId(structureParams.getString("id_structure"));
+            structure.setId(structureParams.getString(LystoreBDD.ID_STRUCTURE));
             structureParams.getJsonArray(LystoreBDD.TITLES).forEach(titleObject -> structure.addTitle(new Title((JsonObject) titleObject)));
             return structure;
         }).collect(Collectors.toList());
+        }catch (Exception e){
+            log.error(LystoreUtils.generateErrorMessage(this.getClass(),
+                    "initStructuresTitleRelation",
+                    "error when setting structures",
+                    e.getMessage()));
+            return new ArrayList<>();
+        }
     }
 
     private JsonObject getDeletionStatement(Integer idCampaign, int idTitle, String idStructure) {
