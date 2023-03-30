@@ -15,6 +15,7 @@ import io.vertx.ext.unit.junit.VertxUnitRunner;
 import org.apache.poi.ss.formula.functions.T;
 import org.entcore.common.sql.Sql;
 import org.junit.Before;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.reflect.Whitebox;
 
@@ -33,6 +34,7 @@ public class DefaultTitltServiceTest {
         this.titleService = new DefaultTitleService(Lystore.lystoreSchema, "title");
     }
 
+    @Test
     public void getDeletionStatement_Should_Delete_Correct_Data_Into_SQLStatement(TestContext ctx) throws Exception {
         // expected data
         String expectedQuery = "DELETE FROM " + Lystore.lystoreSchema + ".rel_title_campaign_structure " +
@@ -40,7 +42,7 @@ public class DefaultTitltServiceTest {
                 "AND id_title = ? " +
                 "AND id_structure = ?;";
 
-        JsonArray expectedParams = new JsonArray().add(1).add(3).add("5");
+        JsonArray expectedParams = new JsonArray("[1,2,\"5\"]");
         JsonObject body =  Whitebox.invokeMethod(titleService, "getDeletionStatement",1,2,"5");
         ctx.assertEquals(body.getString("statement"),expectedQuery);
         ctx.assertEquals(body.getJsonArray("params"),expectedParams);
