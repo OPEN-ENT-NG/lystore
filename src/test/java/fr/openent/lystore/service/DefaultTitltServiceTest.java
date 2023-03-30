@@ -45,7 +45,7 @@ public class DefaultTitltServiceTest {
         JsonArray expectedParams = new JsonArray("[1,2,\"5\"]");
         JsonObject body =  Whitebox.invokeMethod(titleService, "getDeletionStatement",1,2,"5");
         ctx.assertEquals(body.getString("statement"),expectedQuery);
-        ctx.assertEquals(body.getJsonArray("params"),expectedParams);
+        ctx.assertEquals(body.getJsonArray("values"), expectedParams);
         ctx.assertEquals(body.getString("action"),"prepared");
     }
 }
