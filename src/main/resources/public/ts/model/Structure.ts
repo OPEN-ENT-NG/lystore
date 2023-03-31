@@ -1,7 +1,7 @@
 import {_} from "entcore";
 import { Selectable, Mix, Selection } from 'entcore-toolkit';
 import http from 'axios';
-import {IStructuresTitlesResponse, IStructureTitlesResponse, Titles} from "./Title";
+import {IStructuresTitlesResponse, IStructureTitlesResponse, Title, Titles} from "./Title";
 
 export class Structure implements Selectable {
     id: string;
@@ -34,7 +34,7 @@ export class Structure implements Selectable {
     getTitleJson() :IStructureTitlesResponse{
         return {
             id_structure : this.id,
-            titles: this.titles.selected.map(titles => titles.toJson())
+            titles: this.titles.selected.map((title:Title) => title.toJson())
         }
     }
 }

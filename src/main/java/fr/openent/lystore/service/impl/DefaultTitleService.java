@@ -205,13 +205,20 @@ public class DefaultTitleService extends SqlCrudService implements TitleService 
 
     private List<Structure> initStructuresTitleRelation(JsonArray structuresJA) {
         try{
-            return structuresJA.stream().map(structureObject -> {
-            JsonObject structureParams = (JsonObject) structureObject;
-            Structure structure = new Structure();
-            structure.setId(structureParams.getString(LystoreBDD.ID_STRUCTURE));
-            structureParams.getJsonArray(LystoreBDD.TITLES).forEach(titleObject -> structure.addTitle(new Title((JsonObject) titleObject)));
-            return structure;
-        }).collect(Collectors.toList());
+            return structuresJA.stream()
+                    .filter(JsonObject.class::isInstance)
+                    .map(JsonObject.class::cast)
+                    .map(structureParams -> {
+                        Structure structure = new Structure();
+                        structure.setId(structureParams.getString(LystoreBDD.ID_STRUCTURE));
+                        structureParams.getJsonArray(LystoreBDD.TITLES, new JsonArray())
+                                .stream()
+                                .filter(JsonObject.class::isInstance)
+                                .map(JsonObject.class::cast)
+                                .forEach(titleObject -> structure.addTitle(new Title(titleObject)));
+                        return structure;
+                    })
+                    .collect(Collectors.toList());
         }catch (Exception e){
             log.error(LystoreUtils.generateErrorMessage(this.getClass(),
                     "initStructuresTitleRelation",

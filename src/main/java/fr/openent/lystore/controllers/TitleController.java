@@ -3,7 +3,6 @@ package fr.openent.lystore.controllers;
 import com.opencsv.CSVReader;
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.constants.CommonConstants;
-import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.helpers.ImportCSVHelper;
 import fr.openent.lystore.service.CampaignService;
 import fr.openent.lystore.service.StructureService;
@@ -12,12 +11,12 @@ import fr.openent.lystore.service.impl.DefaultCampaignService;
 import fr.openent.lystore.service.impl.DefaultStructureService;
 import fr.openent.lystore.service.impl.DefaultTitleService;
 import fr.wseduc.rs.ApiDoc;
-import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.request.RequestUtils;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
@@ -25,7 +24,6 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.controller.ControllerHelper;
-import org.entcore.common.http.response.DefaultResponseHandler;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -142,7 +140,7 @@ public class TitleController extends ControllerHelper {
                     titleService.deleteTitlesRelations(
                             idCampaign,
                             body.getJsonArray(CommonConstants.STRUCTURES))
-                            .onSuccess(s -> request.response().setStatusCode(200).end())
+                            .onSuccess(s -> request.response().setStatusCode(HttpResponseStatus.OK.code()).end())
                             .onFailure(err -> badRequest(request, err.getMessage()))
             );
         } catch (NumberFormatException e) {
