@@ -1,39 +1,39 @@
-<div ng-controller="TitleController" class="purse-management">
+<div ng-controller="TitleController as vm" class="purse-management">
 
     <div class="tools right-magnet eleven-mobile">
-        <button class="five-mobile" ng-click="openTitleImporter()">
+        <button class="five-mobile" ng-click="vm.openTitleImporter()">
             <i18n>lystore.campaign.purse.import</i18n>
         </button>
     </div>
 
     <div class="six centered twelve-mobile">
-        <h1 class="centered-text">[[campaign.name]]</h1>
+        <h1 class="centered-text">[[vm.campaign.name]]</h1>
         <article class="responsive-table">
             <lystore-campaign-titles-table
-            structures="structures"
+            structures="vm.structures"
             >
             </lystore-campaign-titles-table>
         </article>
 
     </div>
 
-    <lightbox show="lightbox.open" on-close="lightbox.open = false">
+    <lightbox show="vm.lightbox.open" on-close="vm.lightbox.open = false">
         <container template="title.lightbox"></container>
     </lightbox>
 
     <section class="toggle-buttons"
-             ng-class="{ hide: !checkIfTitleSelected()}">
+             ng-class="{ hide: !vm.checkIfTitleSelected()}">
         <div class="toggle">
             <div class="row">
-                <button ng-click="openDeleteConfirmation()"
+                <button ng-click="vm.openDeleteConfirmation()"
                       >
                     <i18n>delete</i18n>
                 </button>
-                <button class="right-magnet"ng-click="selectAllTitles()"
+                <button class="right-magnet"ng-click="vm.selectAllTitles()"
                 >
                     <i18n>select.all</i18n>
                 </button>
-                <button class="right-magnet" ng-click="deselectAllTitles()"
+                <button class="right-magnet" ng-click="vm.deselectAllTitles()"
             >
                 <i18n>deselect.all</i18n>
             </button>

@@ -1,6 +1,7 @@
 package fr.openent.lystore.service;
 
 import fr.wseduc.webutils.Either;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -61,4 +62,6 @@ public interface TitleService {
     void getTitlesAdmin(Integer campaignId, Handler<Either<String, JsonArray>> handler);
 
     void getList(Handler<Either<String, JsonArray>> arrayResponseHandler);
+
+    Future<Void> deleteTitlesRelations(Integer idCampaign, JsonArray structures);
 }

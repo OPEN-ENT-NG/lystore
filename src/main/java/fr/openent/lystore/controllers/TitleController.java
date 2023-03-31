@@ -2,6 +2,7 @@ package fr.openent.lystore.controllers;
 
 import com.opencsv.CSVReader;
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.constants.CommonConstants;
 import fr.openent.lystore.helpers.ImportCSVHelper;
 import fr.openent.lystore.service.CampaignService;
 import fr.openent.lystore.service.StructureService;
@@ -10,11 +11,12 @@ import fr.openent.lystore.service.impl.DefaultCampaignService;
 import fr.openent.lystore.service.impl.DefaultStructureService;
 import fr.openent.lystore.service.impl.DefaultTitleService;
 import fr.wseduc.rs.ApiDoc;
-import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
+import fr.wseduc.webutils.request.RequestUtils;
+import io.netty.handler.codec.http.HttpResponseStatus;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
@@ -128,16 +130,19 @@ public class TitleController extends ControllerHelper {
         }
     }
 
-    @Delete("/titles/:idTitle/campaigns/:idCampaign/structures/:idStructure")
+    @Post("/delete/titles/:idCampaign")
     @ApiDoc("Delete a relationship between campaign, title and structure")
     @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
-    public void deleteRelation(HttpServerRequest request) {
+    public void deleteTitlesRelation(HttpServerRequest request) {
         try {
-            String idStructure = request.getParam("idStructure");
             Integer idCampaign = Integer.parseInt(request.getParam("idCampaign"));
-            Integer idTitle = Integer.parseInt(request.getParam("idTitle"));
-            
-            titleService.deleteRelation(idCampaign, idTitle, idStructure, defaultResponseHandler(request));
+            RequestUtils.bodyToJson(request, body ->
+                    titleService.deleteTitlesRelations(
+                            idCampaign,
+                            body.getJsonArray(CommonConstants.STRUCTURES))
+                            .onSuccess(s -> request.response().setStatusCode(HttpResponseStatus.OK.code()).end())
+                            .onFailure(err -> badRequest(request, err.getMessage()))
+            );
         } catch (NumberFormatException e) {
             badRequest(request);
         }

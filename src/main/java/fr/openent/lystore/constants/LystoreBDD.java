@@ -33,4 +33,5 @@ public class LystoreBDD {
     public static final String ZIPCODE = "zipCode";
     public static final String CITY = "city";
     public static final String ADDRESS = "address";
+    public static final String TITLES = "titles";
 }

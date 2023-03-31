@@ -1,7 +1,7 @@
-<form ng-submit="importTitles(importer)">
+<form ng-submit="vm.importTitles(vm.importer)">
     <h2>
         <i18n>lystore.campaign.titles.import.title</i18n>
-        [[campaign.name]]
+        [[vm.campaign.name]]
     </h2>
     <div class="info">
         <p>
@@ -12,17 +12,17 @@
             <a href="/lystore/public/import/skeletonIntitule.csv">skeleton.csv</a>
         </p>
     </div>
-    <div class="warning" ng-if="importer.message">
-        <p>[[lang.translate(importer.message)]]</p>
+    <div class="warning" ng-if="vm.importer.message">
+        <p>[[lang.translate(vm.importer.message)]]</p>
     </div>
     <div class="vertical-spacing">
         <p class="six centered">
             <i18n>csv.file</i18n>
-            <input type="file" files-input-change ng-model="importer.files">
+            <input type="file" files-input-change ng-model="vm.importer.files">
         </p>
         </p>
         <div class="row">
-            <button class="right-magnet" ng-disabled="!importer.isValid()">
+            <button class="right-magnet" ng-disabled="!vm.importer.isValid()">
                 <i18n>import</i18n>
             </button>
         </div>

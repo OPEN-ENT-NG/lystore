@@ -1,6 +1,5 @@
 import {Mix, Selectable, Selection} from 'entcore-toolkit';
 import http from "axios";
-import {Structure, Structures} from "./Structure";
 
 export interface Title {
     id: number;
@@ -33,9 +32,13 @@ export class Title implements Selectable {
 }
 export interface IStructureTitlesResponse {
     id_structure:string;
-    name:string;
+    name?:string;
     titles: Array<ITitleResponse>;
 
+}
+
+export interface IStructuresTitlesResponse {
+    structures: Array<IStructureTitlesResponse>;
 }
 
 

@@ -5,10 +5,10 @@
     <p>
         <i18n>lystore.campaign.titles.delete.description</i18n>
     </p>
-    <p><i18n>CAMPAIGN</i18n>&#32;&#58;&#32;[[campaign.name]]</li>
+    <p><i18n>CAMPAIGN</i18n>&#32;&#58;&#32;[[vm.campaign.name]]</li>
     </p>
     <p>
-    <div ng-repeat="structure in getStructureWithSelectedTitle()">
+    <div ng-repeat="structure in vm.getStructureWithSelectedTitle()">
         <strong>[[structure.name]]&#32;&#58;</strong>
         <ul class="title-delete-lightbox-ul">
             <li ng-repeat="title in structure.titles.selected">
@@ -21,10 +21,10 @@
     </p>
     <div class="row">
         <div class="right-magnet">
-            <button class="cancel" ng-click="lightbox.open = false">
+            <button class="cancel" ng-click="vm.lightbox.open = false">
                 <i18n>cancel</i18n>
             </button>
-            <button ng-click="deleteTitles()">
+            <button ng-click="vm.deleteTitles()">
                 <i18n>delete</i18n>
             </button>
         </div>

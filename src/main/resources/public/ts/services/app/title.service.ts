@@ -1,12 +1,12 @@
 import {ng} from "entcore";
-import {IStructureTitlesResponse, Structures, Titles} from "../../model";
+import {IStructureTitlesResponse, Structures} from "../../model";
 import http, {AxiosPromise, AxiosResponse} from "axios";
 
 
 
 export interface TitleService {
     syncStructuresTitle(idCampaign: number): Promise<Structures>;
-    delete(idCampaign: number, titles: Titles): AxiosPromise;
+    delete(idCampaign: number,  structures: Structures): AxiosPromise;
 }
 
 export const titleService: TitleService = {
@@ -18,8 +18,8 @@ export const titleService: TitleService = {
         });
     },
 
-    delete(idCampaign: number, titles: Titles): AxiosPromise {
-        return http.post(`/lystore/delete/titles/${idCampaign}`, titles.toJson());
+    delete(idCampaign: number, structures: Structures): AxiosPromise {
+        return http.post(`/lystore/delete/titles/${idCampaign}`, structures.getTitlesJson());
     }
 
 }
