@@ -166,7 +166,4 @@ class Controller implements IViewModel {
 
 export const titleController = ng.controller('TitleController', ['$scope', '$routeParams', 'TitleService', Controller]);
 
-// export const titleController = ng.controller('TitleController',
-//     ['$scope', '$routeParams', 'TitleService', ($scope, $routeParams, titleService: TitleService) => {
-
 
