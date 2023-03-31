@@ -1,0 +1,24 @@
+<table class="twelve campaign-titles-table">
+    <thead>
+    <td ng-click="sort.title.type = 'name';
+                        sort.title.reverse = !sort.title.reverse">
+        <i18n>name</i18n>
+        <i class="up-open" ng-show="sort.title.type === 'name' && !sort.title.reverse"></i>
+        <i class="down-open" ng-show="sort.title.type === 'name' && sort.title.reverse"></i>
+    </td>
+    <td ng-click="sort.purse.type = 'name';
+                        sort.purse.reverse = !sort.purse.reverse">
+        <i18n>lystore.campaign.titles</i18n>
+    </td>
+    </thead>
+    <tbody>
+    <tr ng-repeat="structure in vm.structures.all | orderBy:sort.title.type:sort.title.reverse">
+        <td>[[structure.name]]</td>
+        <td>
+          <lystore-campaign-title-card
+                  titles="structure.titles" >
+          </lystore-campaign-title-card>
+        </td>
+    </tr>
+    </tbody>
+</table>

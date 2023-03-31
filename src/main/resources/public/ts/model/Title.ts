@@ -4,11 +4,16 @@ import http from "axios";
 export interface Title {
     id: number;
     name: string;
+    selected: boolean;
 }
 
-export class Title implements Selectable {
-    selected: boolean;
+interface ITitleResponse {
+    id: number;
+    name: string;
+}
 
+
+export class Title implements Selectable {
     constructor(id?: number, name?: string) {
         if (id) {
             this.id = id;
@@ -17,12 +22,39 @@ export class Title implements Selectable {
             this.name = name;
         }
     }
+
+    toJson() :ITitleResponse{
+        return {
+            id: this.id,
+            name: this.name
+        }
+    }
+}
+export interface IStructureTitlesResponse {
+    id_structure:string;
+    name?:string;
+    titles: Array<ITitleResponse>;
+
 }
 
-export class Titles extends Selection<Title> {
+export interface IStructuresTitlesResponse {
+    structures: Array<IStructureTitlesResponse>;
+}
 
+
+
+export class Titles extends Selection<Title> {
     constructor() {
         super([]);
+    }
+
+    build(titlesResponse: Array<ITitleResponse>): Titles {
+        this.all = titlesResponse.map((titleResponse: ITitleResponse) => {
+            let title: Title = new Title(titleResponse.id, titleResponse.name);
+            title.selected = false;
+            return title;
+        });
+        return this;
     }
 
     async sync(idCampaign?: number, idStructure?: string): Promise<void> {
@@ -46,9 +78,15 @@ export class Titles extends Selection<Title> {
         }
     }
 
-    delete(idCampaign: number, idTitle: number, idStructure: string) {
-        return http.delete(`/lystore/titles/${idTitle}/campaigns/${idCampaign}/structures/${idStructure}`);
+    toJson() :TitlesPayload {
+        return {
+            titles: this.all.map((title: Title) => title.toJson())
+        }
     }
+}
+
+export interface TitlesPayload {
+    titles : ITitleResponse[];
 }
 
 export class TitleImporter {

@@ -1,18 +1,32 @@
 package fr.openent.lystore.service.impl;
 
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.constants.CommonConstants;
+import fr.openent.lystore.constants.LystoreBDD;
+import fr.openent.lystore.model.Structure;
+import fr.openent.lystore.model.Title;
 import fr.openent.lystore.service.TitleService;
+import fr.openent.lystore.utils.LystoreUtils;
 import fr.wseduc.webutils.Either;
+import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.service.impl.SqlCrudService;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class DefaultTitleService extends SqlCrudService implements TitleService {
+
+    private static final Logger log = LoggerFactory.getLogger(DefaultTitleService.class);
 
     public DefaultTitleService(String schema, String table) {
         super(schema, table);
@@ -164,4 +178,70 @@ public class DefaultTitleService extends SqlCrudService implements TitleService 
     }
 
 
+    @Override
+    public Future<Void> deleteTitlesRelations(Integer idCampaign, JsonArray structuresJA) {
+        Promise<Void> promise = Promise.promise();
+        JsonArray statements = new JsonArray();
+
+        List<Structure> structures = initStructuresTitleRelation(structuresJA);
+        if(structures.size() > 0) {
+            structures.forEach(structure ->
+                    structure.getTitles().forEach(title ->
+                            statements.add(getDeletionStatement(idCampaign, title.getId(), structure.getId()))
+                    )
+            );
+            Sql.getInstance().transaction(statements, message -> {
+                if (CommonConstants.OK.equals(message.body().getString(CommonConstants.STATUS))) {
+                    promise.complete();
+                } else {
+                    promise.fail(message.body().getString(CommonConstants.MESSAGE));
+                }
+            });
+        }else {
+            promise.fail(LystoreUtils.generateErrorMessage(this.getClass(),"delteTitlesRelations","Structures Array is empty", ""));
+        }
+        return promise.future();
+    }
+
+    private List<Structure> initStructuresTitleRelation(JsonArray structuresJA) {
+        try{
+            return structuresJA.stream()
+                    .filter(JsonObject.class::isInstance)
+                    .map(JsonObject.class::cast)
+                    .map(structureParams -> {
+                        Structure structure = new Structure();
+                        structure.setId(structureParams.getString(LystoreBDD.ID_STRUCTURE));
+                        structureParams.getJsonArray(LystoreBDD.TITLES, new JsonArray())
+                                .stream()
+                                .filter(JsonObject.class::isInstance)
+                                .map(JsonObject.class::cast)
+                                .forEach(titleObject -> structure.addTitle(new Title(titleObject)));
+                        return structure;
+                    })
+                    .collect(Collectors.toList());
+        }catch (Exception e){
+            log.error(LystoreUtils.generateErrorMessage(this.getClass(),
+                    "initStructuresTitleRelation",
+                    "error when setting structures",
+                    e.getMessage()));
+            return new ArrayList<>();
+        }
+    }
+
+    private JsonObject getDeletionStatement(Integer idCampaign, int idTitle, String idStructure) {
+        String query = "DELETE FROM " + Lystore.lystoreSchema + ".rel_title_campaign_structure " +
+                "WHERE id_campaign = ? " +
+                "AND id_title = ? " +
+                "AND id_structure = ?;";
+
+        JsonArray params = new JsonArray()
+                .add(idCampaign)
+                .add(idTitle)
+                .add(idStructure);
+
+        return new JsonObject()
+                .put(CommonConstants.STATEMENT, query)
+                .put(CommonConstants.VALUES, params)
+                .put(CommonConstants.ACTION, CommonConstants.PREPARED);
+    }
 }

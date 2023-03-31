@@ -3,6 +3,9 @@ package fr.openent.lystore.model;
 import fr.openent.lystore.constants.LystoreBDD;
 import io.vertx.core.json.JsonObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static fr.openent.lystore.constants.CommonConstants.ID;
 
 public class Structure  extends  Model{
@@ -17,6 +20,7 @@ public class Structure  extends  Model{
     private String phone;
     private String citeMixte;
     private String type;
+    private final List<Title> titles = new ArrayList<>();
     public Structure(){
         super();
     }
@@ -106,6 +110,14 @@ public class Structure  extends  Model{
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public List<Title> getTitles() {
+        return titles;
+    }
+
+    public void addTitle(Title title){
+        this.titles.add(title);
     }
 
     @Override
