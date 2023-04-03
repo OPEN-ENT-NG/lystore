@@ -24,8 +24,8 @@ export const instructionController = ng.controller('instructionController',
 
         $scope.sort = {
             instruction : {
-                type: 'object',
-                reverse: false
+                type: 'date_cp',
+                reverse: true
             }
         };
         $scope.search = {
