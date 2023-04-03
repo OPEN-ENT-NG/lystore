@@ -13,8 +13,8 @@ export const operationController = ng.controller('operationController',
         $scope.allOrdersOperationSelected = false;
         $scope.sort = {
             operation : {
-                type: 'label.label',
-                reverse: false
+                type: 'date_operation',
+                reverse: true
             }
         };
         $scope.allOrdersSelected = false;
