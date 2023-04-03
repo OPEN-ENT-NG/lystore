@@ -74,7 +74,8 @@ class Controller implements IViewModel {
             }
         };
     }
-   async $onInit() {
+
+    async $onInit() {
         await this.campaign.sync(parseInt(this.$routeParams.idCampaign))
         await this.syncStructuresTitle(this.$routeParams.idCampaign);
         Utils.safeApply(this.$scope)
@@ -152,6 +153,11 @@ class Controller implements IViewModel {
             .flatMap((structure: Structure) => structure.titles.all)
             .forEach((title: Title) => title.selected = false);
         Utils.safeApply(this.$scope);
+    }
+
+    isAllSelected(): boolean {
+        return  (<any>this.structures.all).flatMap((structure: Structure) => structure.titles.all)
+            .find((title: Title) =>  !title.selected) === undefined;
     }
 
     selectAllTitles(): void {
