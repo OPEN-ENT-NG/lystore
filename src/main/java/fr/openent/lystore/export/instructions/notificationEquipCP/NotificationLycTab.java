@@ -1,6 +1,8 @@
 package fr.openent.lystore.export.instructions.notificationEquipCP;
 
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.constants.ExportConstants;
+import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.export.TabHelper;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
@@ -14,16 +16,8 @@ import java.util.*;
 
 public class NotificationLycTab extends TabHelper {
     private int lineNumber = 0;
-    private final String DESTINATION = "Destination";
-    private final String MARKET_CODE = "Code marché Région";
-    private final String REGION_LABEL = "Libellé Région";
-    private final String DATE = "DATE N° RAPPORT";
-    private final String NUMBER_ORDER = "N° de demande";
-    private final String AMOUNT = "Qté";
 
-    private final String ROOM = "Salle";
-    private final String STAIR = "Étage";
-    private final String BUILDING = "Bâtiment";
+
     final String Subvention = "236";
     private final String SubventionLabel = "GESTION DIRECTE\n" +
             "Les matériels seront fournis au lycée par l'intermédiaire des marchés publics Région.";
@@ -32,7 +26,8 @@ public class NotificationLycTab extends TabHelper {
 
     /**
      * open the tab or create it if it doesn't exists
-     *  @param wb
+     *
+     * @param wb
      * @param instruction
      * @param structuresMap
      */
@@ -49,8 +44,8 @@ public class NotificationLycTab extends TabHelper {
             JsonArray actions = new JsonArray(data.getString("actions"));
             for (int j = 0; j < actions.size(); j++) {
                 JsonObject action = actions.getJsonObject(j);
-                if(!structuresId.contains(action.getString("id_structure")))
-                    structuresId.add(structuresId.size(), action.getString("id_structure"));
+                if (!structuresId.contains(action.getString(LystoreBDD.ID_STRUCTURE)))
+                    structuresId.add(structuresId.size(), action.getString(LystoreBDD.ID_STRUCTURE));
             }
         }
 
@@ -59,95 +54,98 @@ public class NotificationLycTab extends TabHelper {
     }
 
     @Override
-    protected void fillPage(Map<String, JsonObject>  structures){
+    protected void fillPage(Map<String, JsonObject> structures) {
         setStructuresFromDatas(structures);
         datas = sortByUai(datas);
         writeArray();
     }
-//    private void writeArray(Handler<Either<String, Boolean>> handler) {
+
     private void writeArray() {
 
         log.info("NotificationLYC  writeArray");
         for (int i = 0; i < datas.size(); i++) {
-            if(i!=0)
+            if (i != 0)
                 excel.setRowBreak(lineNumber + 1);
-            try{
+            try {
 
                 lineNumber += 3;
-            excel.insertBlackTitleHeaderBorderless(0, lineNumber, datas.getJsonObject(i).getString("city"));
-            excel.insertBlackTitleHeaderBorderless(2, lineNumber, datas.getJsonObject(i).getString("nameEtab"));
-            excel.insertBlackTitleHeaderBorderless(4, lineNumber, datas.getJsonObject(i).getString("uai"));
-            JsonObject structure = datas.getJsonObject(i);
-            JsonArray orders = structure.getJsonArray("actionsJO");
-            orders = sortByType(orders);
-            String previousCode = "";
+                excel.insertBlackTitleHeaderBorderless(0, lineNumber, datas.getJsonObject(i).getString("city"));
+                excel.insertBlackTitleHeaderBorderless(2, lineNumber, datas.getJsonObject(i).getString("nameEtab"));
+                excel.insertBlackTitleHeaderBorderless(4, lineNumber, datas.getJsonObject(i).getString("uai"));
+                JsonObject structure = datas.getJsonObject(i);
+                JsonArray orders = structure.getJsonArray("actionsJO");
+                orders = sortByType(orders);
+                String previousCode = "";
 
-            if (orders.isEmpty()) {
-                return;
-            } else {
-                for (int j = 0; j < orders.size(); j++) {
-                    try{
-                    JsonObject order = orders.getJsonObject(j);
-                    String market = order.getString("market");
-                    String code = order.getString("code");
+                if (orders.isEmpty()) {
+                    return;
+                } else {
+                    for (int j = 0; j < orders.size(); j++) {
+                        try {
+                            JsonObject order = orders.getJsonObject(j);
+                            String market = order.getString("market");
+                            String campaign = order.getString(LystoreBDD.CAMPAIGN);
+                            String code = order.getString("code");
 
-                    String room = getStr(order, "room");
-                    String stair = getStr(order, "stair");
-                    String building = getStr(order, "building");
-                    String date = getFormatDate(instruction.getString("date_cp"));
-                    String equipmentNameComment = "Libellé Region : " + formatStrToCell(order.getString("name_equipment"), 10);
-                    String idFormatted = "";
-                    if (order.getBoolean("isregion")) {
-                        equipmentNameComment += " \nCommentaire Région :" + formatStrToCell(makeCellWithoutNull(order.getString("comment")), 10);
-                        idFormatted += "R-" + order.getInteger("id").toString();
-                    } else {
-                        idFormatted += "C-" + order.getInteger("id").toString();
-                    }
+                            String room = getStr(order, "room");
+                            String stair = getStr(order, "stair");
+                            String building = getStr(order, "building");
+                            String date = getFormatDate(instruction.getString("date_cp"));
+                            String equipmentNameComment = "Libellé Region : " + formatStrToCell(order.getString("name_equipment"), 10);
+                            String idFormatted = "";
+                            if (order.getBoolean("isregion")) {
+                                equipmentNameComment += " \nCommentaire Région :" + formatStrToCell(makeCellWithoutNull(order.getString("comment")), 10);
+                                idFormatted += "R-" + order.getInteger("id").toString();
+                            } else {
+                                idFormatted += "C-" + order.getInteger("id").toString();
+                            }
 
-                    if (!previousCode.equals(code)) {
-                        if (code.equals(Subvention)) {
-                            lineNumber += 2;
-                            sizeMergeRegion(lineNumber, 0, 6);
-                            excel.insertLabelOnRed(0, lineNumber, NotSubventionLabel);
-                            previousCode = Subvention;
-                            lineNumber += 2;
-                            setLabels();
-                        } else if (!previousCode.equals("NOT SUBV")) {
-                            lineNumber += 2;
-                            excel.insertLabelOnRed(0, lineNumber, SubventionLabel);
-                            sizeMergeRegion(lineNumber, 0, 6);
-                            previousCode = "NOT SUBV";
-                            lineNumber += 2;
-                            setLabels();
+                            if (!previousCode.equals(code)) {
+                                if (code.equals(Subvention)) {
+                                    lineNumber += 2;
+                                    sizeMergeRegion(lineNumber, 0, 7);
+                                    excel.insertWithStyle(0, lineNumber, NotSubventionLabel, excel.labelOnLimeGreen);
+                                    previousCode = Subvention;
+                                    lineNumber += 2;
+                                    setLabels();
+                                } else if (!previousCode.equals("NOT SUBV")) {
+                                    lineNumber += 2;
+                                    excel.insertWithStyle(0, lineNumber, SubventionLabel, excel.labelOnYellow);
+                                    sizeMergeRegion(lineNumber, 0, 7);
+                                    previousCode = "NOT SUBV";
+                                    lineNumber += 2;
+                                    setLabels();
+                                }
+                            }
+                            excel.insertCellTab(0, lineNumber,
+                                    ExportConstants.ROOM_LABEL + ": " + room + "\n"
+                                            + ExportConstants.STAIR_LABEL + ": " + stair + "\n"
+                                            + ExportConstants.BUILDING_LABEL + ": " + building
+                            );
+
+
+                            excel.insertCellTabCenterBold(1, lineNumber, market + " " + campaign);
+                            excel.insertCellTabCenterBold(2, lineNumber, market + " " + campaign);
+
+                            excel.insertCellTabBlue(3, lineNumber, equipmentNameComment);
+                            excel.insertCellTabCenterBold(4, lineNumber, makeCellWithoutNull(instruction.getString("cp_number")) + "\n" + date);
+                            excel.insertCellTabCenter(5, lineNumber, idFormatted);
+                            excel.insertCellTabCenterBold(6, lineNumber, order.getInteger("amount").toString());
+                            excel.insertCellTabDoubleWithPrice(7, lineNumber, safeGetDouble(order, "total", "NotificationLycTab"));
+
+                            lineNumber++;
+
+                        } catch (NullPointerException e) {
+                            log.error("@LystoreWorker[" + this.getClass() + "] error in second for loop data : \n" + orders.getJsonObject(j));
+                            throw e;
                         }
                     }
-                    excel.insertCellTab(0, lineNumber,
-                            ROOM + ": " + room + "\n"
-                                    + STAIR + ": " + stair + "\n"
-                                    + BUILDING + ": " + building
-                    );
-
-
-                    excel.insertCellTabCenterBold(1, lineNumber, market);
-                    excel.insertCellTabBlue(2, lineNumber, equipmentNameComment);
-                    excel.insertCellTabCenterBold(3, lineNumber, makeCellWithoutNull(instruction.getString("cp_number")) + "\n" + date);
-                    excel.insertCellTabCenter(4, lineNumber, idFormatted);
-                    excel.insertCellTabCenterBold(5, lineNumber, order.getInteger("amount").toString());
-                    excel.insertCellTabDoubleWithPrice(6, lineNumber, safeGetDouble(order,"total", "NotificationLycTab"));
-
-                    lineNumber++;
-
-                    }catch (NullPointerException e){
-                        log.error("@LystoreWorker["+ this.getClass() +"] error in second for loop data : \n" + orders.getJsonObject(j));
-                        throw e;
-                    }
                 }
-            }
-            }catch (NullPointerException e){
-                log.error("@LystoreWorker["+ this.getClass() +"] error in first loop: \n" );
+            } catch (NullPointerException e) {
+                log.error("@LystoreWorker[" + this.getClass() + "] error in first loop: \n");
                 throw e;
             }
-            if(i <= 1 ){
+            if (i <= 1) {
                 excel.autoSize(8);
             }
         }
@@ -180,7 +178,6 @@ public class NotificationLycTab extends TabHelper {
             return "";
         }
     }
-
 
 
     private JsonArray sortByType(JsonArray orders) {
@@ -227,15 +224,15 @@ public class NotificationLycTab extends TabHelper {
 
     @Override
     protected void setLabels() {
-        excel.insertHeader(0, lineNumber, DESTINATION);
-        excel.insertHeader(1, lineNumber, MARKET_CODE);
-        excel.insertHeader(2, lineNumber, REGION_LABEL);
-        excel.insertHeader(3, lineNumber, DATE);
-        excel.insertHeader(4, lineNumber, NUMBER_ORDER);
-        excel.insertHeader(5, lineNumber, AMOUNT);
+        excel.insertHeader(0, lineNumber, ExportConstants.DESTINATION_LABEL);
+        excel.insertHeader(1, lineNumber, ExportConstants.MARKET_CODE_LABEL);
+        excel.insertHeader(2, lineNumber, ExportConstants.CAMPAIGN_LABEL);
+        excel.insertHeader(3, lineNumber, ExportConstants.REGION_LABEL);
+        excel.insertHeader(4, lineNumber, ExportConstants.DATE_LABEL);
+        excel.insertHeader(5, lineNumber, ExportConstants.NUMBER_ORDER_LABEL);
+        excel.insertHeader(6, lineNumber, ExportConstants.AMOUNT_LABEL);
         lineNumber++;
     }
-
 
 
     @Override
@@ -292,7 +289,7 @@ public class NotificationLycTab extends TabHelper {
                 "   AND ((spa.structure_type = '" + CMD + "' AND specific_structures.type ='" + CMD + "') " +
                 "  OR (spa.structure_type = '" + CMR + "' AND specific_structures.type ='" + CMR + "') " +
                 "     OR                     (spa.structure_type = '" + LYCEE + "' AND" +
-                " ( specific_structures.type is null OR  specific_structures.type ='" + LYCEE + "') ))    "+
+                " ( specific_structures.type is null OR  specific_structures.type ='" + LYCEE + "') ))    " +
                 "     INNER JOIN  " + Lystore.lystoreSchema + ".program_action ON (spa.program_action_id = program_action.id)    " +
                 "     INNER JOIN " + Lystore.lystoreSchema + ".program on program_action.id_program = program.id           " +
 

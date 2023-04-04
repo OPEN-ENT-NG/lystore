@@ -249,25 +249,25 @@ public class ListLycWithPrice extends TabHelper {
 
 
     private void setTitle() {
-        excel.insertWithStyle(1,1,"UAI        ",excel.labelOnYellow);
-        excel.insertWithStyle(2,1,"Nom de l'établissement",excel.labelOnYellow);
-        excel.insertWithStyle(3,1,"Commune",excel.labelOnYellow);
-        excel.insertWithStyle(4,1,"Equipement",excel.labelOnYellow);
-        excel.insertWithStyle(5,1,"Qté",excel.labelOnYellow);
+        excel.insertWithStyle(1,1,"UAI        ",excel.labelOnLightYellow);
+        excel.insertWithStyle(2,1,"Nom de l'établissement",excel.labelOnLightYellow);
+        excel.insertWithStyle(3,1,"Commune",excel.labelOnLightYellow);
+        excel.insertWithStyle(4,1,"Equipement",excel.labelOnLightYellow);
+        excel.insertWithStyle(5,1,"Qté",excel.labelOnLightYellow);
         // PRIX TOTAL EQUIPEMENT1T 	 PRIX TOTAL PRESTATION HT 	 PRIX TOTAL HT 	 PRIX TOTAL TTC 	DATE ARC	DATE LIMITE -LIVRAISON	DATE CSF	FACTURE	DATE FACTURE	FACTURE / RECAP	MONTANT FACTURE
-        excel.insertWithStyle(6,1,"PRIX TOTAL FOURNITURE HT",excel.labelOnYellow);
-        excel.insertWithStyle(7,1,"PRIX TOTAL MISE EN SERVICE HT",excel.labelOnYellow);
-        excel.insertWithStyle(8,1,"PRIX TOTAL HT ",excel.labelOnYellow);
-        excel.insertWithStyle(9,1,"PRIX TOTAL TTC",excel.labelOnYellow);
-        excel.insertWithStyle(10,1,"DATE ARC",excel.labelOnYellow);
-        excel.insertWithStyle(11,1,"DATE LIMITE -LIVRAISON",excel.labelOnYellow);
-        excel.insertWithStyle(12,1,"DATE CSF",excel.labelOnYellow);
-        excel.insertWithStyle(13,1,"NUMERO FACTURE ",excel.labelOnYellow);
-        excel.insertWithStyle(14,1,"DATE FACTURE",excel.labelOnYellow);
-        excel.insertWithStyle(15,1,"MONTANT FACTURE",excel.labelOnYellow);
-        excel.insertWithStyle(16,1,"FACTURE / RECAP ",excel.labelOnYellow);
-        excel.insertWithStyle(17,1,"RETARD DE LIVRAISON ",excel.labelOnYellow);
-        excel.insertWithStyle(18,1,"PENALITE DE RETARD ",excel.labelOnYellow);
+        excel.insertWithStyle(6,1,"PRIX TOTAL FOURNITURE HT",excel.labelOnLightYellow);
+        excel.insertWithStyle(7,1,"PRIX TOTAL MISE EN SERVICE HT",excel.labelOnLightYellow);
+        excel.insertWithStyle(8,1,"PRIX TOTAL HT ",excel.labelOnLightYellow);
+        excel.insertWithStyle(9,1,"PRIX TOTAL TTC",excel.labelOnLightYellow);
+        excel.insertWithStyle(10,1,"DATE ARC",excel.labelOnLightYellow);
+        excel.insertWithStyle(11,1,"DATE LIMITE -LIVRAISON",excel.labelOnLightYellow);
+        excel.insertWithStyle(12,1,"DATE CSF",excel.labelOnLightYellow);
+        excel.insertWithStyle(13,1,"NUMERO FACTURE ",excel.labelOnLightYellow);
+        excel.insertWithStyle(14,1,"DATE FACTURE",excel.labelOnLightYellow);
+        excel.insertWithStyle(15,1,"MONTANT FACTURE",excel.labelOnLightYellow);
+        excel.insertWithStyle(16,1,"FACTURE / RECAP ",excel.labelOnLightYellow);
+        excel.insertWithStyle(17,1,"RETARD DE LIVRAISON ",excel.labelOnLightYellow);
+        excel.insertWithStyle(18,1,"PENALITE DE RETARD ",excel.labelOnLightYellow);
     }
 
     @Override

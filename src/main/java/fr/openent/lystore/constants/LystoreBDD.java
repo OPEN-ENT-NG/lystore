@@ -23,6 +23,7 @@ public class LystoreBDD {
     public static final String ID_STRUCTURE = "id_structure";
     public static final String TOTAL_ORDER = "total_order";
     public static final String AMOUNT = "amount";
+    public static final String CAMPAIGN = "campaign";
 
 
     //STRUCTURE NEO

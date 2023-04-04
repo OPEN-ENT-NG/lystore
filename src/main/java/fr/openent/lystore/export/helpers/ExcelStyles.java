@@ -46,7 +46,9 @@ public abstract class ExcelStyles {
     public final CellStyle labelOnGrey;
     public final CellStyle labelOnBlueGrey;
     public final CellStyle labelOnOrange;
-    public final CellStyle labelOnGreen;
+    public final CellStyle labelOnLightGreen;
+    public final CellStyle labelOnLimeGreen;
+    public final CellStyle labelOnLightYellow;
     public final CellStyle labelOnYellow;
     public final CellStyle labelOnPink;
     public final CellStyle LabelBlackOnRed;
@@ -75,6 +77,7 @@ public abstract class ExcelStyles {
         this.tabIntRedBoldRight = wb.createCellStyle();
         this.totalStyle = wb.createCellStyle();
         this.yellowHeader = wb.createCellStyle();
+        this.labelOnLightYellow = wb.createCellStyle();
         this.labelOnYellow = wb.createCellStyle();
         this.underscoreHeader = wb.createCellStyle();
         this.blackTitleHeaderStyle = wb.createCellStyle();
@@ -103,7 +106,8 @@ public abstract class ExcelStyles {
         this.labelOnGrey = wb.createCellStyle();
         this.labelOnBlueGrey = wb.createCellStyle();
         this.labelOnOrange = wb.createCellStyle();
-        this.labelOnGreen = wb.createCellStyle();
+        this.labelOnLightGreen = wb.createCellStyle();
+        this.labelOnLimeGreen = wb.createCellStyle();
         this.labelOnPink = wb.createCellStyle();
         this.tabIntStyleRightBold = wb.createCellStyle();
         format = wb.createDataFormat();
@@ -381,8 +385,19 @@ public abstract class ExcelStyles {
         this.underscoreHeader.setVerticalAlignment(VerticalAlignment.CENTER);
         this.underscoreHeader.setFont(titleHeadFont);
 
+        this.labelOnLightYellow.setWrapText(true);
+        this.labelOnLightYellow.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex());
+        this.labelOnLightYellow.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        this.labelOnLightYellow.setBorderLeft(BorderStyle.THIN);
+        this.labelOnLightYellow.setBorderRight(BorderStyle.THIN);
+        this.labelOnLightYellow.setBorderTop(BorderStyle.THIN);
+        this.labelOnLightYellow.setBorderBottom(BorderStyle.THIN);
+        this.labelOnLightYellow.setAlignment(HorizontalAlignment.CENTER);
+        this.labelOnLightYellow.setVerticalAlignment(VerticalAlignment.CENTER);
+        this.labelOnLightYellow.setFont(labelHeadFont);
+
         this.labelOnYellow.setWrapText(true);
-        this.labelOnYellow.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex());
+        this.labelOnYellow.setFillForegroundColor(IndexedColors.YELLOW.getIndex());
         this.labelOnYellow.setFillPattern(FillPatternType.SOLID_FOREGROUND);
         this.labelOnYellow.setBorderLeft(BorderStyle.THIN);
         this.labelOnYellow.setBorderRight(BorderStyle.THIN);
@@ -597,16 +612,28 @@ public abstract class ExcelStyles {
         this.labelOnOrange.setVerticalAlignment(VerticalAlignment.CENTER);
         this.labelOnOrange.setFont(headerFont);
 
-        this.labelOnGreen.setBorderLeft(BorderStyle.THIN);
-        this.labelOnGreen.setBorderRight(BorderStyle.THIN);
-        this.labelOnGreen.setBorderTop(BorderStyle.THIN);
-        this.labelOnGreen.setBorderBottom(BorderStyle.THIN);
-        this.labelOnGreen.setWrapText(true);
-        this.labelOnGreen.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
-        this.labelOnGreen.setFillPattern(FillPatternType.SOLID_FOREGROUND);
-        this.labelOnGreen.setAlignment(HorizontalAlignment.CENTER);
-        this.labelOnGreen.setVerticalAlignment(VerticalAlignment.CENTER);
-        this.labelOnGreen.setFont(headerFont);
+        this.labelOnLightGreen.setBorderLeft(BorderStyle.THIN);
+        this.labelOnLightGreen.setBorderRight(BorderStyle.THIN);
+        this.labelOnLightGreen.setBorderTop(BorderStyle.THIN);
+        this.labelOnLightGreen.setBorderBottom(BorderStyle.THIN);
+        this.labelOnLightGreen.setWrapText(true);
+        this.labelOnLightGreen.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
+        this.labelOnLightGreen.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        this.labelOnLightGreen.setAlignment(HorizontalAlignment.CENTER);
+        this.labelOnLightGreen.setVerticalAlignment(VerticalAlignment.CENTER);
+        this.labelOnLightGreen.setFont(headerFont);
+
+        this.labelOnLimeGreen.setBorderLeft(BorderStyle.THIN);
+        this.labelOnLimeGreen.setBorderRight(BorderStyle.THIN);
+        this.labelOnLimeGreen.setBorderTop(BorderStyle.THIN);
+        this.labelOnLimeGreen.setBorderBottom(BorderStyle.THIN);
+        this.labelOnLimeGreen.setWrapText(true);
+        this.labelOnLimeGreen.setFillForegroundColor(IndexedColors.LIME.getIndex());
+        this.labelOnLimeGreen.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+        this.labelOnLimeGreen.setAlignment(HorizontalAlignment.CENTER);
+        this.labelOnLimeGreen.setVerticalAlignment(VerticalAlignment.CENTER);
+        this.labelOnLimeGreen.setFont(headerFont);
+
 
 
         this.labelOnPink.setBorderLeft(BorderStyle.THIN);
