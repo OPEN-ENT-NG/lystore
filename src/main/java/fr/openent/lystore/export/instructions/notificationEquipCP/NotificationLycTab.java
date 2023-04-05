@@ -107,13 +107,13 @@ public class NotificationLycTab extends TabHelper {
                                 if (code.equals(Subvention)) {
                                     lineNumber += 2;
                                     sizeMergeRegion(lineNumber, 0, 7);
-                                    excel.insertWithStyle(0, lineNumber, NotSubventionLabel, excel.labelOnLimeGreen);
+                                    excel.insertWithStyle(0, lineNumber, NotSubventionLabel, excel.labelOnYellow);
                                     previousCode = Subvention;
                                     lineNumber += 2;
                                     setLabels();
                                 } else if (!previousCode.equals(ExportConstants.NOT_SUBV)) {
                                     lineNumber += 2;
-                                    excel.insertWithStyle(0, lineNumber, SubventionLabel, excel.labelOnYellow);
+                                    excel.insertWithStyle(0, lineNumber, SubventionLabel, excel.labelOnLimeGreen);
                                     sizeMergeRegion(lineNumber, 0, 7);
                                     previousCode = ExportConstants.NOT_SUBV;
                                     lineNumber += 2;
