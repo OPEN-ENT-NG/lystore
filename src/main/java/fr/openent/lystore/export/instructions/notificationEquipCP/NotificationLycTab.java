@@ -1,6 +1,7 @@
 package fr.openent.lystore.export.instructions.notificationEquipCP;
 
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.constants.CommonConstants;
 import fr.openent.lystore.constants.ExportConstants;
 import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.export.TabHelper;
@@ -62,18 +63,18 @@ public class NotificationLycTab extends TabHelper {
 
     private void writeArray() {
 
-        log.info("NotificationLYC  writeArray");
+        log.info(ExportConstants.NOTIFICATION_LYC_TAB +" writeArray");
         for (int i = 0; i < datas.size(); i++) {
             if (i != 0)
                 excel.setRowBreak(lineNumber + 1);
             try {
 
                 lineNumber += 3;
-                excel.insertBlackTitleHeaderBorderless(0, lineNumber, datas.getJsonObject(i).getString("city"));
-                excel.insertBlackTitleHeaderBorderless(2, lineNumber, datas.getJsonObject(i).getString("nameEtab"));
-                excel.insertBlackTitleHeaderBorderless(4, lineNumber, datas.getJsonObject(i).getString("uai"));
+                excel.insertBlackTitleHeaderBorderless(0, lineNumber, datas.getJsonObject(i).getString(LystoreBDD.CITY));
+                excel.insertBlackTitleHeaderBorderless(2, lineNumber, datas.getJsonObject(i).getString(LystoreBDD.NAME_ETAB));
+                excel.insertBlackTitleHeaderBorderless(4, lineNumber, datas.getJsonObject(i).getString(LystoreBDD.UAI));
                 JsonObject structure = datas.getJsonObject(i);
-                JsonArray orders = structure.getJsonArray("actionsJO");
+                JsonArray orders = structure.getJsonArray(ExportConstants.ACTIONS_JO);
                 orders = sortByType(orders);
                 String previousCode = "";
 
@@ -83,21 +84,23 @@ public class NotificationLycTab extends TabHelper {
                     for (int j = 0; j < orders.size(); j++) {
                         try {
                             JsonObject order = orders.getJsonObject(j);
-                            String market = order.getString("market");
+                            String market = order.getString(LystoreBDD.MARKET);
                             String campaign = order.getString(LystoreBDD.CAMPAIGN);
-                            String code = order.getString("code");
+                            String code = order.getString(LystoreBDD.CODE);
 
-                            String room = getStr(order, "room");
-                            String stair = getStr(order, "stair");
-                            String building = getStr(order, "building");
-                            String date = getFormatDate(instruction.getString("date_cp"));
-                            String equipmentNameComment = "Libellé Region : " + formatStrToCell(order.getString("name_equipment"), 10);
+                            String room = getStr(order, LystoreBDD.ROOM);
+                            String stair = getStr(order, LystoreBDD.STAIR);
+                            String building = getStr(order, LystoreBDD.BUILDING);
+                            String date = getFormatDate(instruction.getString(LystoreBDD.DATE_CP));
+                            String equipmentNameComment = ExportConstants.NOTIFICATION_LIBELLE_REGION +
+                                    formatStrToCell(order.getString(LystoreBDD.NAME_EQUIPMENT), 10);
                             String idFormatted = "";
-                            if (order.getBoolean("isregion")) {
-                                equipmentNameComment += " \nCommentaire Région :" + formatStrToCell(makeCellWithoutNull(order.getString("comment")), 10);
-                                idFormatted += "R-" + order.getInteger("id").toString();
+                            if (order.getBoolean(LystoreBDD.ISREGION)) {
+                                equipmentNameComment += ExportConstants.NOTIFICATION_COMMENT_REGION
+                                        + formatStrToCell(makeCellWithoutNull(order.getString(LystoreBDD.COMMENT)), 10);
+                                idFormatted += ExportConstants.NOTIFICATION_REGION_COMMAND_PREFIX+ order.getInteger(CommonConstants.ID).toString();
                             } else {
-                                idFormatted += "C-" + order.getInteger("id").toString();
+                                idFormatted += ExportConstants.NOTIFICATION_CLIENT_COMMAND_PREFIX+ order.getInteger(CommonConstants.ID).toString();
                             }
 
                             if (!previousCode.equals(code)) {
@@ -108,11 +111,11 @@ public class NotificationLycTab extends TabHelper {
                                     previousCode = Subvention;
                                     lineNumber += 2;
                                     setLabels();
-                                } else if (!previousCode.equals("NOT SUBV")) {
+                                } else if (!previousCode.equals(ExportConstants.NOT_SUBV)) {
                                     lineNumber += 2;
                                     excel.insertWithStyle(0, lineNumber, SubventionLabel, excel.labelOnYellow);
                                     sizeMergeRegion(lineNumber, 0, 7);
-                                    previousCode = "NOT SUBV";
+                                    previousCode = ExportConstants.NOT_SUBV;
                                     lineNumber += 2;
                                     setLabels();
                                 }
@@ -128,10 +131,12 @@ public class NotificationLycTab extends TabHelper {
                             excel.insertCellTabCenterBold(2, lineNumber, market + " " + campaign);
 
                             excel.insertCellTabBlue(3, lineNumber, equipmentNameComment);
-                            excel.insertCellTabCenterBold(4, lineNumber, makeCellWithoutNull(instruction.getString("cp_number")) + "\n" + date);
+                            excel.insertCellTabCenterBold(4, lineNumber,
+                                    makeCellWithoutNull(instruction.getString(LystoreBDD.CP_NUMBER)) + "\n" + date);
                             excel.insertCellTabCenter(5, lineNumber, idFormatted);
-                            excel.insertCellTabCenterBold(6, lineNumber, order.getInteger("amount").toString());
-                            excel.insertCellTabDoubleWithPrice(7, lineNumber, safeGetDouble(order, "total", "NotificationLycTab"));
+                            excel.insertCellTabCenterBold(6, lineNumber, order.getInteger(LystoreBDD.AMOUNT).toString());
+                            excel.insertCellTabDoubleWithPrice(7, lineNumber, safeGetDouble(order, LystoreBDD.TOTAL,
+                                    ExportConstants.NOTIFICATION_LYC_TAB));
 
                             lineNumber++;
 
