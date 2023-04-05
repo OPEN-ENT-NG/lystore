@@ -63,7 +63,7 @@ public class NotificationLycTab extends TabHelper {
 
     private void writeArray() {
 
-        log.info(ExportConstants.NOTIFICATION_LYC_TAB +" writeArray");
+        log.info(ExportConstants.NOTIFICATION_LYC_TAB + " writeArray");
         for (int i = 0; i < datas.size(); i++) {
             if (i != 0)
                 excel.setRowBreak(lineNumber + 1);
@@ -92,15 +92,15 @@ public class NotificationLycTab extends TabHelper {
                             String stair = getStr(order, LystoreBDD.STAIR);
                             String building = getStr(order, LystoreBDD.BUILDING);
                             String date = getFormatDate(instruction.getString(LystoreBDD.DATE_CP));
-                            String equipmentNameComment = ExportConstants.NOTIFICATION_LIBELLE_REGION +
+                            String equipmentNameComment = ExportConstants.NOTIFICATION_LIBELLE_REGION + " : "+
                                     formatStrToCell(order.getString(LystoreBDD.NAME_EQUIPMENT), 10);
                             String idFormatted = "";
                             if (order.getBoolean(LystoreBDD.ISREGION)) {
-                                equipmentNameComment += ExportConstants.NOTIFICATION_COMMENT_REGION
+                                equipmentNameComment += "\n " + ExportConstants.NOTIFICATION_COMMENT_REGION + " : "
                                         + formatStrToCell(makeCellWithoutNull(order.getString(LystoreBDD.COMMENT)), 10);
-                                idFormatted += ExportConstants.NOTIFICATION_REGION_COMMAND_PREFIX+ order.getInteger(CommonConstants.ID).toString();
+                                idFormatted += ExportConstants.NOTIFICATION_REGION_COMMAND_PREFIX + order.getInteger(CommonConstants.ID).toString();
                             } else {
-                                idFormatted += ExportConstants.NOTIFICATION_CLIENT_COMMAND_PREFIX+ order.getInteger(CommonConstants.ID).toString();
+                                idFormatted += ExportConstants.NOTIFICATION_CLIENT_COMMAND_PREFIX + order.getInteger(CommonConstants.ID).toString();
                             }
 
                             if (!previousCode.equals(code)) {

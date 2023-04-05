@@ -35,8 +35,8 @@ public class ExportConstants {
     public static final String STAIR_LABEL = "Étage";
     public static final String BUILDING_LABEL = "Bâtiment";
     public static final String ACTIONS_JO = "actionsJO";
-    public static final String NOTIFICATION_COMMENT_REGION = " \n Commentaire Région :";
-    public static final String NOTIFICATION_LIBELLE_REGION =  "Libellé Region : ";
+    public static final String NOTIFICATION_COMMENT_REGION = "Commentaire Région";
+    public static final String NOTIFICATION_LIBELLE_REGION =  "Libellé Region";
     public static final String NOTIFICATION_REGION_COMMAND_PREFIX = "R-";
     public static final String NOTIFICATION_CLIENT_COMMAND_PREFIX = "C-";
     public static final String NOT_SUBV = "NOT SUBV";
