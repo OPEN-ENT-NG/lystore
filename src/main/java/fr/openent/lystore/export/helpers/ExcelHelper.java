@@ -303,7 +303,7 @@ public class ExcelHelper extends ExcelStyles{
      * @param data
      */
     public void insertYellowLabel(int cellColumn, int line, String data) {
-        insertWithStyle(cellColumn, line, data, labelOnYellow);
+        insertWithStyle(cellColumn, line, data, labelOnLightYellow);
     }
 
 

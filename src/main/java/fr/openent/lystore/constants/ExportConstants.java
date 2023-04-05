@@ -21,4 +21,23 @@ public class ExportConstants {
     public static final String IMG = "img";
     public static final String PRINT_ORDER = "print_order";
     public static final String NODE_PDF_GENERATOR= "node-pdf-generator";
+
+    //NotificationLycTab
+    public static final String NOTIFICATION_LYC_TAB = "NotificationLycTab";
+    public static final String CAMPAIGN_LABEL = "Campagne";
+    public static final String DESTINATION_LABEL = "Destination";
+    public static final String MARKET_CODE_LABEL = "Code marché Région";
+    public static final String REGION_LABEL = "Libellé Région";
+    public static final String DATE_LABEL = "DATE N° RAPPORT";
+    public static final String NUMBER_ORDER_LABEL = "N° de demande";
+    public static final String AMOUNT_LABEL = "Qté";
+    public static final String ROOM_LABEL = "Salle";
+    public static final String STAIR_LABEL = "Étage";
+    public static final String BUILDING_LABEL = "Bâtiment";
+    public static final String ACTIONS_JO = "actionsJO";
+    public static final String NOTIFICATION_COMMENT_REGION = "Commentaire Région";
+    public static final String NOTIFICATION_LIBELLE_REGION =  "Libellé Region";
+    public static final String NOTIFICATION_REGION_COMMAND_PREFIX = "R-";
+    public static final String NOTIFICATION_CLIENT_COMMAND_PREFIX = "C-";
+    public static final String NOT_SUBV = "NOT SUBV";
 }
