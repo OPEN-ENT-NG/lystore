@@ -24,12 +24,25 @@ public class LystoreBDD {
     public static final String TOTAL_ORDER = "total_order";
     public static final String AMOUNT = "amount";
     public static final String CAMPAIGN = "campaign";
+    public static final String MARKET = "market";
+    public static final String CODE = "code";
+    public static final String ROOM = "room";
+    public static final String STAIR = "stair";
+    public static final String BUILDING = "building";
+    public static final String NAME_EQUIPMENT = "name_equipment";
+    public static final String ISREGION = "isregion";
+    public static final String COMMENT = "comment";
+    public static final String TOTAL = "total";
 
+    //instruction
+    public static final String DATE_CP = "date_cp";
+    public static final String CP_NUMBER = "cp_number";
 
     //STRUCTURE NEO
     public static final String ACADEMY = "academy";
     public static final String UAI = "uai";
     public static final String NAME = "name";
+    public static final String NAME_ETAB = "nameEtab";
     public static final String TYPE = "type";
     public static final String ZIPCODE = "zipCode";
     public static final String CITY = "city";
