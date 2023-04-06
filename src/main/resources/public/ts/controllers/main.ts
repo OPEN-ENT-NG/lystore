@@ -616,7 +616,7 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
 
         $scope.initOrdersForPreview = async (orders: OrderClient[]) => {
             $scope.orderToSend = new OrdersClient(Mix.castAs(Supplier, orders[0].supplier));
-            $scope.orderToSend.all = Mix.castArrayAs(Order, orders);
+            $scope.orderToSend.all =  orders;
             $scope.orderToSend.preview = await $scope.orderToSend.getPreviewData();
             $scope.orderToSend.preview.index = 0;
         };
