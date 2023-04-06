@@ -598,7 +598,10 @@ export const orderController = ng.controller('orderController',
             await $scope.initOperation(false);
             console.log($scope.operations)
             $scope.isOperationsIsEmpty = !$scope.operations.all.some(operation =>operation.status == 'true'
-                && (operation.instruction.cp_adopted === 'WAITING' || !operation.instruction || !operation.instruction.cp_adopted));
+                && ((!!operation.instruction && operation.instruction.cp_adopted === 'WAITING')
+                    || !operation.instruction
+                    || !operation.instruction.cp_adopted)
+            );
             template.open('validOrder.lightbox', 'administrator/order/order-select-operation');
             $scope.display.lightbox.validOrder = true;
         };
