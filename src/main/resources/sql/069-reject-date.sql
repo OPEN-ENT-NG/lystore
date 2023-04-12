@@ -8,11 +8,7 @@ ADD COLUMN done_date date;
 ALTER TABLE lystore."order-region-equipment"
 ADD COLUMN done_date date;
 
-
-DROP VIEW lystore.alloperationorders;
-DROP VIEW lystore.allOrders;
-
-CREATE   View lystore.allOrders  as
+CREATE  OR REPLACE View lystore.allOrders  as
                      (SELECT ore.id,
                             ore.price AS "price TTC",
                             -1 as priceHT,
@@ -41,8 +37,8 @@ CREATE   View lystore.allOrders  as
                             NULL AS action,
                             ore.id_operation ,
                             ore.id_type,
-                            ore.done_date,
-                            NULL AS override_region
+                            NULL AS override_region,
+					        ore.done_date
                      FROM   lystore."order-region-equipment" ore )
        UNION
                   (
@@ -77,30 +73,6 @@ CREATE   View lystore.allOrders  as
                                 action,
                                 id_operation,
                                 id_type,
-                                done_date,
-                                override_region
+                                override_region,
+				                done_date
                          FROM   lystore.order_client_equipment oce);
-
-CREATE VIEW lystore.alloperationorders
- AS
- SELECT DISTINCT o.id,
-    round(sum(((( SELECT
-                CASE
-                    WHEN orders.price_proposal IS NOT NULL THEN 0::numeric
-                    WHEN orders.override_region IS NULL OR orders.override_region IS TRUE THEN 0::numeric
-                    WHEN sum(oco.price + oco.price * oco.tax_amount / 100::numeric * oco.amount::numeric) IS NULL THEN 0::numeric
-                    ELSE sum(oco.price + oco.price * oco.tax_amount / 100::numeric * oco.amount::numeric)
-                END AS sum
-           FROM lystore.order_client_options oco
-          WHERE oco.id_order_client_equipment = orders.id AND o.id = orders.id_operation)) +
-        CASE
-            WHEN orders.override_region IS TRUE THEN 0::numeric
-            WHEN orders.price_proposal IS NOT NULL THEN orders.price_proposal
-            ELSE round(orders."price TTC", 2)
-        END) * orders.amount::numeric), 2) AS amount
-   FROM lystore.operation o
-     JOIN lystore.allorders orders ON orders.id_operation = o.id
-  GROUP BY o.id;
-
-ALTER TABLE lystore.alloperationorders
-    OWNER TO "web-education";
