@@ -608,11 +608,11 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
         JsonArray params = new JsonArray().add(id);
         if(override != null){
             query =  "UPDATE lystore.order_client_equipment " +
-                    " SET  status = 'DONE' " +
+                    " SET  status = 'DONE', done_date = NOW () " +
                     " WHERE id = ?;";
         }else{
             query =  "UPDATE lystore.\"order-region-equipment\"" +
-                    " SET  status = 'DONE' " +
+                    " SET  status = 'DONE, done_date = NOW ()' " +
                     " WHERE id = ?;";
         }
         return new JsonObject()
@@ -1412,7 +1412,6 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
         /*
         Ici recup les rejectorders puis faire statementes de création des rejectOrders ET d update des commandes
          */
-        log.info(rejectOrders);
         JsonArray statements = new JsonArray();
         JsonArray ordersArray = rejectOrders.getJsonArray("ordersToReject");
         for(int i = 0; i < ordersArray.size(); i++) {
@@ -1477,8 +1476,8 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
 
     private JsonObject createRejectOrder(Integer id_order, String comment) {
         String statement = "INSERT INTO " +
-                Lystore.lystoreSchema + " .order_reject(id_order, comment) " +
-                "VALUES (?, ?) RETURNING id;";
+                Lystore.lystoreSchema + " .order_reject(id_order, comment , reject_date) " +
+                "VALUES (?, ? , NOW()) RETURNING id;";
 
         JsonArray params = new JsonArray().add(id_order).add(comment);
         return new JsonObject()
@@ -1501,7 +1500,8 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     }
 
     public void getRejectOrderComment(int idCampaign, Handler<Either<String, JsonArray>> handler) {
-        String query = "SELECT order_reject.id_order, order_reject.comment FROM " + Lystore.lystoreSchema + ".order_reject " +
+        String query = "SELECT order_reject.id_order, order_reject.comment , order_reject.reject_date" +
+                " FROM " + Lystore.lystoreSchema + ".order_reject " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".order_client_equipment ON order_reject.id_order = order_client_equipment.id " +
                 "WHERE order_client_equipment.id_campaign = ?;";
         sql.prepared(query, new JsonArray().add(idCampaign), SqlResult.validResultHandler(handler));
