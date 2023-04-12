@@ -70,7 +70,8 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "   to_json(prj.*) as project, " +
                 "   to_json(tt.*) as title, " +
                 "   c.name as name_supplier, " +
-                "   operation_instruction.cp_number, " +
+                "   operation_instruction.cp_number, operation_instruction.operation_label, orde.date_creation as order_creation_date , " +
+                "   operation_instruction.object as instruction_object, operation_instruction.date_operation, date_cp," +
                 "   array_to_json(array_agg(DISTINCT order_file.*)) as files  " +
                 "FROM " +
                 "    " + Lystore.lystoreSchema + ".order_client_equipment oe  " +
@@ -88,15 +89,19 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "      ON oe.id = order_file.id_order_client_equipment  " +
                 "   LEFT JOIN " +
                 "       " + Lystore.lystoreSchema + ".campaign  " +
-                "      ON oe.id_campaign = campaign.id  " +
+                "      ON oe.id_campaign = campaign.id " +
+                " LEFT JOIN " + Lystore.lystoreSchema + ".order as orde"+
+                "  ON oe.id_order = orde.id "+
                 "  LEFT JOIN  " +
                 "      (  " +
                 "         SELECT  " +
-                "            operation.id,  " +
+                "            operation.id, label_operation.label as operation_label," +
+                " date_operation, instruction.object, date_cp,  " +
                 "            cp_number   " +
                 "         FROM  " +
                 "             " + Lystore.lystoreSchema + ".operation   " +
-                "            INNER JOIN  " +
+                "            INNER JOIN " + Lystore.lystoreSchema + ".label_operation ON operation.id_label = label_operation.id "+
+                "            LEFT JOIN  " +
                 "                " + Lystore.lystoreSchema + ".instruction   " +
                 "               on operation.id_instruction = instruction.id  " +
                 "      )  " +
@@ -119,7 +124,8 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "   id_campaign = ? " +
                 "   AND id_structure =  ? " +
                 "GROUP BY " +
-                "(prj.id , oe.id, tt.id, c.name, prj.preference, operation_instruction.cp_number,campaign.priority_enabled )  " +
+                "(prj.id , oe.id, tt.id, c.name, prj.preference, operation_instruction.cp_number,campaign.priority_enabled" +
+                " ,instruction_object,date_operation, operation_label, order_creation_date, date_cp)  " +
                 "ORDER BY " +
                 "   CASE " +
                 "      WHEN " +

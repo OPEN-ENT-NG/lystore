@@ -79,7 +79,16 @@ export class OrderClient implements Order  {
     override_region: boolean;
     supplierid: any;
     has_operation: boolean;
+    //à supprimer lors de la logique objet
+    //Rapport
     instruction_cp_adopted: string;
+    instruction_object: string;
+    //Operation
+    operation_label: string;
+    date_operation: string;
+    //Order ( validatin bc)
+    order_creation_date :string;
+    date_cp:string
 
     constructor() {
         this.typeOrder= "client";

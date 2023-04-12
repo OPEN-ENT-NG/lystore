@@ -42,14 +42,30 @@ export const orderPersonnelController = ng.controller('orderPersonnelController'
         $scope.displayStatus = (orderClient : OrderClient) =>{
                 return lang.translate(orderClient.status)
         }
-        $scope.displayInstruction =(orderClient : OrderClient) =>{
+        $scope.displayInstruction = (orderClient : OrderClient) =>{
             return  " : Rapport " + orderClient.cp_number;
         }
 
+        $scope.getTooltip = (orderClient : OrderClient) =>{
+            if(orderClient.instruction_object)
+                return orderClient.instruction_object
+            if(orderClient.operation_label)
+                return lang.translate(orderClient.status) + " " +  orderClient.operation_label
+            return lang.translate(orderClient.status);
+        }
         $scope.hasAProposalPrice = (orderClient: OrderClient) => {
 
             return (orderClient.price_proposal);
         };
+        $scope.getDate = (orderClient :OrderClient) =>{
+            if(orderClient.date_cp)
+                return orderClient.date_cp;
+            if(orderClient.order_creation_date)
+                return orderClient.order_creation_date;
+            if(orderClient.date_operation)
+                return orderClient.date_operation;
+            return orderClient.creation_date;
+        }
 
         $scope.displayEquipmentOption = (index: number) => {
             $scope.display.ordersClientOption[index] = !$scope.display.ordersClientOption[index];
