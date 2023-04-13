@@ -48,4 +48,16 @@ public class LystoreBDD {
     public static final String CITY = "city";
     public static final String ADDRESS = "address";
     public static final String TITLES = "titles";
+
+    //ORDERS REGION AND CLIENT
+    public static final String ORDER_REGION_EQUIPMENT = "\"order-region-equipment\"";
+    public static final String ORDER_CLIENT_EQUIPMENT = "order_client_equipment";
+    public static final String ID_ORDER = "id_order";
+
+    //ORDER STATUS
+    public static final String REJECTED = "REJECTED";
+    public static final String SENT = "SENT";
+    public static final String DONE = "DONE";
+    public static final String VALID = "VALID";
+    public static final String WAITING_FOR_ACCEPTANCE = "WAITING_FOR_ACCEPTANCE";
 }

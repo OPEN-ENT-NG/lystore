@@ -1,6 +1,8 @@
 package fr.openent.lystore.service.impl;
 
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.constants.CommonConstants;
+import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.model.file.Attachment;
 import fr.openent.lystore.model.file.Metadata;
 import fr.openent.lystore.service.OrderRegionService;
@@ -483,5 +485,16 @@ public class DefaultOrderRegionService extends SqlCrudService implements OrderRe
                 handler.handle(new Either.Left<>("Not found"));
             }
         }));
+    }
+
+    @Override
+    public JsonObject getUpdateRejectOrderRegionStatement(Integer id) {
+        String statement = "UPDATE " + Lystore.lystoreSchema + "." + LystoreBDD.ORDER_REGION_EQUIPMENT +
+                " set status = '" + LystoreBDD.REJECTED + "'" +
+                " WHERE id =  ? ;";
+        JsonArray params = new JsonArray().add(id);
+        return new JsonObject().put(CommonConstants.STATEMENT, statement)
+                .put(CommonConstants.VALUES, params)
+                .put(CommonConstants.ACTION, CommonConstants.PREPARED);
     }
 }

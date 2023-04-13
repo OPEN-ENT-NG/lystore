@@ -222,6 +222,8 @@ public interface OrderService {
 
     void createRejectOrders(JsonObject rejectOrder, Handler<Either<String, JsonObject>> handler);
 
+    void addRejectedOrderStatements(JsonArray statements, Integer idOrder, String comment);
+
     void getRejectOrderComment(int idCampaign, Handler<Either<String, JsonArray>> handler);
 
    JsonArray filterValidOrders(JsonArray orders, List<String> queries);
