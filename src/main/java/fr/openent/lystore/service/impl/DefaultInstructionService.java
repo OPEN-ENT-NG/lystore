@@ -262,19 +262,6 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 sql.transaction(statements, event -> handler.handle(SqlQueryUtils.getTransactionHandler(event,id)));
                 break;
         }
-//        if(InstructionStatus.ADOPTED.toString().equalsIgnoreCase(instruction.getString("cp_adopted"))){
-//            handleCpAdopted(id, statements, handler);
-//        } else {
-//            sql.transaction(statements, new Handler<Message<JsonObject>>() {
-//                @Override
-//                public void handle(Message<JsonObject> event) {
-//                    handler.handle(SqlQueryUtils.getTransactionHandler(event,id));
-//                }
-//            });
-//
-//        }
-
-
     }
 
     private void handleCpRejected(Number id, JsonArray statements, Handler<Either<String, JsonObject>> handler) {
@@ -295,7 +282,6 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
         });
     }
 
-    //MEME PB WAITING_FOR_ACCEPTANCE
     private void generateOrdersRejectStatements(JsonArray sqlResults, JsonArray statements, Handler<Either<String, JsonObject>> handler, Number id) {
         sqlResults.stream().forEach(result -> {
             Integer orderId = ((JsonArray) result).getInteger(0);
