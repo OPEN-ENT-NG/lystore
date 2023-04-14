@@ -1,6 +1,7 @@
 package fr.openent.lystore.service.impl;
 
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.model.BCOrder;
 import fr.openent.lystore.model.Market;
 import fr.openent.lystore.model.Order;
@@ -1416,15 +1417,22 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
         JsonArray ordersArray = rejectOrders.getJsonArray("ordersToReject");
         for(int i = 0; i < ordersArray.size(); i++) {
             JsonObject order = ordersArray.getJsonObject(i);
-            statements.add(createRejectOrder(order.getInteger("id_order"), order.getString("comment")));
-            statements.add(updateStatusRejectOrder(order.getInteger("id_order")));
-            statements.add(updatePurse(order.getInteger("id_order")));
+            addRejectedOrderStatements(statements, order.getInteger(LystoreBDD.ID_ORDER), order.getString(LystoreBDD.COMMENT));
             //get info + update (coir si select update)
         }
 
         handleRejectOrders(ordersArray.getJsonObject(0).getInteger("id_order"), statements, handler);
 
     }
+
+    @Override
+    public void addRejectedOrderStatements(JsonArray statements, Integer idOrder, String comment) {
+        statements.add(createRejectOrder(idOrder, comment));
+        statements.add(updateStatusRejectOrder(idOrder));
+        statements.add(updatePurse(idOrder));
+    }
+
+
 
     private JsonObject updatePurse(Integer id_order) {
         String statement = " " +
@@ -1476,7 +1484,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
 
     private JsonObject createRejectOrder(Integer id_order, String comment) {
         String statement = "INSERT INTO " +
-                Lystore.lystoreSchema + " .order_reject(id_order, comment , reject_date) " +
+                Lystore.lystoreSchema + ".order_reject(id_order, comment , reject_date) " +
                 "VALUES (?, ? , NOW()) RETURNING id;";
 
         JsonArray params = new JsonArray().add(id_order).add(comment);

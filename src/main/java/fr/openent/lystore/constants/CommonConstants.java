@@ -14,4 +14,6 @@ public class CommonConstants {
     public static final String VALUES = "values";
     public static final String ACTION = "action";
     public static final String PREPARED = "prepared";
+    public static final String REGION = "REGION";
+    public static final String EPLE = "EPLE";
 }

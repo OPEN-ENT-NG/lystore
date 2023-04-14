@@ -1,9 +1,14 @@
 package fr.openent.lystore.service.impl;
 
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.constants.CommonConstants;
+import fr.openent.lystore.constants.EnumConstant;
+import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.helpers.FutureHelper;
-import fr.openent.lystore.service.InstructionService;
 import fr.openent.lystore.model.InstructionStatus;
+import fr.openent.lystore.service.InstructionService;
+import fr.openent.lystore.service.OrderRegionService;
+import fr.openent.lystore.service.OrderService;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
@@ -14,18 +19,17 @@ import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.service.impl.SqlCrudService;
-import org.entcore.common.sql.SqlResult;
-import io.vertx.core.json.JsonObject;
 import org.entcore.common.sql.Sql;
+import org.entcore.common.sql.SqlResult;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import static fr.openent.lystore.service.impl.DefaultOrderService.getNextValidationNumber;
 import static fr.wseduc.webutils.http.Renders.getHost;
@@ -34,6 +38,8 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
 
     private static final Logger log = LoggerFactory.getLogger (DefaultOrderService.class);
     private DefaultOperationService operationService = new DefaultOperationService(Lystore.lystoreSchema, "operation");
+    private final OrderService orderService = new DefaultOrderService(Lystore.lystoreSchema, LystoreBDD.ORDER_CLIENT_EQUIPMENT , null);
+    private final OrderRegionService orderRegionService = new DefaultOrderRegionService(LystoreBDD.ORDER_REGION_EQUIPMENT);
 
     public DefaultInstructionService(
             String schema, String table) {
@@ -243,19 +249,52 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
     }
 
     private void checkCpValue(Number id, JsonArray statements, JsonObject instruction, Handler<Either<String, JsonObject>> handler) {
-        if(InstructionStatus.ADOPTED.toString().equalsIgnoreCase(instruction.getString("cp_adopted"))){
-            handleCpAdopted(id, statements, handler);
-        } else {
-            sql.transaction(statements, new Handler<Message<JsonObject>>() {
-                @Override
-                public void handle(Message<JsonObject> event) {
-                    handler.handle(SqlQueryUtils.getTransactionHandler(event,id));
-                }
-            });
-
+        switch (instruction.getString("cp_adopted")){
+            case EnumConstant.VALID_CP_STATUS :
+                handleCpAdopted(id, statements, handler);
+                break;
+            case EnumConstant.REJECTED_CP_STATUS :
+                handleCpRejected(id, statements, handler);
+                break;
+            default:
+                sql.transaction(statements, event -> handler.handle(SqlQueryUtils.getTransactionHandler(event,id)));
+                break;
         }
+    }
 
+    private void handleCpRejected(Number id, JsonArray statements, Handler<Either<String, JsonObject>> handler) {
+        String queryGetOrders = "SELECT distinct orders.id as " + LystoreBDD.ID_ORDER + ", " +
+                "CASE WHEN orders.override_region is null" +
+                " then '" + CommonConstants.REGION + "' " +
+                " else '" + CommonConstants.EPLE + "'" +
+                " END as " + LystoreBDD.ORDER_ORIGIN + " " +
+                "from  " + Lystore.lystoreSchema + ".allOrders orders " +
+                "INNER JOIN  " + Lystore.lystoreSchema + ".operation on operation.id = orders.id_operation " +
+                "INNER JOIN  " + Lystore.lystoreSchema + ".instruction on instruction.id = operation.id_instruction and instruction.id = ? " +
+                "WHERE override_region IS NOT true " +
+                "; ";
 
+        sql.prepared(queryGetOrders, new JsonArray().add(id), SqlResult.validResultHandler(event -> {
+                    JsonArray sqlResults = event.right().getValue();
+                    generateOrdersRejectStatements(sqlResults, statements, handler, id);
+                })
+        );
+    }
+
+    private void generateOrdersRejectStatements(JsonArray sqlResults, JsonArray statements, Handler<Either<String, JsonObject>> handler, Number id) {
+        sqlResults.stream()
+                .filter(JsonObject.class::isInstance)
+                .map(JsonObject.class::cast)
+                .forEach(result -> {
+                    Integer orderId = result.getInteger(LystoreBDD.ID_ORDER);
+                    String type = result.getString(LystoreBDD.ORDER_ORIGIN);
+                    if (type.equals(CommonConstants.EPLE)) {
+                        orderService.addRejectedOrderStatements(statements, orderId, "");
+                    } else {
+                        statements.add(orderRegionService.getUpdateRejectOrderRegionStatement(orderId));
+                    }
+                });
+        sql.transaction(statements, event -> handler.handle(SqlQueryUtils.getTransactionHandler(event, id)));
     }
 
     private void handleCpAdopted(Number id, JsonArray statements, Handler<Either<String, JsonObject>> handler) {
@@ -291,7 +330,8 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
 
     }
     //PROBLEMES LE STATUS EST EFFACE APRES PAR LE WAITING OR ACCEPTANCE
-    private void generateOrdersUpdateStatements(Map<Integer, JsonArray> mapMarket, JsonArray statements, Handler<Either<String, JsonObject>> handler, Number id) {
+    private void generateOrdersUpdateStatements(Map<Integer, JsonArray> mapMarket, JsonArray statements,
+                                                Handler<Either<String, JsonObject>> handler, Number id) {
         List<Future> futures = new ArrayList<>();
         for (Map.Entry<Integer, JsonArray> entry : mapMarket.entrySet()) {
             Future<JsonArray> future = Future.future();

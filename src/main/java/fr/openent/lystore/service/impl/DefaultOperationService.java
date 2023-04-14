@@ -1,6 +1,7 @@
 package fr.openent.lystore.service.impl;
 
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.helpers.FutureHelper;
 import fr.openent.lystore.service.OperationService;
 import fr.openent.lystore.utils.SqlQueryUtils;
@@ -331,12 +332,14 @@ GROUP BY
             }
         });
     }
+
     private JsonObject updateOperationOrdersRegionAdd(JsonArray operationIds) {
         String query = " UPDATE " + Lystore.lystoreSchema + ".\"order-region-equipment\" " +
-                "SET status = 'WAITING_FOR_ACCEPTANCE' " +
+                "SET status = '" + LystoreBDD.WAITING_FOR_ACCEPTANCE + "' " +
                 " WHERE id_operation IN " +
                 Sql.listPrepared(operationIds.getList()) +
-                " AND STATUS NOT IN ('VALID', 'DONE', 'SENT') " +
+                " AND STATUS NOT IN ('" + LystoreBDD.VALID + "', '" + LystoreBDD.DONE + "'," +
+                " '" + LystoreBDD.SENT + "', '" + LystoreBDD.REJECTED + "') " +
                 " ;";
 
         JsonObject statement = new JsonObject().put("statement", query)
@@ -347,10 +350,11 @@ GROUP BY
 
     private JsonObject updateOperationOrdersClientAdd(JsonArray operationIds) {
         String query = " UPDATE " + Lystore.lystoreSchema + ".order_client_equipment " +
-                "SET status = 'WAITING_FOR_ACCEPTANCE' " +
+                "SET status = '" + LystoreBDD.WAITING_FOR_ACCEPTANCE + "' " +
                 " WHERE id_operation IN " +
                 Sql.listPrepared(operationIds.getList()) +
-                " AND STATUS NOT IN ('VALID', 'DONE', 'SENT') " +
+                " AND STATUS NOT IN ('" + LystoreBDD.VALID + "', '" + LystoreBDD.DONE + "'," +
+                " '" + LystoreBDD.SENT + "', '" + LystoreBDD.REJECTED + "') " +
                 " ;";
 
         JsonObject statement = new JsonObject().put("statement", query)

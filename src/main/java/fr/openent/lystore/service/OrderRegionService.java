@@ -34,4 +34,6 @@ public interface OrderRegionService {
     void getFileOrderRegion(String fileId, Handler<Either<String, JsonObject>> handler);
 
     void getIdFilesToDelete(List<String> idsFiles, Integer idOrder, Handler<Message<JsonObject>>handler);
+
+    JsonObject getUpdateRejectOrderRegionStatement(Integer id);
 }
