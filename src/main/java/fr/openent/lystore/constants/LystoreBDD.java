@@ -53,6 +53,7 @@ public class LystoreBDD {
     public static final String ORDER_REGION_EQUIPMENT = "\"order-region-equipment\"";
     public static final String ORDER_CLIENT_EQUIPMENT = "order_client_equipment";
     public static final String ID_ORDER = "id_order";
+    public static final String ORDER_ORIGIN = "order_origin";
 
     //ORDER STATUS
     public static final String REJECTED = "REJECTED";

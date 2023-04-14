@@ -38,8 +38,8 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
 
     private static final Logger log = LoggerFactory.getLogger (DefaultOrderService.class);
     private DefaultOperationService operationService = new DefaultOperationService(Lystore.lystoreSchema, "operation");
-    private OrderService orderService = new DefaultOrderService(Lystore.lystoreSchema, LystoreBDD.ORDER_CLIENT_EQUIPMENT , null);
-    private OrderRegionService orderRegionService = new DefaultOrderRegionService(LystoreBDD.ORDER_REGION_EQUIPMENT);
+    private final OrderService orderService = new DefaultOrderService(Lystore.lystoreSchema, LystoreBDD.ORDER_CLIENT_EQUIPMENT , null);
+    private final OrderRegionService orderRegionService = new DefaultOrderRegionService(LystoreBDD.ORDER_REGION_EQUIPMENT);
 
     public DefaultInstructionService(
             String schema, String table) {
@@ -254,44 +254,46 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 handleCpAdopted(id, statements, handler);
                 break;
             case EnumConstant.REJECTED_CP_STATUS :
-                log.info("handleCpRejected");
                 handleCpRejected(id, statements, handler);
                 break;
             default:
-                log.info("default");
                 sql.transaction(statements, event -> handler.handle(SqlQueryUtils.getTransactionHandler(event,id)));
                 break;
         }
     }
 
     private void handleCpRejected(Number id, JsonArray statements, Handler<Either<String, JsonObject>> handler) {
-        String queryGetOrders = "SELECT distinct orders.id as order_id, " +
-                "CASE WHEN orders.override_region is null then '" + CommonConstants.REGION + "' else '" + CommonConstants.EPLE + "' END " +
+        String queryGetOrders = "SELECT distinct orders.id as " + LystoreBDD.ID_ORDER + ", " +
+                "CASE WHEN orders.override_region is null" +
+                " then '" + CommonConstants.REGION + "' " +
+                " else '" + CommonConstants.EPLE + "'" +
+                " END as " + LystoreBDD.ORDER_ORIGIN + " " +
                 "from  " + Lystore.lystoreSchema + ".allOrders orders " +
-                "INNER JOIN  " + Lystore.lystoreSchema + ".contract on contract.id = orders.id_contract " +
                 "INNER JOIN  " + Lystore.lystoreSchema + ".operation on operation.id = orders.id_operation " +
                 "INNER JOIN  " + Lystore.lystoreSchema + ".instruction on instruction.id = operation.id_instruction and instruction.id = ? " +
                 "WHERE override_region IS NOT true " +
                 "; ";
 
-        sql.prepared(queryGetOrders, new JsonArray().add(id), event -> {
-            if (event.body().containsKey(CommonConstants.STATUS) && CommonConstants.OK.equals(event.body().getString(CommonConstants.STATUS))) {
-                JsonArray sqlResults = event.body().getJsonArray("results");
-                generateOrdersRejectStatements(sqlResults, statements, handler , id);
-            }
-        });
+        sql.prepared(queryGetOrders, new JsonArray().add(id), SqlResult.validResultHandler(event -> {
+                    JsonArray sqlResults = event.right().getValue();
+                    generateOrdersRejectStatements(sqlResults, statements, handler, id);
+                })
+        );
     }
 
     private void generateOrdersRejectStatements(JsonArray sqlResults, JsonArray statements, Handler<Either<String, JsonObject>> handler, Number id) {
-        sqlResults.stream().forEach(result -> {
-            Integer orderId = ((JsonArray) result).getInteger(0);
-            String type = ((JsonArray) result).getString(1);
-            if (type.equals(CommonConstants.EPLE)) {
-                orderService.addRejectedOrderStatements(statements, orderId, "");
-            } else {
-                statements.add(orderRegionService.getUpdateRejectOrderRegionStatement(orderId));
-            }
-        });
+        sqlResults.stream()
+                .filter(JsonObject.class::isInstance)
+                .map(JsonObject.class::cast)
+                .forEach(result -> {
+                    Integer orderId = result.getInteger(LystoreBDD.ID_ORDER);
+                    String type = result.getString(LystoreBDD.ORDER_ORIGIN);
+                    if (type.equals(CommonConstants.EPLE)) {
+                        orderService.addRejectedOrderStatements(statements, orderId, "");
+                    } else {
+                        statements.add(orderRegionService.getUpdateRejectOrderRegionStatement(orderId));
+                    }
+                });
         sql.transaction(statements, event -> handler.handle(SqlQueryUtils.getTransactionHandler(event, id)));
     }
 
