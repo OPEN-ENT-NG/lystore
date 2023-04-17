@@ -70,7 +70,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "   to_json(prj.*) as project, " +
                 "   to_json(tt.*) as title, " +
                 "   c.name as name_supplier, " +
-                "   operation_instruction.cp_number, operation_instruction.operation_label, orde.date_creation as order_creation_date , " +
+                "   operation_instruction.cp_number, operation_instruction.operation_label, orde.date_creation as order_creation_date , done_date, " +
                 "   operation_instruction.object as instruction_object, operation_instruction.date_operation, date_cp," +
                 "   array_to_json(array_agg(DISTINCT order_file.*)) as files  " +
                 "FROM " +
