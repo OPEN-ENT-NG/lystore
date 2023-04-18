@@ -16,3 +16,4 @@ export * from './bc-preview/bc-preview.directive';
 export * from './equipment-card/equipment-card.directive';
 export * from './campaign-titles-table/campaign-titles-table.directive';
 export * from './campaign-titles-table/campaign-titles-card/campaign-titles-card.directive'
+export * from './order-client-display-viewer/order-client-display-viewer.directive'
