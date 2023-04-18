@@ -17,7 +17,10 @@ interface IViewModel {
     calculateTotal(orderClient: OrderClient, roundNumber: number): string
 
     calculatePriceOfOrderClient(orderClient: OrderClient, selectedOptions: boolean, roundNumber: number): number
-    hasAProposalPrice():boolean
+
+    hasAProposalPrice(): boolean
+
+    getTooltip  (orderClient : OrderClient):string
 }
 
 
@@ -57,7 +60,15 @@ class Controller implements ng.IController, IViewModel {
 
 
     hasAProposalPrice(): boolean {
-        return this.orderClient.price_proposal !== undefined && this.orderClient.price_proposal !== null ;
+        return this.orderClient.price_proposal !== undefined && this.orderClient.price_proposal !== null;
+    }
+
+    getTooltip(orderClient: OrderClient): string {
+        if (orderClient.instruction_object)
+            return orderClient.instruction_object
+        if (orderClient.operation_label)
+            return lang.translate(orderClient.status) + " " + orderClient.operation_label
+        return lang.translate(orderClient.status);
     }
 
     displayStatus(): string {
@@ -85,7 +96,7 @@ class Controller implements ng.IController, IViewModel {
     }
 
     //any car il n y a pas que des dates pour l instant
-    formatDate(date: any) :string {
+    formatDate(date: any): string {
         return Utils.formatDate(date);
     }
 }

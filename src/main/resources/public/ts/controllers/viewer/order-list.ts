@@ -1,12 +1,10 @@
 import {_, moment, ng, idiom as lang, template, toasts} from 'entcore';
 import {
-    Notification,
     OrderClient,
     OrdersClient,
     PRIORITY_FIELD,
     Project,
-    Projects, RejectOrder,
-    RejectOrders,
+    Projects,
     Utils
 } from '../../model';
 
@@ -14,7 +12,7 @@ import {
 declare let window: any;
 
 export const orderPersonnelController = ng.controller('orderPersonnelController',
-    ['$scope', '$routeParams', ($scope, $routeParams) => {
+    ['$scope', '$routeParams',  ($scope, $routeParams) => {
 
         $scope.display = {
             ordersClientOption: [],
@@ -46,27 +44,9 @@ export const orderPersonnelController = ng.controller('orderPersonnelController'
             return  " : Rapport " + orderClient.cp_number;
         }
 
-        $scope.getTooltip = (orderClient : OrderClient) =>{
-            if(orderClient.instruction_object)
-                return orderClient.instruction_object
-            if(orderClient.operation_label)
-                return lang.translate(orderClient.status) + " " +  orderClient.operation_label
-            return lang.translate(orderClient.status);
-        }
         $scope.hasAProposalPrice = (orderClient: OrderClient) => {
-
             return (orderClient.price_proposal);
         };
-        $scope.getDate = (orderClient :OrderClient) =>{
-            if(orderClient.date_cp)
-                return orderClient.date_cp;
-            if(orderClient.order_creation_date)
-                return orderClient.order_creation_date;
-            if(orderClient.date_operation)
-                return orderClient.date_operation;
-            return orderClient.creation_date;
-        }
-
         $scope.displayEquipmentOption = (index: number) => {
             $scope.display.ordersClientOption[index] = !$scope.display.ordersClientOption[index];
             Utils.safeApply($scope);
