@@ -1,5 +1,5 @@
 import {ng} from "entcore";
-import {IStructureTitlesResponse, Structures} from "../../model";
+import {IStructureTitlesResponse, Structures} from "../../../model";
 import http, {AxiosPromise, AxiosResponse} from "axios";
 
 

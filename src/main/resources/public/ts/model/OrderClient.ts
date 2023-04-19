@@ -1,23 +1,67 @@
-import {_, idiom as lang, model, moment, notify, toasts} from 'entcore';
+import {_, idiom as lang, model, moment, notify} from 'entcore';
 import {Mix, Selectable, Selection} from 'entcore-toolkit';
 import {
     Campaign,
+    Campaigns,
     Contract,
-    ContractType, Equipment,
+    Contracts,
+    ContractType,
+    ContractTypes,
+    Equipment,
+    Grade,
+    IProjectResponse,
+    ITitleResponse,
     Order,
     OrderRegion,
     OrderUtils,
     Program,
+    Project,
+    Projects,
     Structure,
     Structures,
     Supplier,
+    Suppliers,
     TechnicalSpec,
-    Utils,
-    Grade,
     Title,
-    Project, Contracts, ContractTypes, Suppliers, Campaigns, Projects, Titles, label, Purse, EquipmentOption
+    Titles,
+    Utils
 } from './index';
 import http from 'axios';
+import {BCOrder} from "./BCOrder";
+
+export interface IOrderClientResponse{
+   id: number,
+   comment: string,
+   price_proposal: number,
+   preference: number,
+   id_project: number,
+   price: number,
+   tax_amount: number,
+   amount: number,
+   creation_date: string,
+   id_campaign: number,
+   id_structure: string,
+   name: string,
+   summary: string,
+   image: string,
+   status: string,
+   id_contract: number,
+   rank:number,
+   options: string,
+   project: IProjectResponse, //IProjectResponse,
+   title: ITitleResponse,//ITitleResponse,
+   name_supplier: string,
+   cp_number: string,
+   operation_label: string,
+   order_creation_date: null,
+   done_date: null,
+   instruction_object: string,
+   date_operation: string,
+   date_cp: string,
+    //à adapater dans des refactos ultérieures
+   files: string
+}
+
 
 export class OrderClient implements Order  {
 
@@ -27,7 +71,7 @@ export class OrderClient implements Order  {
     contract: Contract;
     contract_type: ContractType;
     creation_date: Date;
-    cp_number ?:number;
+    cp_number ?:string;
     equipment: Equipment;
     equipment_key:number;
     id?: number;
@@ -79,6 +123,7 @@ export class OrderClient implements Order  {
     override_region: boolean;
     supplierid: any;
     has_operation: boolean;
+    done_date : string;
     //à supprimer lors de la logique objet
     //Rapport
     instruction_cp_adopted: string;
@@ -90,9 +135,11 @@ export class OrderClient implements Order  {
     order_creation_date :string;
     date_cp:string
 
+    bCOrder?:BCOrder;
     constructor() {
         this.typeOrder= "client";
     }
+
 
     async updateComment():Promise<void>{
         try{
@@ -195,8 +242,54 @@ export class OrderClient implements Order  {
         return Number(price.toFixed(2));
     }
 
-    calculatePriceTTC (selectedOptions: boolean):number{
-        return  Number((this.calculatePriceHT(selectedOptions) * (100 + this.tax_amount) / 100).toFixed(2));
+    calculatePriceTTC(selectedOptions: boolean): number {
+        return (this.price_proposal)
+            ? this.price_proposal
+            : Number((this.calculatePriceHT(selectedOptions) * (100 + this.tax_amount) / 100).toFixed(2));
+    }
+
+    build(orderClientResponse: IOrderClientResponse): OrderClient {
+        this.amount = orderClientResponse.amount;
+        this.comment = orderClientResponse.comment;
+        this.creation_date = moment(orderClientResponse.creation_date).format('L');
+        if (orderClientResponse.done_date)
+            this.done_date = moment(orderClientResponse.done_date).format('L');
+        if (orderClientResponse.files && orderClientResponse.files.length > 0 && orderClientResponse.files[0] !== null)
+            this.files = orderClientResponse.files;
+        this.id = orderClientResponse.id;
+        this.id_campaign = orderClientResponse.id_campaign;
+        this.image = orderClientResponse.image;
+        this.name = orderClientResponse.name;
+        this.preference = orderClientResponse.preference;
+        this.price = orderClientResponse.price;
+        this.price_proposal = orderClientResponse.price_proposal;
+        this.rank = orderClientResponse.rank;
+        this.status = orderClientResponse.status;
+        this.summary = orderClientResponse.summary;
+        this.tax_amount = orderClientResponse.tax_amount;
+        //supplier
+        this.supplier_name = orderClientResponse.name_supplier;
+        //surement à cast en orderClientOptions[] plus tard
+        this.options = orderClientResponse.options;
+        //à transformer en contact
+        this.id_contract = orderClientResponse.id_contract;
+        //project
+        this.id_project = orderClientResponse.id_project;
+        orderClientResponse.project.title = orderClientResponse.title;
+        this.project = new Project().build(orderClientResponse.project);
+        //structure
+        this.id_structure = orderClientResponse.id_structure
+        //OBJECT BCORDER
+        this.cp_number = orderClientResponse.cp_number;
+        this.date_cp = orderClientResponse.date_cp;
+        this.order_creation_date = orderClientResponse.order_creation_date;
+        //
+        //OBJECET OPERATION
+        this.date_operation = orderClientResponse.date_operation;
+        this.operation_label = orderClientResponse.operation_label;
+        //Instruction
+        this.instruction_object = orderClientResponse.instruction_object
+        return this;
     }
 }
 export class OrdersClient extends Selection<OrderClient> {
@@ -532,6 +625,18 @@ export class OrdersClient extends Selection<OrderClient> {
             throw e;
         }
     }
+
+    build(orderClientsResponse: IOrderClientResponse[]): OrdersClient {
+        this.all = orderClientsResponse.map((orderClientResponse: IOrderClientResponse) => {
+            return new OrderClient().build(orderClientResponse);
+        });
+        this.projects = new Selection<Project>([]);
+        this.all.forEach(order =>{
+            if(this.projects.filter(projectFiltered => projectFiltered.id === order.project.id).length === 0)
+                return this.projects.all.push(order.project);
+        })
+        return this;
+    }
 }
 
 export class OrderOptionClient implements Selectable {
@@ -549,6 +654,7 @@ export class RejectOrder implements Selectable{
     id: number;
     id_order: number;
     comment: string;
+    reject_date: Date;
     order_name: string;
     selected: boolean;
 
@@ -556,7 +662,7 @@ export class RejectOrder implements Selectable{
         return {
             id_order : this.id_order,
             comment : this.comment,
-            order_name : this.order_name
+            order_name : this.order_name,
         }
     }
 }

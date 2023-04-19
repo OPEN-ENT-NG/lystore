@@ -5,9 +5,10 @@ export interface Title {
     id: number;
     name: string;
     selected: boolean;
+    build(titleData : ITitleResponse):Title;
 }
 
-interface ITitleResponse {
+export interface ITitleResponse {
     id: number;
     name: string;
 }
@@ -28,6 +29,13 @@ export class Title implements Selectable {
             id: this.id,
             name: this.name
         }
+    }
+    build (titleData : ITitleResponse):Title {
+        this.id = titleData.id;
+        this.name = titleData.name;
+        this.selected = false;
+        return this;
+
     }
 }
 export interface IStructureTitlesResponse {

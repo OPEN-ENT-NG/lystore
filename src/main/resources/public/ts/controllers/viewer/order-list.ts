@@ -7,12 +7,13 @@ import {
     Projects,
     Utils
 } from '../../model';
+import {OrderService} from "../../services/app/viewer";
 
 
 declare let window: any;
 
 export const orderPersonnelController = ng.controller('orderPersonnelController',
-    ['$scope', '$routeParams',  ($scope, $routeParams) => {
+    ['$scope', '$routeParams', 'OrderService', ($scope, $routeParams , orderService: OrderService) => {
 
         $scope.display = {
             ordersClientOption: [],
@@ -89,7 +90,7 @@ export const orderPersonnelController = ng.controller('orderPersonnelController'
                 await $scope.deleteOrderEquipment(ordersEquipment[i]);
             }
             $scope.cancelOrderEquipmentDelete();
-            await $scope.ordersClient.sync(null, [],[],[],[],[], [],[],$routeParams.idCampaign, $scope.current.structure.id);
+            await orderService.sync($routeParams.idCampaign, $scope.current.structure.id);
             Utils.safeApply($scope);
         };
 
@@ -166,7 +167,7 @@ export const orderPersonnelController = ng.controller('orderPersonnelController'
                     }
                 }
             }
-            await $scope.ordersClient.sync(null, [],[],[],[],[],[], [],$routeParams.idCampaign, $scope.current.structure.id);
+            await orderService.sync($routeParams.idCampaign, $scope.current.structure.id);
             $scope.display.lightbox.deleteProject = false;
             template.close('orderClient.deleteProject');
             Utils.safeApply($scope);

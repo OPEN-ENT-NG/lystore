@@ -32,10 +32,11 @@ import {
     Utils,
 } from '../model';
 import {Mix} from "entcore-toolkit";
+import {OrderService} from "../services/app/viewer";
 
 declare const window: any;
-export const mainController = ng.controller('MainController', ['$scope', 'route', '$location', '$window', '$rootScope',
-    ($scope, route, $location, $window, $rootScope) => {
+export const mainController = ng.controller('MainController', ['$scope', 'route', '$location', '$window', '$rootScope', 'OrderService',
+    ($scope, route, $location, $window, $rootScope, orderService: OrderService) => {
         template.open('main', 'main');
 
         $scope.display = {
@@ -234,9 +235,13 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                 $scope.idIsInteger(idCampaign);
                 if (!$scope.current.structure)
                     await $scope.initStructures();
-                $scope.current.structure
-                    ? await $scope.ordersClient.sync(null, [], [], [], [], [], [], [], idCampaign, $scope.current.structure.id)
-                    : null;
+                // $scope.current.structure
+                //     ? await $scope.ordersClient.sync(null, [], [], [], [], [], [], [], idCampaign, $scope.current.structure.id)
+                //     : null;
+                //temporaire en attendant de le mettre dans le controller
+                await orderService.sync(idCampaign,$scope.current.structure.id).then( result =>
+                    $scope.ordersClient = result
+                )
                 $scope.syncReject(idCampaign);
                 if (!$scope.campaign.id) {
                     await $scope.campaigns.sync($scope.current.structure.id);

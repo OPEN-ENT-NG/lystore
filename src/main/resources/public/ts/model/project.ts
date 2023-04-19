@@ -1,8 +1,20 @@
 import {Eventer, Mix, Selectable, Selection} from "entcore-toolkit";
-import {Grade, Grades, Title, Titles} from './index';
+import {Grade, Grades, ITitleResponse, Title, Titles} from './index';
 import http from "axios";
 import {_, notify} from "entcore";
 
+export interface IProjectResponse {
+    id: number,
+    description: string,
+    id_title: number,
+    id_grade: number,
+    building: string,
+    stair: number,
+    room: string
+    site: string
+    preference: number,
+    title:ITitleResponse
+}
 export class Project implements Selectable {
     selected: boolean;
     id: number;
@@ -99,6 +111,20 @@ export class Project implements Selectable {
         } catch (e) {
             notify.error('lystore.project.update.err');
         }
+    }
+
+    build(projectResponse: IProjectResponse) {
+        this.id = projectResponse.id;
+        this.description = projectResponse.description;
+        this.id_title = projectResponse.id_title
+        this.id_grade = projectResponse.id_grade
+        this.building = projectResponse.building
+        this.stair = projectResponse.stair
+        this.room = projectResponse.room
+        this.site = projectResponse.site
+        this.preference = projectResponse.preference
+        this.title = new Title().build(projectResponse.title);
+        return this;
     }
 }
 

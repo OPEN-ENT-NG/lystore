@@ -39,7 +39,7 @@
                 <!--p ng-bind="calculatePriceOfBasket(basket , 2, true) | currency"></p-->
             </div>
             <div class="right-magnet flexbox vertical-spacing-twice">
-                <div tooltip="[[getTooltip(vm.orderClient)]]"
+                <div tooltip="[[vm.getTooltip(vm.orderClient)]]"
                      class="[[vm.orderClient.status]] status-circle  cell row">
                     <i>
                     </i>

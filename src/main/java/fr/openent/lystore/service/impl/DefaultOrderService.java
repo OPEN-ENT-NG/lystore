@@ -9,6 +9,8 @@ import fr.openent.lystore.model.Structure;
 import fr.openent.lystore.service.OrderService;
 import fr.openent.lystore.service.PurseService;
 import fr.openent.lystore.service.StructureService;
+import fr.openent.lystore.utils.LystoreUtils;
+import fr.openent.lystore.utils.OrderUtils;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.email.EmailSender;
@@ -144,7 +146,22 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
 
         values.add(idCampaign).add(idStructure);
 
-        sql.prepared(query, values, SqlResult.validResultHandler(handler));
+        sql.prepared(query, values, SqlResult.validResultHandler(event -> {
+            if (event.isRight()) {
+                handler.handle(new Either.Right<>(new JsonArray(event.right().getValue().stream()
+                        .filter(JsonObject.class::isInstance)
+                        .map(JsonObject.class::cast)
+                        .peek(elem -> {
+                            elem.put(LystoreBDD.PROJECT, new JsonObject(elem.getString(LystoreBDD.PROJECT)));
+                            elem.put(LystoreBDD.FILES, new JsonArray(elem.getString(LystoreBDD.FILES)));
+                            elem.put(LystoreBDD.TITLE, new JsonObject(elem.getString(LystoreBDD.TITLE)));
+                            elem.put(LystoreBDD.PRICE, OrderUtils.safeGetDouble(elem, LystoreBDD.PRICE));
+                            elem.put(LystoreBDD.PRICE_PROPOSAL, OrderUtils.safeGetDouble(elem, LystoreBDD.PRICE_PROPOSAL));
+                            elem.put(LystoreBDD.TAX_AMOUNT, OrderUtils.safeGetDouble(elem, LystoreBDD.TAX_AMOUNT));
+                        })
+                        .collect(Collectors.toList()))));
+            }
+        }));
 
     }
 

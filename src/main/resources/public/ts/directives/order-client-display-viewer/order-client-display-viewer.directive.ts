@@ -80,8 +80,6 @@ class Controller implements ng.IController, IViewModel {
     }
 
     getDate(): string | Date {
-        console.log("getDate");
-        console.log(this.orderClient);
         if (this.orderClient.rejectOrder && this.orderClient.rejectOrder.reject_date)
             return this.orderClient.rejectOrder.reject_date
         if (this.orderClient.done_date)
