@@ -85,9 +85,7 @@ export const orderPersonnelController = ng.controller('orderPersonnelController'
                 await $scope.deleteOrderEquipment(ordersEquipment[i]);
             }
             $scope.cancelOrderEquipmentDelete();
-            await orderService.sync($routeParams.idCampaign, $scope.current.structure.id).then( result =>
-                $scope.ordersClient = result
-            );
+            $scope.ordersClient = await orderService.sync($routeParams.idCampaign,$scope.current.structure.id)
             Utils.safeApply($scope);
         };
 
@@ -151,7 +149,6 @@ export const orderPersonnelController = ng.controller('orderPersonnelController'
         };
 
         $scope.deleteProject = async (projects: Projects) => {
-            console.log("deleteProject")
             for (let i = 0; i < projects.length; i++) {
                 if ($scope.projectIsDeletable(projects[i])) {
                     let {status, data} = await projects[i].delete($scope.campaign.id, $scope.ordersClient.all[0].id_structure);
@@ -165,10 +162,7 @@ export const orderPersonnelController = ng.controller('orderPersonnelController'
                     }
                 }
             }
-            await orderService.sync($routeParams.idCampaign, $scope.current.structure.id).then( result =>
-                $scope.ordersClient = result
-            );
-            console.log("after sync")
+            $scope.ordersClient = await orderService.sync($routeParams.idCampaign,$scope.current.structure.id)
             $scope.display.lightbox.deleteProject = false;
             template.close('orderClient.deleteProject');
             Utils.safeApply($scope);

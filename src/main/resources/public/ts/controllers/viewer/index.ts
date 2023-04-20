@@ -4,4 +4,3 @@ export * from './catalog';
 export * from './basket';
 export * from './order-list';
 export * from './project';
-export * from './orderClient'

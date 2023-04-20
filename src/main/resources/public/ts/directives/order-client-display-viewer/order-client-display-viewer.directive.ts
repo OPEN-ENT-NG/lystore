@@ -24,7 +24,7 @@ interface IViewModel {
 
     displayOptions: boolean;
 
-    lang:any;
+    lang: typeof lang;
 
     displayEquipmentOptions(): void;
 }
@@ -42,7 +42,8 @@ class Controller implements ng.IController, IViewModel {
 
     orderClient: OrderClient;
     displayOptions: boolean;
-    lang:any;
+    lang: typeof lang;
+
     constructor(private $scope: IDirectiveScope) {
     }
 
@@ -94,12 +95,12 @@ class Controller implements ng.IController, IViewModel {
         return " : Rapport " + this.orderClient.operation.instruction.cp_number;
     }
 
-    getDate():  Date {
+    getDate(): Date {
         if (this.orderClient.rejectOrder && this.orderClient.rejectOrder.reject_date)
             return this.orderClient.rejectOrder.reject_date
         if (this.orderClient.done_date)
             return this.orderClient.done_date
-        if (this.orderClient.operation && this.orderClient.operation.instruction && this.orderClient.operation.instruction.date_cp )
+        if (this.orderClient.operation && this.orderClient.operation.instruction && this.orderClient.operation.instruction.date_cp)
             return this.orderClient.operation.instruction.date_cp;
         if (this.orderClient.bCOrder && this.orderClient.bCOrder.dateCreation)
             return this.orderClient.bCOrder.dateCreation;
