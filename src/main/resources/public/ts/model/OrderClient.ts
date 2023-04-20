@@ -28,6 +28,7 @@ import {
 } from './index';
 import http from 'axios';
 import {BCOrder} from "./BCOrder";
+import {OrderOptionClient,IOrderClientOptionResponse} from "./OrderOptionClient";
 
 export interface IOrderClientResponse{
    id: number,
@@ -47,14 +48,14 @@ export interface IOrderClientResponse{
    status: string,
    id_contract: number,
    rank:number,
-   options: string,
+   options: IOrderClientOptionResponse[],
    project: IProjectResponse, //IProjectResponse,
    title: ITitleResponse,//ITitleResponse,
    name_supplier: string,
    cp_number: string,
    operation_label: string,
-   order_creation_date: null,
-   done_date: null,
+   order_creation_date: string,
+   done_date: string,
    instruction_object: string,
    date_operation: string,
    date_cp: string,
@@ -78,7 +79,8 @@ export class OrderClient implements Order  {
     id_operation:Number;
     id_structure: string;
     inheritedClass:Order|OrderClient|OrderRegion;
-    options;
+    //on laisse ça en any également pour éviter les regressions sur d autres parties
+    options: OrderOptionClient[] | any;
     order_parent?:any;
     price: number;
     price_proposal: number;
@@ -123,17 +125,17 @@ export class OrderClient implements Order  {
     override_region: boolean;
     supplierid: any;
     has_operation: boolean;
-    done_date : string;
+    done_date : Date;
     //à supprimer lors de la logique objet
     //Rapport
     instruction_cp_adopted: string;
     instruction_object: string;
     //Operation
     operation_label: string;
-    date_operation: string;
+    date_operation: Date;
     //Order ( validatin bc)
-    order_creation_date :string;
-    date_cp:string
+    order_creation_date :Date;
+    date_cp: Date;
 
     bCOrder?:BCOrder;
     constructor() {
@@ -251,9 +253,11 @@ export class OrderClient implements Order  {
     build(orderClientResponse: IOrderClientResponse): OrderClient {
         this.amount = orderClientResponse.amount;
         this.comment = orderClientResponse.comment;
-        this.creation_date = moment(orderClientResponse.creation_date).format('L');
+        // console.log(orderClientResponse.creation_date)
+        // console.log( moment(orderClientResponse.creation_date).format('L'))
+        this.creation_date = new Date(orderClientResponse.creation_date);
         if (orderClientResponse.done_date)
-            this.done_date = moment(orderClientResponse.done_date).format('L');
+            this.done_date = new Date(orderClientResponse.done_date);
         if (orderClientResponse.files && orderClientResponse.files.length > 0 && orderClientResponse.files[0] !== null)
             this.files = orderClientResponse.files;
         this.id = orderClientResponse.id;
@@ -270,7 +274,13 @@ export class OrderClient implements Order  {
         //supplier
         this.supplier_name = orderClientResponse.name_supplier;
         //surement à cast en orderClientOptions[] plus tard
-        this.options = orderClientResponse.options;
+        // this.options = orderClientResponse.options.toString();
+        if (orderClientResponse.options && orderClientResponse.options.length > 0 && orderClientResponse.options[0] !== null)
+            this.options = orderClientResponse.options.map(options => {
+                return new OrderOptionClient().build(options);
+            });
+        else
+            this.options = [];
         //à transformer en contact
         this.id_contract = orderClientResponse.id_contract;
         //project
@@ -281,11 +291,14 @@ export class OrderClient implements Order  {
         this.id_structure = orderClientResponse.id_structure
         //OBJECT BCORDER
         this.cp_number = orderClientResponse.cp_number;
-        this.date_cp = orderClientResponse.date_cp;
-        this.order_creation_date = orderClientResponse.order_creation_date;
+        if (orderClientResponse.date_cp)
+            this.date_cp = moment(orderClientResponse.date_cp);
+        if (orderClientResponse.order_creation_date)
+            this.order_creation_date =  new Date(orderClientResponse.order_creation_date);
         //
         //OBJECET OPERATION
-        this.date_operation = orderClientResponse.date_operation;
+        if (orderClientResponse.date_operation)
+            this.date_operation = new Date(orderClientResponse.date_operation);
         this.operation_label = orderClientResponse.operation_label;
         //Instruction
         this.instruction_object = orderClientResponse.instruction_object
@@ -637,17 +650,6 @@ export class OrdersClient extends Selection<OrderClient> {
         })
         return this;
     }
-}
-
-export class OrderOptionClient implements Selectable {
-    id?: number;
-    tax_amount: number;
-    price: number;
-    name: string;
-    amount: number;
-    required: boolean;
-    id_order_client_equipment: number;
-    selected: boolean;
 }
 
 export class RejectOrder implements Selectable{

@@ -14,13 +14,19 @@ interface IViewModel {
 
     displayInstruction(): string;
 
-    calculateTotal(orderClient: OrderClient, roundNumber: number): string
+    calculateTotal(orderClient: OrderClient, roundNumber: number): string;
 
-    calculatePriceOfOrderClient(orderClient: OrderClient, selectedOptions: boolean, roundNumber: number): number
+    calculatePriceOfOrderClient(orderClient: OrderClient, selectedOptions: boolean, roundNumber: number): number;
 
-    hasAProposalPrice(): boolean
+    hasAProposalPrice(): boolean;
 
-    getTooltip  (orderClient : OrderClient):string
+    getTooltip(orderClient: OrderClient): string;
+
+    displayOptions: boolean;
+
+    lang:any;
+
+    displayEquipmentOptions(): void;
 }
 
 
@@ -33,16 +39,25 @@ interface IDirectiveScope extends IScope {
 }
 
 class Controller implements ng.IController, IViewModel {
+
+    orderClient: OrderClient;
+    displayOptions: boolean;
+    lang:any;
     constructor(private $scope: IDirectiveScope) {
     }
 
-    orderClient: OrderClient;
-
     $onInit() {
         this.orderClient = this.$scope.vm.orderClient
+        this.displayOptions = false;
+        this.lang = lang;
     }
 
     $onDestroy() {
+    }
+
+    displayEquipmentOptions() {
+        this.displayOptions = !this.displayOptions;
+        Utils.safeApply(this.$scope);
     }
 
     calculatePriceOfOrderClient(orderClient: OrderClient, selectedOptions: boolean, roundNumber: number = 2): number {
@@ -60,7 +75,7 @@ class Controller implements ng.IController, IViewModel {
 
 
     hasAProposalPrice(): boolean {
-        return this.orderClient.price_proposal !== undefined && this.orderClient.price_proposal !== null;
+        return this.orderClient.price_proposal !== undefined && this.orderClient.price_proposal !== null && this.orderClient.price_proposal !== 0;
     }
 
     getTooltip(orderClient: OrderClient): string {
@@ -79,7 +94,7 @@ class Controller implements ng.IController, IViewModel {
         return " : Rapport " + this.orderClient.cp_number;
     }
 
-    getDate(): string | Date {
+    getDate():  Date {
         if (this.orderClient.rejectOrder && this.orderClient.rejectOrder.reject_date)
             return this.orderClient.rejectOrder.reject_date
         if (this.orderClient.done_date)
@@ -93,8 +108,7 @@ class Controller implements ng.IController, IViewModel {
         return this.orderClient.creation_date;
     }
 
-    //any car il n y a pas que des dates pour l instant
-    formatDate(date: any): string {
+    formatDate(date: Date): string {
         return Utils.formatDate(date);
     }
 }

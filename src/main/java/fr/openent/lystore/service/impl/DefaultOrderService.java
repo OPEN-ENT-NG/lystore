@@ -154,6 +154,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                         .peek(elem -> {
                             elem.put(LystoreBDD.PROJECT, new JsonObject(elem.getString(LystoreBDD.PROJECT)));
                             elem.put(LystoreBDD.FILES, new JsonArray(elem.getString(LystoreBDD.FILES)));
+                            elem.put(LystoreBDD.OPTIONS, new JsonArray(elem.getString(LystoreBDD.OPTIONS)));
                             elem.put(LystoreBDD.TITLE, new JsonObject(elem.getString(LystoreBDD.TITLE)));
                             elem.put(LystoreBDD.PRICE, OrderUtils.safeGetDouble(elem, LystoreBDD.PRICE));
                             elem.put(LystoreBDD.PRICE_PROPOSAL, OrderUtils.safeGetDouble(elem, LystoreBDD.PRICE_PROPOSAL));

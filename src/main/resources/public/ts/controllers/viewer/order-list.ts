@@ -16,7 +16,6 @@ export const orderPersonnelController = ng.controller('orderPersonnelController'
     ['$scope', '$routeParams', 'OrderService', ($scope, $routeParams , orderService: OrderService) => {
 
         $scope.display = {
-            ordersClientOption: [],
             lightbox: {
                 deleteOrder: false,
                 deleteProject: false,
@@ -47,10 +46,6 @@ export const orderPersonnelController = ng.controller('orderPersonnelController'
 
         $scope.hasAProposalPrice = (orderClient: OrderClient) => {
             return (orderClient.price_proposal);
-        };
-        $scope.displayEquipmentOption = (index: number) => {
-            $scope.display.ordersClientOption[index] = !$scope.display.ordersClientOption[index];
-            Utils.safeApply($scope);
         };
 
         $scope.calculateDelivreryDate = (date: Date) => {
@@ -90,7 +85,9 @@ export const orderPersonnelController = ng.controller('orderPersonnelController'
                 await $scope.deleteOrderEquipment(ordersEquipment[i]);
             }
             $scope.cancelOrderEquipmentDelete();
-            await orderService.sync($routeParams.idCampaign, $scope.current.structure.id);
+            await orderService.sync($routeParams.idCampaign, $scope.current.structure.id).then( result =>
+                $scope.ordersClient = result
+            );
             Utils.safeApply($scope);
         };
 
@@ -154,6 +151,7 @@ export const orderPersonnelController = ng.controller('orderPersonnelController'
         };
 
         $scope.deleteProject = async (projects: Projects) => {
+            console.log("deleteProject")
             for (let i = 0; i < projects.length; i++) {
                 if ($scope.projectIsDeletable(projects[i])) {
                     let {status, data} = await projects[i].delete($scope.campaign.id, $scope.ordersClient.all[0].id_structure);
@@ -167,7 +165,10 @@ export const orderPersonnelController = ng.controller('orderPersonnelController'
                     }
                 }
             }
-            await orderService.sync($routeParams.idCampaign, $scope.current.structure.id);
+            await orderService.sync($routeParams.idCampaign, $scope.current.structure.id).then( result =>
+                $scope.ordersClient = result
+            );
+            console.log("after sync")
             $scope.display.lightbox.deleteProject = false;
             template.close('orderClient.deleteProject');
             Utils.safeApply($scope);

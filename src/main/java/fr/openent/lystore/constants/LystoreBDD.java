@@ -58,6 +58,7 @@ public class LystoreBDD {
     public static final String PRICE = "price";
     public static final String PRICE_PROPOSAL = "price_proposal";
     public static final String TAX_AMOUNT = "tax_amount";
+    public static final String OPTIONS = "options";
 
     //ORDER STATUS
     public static final String REJECTED = "REJECTED";

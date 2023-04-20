@@ -10,11 +10,11 @@
             <div class="eleven centered">
                 <h3>[[vm.orderClient.name]]</h3>
                 <p ng-bind-html="vm.orderClient.summary"></p>
-                <a ng-init="display.ordersClientOption[$index] = false"
-                   ng-click="displayEquipmentOption($index)"
+
+                <a ng-click="vm.displayEquipmentOptions()"
                    ng-show="vm.orderClient.options.length > 0">
-                    [[lang.translate(
-                    display.ordersClientOption[$index]
+                    [[vm.lang.translate(
+                    vm.displayOptions
                     ? 'lystore.options.hide'
                     :'lystore.options.show'
                     )]]
@@ -59,7 +59,7 @@
             </div>
         </div>
     </div>
-    <div ng-show="vm.orderClient.options.length > 0 && display.ordersClientOption[$index]">
+    <div ng-show="vm.displayOptions">
         <div class="twelve row">
             <h4 class="cell">
                 <i18n>lystore.options</i18n>
@@ -70,7 +70,7 @@
             <thead>
             <tr>
                 <td>
-                    <i18n>price</i18n>
+                    <i18n>name</i18n>
                 </td>
                 <td>
                     <i18n>lystore.quantity</i18n>
@@ -85,7 +85,7 @@
                 <td>[[option.name]]</td>
                 <td>[[option.amount]]</td>
                 <td><span
-                        ng-bind="vm.calculatePriceTTC(option.price, option.tax_amount, 2) | currency"></span>
+                        ng-bind="option.calculatePriceTTC() | currency"></span>
                 </td>
             </tr>
             </tbody>
