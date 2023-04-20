@@ -130,7 +130,6 @@ export class OrderClient implements Order  {
     done_date : Date;
     //à supprimer lors de la logique objet
     instruction_cp_adopted : string;
-    //Order ( validation bc)
     operation: Operation;
     bCOrder?:BCOrder;
     constructor() {
