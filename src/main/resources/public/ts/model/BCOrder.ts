@@ -1,6 +1,6 @@
 export interface IBCOrder {
     id:number;
-    dateCreation :string;
+    dateCreation :Date;
     dateCp:string;
     engagementNumber?:string;
     number:string;
@@ -8,7 +8,7 @@ export interface IBCOrder {
 
 export class BCOrder implements IBCOrder{
     dateCp: string;
-    dateCreation: string;
+    dateCreation: Date;
     engagementNumber?: string;
     id: number;
     number: string;

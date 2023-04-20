@@ -79,10 +79,10 @@ class Controller implements ng.IController, IViewModel {
     }
 
     getTooltip(orderClient: OrderClient): string {
-        if (orderClient.instruction_object)
-            return orderClient.instruction_object
-        if (orderClient.operation_label)
-            return lang.translate(orderClient.status) + " " + orderClient.operation_label
+        if (orderClient.operation && orderClient.operation.instruction)
+            return orderClient.operation.instruction.object
+        if (orderClient.operation)
+            return lang.translate(orderClient.status) + " " + orderClient.operation.label
         return lang.translate(orderClient.status);
     }
 
@@ -91,7 +91,7 @@ class Controller implements ng.IController, IViewModel {
     }
 
     displayInstruction(): string {
-        return " : Rapport " + this.orderClient.cp_number;
+        return " : Rapport " + this.orderClient.operation.instruction.cp_number;
     }
 
     getDate():  Date {
@@ -99,12 +99,12 @@ class Controller implements ng.IController, IViewModel {
             return this.orderClient.rejectOrder.reject_date
         if (this.orderClient.done_date)
             return this.orderClient.done_date
-        if (this.orderClient.date_cp)
-            return this.orderClient.date_cp;
-        if (this.orderClient.order_creation_date)
-            return this.orderClient.order_creation_date;
-        if (this.orderClient.date_operation)
-            return this.orderClient.date_operation;
+        if (this.orderClient.operation && this.orderClient.operation.instruction && this.orderClient.operation.instruction.date_cp )
+            return this.orderClient.operation.instruction.date_cp;
+        if (this.orderClient.bCOrder && this.orderClient.bCOrder.dateCreation)
+            return this.orderClient.bCOrder.dateCreation;
+        if (this.orderClient.operation && this.orderClient.operation.date_operation)
+            return this.orderClient.operation.date_operation;
         return this.orderClient.creation_date;
     }
 

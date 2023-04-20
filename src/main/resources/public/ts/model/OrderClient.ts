@@ -8,9 +8,11 @@ import {
     ContractType,
     ContractTypes,
     Equipment,
-    Grade,
+    Grade, Instruction,
     IProjectResponse,
     ITitleResponse,
+    Label,
+    Operation,
     Order,
     OrderRegion,
     OrderUtils,
@@ -127,16 +129,9 @@ export class OrderClient implements Order  {
     has_operation: boolean;
     done_date : Date;
     //à supprimer lors de la logique objet
-    //Rapport
-    instruction_cp_adopted: string;
-    instruction_object: string;
-    //Operation
-    operation_label: string;
-    date_operation: Date;
-    //Order ( validatin bc)
-    order_creation_date :Date;
-    date_cp: Date;
-
+    instruction_cp_adopted : string;
+    //Order ( validation bc)
+    operation: Operation;
     bCOrder?:BCOrder;
     constructor() {
         this.typeOrder= "client";
@@ -253,8 +248,6 @@ export class OrderClient implements Order  {
     build(orderClientResponse: IOrderClientResponse): OrderClient {
         this.amount = orderClientResponse.amount;
         this.comment = orderClientResponse.comment;
-        // console.log(orderClientResponse.creation_date)
-        // console.log( moment(orderClientResponse.creation_date).format('L'))
         this.creation_date = new Date(orderClientResponse.creation_date);
         if (orderClientResponse.done_date)
             this.done_date = new Date(orderClientResponse.done_date);
@@ -273,8 +266,6 @@ export class OrderClient implements Order  {
         this.tax_amount = orderClientResponse.tax_amount;
         //supplier
         this.supplier_name = orderClientResponse.name_supplier;
-        //surement à cast en orderClientOptions[] plus tard
-        // this.options = orderClientResponse.options.toString();
         if (orderClientResponse.options && orderClientResponse.options.length > 0 && orderClientResponse.options[0] !== null)
             this.options = orderClientResponse.options.map(options => {
                 return new OrderOptionClient().build(options);
@@ -289,19 +280,28 @@ export class OrderClient implements Order  {
         this.project = new Project().build(orderClientResponse.project);
         //structure
         this.id_structure = orderClientResponse.id_structure
-        //OBJECT BCORDER
-        this.cp_number = orderClientResponse.cp_number;
-        if (orderClientResponse.date_cp)
-            this.date_cp = moment(orderClientResponse.date_cp);
-        if (orderClientResponse.order_creation_date)
-            this.order_creation_date =  new Date(orderClientResponse.order_creation_date);
+        if (orderClientResponse.order_creation_date) {
+            this.bCOrder = new BCOrder();
+            this.bCOrder.dateCreation = new Date(orderClientResponse.order_creation_date);
+        }
         //
-        //OBJECET OPERATION
-        if (orderClientResponse.date_operation)
-            this.date_operation = new Date(orderClientResponse.date_operation);
-        this.operation_label = orderClientResponse.operation_label;
-        //Instruction
-        this.instruction_object = orderClientResponse.instruction_object
+        if (orderClientResponse.date_operation) {
+            this.operation = new Operation();
+            this.operation.date_operation = new Date(orderClientResponse.date_operation);
+            let label = new Label();
+            label.label = orderClientResponse.operation_label
+            this.operation.label = label
+            if (orderClientResponse.instruction_object) {
+                let instruction = new Instruction();
+                if (orderClientResponse.cp_number)
+                    instruction.cp_number = orderClientResponse.cp_number
+                instruction.object = orderClientResponse.instruction_object;
+                if (orderClientResponse.date_cp)
+                    instruction.date_cp = moment(orderClientResponse.date_cp);
+
+                this.operation.instruction = instruction;
+            }
+        }
         return this;
     }
 }
@@ -342,11 +342,6 @@ export class OrdersClient extends Selection<OrderClient> {
         // try {
         this.projects = new Selection<Project>([]);
         this.id_project_use = -1;
-        if (idCampaign && idStructure) {
-            const { data } = await http.get(  `/lystore/orders/${idCampaign}/${idStructure}` );
-            this.all = Mix.castArrayAs(OrderClient, data);
-            this.syncWithIdsCampaignAndStructure(idCampaign, idStructure);
-        } else {
             const queriesFilter = Utils.formatGetParameters({q: this.filters});
             let datas;
             //EN SUSPEND
@@ -382,7 +377,6 @@ export class OrdersClient extends Selection<OrderClient> {
                     return;
                 }
             });
-        }
         // } catch (e) {
         //     notify.error('lystore.order.sync.err');
         // }
@@ -435,28 +429,6 @@ export class OrdersClient extends Selection<OrderClient> {
             }
         });
 
-    }
-
-    syncWithIdsCampaignAndStructure(idCampaign:number, idStructure:string):void{
-        this.all.map((order) => {
-            order.price = parseFloat(order.price.toString());
-            order.price_proposal = order.price_proposal? parseFloat( order.price_proposal.toString()) : null;
-            order.tax_amount = parseFloat(order.tax_amount.toString());
-            order.project = Mix.castAs(Project, JSON.parse(order.project.toString()));
-            order.project.init(idCampaign, idStructure);
-            order.project.title = Mix.castAs(Title, JSON.parse(order.title.toString()));
-            if(this.id_project_use != order.project.id)this.makeProjects(order);
-            order.rank = order.rank ? parseInt(order.rank.toString()) : null ;
-            order.options = order.options.toString() !== '[null]' && order.options !== null ?
-                Mix.castArrayAs(OrderOptionClient, JSON.parse(order.options.toString()))
-                : order.options = [];
-            order.options.map((order) => order.selected = true);
-            order.files = order.files !== '[null]' ? Utils.parsePostgreSQLJson(order.files) : [];
-        });
-        this.all = _.sortBy(this.all, (order)=> order.rank != null ? order.rank : this.all.length );
-        this.projects.all = _.sortBy(this.projects.all, (project)=> project.preference != null
-            ? project.preference
-            : this.projects.all.length );
     }
 
     makeProjects(order:OrderClient, ordersClients:OrdersClient = this):void{

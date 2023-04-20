@@ -45,8 +45,11 @@
                     </i>
                 </div>
                 <span ng-bind="vm.displayStatus()"></span>
-                <b> <span ng-show="vm.orderClient.cp_number" ng-bind="vm.displayInstruction()"></span></b>
-
+                <b> <span ng-show="vm.orderClient.operation
+                 && vm.orderClient.operation.instruction
+                 && vm.orderClient.operation.instruction.cp_number " ng-bind="vm.displayInstruction()">
+                </span>
+                </b>
             </div>
             <div ng-if="vm.orderClient.rejectOrder.comment" class="right-magnet cell twelve vertical-spacing-twice">
                 <label>

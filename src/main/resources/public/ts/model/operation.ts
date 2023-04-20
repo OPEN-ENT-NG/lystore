@@ -6,7 +6,7 @@ import {Utils} from "./Utils";
 import {Instruction} from "./instruction";
 import {OrderClient} from "./OrderClient";
 import {Structure} from "./Structure";
-import {label} from "./LabelOperation";
+import {Label} from "./LabelOperation";
 import {Contract} from "./Contract";
 import {Notification} from "./Notification";
 
@@ -14,7 +14,7 @@ import {Notification} from "./Notification";
 export class Operation implements Selectable {
     id?: number;
     id_label: number;
-    label: label;
+    label: Label;
     status: boolean = false;
     Operations: any;
     bc_numbers: Array<any>;
@@ -29,8 +29,8 @@ export class Operation implements Selectable {
     date_operation: Date;
     nbOrberSub: Number;
     number_sub: Number;
+    cp_adopted = false;
 
-cp_adopted = false;
     constructor() {
 
     }
@@ -149,8 +149,8 @@ export class Operations extends Selection<Operation> {
                 operation.date_cp = operation.date_cp !== null && !_.isEmpty(operation.instruction) ? moment(operation.instruction.date_cp) : null;
                 operation.date_operation = operation.date_operation !== null ? moment(operation.date_operation) : null;
                 operation.label.toString() !== 'null' && operation.label !== null ?
-                    operation.label = Mix.castAs(label, JSON.parse(operation.label.toString()))
-                    : operation.label = new label();
+                    operation.label = Mix.castAs(Label, JSON.parse(operation.label.toString()))
+                    : operation.label = new Label();
                 operation.nb_orders = operation.nb_orders || 0;
                 operation.nbOrberSub = operation.number_sub || 0;
             })

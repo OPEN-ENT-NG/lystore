@@ -3,7 +3,7 @@ import http from "axios";
 import {moment, toasts} from "entcore";
 import {Utils} from "./Utils";
 
-export class label implements Selectable {
+export class Label implements Selectable {
     id: number;
     label: string;
     start_date: Date;
@@ -67,7 +67,7 @@ export class label implements Selectable {
     }
 }
 
-export class labels extends Selection<label> {
+export class labels extends Selection<Label> {
     filters: Array<string>;
 
     constructor() {
@@ -88,7 +88,7 @@ export class labels extends Selection<label> {
         try {
             const queriesFilter = Utils.formatGetParameters({q: this.filters});
             let {data} = await http.get(`/lystore/labels/?${queriesFilter}`);
-            this.all = Mix.castArrayAs(label, data);
+            this.all = Mix.castArrayAs(Label, data);
             this.all.map(label => {
                 label.label = label.label.trim();
                 if (label.start_date && label.end_date) {

@@ -235,9 +235,6 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                 $scope.idIsInteger(idCampaign);
                 if (!$scope.current.structure)
                     await $scope.initStructures();
-                // $scope.current.structure
-                //     ? await $scope.ordersClient.sync(null, [], [], [], [], [], [], [], idCampaign, $scope.current.structure.id)
-                //     : null;
                 //temporaire en attendant de le mettre dans le controller
                 await orderService.sync(idCampaign,$scope.current.structure.id).then( result =>
                     $scope.ordersClient = result

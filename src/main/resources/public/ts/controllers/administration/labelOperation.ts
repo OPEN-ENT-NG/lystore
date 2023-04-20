@@ -1,5 +1,5 @@
 import {_, ng, template, moment} from 'entcore';
-import {label, Utils} from "../../model";
+import {Label, Utils} from "../../model";
 
 export const labelOperationController = ng.controller('labelOperationController',
     ['$scope',($scope) => {
@@ -18,55 +18,55 @@ export const labelOperationController = ng.controller('labelOperationController'
 
 
 
-        $scope.openLabelForm = (action: string, labelToHandle:label) => {
+        $scope.openLabelForm = (action: string, labelToHandle:Label) => {
             if(action === 'create'){
-                $scope.newLabel = new label();
+                $scope.newLabel = new Label();
                 $scope.display.lightbox.label = true;
                 template.open('label.lightbox', 'administrator/operation-label/label-form');
                 Utils.safeApply($scope);
             } else
             if(labelToHandle.is_used < 1 && action === 'edit'){
-                    $scope.newLabel = Object.assign(new label(), labelToHandle);
+                    $scope.newLabel = Object.assign(new Label(), labelToHandle);
                     $scope.display.lightbox.label = true;
                     template.open('label.lightbox', 'administrator/operation-label/label-form');
                     Utils.safeApply($scope);
             }
         };
 
-        $scope.isValidLabelDate = (label:label) => {
+        $scope.isValidLabelDate = (label:Label) => {
             return moment(label.start_date).isBefore(moment(label.end_date), 'days', '[]');
         };
 
-        $scope.isValidLabelDateUsed = (label:label) => {
+        $scope.isValidLabelDateUsed = (label:Label) => {
             if(label.is_used && label.is_used > 0) {
                 return moment(label.end_date).isAfter(moment(label.max_creation_date), 'days', '[]');
             }
             return true;
         };
 
-        $scope.isValidLabelLength = (label:label) => {
+        $scope.isValidLabelLength = (label:Label) => {
             return label.label.length > 0;
         };
 
-        $scope.isValidLabelName = (label:label) => {
+        $scope.isValidLabelName = (label:Label) => {
             if(label.id === $scope.newLabel.id) {
                 return !$scope.labelOperation.all.some(l => l.label.toUpperCase() === label.label.toUpperCase() && label.id !== l.id);
             }
             return !$scope.labelOperation.all.some(l => l.label.toUpperCase() === label.label.toUpperCase());
         }
 
-        $scope.initLabelDate = (label:label) => {
+        $scope.initLabelDate = (label:Label) => {
             if(!label.start_date && !label.end_date) {
                 label.start_date = moment().add().format('YYYY-MM-DD');
                 label.end_date = moment(new Date('2099-12-31'));
             }
         };
 
-        $scope.validLabelForm = (label:label) => {
+        $scope.validLabelForm = (label:Label) => {
             return label.label && $scope.isValidLabelLength(label) && $scope.isValidLabelName(label) && $scope.isValidLabelDate(label) && $scope.isValidLabelDateUsed(label);
         };
 
-        $scope.validLabel = async (label:label) => {
+        $scope.validLabel = async (label:Label) => {
             await label.save();
             await $scope.cancelLabelForm();
             await $scope.initLabel();
@@ -81,7 +81,7 @@ export const labelOperationController = ng.controller('labelOperationController'
             Utils.safeApply($scope);
         };
 
-        $scope.trashLabel = async (label:label) => {
+        $scope.trashLabel = async (label:Label) => {
             await label.delete();
             await $scope.initLabel();
             template.close('label.lightbox');
@@ -103,7 +103,7 @@ export const labelOperationController = ng.controller('labelOperationController'
             $scope.display.lightbox.label = false;
             template.close('label.lightbox');
             Utils.safeApply($scope);
-            $scope.newLabel = new label();
+            $scope.newLabel = new Label();
         };
 
         $scope.addLabelFilter = async (event?) => {
@@ -129,7 +129,7 @@ export const labelOperationController = ng.controller('labelOperationController'
             Utils.safeApply($scope);
         };
 
-        $scope.openLightboxTrashLabel = (label:label) => {
+        $scope.openLightboxTrashLabel = (label:Label) => {
             if(label.is_used > 0) {
                 return false;
             } else {
