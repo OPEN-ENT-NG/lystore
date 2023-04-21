@@ -151,7 +151,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 handler.handle(new Either.Right<>(new JsonArray(event.right().getValue().stream()
                         .filter(JsonObject.class::isInstance)
                         .map(JsonObject.class::cast)
-                        .peek(elem -> {
+                        .map(elem -> {
                             elem.put(LystoreBDD.PROJECT, new JsonObject(elem.getString(LystoreBDD.PROJECT)));
                             elem.put(LystoreBDD.FILES, new JsonArray(elem.getString(LystoreBDD.FILES)));
                             elem.put(LystoreBDD.OPTIONS, new JsonArray(elem.getString(LystoreBDD.OPTIONS)));
@@ -159,8 +159,11 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                             elem.put(LystoreBDD.PRICE, OrderUtils.safeGetDouble(elem, LystoreBDD.PRICE));
                             elem.put(LystoreBDD.PRICE_PROPOSAL, OrderUtils.safeGetDouble(elem, LystoreBDD.PRICE_PROPOSAL));
                             elem.put(LystoreBDD.TAX_AMOUNT, OrderUtils.safeGetDouble(elem, LystoreBDD.TAX_AMOUNT));
+                            return  elem;
                         })
                         .collect(Collectors.toList()))));
+            } else {
+                handler.handle(new Either.Left<>(event.left().getValue()));
             }
         }));
 

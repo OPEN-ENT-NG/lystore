@@ -266,9 +266,7 @@ export class OrderClient implements Order  {
         //supplier
         this.supplier_name = orderClientResponse.name_supplier;
         if (orderClientResponse.options && orderClientResponse.options.length > 0 && orderClientResponse.options[0] !== null)
-            this.options = orderClientResponse.options.map(options => {
-                return new OrderOptionClient().build(options);
-            });
+            this.options =orderClientResponse.options.map((options: IOrderClientOptionResponse) => new OrderOptionClient().build(options));
         else
             this.options = [];
         //à transformer en contact
@@ -615,10 +613,10 @@ export class OrdersClient extends Selection<OrderClient> {
             return new OrderClient().build(orderClientResponse);
         });
         this.projects = new Selection<Project>([]);
-        this.all.forEach(order =>{
-            if(this.projects.filter(projectFiltered => projectFiltered.id === order.project.id).length === 0)
+        this.all.forEach((order:OrderClient) =>{
+            if(this.projects.filter((projectFiltered:Project ) => projectFiltered.id === order.project.id).length === 0)
                 return this.projects.all.push(order.project);
-        })
+        });
         return this;
     }
 }

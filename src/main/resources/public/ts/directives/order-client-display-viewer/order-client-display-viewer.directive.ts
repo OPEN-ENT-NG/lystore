@@ -70,7 +70,7 @@ class Controller implements ng.IController, IViewModel {
     }
 
     calculateTotal(orderClient: OrderClient, roundNumber: number): string {
-        let totalPrice = this.calculatePriceOfOrderClient(orderClient, true, roundNumber) * orderClient.amount;
+        let totalPrice:number = this.calculatePriceOfOrderClient(orderClient, true, roundNumber) * orderClient.amount;
         return totalPrice.toFixed(roundNumber);
     }
 
@@ -81,18 +81,18 @@ class Controller implements ng.IController, IViewModel {
 
     getTooltip(orderClient: OrderClient): string {
         if (orderClient.operation && orderClient.operation.instruction)
-            return orderClient.operation.instruction.object
+            return orderClient.operation.instruction.object;
         if (orderClient.operation)
-            return lang.translate(orderClient.status) + " " + orderClient.operation.label
+            return lang.translate(orderClient.status) + " " + orderClient.operation.label;
         return lang.translate(orderClient.status);
     }
 
     displayStatus(): string {
-        return lang.translate(this.orderClient.status)
+        return lang.translate(this.orderClient.status);
     }
 
     displayInstruction(): string {
-        return " : Rapport " + this.orderClient.operation.instruction.cp_number;
+        return " : " + lang.translate("INSTRUCTION") + this.orderClient.operation.instruction.cp_number;
     }
 
     getDate(): Date {
@@ -116,7 +116,6 @@ class Controller implements ng.IController, IViewModel {
 
 function directive(): IDirective {
     return {
-        replace: true,
         restrict: 'E',
         templateUrl: `${RootsConst.directive}/order-client-display-viewer/order-client-display-viewer.html`,
         scope: {

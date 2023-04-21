@@ -160,9 +160,9 @@ public class DefaultProjectService extends SqlCrudService implements ProjectServ
                                 handler.handle(new Either.Left<>(message));
                             } else {
                                 JsonArray results = event.body().getJsonArray(CommonConstants.RESULTS);
-                                double purse_amount = 0.d;
+                                double purseAmount = 0.d;
                                 if(results.getJsonObject(results.size()-1).getJsonArray(CommonConstants.RESULTS).size() > 0) {
-                                    purse_amount = Double.parseDouble(results.getJsonObject(results.size() - 1)
+                                    purseAmount = Double.parseDouble(results.getJsonObject(results.size() - 1)
                                             .getJsonArray(CommonConstants.RESULTS).getJsonArray(0).getString(0));
                                 }
                                 JsonObject res;
@@ -189,7 +189,7 @@ public class DefaultProjectService extends SqlCrudService implements ProjectServ
                                 }
                                 JsonObject resultfinal = new JsonObject().put("status", "ok");
                                 if (nb_basket >= 0 && nb_order >= 0) {
-                                    resultfinal.put("nb_order", nb_order).put("nb_basket", nb_basket).put("purse_amount",purse_amount);
+                                    resultfinal.put("nb_order", nb_order).put("nb_basket", nb_basket).put("purse_amount",purseAmount);
                                 }
                                 handler.handle(new Either.Right<>(resultfinal));
                             }
