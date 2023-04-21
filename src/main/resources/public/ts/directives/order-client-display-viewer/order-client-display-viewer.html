@@ -1,0 +1,133 @@
+<div class="cell width-100-40">
+    <div class="row article-equipment">
+        <div class="one cell basket-image zero-mobile">
+            <img ng-src="[[vm.orderClient.image]]"
+                 ng-show="vm.orderClient.image!==null && vm.orderClient.image!==undefined "/>
+            <img skin-src="/img/illustrations/pages-default.png"
+                 ng-show="vm.orderClient.image===null || vm.orderClient.image===undefined "/>
+        </div>
+        <div class="cell four">
+            <div class="eleven centered">
+                <h3>[[vm.orderClient.name]]</h3>
+                <p ng-bind-html="vm.orderClient.summary"></p>
+
+                <a ng-click="vm.displayEquipmentOptions()"
+                   ng-show="vm.orderClient.options.length > 0">
+                    [[vm.lang.translate(
+                    vm.displayOptions
+                    ? 'lystore.options.hide'
+                    :'lystore.options.show'
+                    )]]
+                </a>
+            </div>
+        </div>
+        <div class="seven cell text-right">
+            <div class="vertical-spacing-twice">
+                <span ng-if="vm.hasAProposalPrice()"> <i18n>lystore.priceProposal</i18n> :</span>
+                <span ng-if="!vm.hasAProposalPrice()"><i18n>price</i18n> :</span>
+                <span ng-if="vm.hasAProposalPrice()"
+                      ng-bind="vm.orderClient.price_proposal | currency"
+                      class="price-label"></span>
+                <span ng-if="!vm.hasAProposalPrice()"
+                      ng-bind="vm.orderClient.calculatePriceTTC(true) | currency"
+                      class="price-label"></span>
+            </div>
+            <div class="vertical-spacing-twice">
+                <i18n>lystore.quantity</i18n>
+                :
+                [[vm.orderClient.amount]]
+                <!--p ng-bind="calculatePriceOfBasket(basket , 2, true) | currency"></p-->
+            </div>
+            <div class="right-magnet flexbox vertical-spacing-twice">
+                <div tooltip="[[vm.getTooltip(vm.orderClient)]]"
+                     class="[[vm.orderClient.status]] status-circle  cell row">
+                    <i>
+                    </i>
+                </div>
+                <span ng-bind="vm.displayStatus()"></span>
+                <b> <span ng-show="vm.orderClient.operation
+                 && vm.orderClient.operation.instruction
+                 && vm.orderClient.operation.instruction.cp_number " ng-bind="vm.displayInstruction()">
+                </span>
+                </b>
+            </div>
+            <div ng-if="vm.orderClient.rejectOrder.comment" class="right-magnet cell twelve vertical-spacing-twice">
+                <label>
+                    <i18n>reject.comment.label</i18n>
+                </label>
+                "[[vm.orderClient.rejectOrder.comment]]"
+            </div>
+            <div class="right-magnet cell twelve vertical-spacing-twice">
+                <i18n>lystore.orderClient.date.update </i18n>[[vm.formatDate(vm.getDate())]]
+            </div>
+        </div>
+    </div>
+    <div ng-show="vm.displayOptions">
+        <div class="twelve row">
+            <h4 class="cell">
+                <i18n>lystore.options</i18n>
+                :
+            </h4>
+        </div>
+        <table class="twelve vertical-spacing option-table">
+            <thead>
+            <tr>
+                <td>
+                    <i18n>name</i18n>
+                </td>
+                <td>
+                    <i18n>lystore.quantity</i18n>
+                </td>
+                <td>
+                    <i18n>price</i18n>
+                </td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="option in vm.orderClient.options">
+                <td>[[option.name]]</td>
+                <td>[[option.amount]]</td>
+                <td><span
+                        ng-bind="option.calculatePriceTTC() | currency"></span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="row twelve vertical-spacing-four" ng-if="vm.orderClient.files.length > 0">
+        <div class="twelve row">
+            <h4 class="cell">
+                <i18n>lystore.basket.file.name</i18n>
+                :
+            </h4>
+        </div>
+        <div class="row basket-file-list">
+            <ul class="twelve">
+                <li ng-repeat="file in vm.orderClient.files" class="twelve basket-file row">
+                    <a class="cell twelve" ng-click="vm.orderClient.downloadFile(file)">[[
+                        file.name ||
+                        file.filename ]]</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="twelve cell vertical-spacing-four"
+         ng-if="vm.orderClient.comment !== null && vm.orderClient.comment.trim() !== ''">
+        <div class="row">
+            <h4 class="cell">
+                <i18n>comment</i18n>
+                :
+            </h4>
+        </div>
+        <div class="row">
+            <p>
+                [[vm.orderClient.comment]]
+            </p>
+        </div>
+    </div>
+    <div class="row border top">
+        <h1 class="right-magnet vertical-spacing">
+            <span ng-bind="vm.calculateTotal(vm.orderClient,2) | currency"></span>
+        </h1>
+    </div>
+</div>

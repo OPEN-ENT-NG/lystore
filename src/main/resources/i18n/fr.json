@@ -598,6 +598,7 @@
   "lystore.instruction.date_operation": "Date Opération",
   "lystore.error.purse.negative": "Le montant de la cagnotte initiale ne doit pas être négatif après déduction des demandes déjà effectuées par l'établissement",
   "lystore.orderClient.date.creation": "Commandé le : ",
+  "lystore.orderClient.date.update": "Mis à jour le : ",
   "lystore.export.orders.campaign": "Export des demandes",
   "error.purse.negative.basket": "Erreur lors de la validation veuillez rafraichir la page afin de mettre à jour les prix",
   "lystore.campaigns.date.automatisation" : "Activer l'ouverture et la fermeture automatique de la campagne",

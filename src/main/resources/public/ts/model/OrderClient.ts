@@ -1,23 +1,70 @@
-import {_, idiom as lang, model, moment, notify, toasts} from 'entcore';
+import {_, idiom as lang, model, moment, notify} from 'entcore';
 import {Mix, Selectable, Selection} from 'entcore-toolkit';
 import {
     Campaign,
+    Campaigns,
     Contract,
-    ContractType, Equipment,
+    Contracts,
+    ContractType,
+    ContractTypes,
+    Equipment,
+    Grade, Instruction,
+    IProjectResponse,
+    ITitleResponse,
+    Label,
+    Operation,
     Order,
     OrderRegion,
     OrderUtils,
     Program,
+    Project,
+    Projects,
     Structure,
     Structures,
     Supplier,
+    Suppliers,
     TechnicalSpec,
-    Utils,
-    Grade,
     Title,
-    Project, Contracts, ContractTypes, Suppliers, Campaigns, Projects, Titles, label, Purse, EquipmentOption
+    Titles,
+    Utils
 } from './index';
 import http from 'axios';
+import {BCOrder} from "./BCOrder";
+import {OrderOptionClient,IOrderClientOptionResponse} from "./OrderOptionClient";
+
+export interface IOrderClientResponse{
+   id: number,
+   comment: string,
+   price_proposal: number,
+   preference: number,
+   id_project: number,
+   price: number,
+   tax_amount: number,
+   amount: number,
+   creation_date: string,
+   id_campaign: number,
+   id_structure: string,
+   name: string,
+   summary: string,
+   image: string,
+   status: string,
+   id_contract: number,
+   rank:number,
+   options: IOrderClientOptionResponse[],
+   project: IProjectResponse, //IProjectResponse,
+   title: ITitleResponse,//ITitleResponse,
+   name_supplier: string,
+   cp_number: string,
+   operation_label: string,
+   order_creation_date: string,
+   done_date: string,
+   instruction_object: string,
+   date_operation: string,
+   date_cp: string,
+    //à adapater dans des refactos ultérieures
+   files: string
+}
+
 
 export class OrderClient implements Order  {
 
@@ -27,14 +74,15 @@ export class OrderClient implements Order  {
     contract: Contract;
     contract_type: ContractType;
     creation_date: Date;
-    cp_number ?:number;
+    cp_number ?:string;
     equipment: Equipment;
     equipment_key:number;
     id?: number;
     id_operation:Number;
     id_structure: string;
     inheritedClass:Order|OrderClient|OrderRegion;
-    options;
+    //on laisse ça en any également pour éviter les regressions sur d autres parties
+    options: OrderOptionClient[] | any;
     order_parent?:any;
     price: number;
     price_proposal: number;
@@ -79,11 +127,15 @@ export class OrderClient implements Order  {
     override_region: boolean;
     supplierid: any;
     has_operation: boolean;
-    instruction_cp_adopted: string;
-
+    done_date : Date;
+    //à supprimer lors de la logique objet
+    instruction_cp_adopted : string;
+    operation: Operation;
+    bCOrder?:BCOrder;
     constructor() {
         this.typeOrder= "client";
     }
+
 
     async updateComment():Promise<void>{
         try{
@@ -186,8 +238,68 @@ export class OrderClient implements Order  {
         return Number(price.toFixed(2));
     }
 
-    calculatePriceTTC (selectedOptions: boolean):number{
-        return  Number((this.calculatePriceHT(selectedOptions) * (100 + this.tax_amount) / 100).toFixed(2));
+    calculatePriceTTC(selectedOptions: boolean): number {
+        return (this.price_proposal)
+            ? this.price_proposal
+            : Number((this.calculatePriceHT(selectedOptions) * (100 + this.tax_amount) / 100).toFixed(2));
+    }
+
+    build(orderClientResponse: IOrderClientResponse): OrderClient {
+        this.amount = orderClientResponse.amount;
+        this.comment = orderClientResponse.comment;
+        this.creation_date = new Date(orderClientResponse.creation_date);
+        if (orderClientResponse.done_date)
+            this.done_date = new Date(orderClientResponse.done_date);
+        if (orderClientResponse.files && orderClientResponse.files.length > 0 && orderClientResponse.files[0] !== null)
+            this.files = orderClientResponse.files;
+        this.id = orderClientResponse.id;
+        this.id_campaign = orderClientResponse.id_campaign;
+        this.image = orderClientResponse.image;
+        this.name = orderClientResponse.name;
+        this.preference = orderClientResponse.preference;
+        this.price = orderClientResponse.price;
+        this.price_proposal = orderClientResponse.price_proposal;
+        this.rank = orderClientResponse.rank;
+        this.status = orderClientResponse.status;
+        this.summary = orderClientResponse.summary;
+        this.tax_amount = orderClientResponse.tax_amount;
+        //supplier
+        this.supplier_name = orderClientResponse.name_supplier;
+        if (orderClientResponse.options && orderClientResponse.options.length > 0 && orderClientResponse.options[0] !== null)
+            this.options =orderClientResponse.options.map((options: IOrderClientOptionResponse) => new OrderOptionClient().build(options));
+        else
+            this.options = [];
+        //à transformer en contact
+        this.id_contract = orderClientResponse.id_contract;
+        //project
+        this.id_project = orderClientResponse.id_project;
+        orderClientResponse.project.title = orderClientResponse.title;
+        this.project = new Project().build(orderClientResponse.project);
+        //structure
+        this.id_structure = orderClientResponse.id_structure
+        if (orderClientResponse.order_creation_date) {
+            this.bCOrder = new BCOrder();
+            this.bCOrder.dateCreation = new Date(orderClientResponse.order_creation_date);
+        }
+        //
+        if (orderClientResponse.date_operation) {
+            this.operation = new Operation();
+            this.operation.date_operation = new Date(orderClientResponse.date_operation);
+            let label = new Label();
+            label.label = orderClientResponse.operation_label
+            this.operation.label = label
+            if (orderClientResponse.instruction_object) {
+                let instruction = new Instruction();
+                if (orderClientResponse.cp_number)
+                    instruction.cp_number = orderClientResponse.cp_number
+                instruction.object = orderClientResponse.instruction_object;
+                if (orderClientResponse.date_cp)
+                    instruction.date_cp = moment(orderClientResponse.date_cp);
+
+                this.operation.instruction = instruction;
+            }
+        }
+        return this;
     }
 }
 export class OrdersClient extends Selection<OrderClient> {
@@ -227,11 +339,6 @@ export class OrdersClient extends Selection<OrderClient> {
         // try {
         this.projects = new Selection<Project>([]);
         this.id_project_use = -1;
-        if (idCampaign && idStructure) {
-            const { data } = await http.get(  `/lystore/orders/${idCampaign}/${idStructure}` );
-            this.all = Mix.castArrayAs(OrderClient, data);
-            this.syncWithIdsCampaignAndStructure(idCampaign, idStructure);
-        } else {
             const queriesFilter = Utils.formatGetParameters({q: this.filters});
             let datas;
             //EN SUSPEND
@@ -267,7 +374,6 @@ export class OrdersClient extends Selection<OrderClient> {
                     return;
                 }
             });
-        }
         // } catch (e) {
         //     notify.error('lystore.order.sync.err');
         // }
@@ -320,28 +426,6 @@ export class OrdersClient extends Selection<OrderClient> {
             }
         });
 
-    }
-
-    syncWithIdsCampaignAndStructure(idCampaign:number, idStructure:string):void{
-        this.all.map((order) => {
-            order.price = parseFloat(order.price.toString());
-            order.price_proposal = order.price_proposal? parseFloat( order.price_proposal.toString()) : null;
-            order.tax_amount = parseFloat(order.tax_amount.toString());
-            order.project = Mix.castAs(Project, JSON.parse(order.project.toString()));
-            order.project.init(idCampaign, idStructure);
-            order.project.title = Mix.castAs(Title, JSON.parse(order.title.toString()));
-            if(this.id_project_use != order.project.id)this.makeProjects(order);
-            order.rank = order.rank ? parseInt(order.rank.toString()) : null ;
-            order.options = order.options.toString() !== '[null]' && order.options !== null ?
-                Mix.castArrayAs(OrderOptionClient, JSON.parse(order.options.toString()))
-                : order.options = [];
-            order.options.map((order) => order.selected = true);
-            order.files = order.files !== '[null]' ? Utils.parsePostgreSQLJson(order.files) : [];
-        });
-        this.all = _.sortBy(this.all, (order)=> order.rank != null ? order.rank : this.all.length );
-        this.projects.all = _.sortBy(this.projects.all, (project)=> project.preference != null
-            ? project.preference
-            : this.projects.all.length );
     }
 
     makeProjects(order:OrderClient, ordersClients:OrdersClient = this):void{
@@ -523,23 +607,25 @@ export class OrdersClient extends Selection<OrderClient> {
             throw e;
         }
     }
-}
 
-export class OrderOptionClient implements Selectable {
-    id?: number;
-    tax_amount: number;
-    price: number;
-    name: string;
-    amount: number;
-    required: boolean;
-    id_order_client_equipment: number;
-    selected: boolean;
+    build(orderClientsResponse: IOrderClientResponse[]): OrdersClient {
+        this.all = orderClientsResponse.map((orderClientResponse: IOrderClientResponse) => {
+            return new OrderClient().build(orderClientResponse);
+        });
+        this.projects = new Selection<Project>([]);
+        this.all.forEach((order:OrderClient) =>{
+            if(this.projects.filter((projectFiltered:Project ) => projectFiltered.id === order.project.id).length === 0)
+                return this.projects.all.push(order.project);
+        });
+        return this;
+    }
 }
 
 export class RejectOrder implements Selectable{
     id: number;
     id_order: number;
     comment: string;
+    reject_date: Date;
     order_name: string;
     selected: boolean;
 
@@ -547,7 +633,7 @@ export class RejectOrder implements Selectable{
         return {
             id_order : this.id_order,
             comment : this.comment,
-            order_name : this.order_name
+            order_name : this.order_name,
         }
     }
 }

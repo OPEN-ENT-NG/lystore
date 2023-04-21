@@ -1,23 +1,21 @@
 import {_, moment, ng, idiom as lang, template, toasts} from 'entcore';
 import {
-    Notification,
     OrderClient,
     OrdersClient,
     PRIORITY_FIELD,
     Project,
-    Projects, RejectOrder,
-    RejectOrders,
+    Projects,
     Utils
 } from '../../model';
+import {OrderService} from "../../services/app/viewer";
 
 
 declare let window: any;
 
 export const orderPersonnelController = ng.controller('orderPersonnelController',
-    ['$scope', '$routeParams', ($scope, $routeParams) => {
+    ['$scope', '$routeParams', 'OrderService', ($scope, $routeParams , orderService: OrderService) => {
 
         $scope.display = {
-            ordersClientOption: [],
             lightbox: {
                 deleteOrder: false,
                 deleteProject: false,
@@ -42,18 +40,12 @@ export const orderPersonnelController = ng.controller('orderPersonnelController'
         $scope.displayStatus = (orderClient : OrderClient) =>{
                 return lang.translate(orderClient.status)
         }
-        $scope.displayInstruction =(orderClient : OrderClient) =>{
+        $scope.displayInstruction = (orderClient : OrderClient) =>{
             return  " : Rapport " + orderClient.cp_number;
         }
 
         $scope.hasAProposalPrice = (orderClient: OrderClient) => {
-
             return (orderClient.price_proposal);
-        };
-
-        $scope.displayEquipmentOption = (index: number) => {
-            $scope.display.ordersClientOption[index] = !$scope.display.ordersClientOption[index];
-            Utils.safeApply($scope);
         };
 
         $scope.calculateDelivreryDate = (date: Date) => {
@@ -93,7 +85,7 @@ export const orderPersonnelController = ng.controller('orderPersonnelController'
                 await $scope.deleteOrderEquipment(ordersEquipment[i]);
             }
             $scope.cancelOrderEquipmentDelete();
-            await $scope.ordersClient.sync(null, [],[],[],[],[], [],[],$routeParams.idCampaign, $scope.current.structure.id);
+            $scope.ordersClient = await orderService.sync($routeParams.idCampaign,$scope.current.structure.id)
             Utils.safeApply($scope);
         };
 
@@ -170,7 +162,7 @@ export const orderPersonnelController = ng.controller('orderPersonnelController'
                     }
                 }
             }
-            await $scope.ordersClient.sync(null, [],[],[],[],[],[], [],$routeParams.idCampaign, $scope.current.structure.id);
+            $scope.ordersClient = await orderService.sync($routeParams.idCampaign,$scope.current.structure.id)
             $scope.display.lightbox.deleteProject = false;
             template.close('orderClient.deleteProject');
             Utils.safeApply($scope);

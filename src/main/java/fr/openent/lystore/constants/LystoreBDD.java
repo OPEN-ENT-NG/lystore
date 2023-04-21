@@ -47,13 +47,18 @@ public class LystoreBDD {
     public static final String ZIPCODE = "zipCode";
     public static final String CITY = "city";
     public static final String ADDRESS = "address";
-    public static final String TITLES = "titles";
+
 
     //ORDERS REGION AND CLIENT
     public static final String ORDER_REGION_EQUIPMENT = "\"order-region-equipment\"";
     public static final String ORDER_CLIENT_EQUIPMENT = "order_client_equipment";
     public static final String ID_ORDER = "id_order";
     public static final String ORDER_ORIGIN = "order_origin";
+    public static final String FILES = "files";
+    public static final String PRICE = "price";
+    public static final String PRICE_PROPOSAL = "price_proposal";
+    public static final String TAX_AMOUNT = "tax_amount";
+    public static final String OPTIONS = "options";
 
     //ORDER STATUS
     public static final String REJECTED = "REJECTED";
@@ -61,4 +66,11 @@ public class LystoreBDD {
     public static final String DONE = "DONE";
     public static final String VALID = "VALID";
     public static final String WAITING_FOR_ACCEPTANCE = "WAITING_FOR_ACCEPTANCE";
+
+    //project
+    public static final String PROJECT = "project";
+
+    //TITLE
+    public static final String TITLES = "titles";
+    public static final String TITLE = "title";
 }

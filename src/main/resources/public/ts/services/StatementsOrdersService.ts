@@ -35,7 +35,6 @@ export interface IStatementsOrdersService {
 
 }
 
-//TODO AJOUTER LE RANK
 function getOrderData(statementsOrders: IStatementOrderBody) {
     const formData: FormData = new FormData();
     const headers = {

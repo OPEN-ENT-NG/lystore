@@ -31,3 +31,4 @@ export * from './export';
 export * from './Order';
 export * from './Userbook';
 export * from './LabelOperation';
+export {OrderOptionClient} from "./OrderOptionClient";

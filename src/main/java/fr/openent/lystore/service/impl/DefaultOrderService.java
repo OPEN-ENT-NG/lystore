@@ -9,6 +9,8 @@ import fr.openent.lystore.model.Structure;
 import fr.openent.lystore.service.OrderService;
 import fr.openent.lystore.service.PurseService;
 import fr.openent.lystore.service.StructureService;
+import fr.openent.lystore.utils.LystoreUtils;
+import fr.openent.lystore.utils.OrderUtils;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.email.EmailSender;
@@ -70,7 +72,8 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "   to_json(prj.*) as project, " +
                 "   to_json(tt.*) as title, " +
                 "   c.name as name_supplier, " +
-                "   operation_instruction.cp_number, " +
+                "   operation_instruction.cp_number, operation_instruction.operation_label, orde.date_creation as order_creation_date , done_date, " +
+                "   operation_instruction.object as instruction_object, operation_instruction.date_operation, date_cp," +
                 "   array_to_json(array_agg(DISTINCT order_file.*)) as files  " +
                 "FROM " +
                 "    " + Lystore.lystoreSchema + ".order_client_equipment oe  " +
@@ -88,15 +91,19 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "      ON oe.id = order_file.id_order_client_equipment  " +
                 "   LEFT JOIN " +
                 "       " + Lystore.lystoreSchema + ".campaign  " +
-                "      ON oe.id_campaign = campaign.id  " +
+                "      ON oe.id_campaign = campaign.id " +
+                " LEFT JOIN " + Lystore.lystoreSchema + ".order as orde"+
+                "  ON oe.id_order = orde.id "+
                 "  LEFT JOIN  " +
                 "      (  " +
                 "         SELECT  " +
-                "            operation.id,  " +
+                "            operation.id, label_operation.label as operation_label," +
+                " date_operation, instruction.object, date_cp,  " +
                 "            cp_number   " +
                 "         FROM  " +
                 "             " + Lystore.lystoreSchema + ".operation   " +
-                "            INNER JOIN  " +
+                "            INNER JOIN " + Lystore.lystoreSchema + ".label_operation ON operation.id_label = label_operation.id "+
+                "            LEFT JOIN  " +
                 "                " + Lystore.lystoreSchema + ".instruction   " +
                 "               on operation.id_instruction = instruction.id  " +
                 "      )  " +
@@ -119,7 +126,8 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "   id_campaign = ? " +
                 "   AND id_structure =  ? " +
                 "GROUP BY " +
-                "(prj.id , oe.id, tt.id, c.name, prj.preference, operation_instruction.cp_number,campaign.priority_enabled )  " +
+                "(prj.id , oe.id, tt.id, c.name, prj.preference, operation_instruction.cp_number,campaign.priority_enabled" +
+                " ,instruction_object,date_operation, operation_label, order_creation_date, date_cp)  " +
                 "ORDER BY " +
                 "   CASE " +
                 "      WHEN " +
@@ -138,7 +146,32 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
 
         values.add(idCampaign).add(idStructure);
 
-        sql.prepared(query, values, SqlResult.validResultHandler(handler));
+        sql.prepared(query, values, SqlResult.validResultHandler(event -> {
+            if (event.isRight()) {
+                handler.handle(new Either.Right<>(new JsonArray(event.right().getValue().stream()
+                        .filter(JsonObject.class::isInstance)
+                        .map(JsonObject.class::cast)
+                        .map(elem -> {
+                            elem.put(LystoreBDD.PROJECT, new JsonObject(elem.getString(LystoreBDD.PROJECT)));
+                            elem.put(LystoreBDD.FILES, new JsonArray(elem.getString(LystoreBDD.FILES)));
+                            elem.put(LystoreBDD.OPTIONS, new JsonArray(elem.getString(LystoreBDD.OPTIONS)));
+                            elem.put(LystoreBDD.TITLE, new JsonObject(elem.getString(LystoreBDD.TITLE)));
+                            elem.put(LystoreBDD.PRICE, OrderUtils.safeGetDouble(elem, LystoreBDD.PRICE));
+                            elem.put(LystoreBDD.PRICE_PROPOSAL, OrderUtils.safeGetDouble(elem, LystoreBDD.PRICE_PROPOSAL));
+                            elem.put(LystoreBDD.TAX_AMOUNT, OrderUtils.safeGetDouble(elem, LystoreBDD.TAX_AMOUNT));
+                            return  elem;
+                        })
+                        .collect(Collectors.toList()))));
+            } else {
+                handler.handle(new Either.Left<>(
+                        LystoreUtils.generateErrorMessage(
+                                this.getClass(),
+                                "listOrder",
+                                "error when getting data",
+                                event.left().getValue()))
+                );
+            }
+        }));
 
     }
 

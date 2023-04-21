@@ -2,7 +2,7 @@ import {Mix, Selectable, Selection} from 'entcore-toolkit';
 import {moment, notify} from 'entcore';
 import http from 'axios';
 import { Operation} from "./operation";
-import {label} from "./LabelOperation";
+import {Label} from "./LabelOperation";
 import {Utils} from "./Utils";
 
 // import {window} from "../controllers/administration/orders";
@@ -71,8 +71,8 @@ export class Instruction implements Selectable {
             this.operations = Mix.castArrayAs(Operation, data);
             this.operations.forEach(operation => {
                 operation.label.toString() !== 'null' && operation.label !== null ?
-                    operation.label = Mix.castAs(label, JSON.parse(operation.label.toString()))
-                    : operation.label = new label();
+                    operation.label = Mix.castAs(Label, JSON.parse(operation.label.toString()))
+                    : operation.label = new Label();
                 operation.status = JSON.parse(String(operation.status));
                 operation.nbOrberSub = operation.number_sub || 0;
             });
