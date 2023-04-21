@@ -163,7 +163,13 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                         })
                         .collect(Collectors.toList()))));
             } else {
-                handler.handle(new Either.Left<>(event.left().getValue()));
+                handler.handle(new Either.Left<>(
+                        LystoreUtils.generateErrorMessage(
+                                this.getClass(),
+                                "listOrder",
+                                "error when getting data",
+                                event.left().getValue()))
+                );
             }
         }));
 
