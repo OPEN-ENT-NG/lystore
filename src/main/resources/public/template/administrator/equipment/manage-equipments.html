@@ -100,7 +100,7 @@
             <td ng-class="{'color-grey': equipment.status === 'UNAVAILABLE'}">[[ equipment.name ]]</td>
             <td class="color-orange"
                 ng-class="{'color-grey': equipment.status === 'UNAVAILABLE'||equipment.status === 'OUT_OF_STOCK'}">
-                <span ng-bind="calculatePriceOfEquipment(equipment, false , 2) | currency"></span>
+                <span ng-bind="calculatePriceOfEquipment(equipment, true , 2) | currency"></span>
             </td>
             <td>[[ equipment.supplier_name ]]</td>
             <td>[[equipment.contract_name]]</td>

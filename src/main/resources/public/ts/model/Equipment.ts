@@ -53,8 +53,10 @@ export class Equipment implements Selectable {
         let price: number = (this.price_proposal) ? this.price_proposal : this.price;
         if (!this.price_proposal && selectedOptions ) {
             this.options
-                .filter((option: EquipmentOption) => (option.required === true || option.selected === true ))
-                .forEach((option: EquipmentOption) => price += option.price);
+                .filter((option: EquipmentOption) => (option != null && (option.required === true || option.selected === true )))
+                .forEach((option: EquipmentOption) =>{
+                    price += (option.price * option.amount)
+                } );
         }
         return price;
     }

@@ -360,7 +360,7 @@ export const orderRegionController = ng.controller('orderRegionController',
                 Utils.safeApply($scope);
             };
             $scope.initEquipmentData = (row:OrderRegion):void => {
-                let roundedString = row.equipment.priceTTC.toFixed(2);
+                let roundedString = row.equipment.calculatePriceTTC(true).toFixed(2);
                 let rounded = Number(roundedString);
                 row.price = Number(rounded);
                 row.amount = 1;

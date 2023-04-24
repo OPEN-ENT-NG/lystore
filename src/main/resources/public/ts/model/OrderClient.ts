@@ -232,7 +232,7 @@ export class OrderClient implements Order  {
         let price: number = (this.price_proposal) ? this.price_proposal : this.price;
         if (!this.price_proposal) {
             this.options
-                .filter((option: OrderOptionClient) => (option.required === true || (selectedOptions ? option.selected === true : false)))
+                .filter((option: OrderOptionClient) => (option  && (option.required === true || (selectedOptions ? option.selected === true : false))))
                 .forEach((option: OrderOptionClient) => price += option.price);
         }
         return Number(price.toFixed(2));
