@@ -221,17 +221,9 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
     public void create(JsonObject instruction, Handler<Either<String, JsonObject>> handler) {
 
         String query = "";
-        query = "INSERT INTO " + Lystore.lystoreSchema + ".instruction (" +
-                "id_exercise," +
-                "object, " +
-                "service_number, " +
-                "cp_number, " +
-                "submitted_to_cp, " +
-                "date_cp, " +
-                "comment," +
-                " cp_adopted) " +
-                "VALUES (? ,? ,? ,? ,? ,? ," +
-                "? ,";
+        query = "INSERT INTO " + Lystore.lystoreSchema + ".instruction" +
+                " ( id_exercise, object, service_number, cp_number, submitted_to_cp, date_cp, comment, cp_adopted) " +
+                "VALUES (? ,? ,? ,? ,? ,? , ? ,";
         query += instruction.getString(LystoreBDD.CP_ADOPTED) != null ? "? " : "NULL ";
         query += ")" +
                 "RETURNING id; ";
