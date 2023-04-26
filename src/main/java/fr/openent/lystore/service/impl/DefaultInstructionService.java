@@ -218,51 +218,60 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
     }
 
 
+    public void create(JsonObject instruction, Handler<Either<String, JsonObject>> handler) {
 
-    public void create(JsonObject instruction, Handler<Either<String, JsonObject>> handler){
-        String getIdQuery = "Select nextval('"+ Lystore.lystoreSchema + ".instruction_id_seq') as id";
-        sql.raw(getIdQuery, SqlResult.validUniqueResultHandler( new Handler<Either<String, JsonObject>>() {
-            @Override
-            public void handle(Either<String, JsonObject> event) {
-                if(event.isRight()) {
-                    try{
-                        final Number id = event.right().getValue().getInteger("id");
-                        JsonArray statements = new fr.wseduc.webutils.collections.JsonArray()
-                                .add(getInstructionCreationStatement(id,instruction));
-
-                        checkCpValue(id, statements, instruction, handler);
-
-                    }catch(ClassCastException e){
-                        log.error("An error occured when casting structures ids " + e);
-                        handler.handle(new Either.Left<String, JsonObject>(""));
-                    }
-                }else{
-                    log.error("An error occurred when selecting next val");
-                    handler.handle(new Either.Left<String, JsonObject>(""));
-                }
-            }
-        }));
+        String query = "";
+        query = "INSERT INTO " + Lystore.lystoreSchema + ".instruction (" +
+                "id_exercise," +
+                "object, " +
+                "service_number, " +
+                "cp_number, " +
+                "submitted_to_cp, " +
+                "date_cp, " +
+                "comment," +
+                " cp_adopted) " +
+                "VALUES (? ,? ,? ,? ,? ,? ," +
+                "? ,";
+        query += instruction.getString(LystoreBDD.CP_ADOPTED) != null ? "? " : "NULL ";
+        query += ")" +
+                "RETURNING id; ";
 
 
-
-
+        String object = instruction.getString(LystoreBDD.OBJECT);
+        if (object.length() > 80) {
+            object = object.substring(0, 79);
+        }
+        JsonArray params = new JsonArray()
+                .add(instruction.getInteger(LystoreBDD.ID_EXERCISE))
+                .add(object)
+                .add(instruction.getString(LystoreBDD.SERVICE_NUMBER))
+                .add(instruction.getString(LystoreBDD.CP_NUMBER))
+                .add(instruction.getBoolean(LystoreBDD.SUBMITTED_TO_CP))
+                .add(instruction.getString(LystoreBDD.DATE_CP))
+                .add(instruction.getString(LystoreBDD.COMMENT));
+        if (instruction.getString(LystoreBDD.CP_ADOPTED) != null) {
+            params.add(instruction.getString(LystoreBDD.CP_ADOPTED));
+        }
+        sql.prepared(query, params, SqlResult.validUniqueResultHandler(handler));
     }
 
-    private void checkCpValue(Number id, JsonArray statements, JsonObject instruction, Handler<Either<String, JsonObject>> handler) {
-        switch (instruction.getString("cp_adopted")){
+
+    @Override
+    public void checkCpValue(Number id, String cp_adopted, Handler<Either<String, JsonObject>> handler) {
+        switch (cp_adopted){
             case EnumConstant.VALID_CP_STATUS :
-                handleCpAdopted(id, statements, handler);
+                handleCpAdopted(id,  handler);
                 break;
             case EnumConstant.REJECTED_CP_STATUS :
-                handleCpRejected(id, statements, handler);
+                handleCpRejected(id,  handler);
                 break;
             default:
-                sql.transaction(statements, event -> handler.handle(SqlQueryUtils.getTransactionHandler(event,id)));
+                handler.handle(new Either.Right<>(new JsonObject()));
                 break;
         }
     }
 
-    private void handleCpRejected(Number id, JsonArray statements, Handler<Either<String, JsonObject>> handler) {
+    private void handleCpRejected(Number id,  Handler<Either<String, JsonObject>> handler) {
         String queryGetOrders = "SELECT distinct orders.id as " + LystoreBDD.ID_ORDER + ", " +
                 "CASE WHEN orders.override_region is null" +
                 " then '" + CommonConstants.REGION + "' " +
@@ -276,12 +285,13 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
 
         sql.prepared(queryGetOrders, new JsonArray().add(id), SqlResult.validResultHandler(event -> {
                     JsonArray sqlResults = event.right().getValue();
-                    generateOrdersRejectStatements(sqlResults, statements, handler, id);
+                    generateOrdersRejectStatements(sqlResults,  handler, id);
                 })
         );
     }
 
-    private void generateOrdersRejectStatements(JsonArray sqlResults, JsonArray statements, Handler<Either<String, JsonObject>> handler, Number id) {
+    private void generateOrdersRejectStatements(JsonArray sqlResults, Handler<Either<String, JsonObject>> handler, Number id) {
+        JsonArray statements = new JsonArray();
         sqlResults.stream()
                 .filter(JsonObject.class::isInstance)
                 .map(JsonObject.class::cast)
@@ -294,10 +304,13 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                         statements.add(orderRegionService.getUpdateRejectOrderRegionStatement(orderId));
                     }
                 });
-        sql.transaction(statements, event -> handler.handle(SqlQueryUtils.getTransactionHandler(event, id)));
+        if (statements.size() > 0)
+            sql.transaction(statements, event -> handler.handle(SqlQueryUtils.getTransactionHandler(event, id)));
+        else
+            handler.handle(new Either.Right<>(new JsonObject()));
     }
 
-    private void handleCpAdopted(Number id, JsonArray statements, Handler<Either<String, JsonObject>> handler) {
+    private void handleCpAdopted(Number id,  Handler<Either<String, JsonObject>> handler) {
         String queryGetOrders=  "SELECT distinct orders.id,orders.id_contract, " +
                 "CASE WHEN orders.override_region is null then 'REGION' else 'EPLE' END " +
                 "from  " +  Lystore.lystoreSchema + ".allOrders orders " +
@@ -324,12 +337,12 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                         }
                     }
                 }
+                JsonArray statements = new JsonArray();
                 generateOrdersUpdateStatements(mapMarket, statements, handler, id);
             }
         });
 
     }
-    //PROBLEMES LE STATUS EST EFFACE APRES PAR LE WAITING OR ACCEPTANCE
     private void generateOrdersUpdateStatements(Map<Integer, JsonArray> mapMarket, JsonArray statements,
                                                 Handler<Either<String, JsonObject>> handler, Number id) {
         List<Future> futures = new ArrayList<>();
@@ -342,16 +355,14 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
             public void handle(AsyncResult<CompositeFuture> event) {
                 if (event.succeeded()) {
                     List<JsonArray> resultsList = event.result().list();
-                    for (int i = 0; i < resultsList.size(); i++) {
-                        statements.addAll(resultsList.get(i));
+                    for (JsonArray objects : resultsList) {
+                        statements.addAll(objects);
                     }
-                    sql.transaction(statements, new Handler<Message<JsonObject>>() {
-                        @Override
-                        public void handle(Message<JsonObject> event) {
-                            handler.handle(SqlQueryUtils.getTransactionHandler(event, id));
-                        }
-
-                    });
+                    if(statements.size() > 0 ) {
+                        sql.transaction(statements, transactionEvent -> handler.handle(SqlQueryUtils.getTransactionHandler(transactionEvent, id)));
+                    }else {
+                        handler.handle(new Either.Right<>(new JsonObject()));
+                    }
                 }
             }
         });
@@ -422,65 +433,9 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 .put("action", "prepared");
 
     }
-    private JsonObject getInstructionCreationStatement(Number id, JsonObject instruction) {
 
-        String statement = "";
-        statement = "INSERT INTO " + Lystore.lystoreSchema +".instruction (" +
-                "id, "+
-                "id_exercise," +
-                "object, " +
-                "service_number, " +
-                "cp_number, " +
-                "submitted_to_cp, " +
-                "date_cp, " +
-                "comment," +
-                " cp_adopted) " +
-                "VALUES (? ,? ,? ,? ,? ,? ,? ," +
-                "? ," ;
-        statement += instruction.getString("cp_adopted") != null ? "? " : "NULL ";
-        statement +=")" +
-        "RETURNING id; ";
-
-
-        String object = instruction.getString("object");
-        if(object.length() > 80){
-            object = object.substring(0,79);
-        }
-        JsonArray params = new fr.wseduc.webutils.collections.JsonArray()
-                .add(id)
-                .add(instruction.getInteger("id_exercise"))
-                .add(object)
-                .add(instruction.getString("service_number"))
-                .add(instruction.getString("cp_number"))
-                .add(instruction.getBoolean("submitted_to_cp"))
-                .add(instruction.getString("date_cp"))
-                .add(instruction.getString("comment"));
-                if(instruction.getString("cp_adopted") != null) {
-                    params.add(instruction.getString("cp_adopted"));
-                }
-
-        return new JsonObject()
-                .put("statement", statement)
-                .put("values", params)
-                .put("action", "prepared");
-    }
-
-    public  void updateInstruction(Integer id, JsonObject instruction, Handler<Either<String, JsonObject>> handler){
-        try{
-
-            JsonArray statements = new JsonArray()
-                    .add(getUpdateInstructionStatement(id,instruction));
-            checkCpValue(id, statements, instruction, handler);
-
-        }catch(ClassCastException e){
-            log.error("An error occured when casting structures ids " + e);
-            handler.handle(new Either.Left<String, JsonObject>(""));
-        }
-    }
-
-    private JsonObject getUpdateInstructionStatement(Integer id, JsonObject instruction) {
-        String statement = "";
-        statement = " UPDATE " + Lystore.lystoreSchema + ".instruction " +
+    public void updateInstruction(Integer id, JsonObject instruction, Handler<Either<String, JsonObject>> handler) {
+        String query = " UPDATE " + Lystore.lystoreSchema + ".instruction " +
                 "SET " +
                 "id_exercise = ? ," +
                 "object = ? , " +
@@ -489,25 +444,22 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                 "submitted_to_cp = ? , " +
                 "date_cp = ? , " +
                 "comment = ? ,  ";
-        statement += instruction.getString("cp_adopted") != null ? "cp_adopted = ? " : "cp_adopted = NULL ";
-        statement += "WHERE id = ? " +
+        query += instruction.getString(LystoreBDD.CP_ADOPTED) != null ? "cp_adopted = ? " : "cp_adopted = NULL ";
+        query += "WHERE id = ? " +
                 "RETURNING id;";
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray()
-                .add(instruction.getInteger("id_exercise"))
-                .add(instruction.getString("object"))
-                .add(instruction.getString("service_number"))
-                .add(instruction.getString("cp_number"))
-                .add(instruction.getBoolean("submitted_to_cp"))
-                .add(instruction.getString("date_cp"))
-                .add(instruction.getString("comment"));
-        if(instruction.getString("cp_adopted") != null) {
-            params.add(instruction.getString("cp_adopted"));
+                .add(instruction.getInteger(LystoreBDD.ID_EXERCISE))
+                .add(instruction.getString(LystoreBDD.OBJECT))
+                .add(instruction.getString(LystoreBDD.SERVICE_NUMBER))
+                .add(instruction.getString(LystoreBDD.CP_NUMBER))
+                .add(instruction.getBoolean(LystoreBDD.SUBMITTED_TO_CP))
+                .add(instruction.getString(LystoreBDD.DATE_CP))
+                .add(instruction.getString(LystoreBDD.COMMENT));
+        if (instruction.getString(LystoreBDD.CP_ADOPTED) != null) {
+            params.add(instruction.getString(LystoreBDD.CP_ADOPTED));
         }
-                params.add(id);
-        return new JsonObject()
-                .put("statement", statement)
-                .put("values", params)
-                .put("action", "prepared");
+        params.add(id);
+        sql.prepared(query, params, SqlResult.validRowsResultHandler(handler));
     }
 
     public  void deleteInstruction(JsonArray instructionIds, Handler<Either<String, JsonObject>> handler){

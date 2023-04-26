@@ -83,7 +83,7 @@ class Controller implements ng.IController, IViewModel {
         if (orderClient.operation && orderClient.operation.instruction)
             return orderClient.operation.instruction.object;
         if (orderClient.operation)
-            return lang.translate(orderClient.status) + " " + orderClient.operation.label;
+            return orderClient.operation.label.label;
         return lang.translate(orderClient.status);
     }
 
@@ -92,7 +92,7 @@ class Controller implements ng.IController, IViewModel {
     }
 
     displayInstruction(): string {
-        return " : " + lang.translate("INSTRUCTION") + this.orderClient.operation.instruction.cp_number;
+        return lang.translate("INSTRUCTION") + " : " + this.orderClient.operation.instruction.object;
     }
 
     getDate(): Date {

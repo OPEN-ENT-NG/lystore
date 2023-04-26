@@ -52,6 +52,13 @@ export class Instruction implements Selectable {
         }
     }
 
+    async checkCp(){
+        try {
+            await http.put(`/lystore/instruction/check/cp/${this.id}/${this.cp_adopted}`)
+        }catch (e) {
+
+        }
+    }
     toJson(){
         return {
             id_exercise: this.id_exercise,

@@ -243,8 +243,8 @@ export const instructionController = ng.controller('instructionController',
             if ($scope.operationEditRemoveInstructionIds.length !== 0) {
                 await $scope.operations.updateRemoveOperations($scope.operationEditRemoveInstructionIds);
             }
+            await $scope.instruction.checkCp();
             $scope.isOperationEdit = false;
-            await $scope.initInstructions();
             $scope.cancelInstructionForm();
         }
 

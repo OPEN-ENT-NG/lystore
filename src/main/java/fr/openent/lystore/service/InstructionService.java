@@ -16,6 +16,8 @@ public interface InstructionService {
 
     void create(JsonObject instruction,  Handler<Either<String, JsonObject>> handler);
 
+    void checkCpValue(Number id, String cp_adopted, Handler<Either<String, JsonObject>> handler);
+
     void updateInstruction(Integer id, JsonObject instruction, Handler<Either<String, JsonObject>> handler);
 
     void deleteInstruction(JsonArray instructionIds,  Handler<Either<String, JsonObject>> handler);

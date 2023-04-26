@@ -22,6 +22,7 @@ import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.storage.Storage;
 
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.arrayResponseHandler;
+import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultResponseHandler;
 
 public class InstructionController extends ControllerHelper {
     private InstructionService instructionService ;
@@ -64,12 +65,24 @@ public class InstructionController extends ControllerHelper {
     @ResourceFilter(ManagerRight.class)
     @Override
     public void create(final HttpServerRequest request) {
-        RequestUtils.bodyToJson(request, pathPrefix + "instruction", instruction -> instructionService.create(instruction, Logging.defaultResponseHandler(eb,
+        RequestUtils.bodyToJson(request, pathPrefix + "instruction", instruction -> instructionService.create(instruction,
+                Logging.defaultResponseHandler(eb,
                 request,
                 Contexts.INSTRUCTION.toString(),
                 Actions.CREATE.toString(),
                 instruction.toString(),
                 instruction)));
+    }
+
+    @Put("/instruction/check/cp/:idInstruction/:status")
+    @ApiDoc("check the cp value of an instruction")
+    @SecuredAction(value = "",type = ActionType.RESOURCE)
+    @ResourceFilter(ManagerRight.class)
+    public void checkCpValue(final HttpServerRequest request){
+        final Integer idInstruction = Integer.parseInt(request.params().get("idInstruction"));
+        final String status = request.params().get("status");
+        instructionService.checkCpValue(idInstruction,status,defaultResponseHandler(request));
+
     }
 
     @Put("/instruction/:idInstruction")

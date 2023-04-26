@@ -34,9 +34,6 @@ public class LystoreBDD {
     public static final String COMMENT = "comment";
     public static final String TOTAL = "total";
 
-    //instruction
-    public static final String DATE_CP = "date_cp";
-    public static final String CP_NUMBER = "cp_number";
 
     //STRUCTURE NEO
     public static final String ACADEMY = "academy";
@@ -69,6 +66,17 @@ public class LystoreBDD {
 
     //project
     public static final String PROJECT = "project";
+
+    //INSTRUCTION
+    public static final String DATE_CP = "date_cp";
+    public static final String CP_NUMBER = "cp_number";
+    public static final String OBJECT =  "object";
+    public static final String ID_EXERCISE =  "id_exercise";
+    public static final String SERVICE_NUMBER =  "service_number";
+    public static final String SUBMITTED_TO_CP =  "submitted_to_cp";
+    public static final String CP_ADOPTED =  "cp_adopted";
+
+
 
     //TITLE
     public static final String TITLES = "titles";
