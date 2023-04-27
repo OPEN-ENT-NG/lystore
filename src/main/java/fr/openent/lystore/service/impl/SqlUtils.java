@@ -79,7 +79,7 @@ public final class SqlUtils {
     }
 
     private static void getTotalOrderClient(Number idOperation, Handler<Either<String, JsonObject>> handler){
-        String status = "'IN PROGRESS','VALID','WAITING_FOR_ACCEPTANCE','DONE'";
+        String status = "'IN PROGRESS','VALID','WAITING_FOR_ACCEPTANCE','DONE','REJECTED'";
         String queryGetTotalOperationClient = " " +
                 "SELECT (ROUND(SUM((  " +
                 "                     (SELECT CASE  " +
@@ -104,7 +104,7 @@ public final class SqlUtils {
     }
 
     private static void getTotalOrderRegion(Number idOperation, Handler<Either<String, JsonObject>> handler){
-        String status = "'IN PROGRESS','VALID','WAITING_FOR_ACCEPTANCE','DONE'";
+        String status = "'IN PROGRESS','VALID','WAITING_FOR_ACCEPTANCE','DONE','REJECTED'";
         String queryGetTotalOperationRegion = " " +
                 "SELECT (ROUND(SUM(ore.price * ore.amount), 2)) AS price_total_orders_regions " +
                 "FROM " + Lystore.lystoreSchema + ".\"order-region-equipment\" ore " +
