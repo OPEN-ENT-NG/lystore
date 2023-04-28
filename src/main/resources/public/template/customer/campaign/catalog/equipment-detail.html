@@ -30,7 +30,7 @@
                             <label class="label-cell">
                                 <h4>
                                     <i18n>lystore.amount.HT.equipment</i18n>
-                                    <span ng-bind="calculatePriceOfEquipmentHT(basket.equipment, false, 2) | currency" ></span>
+                                    <span ng-bind="calculatePriceOfEquipmentHT(basket.equipment, true, 2) | currency" ></span>
                                 </h4>
                             </label>
                         </div>
@@ -39,7 +39,7 @@
                         <label class="label-cell">
                             <h4>
                                 <i18n>lystore.amount.TTC.equipment</i18n>
-                                <span ng-bind="calculatePriceTTC(calculatePriceOfEquipmentHT(basket.equipment, false, 2), taxes.all[0].value, 2) | currency "></span>
+                                <span ng-bind="calculatePriceTTC(calculatePriceOfEquipmentHT(basket.equipment, true, 2), taxes.all[0].value, 2) | currency "></span>
                             </h4>
                         </label>
                     </div>

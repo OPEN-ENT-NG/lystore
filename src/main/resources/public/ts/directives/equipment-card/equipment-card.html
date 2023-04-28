@@ -7,9 +7,9 @@
     </h1>
 
 
-    <h2 class="equipment-card-price-ht" ng-bind="vm.displayPrice(vm.equipment.calculatePriceHT(false), 'lystore.ht.label')"></h2>
+    <h2 class="equipment-card-price-ht" ng-bind="vm.displayPrice(vm.equipment.calculatePriceHT(true), 'lystore.ht.label')"></h2>
     <div class="equipment-card-price-ttc"
-         ng-bind="vm.displayPrice(vm.equipment.calculatePriceTTC(false), 'lystore.ttc.label')"></div>
+         ng-bind="vm.displayPrice(vm.equipment.calculatePriceTTC(true), 'lystore.ttc.label')"></div>
     <div class="equipment-card-tax">
         <i18n>lystore.tax.label</i18n>
         : [[vm.equipment.tax_amount]]%

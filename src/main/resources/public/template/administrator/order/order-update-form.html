@@ -84,6 +84,8 @@
                     ng-if="orderParent"
             >
                 <span ng-bind="orderParent.price_single_ttc * orderParent.amount | currency"></span>
+                2:
+                <span ng-bind="orderParent.calculatePriceTTC(true) | currency"></span>
             </span>
             <label
                     class="cell horizontal-margin"

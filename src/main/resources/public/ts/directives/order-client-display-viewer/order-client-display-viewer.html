@@ -29,7 +29,7 @@
                       ng-bind="vm.orderClient.price_proposal | currency"
                       class="price-label"></span>
                 <span ng-if="!vm.hasAProposalPrice()"
-                      ng-bind="vm.orderClient.calculatePriceTTC(true) | currency"
+                      ng-bind="vm.orderClient.calculatePriceTTC(false) | currency"
                       class="price-label"></span>
             </div>
             <div class="vertical-spacing-twice">
@@ -128,6 +128,7 @@
     </div>
     <div class="row border top">
         <h1 class="right-magnet vertical-spacing">
+            <i18n>lystore.amountTTC.with.options</i18n>&#32;&#58;&#32;
             <span ng-bind="vm.calculateTotal(vm.orderClient,2) | currency"></span>
         </h1>
     </div>
