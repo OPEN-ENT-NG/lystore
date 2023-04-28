@@ -207,12 +207,14 @@ export class OrderClient implements Order  {
         }
     }
 
-    async getOneOrderClient(id:number, structures:Structures):Promise<Order>{
+    async getOneOrderClient(id:number, structures:Structure[]):Promise<OrderClient>{
         try{
             const {data} = await http.get(`/lystore/orderClient/${id}/order/`);
-            let order = new Order(Object.assign(data, {typeOrder:"client"}), structures);
-            order.files = data.files !== '[null]' ? Utils.parsePostgreSQLJson(data.files) : [];
-            order.price_single_ttc = Number(order.price_single_ttc.toFixed(2))
+            let order = Mix.castAs(OrderClient, data);
+            order.structure = structures.find((structure:Structure) =>  structure.id = order.id_structure );
+            order.files = data.files.filter(file => file !== null);
+            //à supprimer dans des tickets ulterieurs
+            order.price_single_ttc = order.calculatePriceTTC(true);
             return order;
         } catch (e) {
             notify.error('lystore.admin.order.get.err');
@@ -231,7 +233,6 @@ export class OrderClient implements Order  {
     calculatePriceHT(selectedOptions: boolean) :number {
         let price: number = (this.price_proposal) ? this.price_proposal : this.price;
         if (!this.price_proposal) {
-            this.options.forEach((option: OrderOptionClient) => console.log(option));
             this.options
                 .filter((option: OrderOptionClient) => (option  && selectedOptions ))
                 .forEach((option: OrderOptionClient) => price += (option.price * option.amount));

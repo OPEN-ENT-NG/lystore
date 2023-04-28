@@ -143,6 +143,7 @@ export class OrderUtils {
             };
         }
     }
+    //DEPRECATED
     static findGoodPrice(order:Order):Number{
         if(order.price_single_ttc) return Number(order.price_single_ttc.toFixed(2));
         if(order.price_proposal) return Number(order.price_proposal.toFixed(2));

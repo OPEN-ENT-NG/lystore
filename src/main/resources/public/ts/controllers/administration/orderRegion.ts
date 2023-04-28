@@ -74,10 +74,10 @@ export const orderRegionController = ng.controller('orderRegionController',
                     orderRegionCreate.id_contract = $scope.orderToUpdate.equipment.id_contract;
                     let ordersOldFiles = "";
                     let ordersOldFilesName = "";
-                    $scope.filesMetadataTemp.forEach(file =>{
-                        ordersOldFiles += file.id + ","
-                        ordersOldFilesName+=file.filename +"/";
-                    })
+                        $scope.filesMetadataTemp.forEach(file => {
+                            ordersOldFiles += file.id + ","
+                            ordersOldFilesName += file.filename + "/";
+                        })
                     const promises: Array<Promise<AxiosResponse>> = [];
                     let statement =  statementsOrdersService.createOne({
                         id_campaign: $scope.orderToUpdate.campaign.id,
@@ -159,8 +159,6 @@ export const orderRegionController = ng.controller('orderRegionController',
 
             $scope.updateLinkedOrderConfirm = async ():Promise<void> => {
                 //ici changer
-                console.log("$scope.orderParent ")
-                console.log($scope.orderParent )
                 let orderRegion = new OrderRegion();
                 orderRegion.createFromOrderClient($scope.orderToUpdate);
                 orderRegion.equipment_key = $scope.orderToUpdate.equipment_key;
@@ -168,11 +166,10 @@ export const orderRegionController = ng.controller('orderRegionController',
                 orderRegion.files = $scope.orderRegion.files
                 let ordersOldFiles = "";
                 let ordersOldFilesName = "";
-                $scope.filesMetadataTemp.forEach(file =>{
-                    ordersOldFiles += file.id + ","
-                    ordersOldFilesName+=file.filename +"/";
-                })
-                console.log(ordersOldFiles)
+                    $scope.filesMetadataTemp.forEach(file => {
+                        ordersOldFiles += file.id + ","
+                        ordersOldFilesName += file.filename + "/";
+                    })
                 const promises: Array<Promise<AxiosResponse>> = [];
 
                 if( $scope.orderToUpdate.typeOrder === "client" ) {
