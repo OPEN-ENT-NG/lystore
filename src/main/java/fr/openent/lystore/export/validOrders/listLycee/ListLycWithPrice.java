@@ -315,7 +315,7 @@ public class ListLycWithPrice extends TabHelper {
                 "               options.tax_amount,  " +
                 "               options.NAME,  " +
                 "               oce.id_contract,  " +
-                "               oce.amount,  " +
+                "               options.amount,  " +
                 "               options.id_order_client_equipment,  " +
                 "               oce.id_structure,  " +
                 "               market.name as market_name," +

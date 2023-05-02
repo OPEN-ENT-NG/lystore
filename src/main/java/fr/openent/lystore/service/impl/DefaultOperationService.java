@@ -511,12 +511,12 @@ GROUP BY
                 "                Round(( (SELECT CASE " +
                 "                         WHEN orders.price_proposal IS NOT NULL THEN 0 " +
                 "                         WHEN orders.override_region IS NULL THEN 0 " +
-                "                         WHEN Sum(oco.price + ( ( oco.price * oco.tax_amount ) / " +
+                "                         WHEN Sum((oco.price + (  oco.price * oco.tax_amount ) / " +
                 "                                                100 ) " +
                 "                                              * " +
                 "                                              oco.amount) IS " +
                 "                              NULL THEN 0 " +
-                "                         ELSE Sum(oco.price + ( ( oco.price * oco.tax_amount ) / " +
+                "                         ELSE Sum((oco.price +  ( oco.price * oco.tax_amount ) / " +
                 "                                                100 ) " +
                 "                                              * " +
                 "                                              oco.amount) " +
