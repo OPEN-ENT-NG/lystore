@@ -210,7 +210,7 @@ export class OrderClient implements Order  {
     async getOneOrderClient(id:number, structures:Structure[]):Promise<OrderClient>{
         try{
             const {data} = await http.get(`/lystore/orderClient/${id}/order/`);
-            let order = Mix.castAs(OrderClient, data);
+            let order:OrderClient = Mix.castAs(OrderClient, data);
             order.structure = structures.find((structure:Structure) =>  structure.id = order.id_structure );
             order.files = data.files.filter(file => file !== null);
             //à supprimer dans des tickets ulterieurs
