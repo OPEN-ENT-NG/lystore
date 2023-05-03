@@ -1,0 +1,90 @@
+<div class="directive-order-list-table">
+    <article class="responsive-table vertical-array-scroll">
+        <table class="twelve">
+            <thead>
+            <tr>
+                <td workflow="lystore.manager" class="table-selector">
+                    <label class="checkbox">
+                        <input type="checkbox"
+                               ng-change="switchAllOrders()"
+                               ng-model="allOrdersSelected">
+                        <span></span>
+                    </label>
+                </td>
+                <td ng-repeat="field in vm.tableFields "
+                    ng-hide="!field.display"
+                    ng-click="sort.order.type = field.fieldName;
+                    sort.order.reverse = !sort.order.reverse">
+                    <div class="smallTabElem">  [[vm.lang.translate(field.name)]] </div>
+                    <i class="up-open" ng-show="sort.order.type === field.fieldName && !sort.order.reverse"></i>
+                    <i class="down-open" ng-show="sort.order.type === field.fieldName && sort.order.reverse"></i>
+                </td>
+            </tr>
+            </thead>
+            <tbody bottom-scroll="scrollDisplay.limitTo = scrollDisplay.limitTo + 25">
+            <tr ng-repeat="order in vm.displayedOrders.all | orderBy:sort.order.type:sort.order.reverse | limitTo:scrollDisplay.limitTo" post-ng-repeat>
+                <td workflow="lystore.manager" class="table-selector">
+                    <label class="checkbox">
+                        <input type="checkbox" ng-model="order.selected">
+                        <span></span>
+                    </label>
+                </td>
+                <td ng-if="vm.tableFields[0].display"> <div class="smallTabElem"> [[order.structure.uai]]</div></td>
+                <td ng-if="vm.tableFields[1].display"> <div class="tabElem"> [[order.structure.name]]</div></td>
+                <td ng-if="vm.tableFields[2].display"> <div class="tabElem"> [[order.structure.type_etab]]</div></td>
+                <td ng-if="vm.tableFields[3].display"> <div class="smallTabElem">[[order.structure.type]]</div></td>
+                <td ng-if="vm.tableFields[4].display"> <div class="tabElem"> [[order.structure.city]]</div></td>
+                <td ng-if="vm.tableFields[5].display"> <div class="smallTabElem">[[order.structure.department]]</div></td>
+                <td ng-if="vm.tableFields[6].display"> <div class="tabElem">[[order.structure.academy]]</div></td>
+                <td ng-if="vm.tableFields[7].display"> <div class="tabElem"> [[order.campaign.name]]</div></td>
+                <td ng-if="vm.tableFields[8].display"> <div class="tabElem">[[getStructureGroupsList(order.structure_groups)]]</div></td>
+                <td ng-if="vm.tableFields[9].display"> <div class="tabElem">[[order.project_name]]</div></td>
+                <td ng-if="vm.tableFields[10].display"> <div ng-init="vm.tableFields[19].fullDisplay = false"
+                                                          class="tabElem"
+                                                          ng-class="{ellipsis:!vm.tableFields[19].fullDisplay}"
+                                                          ng-click="vm.tableFields[19].fullDisplay = !vm.tableFields[19].fullDisplay">[[order.project_description || '-']]</div></td>
+
+                <td ng-if="vm.tableFields[11].display"> <div class="smallTabElem"> [[order.rankOrder]]</div></td>
+                <td ng-if="vm.tableFields[12].display"> <div class="tabElem"> [[order.name]]</div></td>
+                <td ng-if="vm.tableFields[13].display"> <div class="smallTabElem"> [[order.amount]]</div></td>
+                <td ng-if="vm.tableFields[14].display"> <div class="smallTabElem"><span ng-bind="order.priceUnitedTTC | currency"></span></div></td>
+                <td ng-if="vm.tableFields[15].display"> <div class="tabElem"><span ng-bind="order.total | currency"></span></div>
+                </td>
+                <td ng-if="vm.tableFields[16].display"> <div class="tabElem">
+                    <div ng-if="order.files.length > 0" class="twelve">
+                        <div ng-repeat="file in order.files" class="twelve basket-file row">
+                            <a class="cell twelve" ng-click="order.downloadFile(file)">[[
+                                file.name ||
+                                file.filename ]]</a>
+                        </div>
+                    </div>
+                </div></td>
+                <td ng-if="vm.tableFields[17].display"> <div class="smallTabElem">[[order.creation_date]]</div></td>
+                <td ng-if="vm.tableFields[18].display"> <div ng-init="vm.tableFields[7].fullDisplay = false"
+                                                          class="tabElem"
+                                                          ng-class="{ellipsis:!vm.tableFields[7].fullDisplay}"
+                                                          ng-click="vm.tableFields[7].fullDisplay = !vm.tableFields[7].fullDisplay"> [[order.comment || '-']]</div></td>
+                <td ng-if="vm.tableFields[19].display"> <div class="smallTabElem">[[order.project_room || '-']]</div></td>
+                <td ng-if="vm.tableFields[20].display"> <div class="smallTabElem">[[order.project_building || '-']]</div></td>
+                <td ng-if="vm.tableFields[21].display"> <div class="tabElem">[[order.contract.name]]</div></td>
+                <td ng-if="vm.tableFields[22].display"> <div class="tabElem"> [[order.contract_type_name]]</div></td>
+                <td ng-if="vm.tableFields[23].display"> <div class="tabElem">[[order.program]]</div></td>
+
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr >
+                <td colspan="[[countColSpan(vm.lang.translate('totals'))]]">
+                    <i18n>totals</i18n>
+                </td>
+
+                <td colspan="[[vm.countColSpan('')]]" ng-if="vm.tableFields[13].display" > <div class="tabElem">[[displayedOrders.calculTotalAmount(vm.scrollDisplay.limitTo) ]]</div></td>
+
+                <td ng-if="vm.tableFields[15].display" >
+                    <div class="tabElem"> [[displayedOrders.calculTotalPriceTTC(vm.scrollDisplay.limitTo) | currency]]</div>
+                </td>
+            </tr>
+            </tfoot>
+        </table>
+    </article>
+</div>
