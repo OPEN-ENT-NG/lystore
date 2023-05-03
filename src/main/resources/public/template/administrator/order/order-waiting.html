@@ -61,8 +61,7 @@
         </div>
         <display-order-list
                 displayed-orders="displayedOrders"
-                is-manager="isManager"
-                preferences="preferences">
+                is-manager="isManager">
 
         </display-order-list>
         <lightbox on-close="closedLighbtox();"
@@ -72,8 +71,6 @@
         <lightbox show="display.lightbox.rejectOrder">
             <container template="rejectOrder.lightbox"></container>
         </lightbox>
-        <parameter-table ng-change="savePreference()" ng-model="tableFields">
-        </parameter-table>
         <section class="toggle-buttons" ng-class="{ hide: ordersClient.selected.length === 0 }">
             <div class="toggle">
                 <div class="row">
