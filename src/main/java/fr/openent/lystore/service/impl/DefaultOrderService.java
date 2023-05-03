@@ -322,7 +322,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "FROM (" +
                 "SELECT options.price, options.tax_amount," +
                 "options.name, equipment.id_contract," +
-                "equipment.amount, options.id_order_client_equipment, equipment.id_structure " +
+                "options.amount, options.id_order_client_equipment, equipment.id_structure " +
                 "FROM " + Lystore.lystoreSchema + ".order_client_options options " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".order_client_equipment equipment " +
                 "ON (options.id_order_client_equipment = equipment.id) " +
@@ -367,7 +367,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "FROM " + Lystore.lystoreSchema + ".allorders " +
                 "WHERE status IN " + Sql.listPrepared(status.getList()) +
                 " UNION ALL " +
-                "SELECT order_client_options.price, order_client_options.tax_amount, order_client_equipment.amount::text, order_client_equipment.number_validation " +
+                "SELECT order_client_options.price, order_client_options.tax_amount, order_client_options.amount::text, order_client_equipment.number_validation " +
                 "FROM " + Lystore.lystoreSchema + ".order_client_options " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".order_client_equipment ON (order_client_equipment.id = order_client_options.id_order_client_equipment) " +
                 "WHERE order_client_equipment.status IN " + Sql.listPrepared(status.getList()) +
@@ -1311,23 +1311,11 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     public void getOneOrderClient(int idOrder, Handler<Either<String, JsonObject>> handler){
         String query = "" +
                 "SELECT oce.*, " +
-                "       (  " +
-                "               (SELECT " +
-                "                  CASE " +
-                "                  WHEN SUM(oco.price + ((oco.price * oco.tax_amount) /100) * oco.amount)  IS NULL THEN 0 " +
-                "                  WHEN oce.price_proposal IS NOT NULL THEN 0 " +
-                "                  ELSE  SUM(oco.price + ((oco.price * oco.tax_amount) /100) * oco.amount) " +
-                "                  END " +
-                "               FROM " + Lystore.lystoreSchema +".order_client_options oco " +
-                "               WHERE id_order_client_equipment = oce.id) + " +
-                "                                                         (CASE  " +
-                "                                                             WHEN oce.price_proposal IS NOT NULL THEN (oce.price_proposal)  " +
-                "                                                             ELSE (oce.price + ((oce.price * oce.tax_amount) /100))  " +
-                "                                                         END)) AS price_single_ttc,  " +
                 "       to_json(contract.*) contract, " +
                 "       to_json(ct.*) contract_type, " +
                 "       to_json(campaign.*) campaign, " +
                 "       to_json(prj.*) AS project, " +
+                "       array_to_json(array_agg(order_opts)) as options, " +
                 "       to_json(tt.*) AS title, " +
                 " Array_to_json(Array_agg(DISTINCT order_file.*))         AS files " +
                 "FROM  " + Lystore.lystoreSchema + ".order_client_equipment oce " +
@@ -1337,6 +1325,9 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "INNER JOIN  " + Lystore.lystoreSchema + ".project AS prj ON oce.id_project = prj.id " +
                 "INNER JOIN  " + Lystore.lystoreSchema + ".title AS tt ON tt.id = prj.id_title " +
                 " LEFT JOIN " + Lystore.lystoreSchema + ".order_file ON oce.id = order_file.id_order_client_equipment " +
+                "   LEFT JOIN " +
+                "       " + Lystore.lystoreSchema + ".order_client_options order_opts  " +
+                "      ON oce.id = order_opts.id_order_client_equipment  " +
                 "WHERE oce.id = ? " +
                 "GROUP BY (prj.id, " +
                 "          oce.id, " +
@@ -1345,7 +1336,32 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "          campaign.id, " +
                 "          tt.id)";
 
-        Sql.getInstance().prepared(query, new JsonArray().add(idOrder), SqlResult.validUniqueResultHandler(handler));
+//        Sql.getInstance().prepared(query, new JsonArray().add(idOrder), SqlResult.validUniqueResultHandler(handler));
+
+        sql.prepared(query,  new JsonArray().add(idOrder), SqlResult.validUniqueResultHandler(event -> {
+            if (event.isRight()) {
+               JsonObject elem = event.right().getValue();
+                elem.put(LystoreBDD.PROJECT, new JsonObject(elem.getString(LystoreBDD.PROJECT)));
+                elem.put(LystoreBDD.FILES, new JsonArray(elem.getString(LystoreBDD.FILES)));
+                elem.put(LystoreBDD.OPTIONS, new JsonArray(elem.getString(LystoreBDD.OPTIONS)));
+                elem.put(LystoreBDD.TITLE, new JsonObject(elem.getString(LystoreBDD.TITLE)));
+                elem.put(LystoreBDD.PRICE, OrderUtils.safeGetDouble(elem, LystoreBDD.PRICE));
+                elem.put(LystoreBDD.PRICE_PROPOSAL, OrderUtils.safeGetDouble(elem, LystoreBDD.PRICE_PROPOSAL));
+                elem.put(LystoreBDD.TAX_AMOUNT, OrderUtils.safeGetDouble(elem, LystoreBDD.TAX_AMOUNT));
+                elem.put(LystoreBDD.CONTRACT, new JsonObject(elem.getString(LystoreBDD.CONTRACT)));
+                elem.put(LystoreBDD.CONTRACT_TYPE, new JsonObject(elem.getString(LystoreBDD.CONTRACT_TYPE)));
+                elem.put(LystoreBDD.CAMPAIGN, new JsonObject(elem.getString(LystoreBDD.CAMPAIGN)));
+                handler.handle(new Either.Right<>(elem));
+            } else {
+                handler.handle(new Either.Left<>(
+                        LystoreUtils.generateErrorMessage(
+                                this.getClass(),
+                                "getOneOrderClient",
+                                "error when getting data",
+                                event.left().getValue()))
+                );
+            }
+        }));
     }
 
     @Override

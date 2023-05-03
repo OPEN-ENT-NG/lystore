@@ -165,6 +165,20 @@ public abstract class TabHelper {
      */
     protected void setArray(JsonArray programs) {
     }
+
+    protected String getTotalPriceTTCWithOptions() {
+        return  "             ROUND((( SELECT CASE          " +
+                "            WHEN orders.price_proposal IS NOT NULL THEN 0     " +
+                "            WHEN orders.override_region IS NULL THEN 0 " +
+                "            WHEN SUM((oco.price + (oco.price * oco.tax_amount) /100) * oco.amount) IS NULL THEN 0         " +
+                "            ELSE SUM((oco.price + (oco.price * oco.tax_amount) /100) * oco.amount)         " +
+                "            END           " +
+                "             FROM   " + Lystore.lystoreSchema + ".order_client_options oco  " +
+                "              where oco.id_order_client_equipment = orders.id " +
+                "             ) + orders.\"price TTC\" " +
+                "              ) * orders.amount   ,2 ) ";
+    }
+
     protected String getFormatDate(String date) {
         date = date.replace("T"," ");
         SimpleDateFormat formatterDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");

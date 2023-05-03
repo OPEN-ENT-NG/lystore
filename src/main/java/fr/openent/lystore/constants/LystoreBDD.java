@@ -77,6 +77,8 @@ public class LystoreBDD {
     public static final String CP_ADOPTED =  "cp_adopted";
 
 
+    //CONTRACT_TYPE
+    public static final String CONTRACT_TYPE = "contract_type";
 
     //TITLE
     public static final String TITLES = "titles";

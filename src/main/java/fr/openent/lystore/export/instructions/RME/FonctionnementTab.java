@@ -16,16 +16,7 @@ public class FonctionnementTab extends Investissement {
         super(wb, instruction, TabName.FONCTIONNEMENT.toString(), structuresMap);
         query = "       With values as  (             " +
                 "     SELECT  orders.id ,orders.\"price TTC\",  " +
-                "             ROUND((( SELECT CASE          " +
-                "            WHEN orders.price_proposal IS NOT NULL THEN 0     " +
-                "            WHEN orders.override_region IS NULL THEN 0 " +
-                "            WHEN SUM(oco.price + ((oco.price * oco.tax_amount) /100) * oco.amount) IS NULL THEN 0         " +
-                "            ELSE SUM(oco.price + ((oco.price * oco.tax_amount) /100) * oco.amount)         " +
-                "            END           " +
-                "             FROM   " + Lystore.lystoreSchema + ".order_client_options oco  " +
-                "              where oco.id_order_client_equipment = orders.id " +
-                "             ) + orders.\"price TTC\" " +
-                "              ) * orders.amount   ,2 ) " +
+                getTotalPriceTTCWithOptions() +
                 "             as Total, contract.name as market, contract_type.code as code,    " +
                 "             program.name as program,         CASE WHEN orders.id_order_client_equipment is not null  " +
                 "             THEN  (select oce.name FROM " + Lystore.lystoreSchema + ".order_client_equipment oce    " +

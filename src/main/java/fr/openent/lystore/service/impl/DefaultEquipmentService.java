@@ -1,8 +1,11 @@
 package fr.openent.lystore.service.impl;
 
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.model.EquipmentStatus;
 import fr.openent.lystore.service.EquipmentService;
+import fr.openent.lystore.utils.LystoreUtils;
+import fr.openent.lystore.utils.OrderUtils;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
@@ -18,6 +21,7 @@ import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.http.Renders.getHost;
 
@@ -96,19 +100,57 @@ public class DefaultEquipmentService extends SqlCrudService implements Equipment
             }
         }
 
-        String query = "SELECT equip.reference, equip.name, equip.id, equip.status,  equip.price, supplier.name as supplier_name, contract.name as contract_name, tax.value as tax_amount " +
+        String query = "SELECT equip.reference, equip.name, equip.id, equip.status,  equip.price, supplier.name as supplier_name, " +
+                "contract.name as contract_name, tax.value as tax_amount ,  array_to_json(array_agg(opts.*)) as options " +
                 "FROM " + Lystore.lystoreSchema + ".equipment equip " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".tax ON tax.id = equip.id_tax " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".contract ON (contract.id = equip.id_contract) " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".supplier ON (contract.id_supplier = supplier.id) " +
+                "LEFT JOIN " + Lystore.lystoreSchema + ".equipment_option ON (equip.id = equipment_option.id_equipment) " +
+                "LEFT JOIN ( " +
+                "SELECT equipment.id as id_equipment, equipment.reference, equipment.id_type, equipment_option.id," +
+                " equipment_option.id_option, equipment.name, equipment.price, equipment_option.amount, " +
+                "equipment_option.required, tax.value as tax_amount, equipment_option.id_equipment as master_equipment," +
+                " equipment_type.name as nametype " +
+                "FROM " + Lystore.lystoreSchema + ".equipment " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".tax  ON (equipment.id_tax = tax.id) " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".equipment_option  ON (equipment_option.id_option = equipment.id) " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".equipment_type ON (equipment_type.id = equipment.id_type) " +
+                ") opts ON (equipment_option.id_option = opts.id_equipment AND opts.master_equipment = equip.id) " +
                 getTextFilter(filters, request) +
+                " GROUP BY equip.reference ,    equip.name," +
+                "       equip.id," +
+                "       equip.status," +
+                "       equip.price, " +
+                "       supplier_name, " +
+                "       contract_name,  " +
+                "       tax.value   " +
                 "ORDER by " + getSqlOrderValue(order) + " " + getSqlReverseString(reverse);
 
         if (page != null) {
             query += " LIMIT " + Lystore.PAGE_SIZE + " OFFSET ?";
             params.add(Lystore.PAGE_SIZE * page);
         }
-        sql.prepared(query, params, SqlResult.validResultHandler(handler));
+        sql.prepared(query, params, SqlResult.validResultHandler(event -> {
+            if (event.isRight()) {
+                handler.handle(new Either.Right<>(new JsonArray(event.right().getValue().stream()
+                        .filter(JsonObject.class::isInstance)
+                        .map(JsonObject.class::cast)
+                        .map(elem -> {
+                            elem.put(LystoreBDD.OPTIONS, new JsonArray(elem.getString(LystoreBDD.OPTIONS)));
+                            return  elem;
+                        })
+                        .collect(Collectors.toList()))));
+            } else {
+                handler.handle(new Either.Left<>(
+                        LystoreUtils.generateErrorMessage(
+                                this.getClass(),
+                                "listEquipments",
+                                "error when getting data",
+                                event.left().getValue()))
+                );
+            }
+        }));
     }
     public void equipment(Integer idEquipment,  Handler<Either<String, JsonArray>> handler){
         String query = "SELECT equip.*, supplier.name as supplier_name, contract.name as contract_name, tax.value as tax_amount, equipment_type.name as nametype, array_to_json( " +

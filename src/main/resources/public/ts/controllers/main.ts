@@ -328,11 +328,12 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                 $scope.orderToUpdate = await $scope.orderClient.getOneOrderClient(idOrder, $scope.structures.all);
                 $scope.filesMetadataTemp = Object.assign($scope.orderToUpdate.files);
 
-                await $scope.equipments.syncAll($scope.orderToUpdate.campaign.id);
+                await $scope.equipments.syncAll($scope.orderToUpdate.id_campaign);
                 $scope.loadingArray = false;
 
                 $scope.orderToUpdate.equipment = $scope.equipments.all.find(findElement => findElement.id === $scope.orderToUpdate.equipment_key);
                 $scope.orderParent = OrderUtils.initParentOrder($scope.orderToUpdate);
+                $scope.orderParent.price_single_ttc = $scope.orderToUpdate.calculatePriceTTC(true);
                 Utils.safeApply($scope);
 
             },
@@ -356,6 +357,7 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                 } else {
                     if ($scope.orderToUpdate.order_parent) {
                         $scope.orderParent = new Order(JSON.parse($scope.orderToUpdate.order_parent), $scope.structures.all);
+                        $scope.orderParent =  await $scope.orderClient.getOneOrderClient($scope.orderParent.id, $scope.structures.all)
                         $scope.orderParent.equipment = $scope.equipments.all.find(findElement => findElement.id === $scope.orderParent.equipment_key);
                         $scope.orderParent = OrderUtils.initParentOrder($scope.orderParent);
                     } else {

@@ -207,12 +207,14 @@ export class OrderClient implements Order  {
         }
     }
 
-    async getOneOrderClient(id:number, structures:Structures):Promise<Order>{
+    async getOneOrderClient(id:number, structures:Structure[]):Promise<OrderClient>{
         try{
             const {data} = await http.get(`/lystore/orderClient/${id}/order/`);
-            let order = new Order(Object.assign(data, {typeOrder:"client"}), structures);
-            order.files = data.files !== '[null]' ? Utils.parsePostgreSQLJson(data.files) : [];
-            order.price_single_ttc = Number(order.price_single_ttc.toFixed(2))
+            let order:OrderClient = Mix.castAs(OrderClient, data);
+            order.structure = structures.find((structure:Structure) =>  structure.id = order.id_structure );
+            order.files = data.files.filter(file => file !== null);
+            //à supprimer dans des tickets ulterieurs
+            order.price_single_ttc = order.calculatePriceTTC(true);
             return order;
         } catch (e) {
             notify.error('lystore.admin.order.get.err');
@@ -232,8 +234,8 @@ export class OrderClient implements Order  {
         let price: number = (this.price_proposal) ? this.price_proposal : this.price;
         if (!this.price_proposal) {
             this.options
-                .filter((option: OrderOptionClient) => (option.required === true || (selectedOptions ? option.selected === true : false)))
-                .forEach((option: OrderOptionClient) => price += option.price);
+                .filter((option: OrderOptionClient) => (option  && selectedOptions ))
+                .forEach((option: OrderOptionClient) => price += (option.price * option.amount));
         }
         return Number(price.toFixed(2));
     }
@@ -452,8 +454,8 @@ export class OrdersClient extends Selection<OrderClient> {
             order.options = Mix.castArrayAs( OrderOptionClient, JSON.parse(order.options.toString()))
             : order.options = [];
         order.priceUnitedTTC = order.price_proposal ?
-            parseFloat(( order.price_proposal).toString()):
-            parseFloat((OrderUtils.calculatePriceTTC(2, order) as number).toString());
+            parseFloat(( order.price_proposal).toString()) :
+            order.calculatePriceTTC(true);
         // order.priceTotalTTC = this.choosePriceTotal(order);
         if( order.campaign.orderPriorityEnable()){
             order.rankOrder = order.rank + 1;
@@ -467,7 +469,7 @@ export class OrdersClient extends Selection<OrderClient> {
     choosePriceTotal(order:OrderClient):number{
         return order.price_proposal !== null?
             parseFloat(( order.price_proposal).toString()) * order.amount :
-            parseFloat((OrderUtils.calculatePriceTTC(2, order) as number).toString()) * order.amount;
+            order.calculatePriceTTC(true) * order.amount;
     }
 
     toJson (status: string):any {
