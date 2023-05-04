@@ -126,9 +126,15 @@
             </p>
         </div>
     </div>
-    <div class="row border top">
+    <div class="row border top" ng-show="vm.orderClient.options.length > 0">
         <h1 class="right-magnet vertical-spacing">
             <i18n>lystore.amountTTC.with.options</i18n>&#32;&#58;&#32;
+            <span ng-bind="vm.calculateTotal(vm.orderClient,2) | currency"></span>
+        </h1>
+    </div>
+    <div class="row border top" ng-show="!vm.orderClient.options.length > 0">
+        <h1 class="right-magnet vertical-spacing">
+            <i18n>lystore.amountTTC</i18n>&#32;&#58;&#32;
             <span ng-bind="vm.calculateTotal(vm.orderClient,2) | currency"></span>
         </h1>
     </div>

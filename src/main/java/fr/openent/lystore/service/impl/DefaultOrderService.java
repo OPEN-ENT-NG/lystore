@@ -322,7 +322,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "FROM (" +
                 "SELECT options.price, options.tax_amount," +
                 "options.name, equipment.id_contract," +
-                "options.amount, options.id_order_client_equipment, equipment.id_structure " +
+                "options.amount  * equipment.amount as amount, options.id_order_client_equipment, equipment.id_structure " +
                 "FROM " + Lystore.lystoreSchema + ".order_client_options options " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".order_client_equipment equipment " +
                 "ON (options.id_order_client_equipment = equipment.id) " +
@@ -367,7 +367,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "FROM " + Lystore.lystoreSchema + ".allorders " +
                 "WHERE status IN " + Sql.listPrepared(status.getList()) +
                 " UNION ALL " +
-                "SELECT order_client_options.price, order_client_options.tax_amount, order_client_options.amount::text, order_client_equipment.number_validation " +
+                "SELECT order_client_options.price, order_client_options.tax_amount, (order_client_options.amount * order_client_equipment.amount)::text as amount , order_client_equipment.number_validation " +
                 "FROM " + Lystore.lystoreSchema + ".order_client_options " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".order_client_equipment ON (order_client_equipment.id = order_client_options.id_order_client_equipment) " +
                 "WHERE order_client_equipment.status IN " + Sql.listPrepared(status.getList()) +
