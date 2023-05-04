@@ -37,6 +37,7 @@ public final class SqlUtils {
         Sql.getInstance().prepared(query.toString(), params, SqlResult.validUniqueResultHandler(handler));
     }
 
+    //ESSAYER D utilser ALLPriceOperation plus tard
     /**
      * Returns a total price to orders by a id_operation with option order and select The Good Place,Eh! sorry good price ;)
      *
@@ -85,8 +86,8 @@ public final class SqlUtils {
                 "                     (SELECT CASE  " +
                 "                   WHEN oce.override_region IS true THEN 0  " +
                 "                                 WHEN oce.price_proposal IS NOT NULL THEN 0  " +
-                "                                 WHEN SUM(oco.price + ((oco.price * oco.tax_amount) /100) * oco.amount) IS NULL THEN 0  " +
-                "                                 ELSE SUM(oco.price + ((oco.price * oco.tax_amount) /100) * oco.amount)  " +
+                "                                 WHEN SUM((oco.price + (oco.price * oco.tax_amount) /100) * oco.amount) IS NULL THEN 0  " +
+                "                                 ELSE SUM((oco.price + (oco.price * oco.tax_amount) /100) * oco.amount)  " +
                 "                             END  " +
                 "                      FROM   " + Lystore.lystoreSchema + ".order_client_options oco  " +
                 "                      WHERE id_order_client_equipment = oce.id) + (CASE  " +
