@@ -6,8 +6,8 @@
                 <td workflow="lystore.manager" class="table-selector">
                     <label class="checkbox">
                         <input type="checkbox"
-                               ng-change="switchAllOrders()"
-                               ng-model="allOrdersSelected">
+                               ng-change="vm.switchAllOrders()"
+                               ng-model="vm.allOrdersSelected">
                         <span></span>
                     </label>
                 </td>
@@ -21,8 +21,8 @@
                 </td>
             </tr>
             </thead>
-            <tbody bottom-scroll="scrollDisplay.limitTo = scrollDisplay.limitTo + 25">
-            <tr ng-repeat="order in vm.displayedOrders.all | orderBy:sort.order.type:sort.order.reverse | limitTo:scrollDisplay.limitTo" post-ng-repeat>
+            <tbody bottom-scroll="vm.scrollDisplay.limitTo = vm.scrollDisplay.limitTo + 25">
+            <tr ng-repeat="order in vm.displayedOrders.all | orderBy:sort.order.type:sort.order.reverse | limitTo:vm.scrollDisplay.limitTo" post-ng-repeat>
                 <td workflow="lystore.manager" class="table-selector">
                     <label class="checkbox">
                         <input type="checkbox" ng-model="order.selected">

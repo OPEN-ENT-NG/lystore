@@ -10,10 +10,11 @@ interface IViewModel {
     lang: typeof lang
 
     countColSpan(field: string): number
-
+    allOrdersSelected:boolean
     scrollDisplay: {
         limitTo: number
     }
+    switchAllOrders():void
 }
 
 
@@ -29,16 +30,17 @@ interface IDirectiveScope extends IScope {
 
 class Controller implements ng.IController, IViewModel {
     lang: typeof lang;
-
+    allOrdersSelected:boolean
     scrollDisplay: {
         limitTo: number
     }
 
     constructor(private $scope: IDirectiveScope) {
-        this.lang = lang
+        this.lang = lang;
         this.scrollDisplay = {
             limitTo: NBDISPLAYEDORDERS
-        }
+        };
+        this.allOrdersSelected = false;
     }
 
     $onInit() {
@@ -48,7 +50,13 @@ class Controller implements ng.IController, IViewModel {
     }
 
 
-    //TODO A RETRAVAILLER
+    switchAllOrders(): void {
+        console.log("plop")
+        console.log(this.allOrdersSelected)
+        this.$scope.vm.displayedOrders.all.map((order) => order.selected = this.allOrdersSelected);
+    };
+
+
     countColSpan(field: string): number {
         let totalCol = this.$scope.vm.isManager ? 1 : 0;
         let priceCol: number;
