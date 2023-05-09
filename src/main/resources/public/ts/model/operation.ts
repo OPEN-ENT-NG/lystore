@@ -4,7 +4,7 @@ import {_, moment, notify, toasts} from "entcore";
 // @ts-ignore
 import {Utils} from "./Utils";
 import {Instruction} from "./instruction";
-import {OrderClient} from "./OrderClient";
+import {OrderClient, OrdersClient} from "./OrderClient";
 import {Structure} from "./Structure";
 import {Label} from "./LabelOperation";
 import {Contract} from "./Contract";
@@ -98,7 +98,9 @@ export class Operation implements Selectable {
                     }
                 })
             }
-            return Mix.castArrayAs(OrderClient, resultData);
+            let orders =  new OrdersClient();
+            orders.all = Mix.castArrayAs(OrderClient, resultData)
+            return orders;
         } catch (e) {
             notify.error("lystore.operation.orders.sync.err");
             throw e;
