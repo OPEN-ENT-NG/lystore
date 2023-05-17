@@ -10,6 +10,8 @@ import {Label} from "./LabelOperation";
 import {Contract} from "./Contract";
 import {Notification} from "./Notification";
 import {Project} from "./project";
+import {Order, Orders} from "./Order";
+import {OrderRegion} from "./OrderRegion";
 
 
 export class Operation implements Selectable {
@@ -91,15 +93,25 @@ export class Operation implements Selectable {
         try {
             const {data} = await http.get(`/lystore/operations/${this.id}/orders`);
             let OrderClientsResponse: IOrderClientResponse[] = data;
-            let orders =  new OrdersClient().build(OrderClientsResponse);
+              new Orders().build(OrderClientsResponse);
+            let orders =  new Orders().build(OrderClientsResponse);
             if (structures.length > 0) {
-                orders.all.forEach(order => {
-                    //à enlever dès que le prix sera mieux gérer
-                    order.priceUnitedTTC = order.price_proposal ?
-                        parseFloat(( order.price_proposal).toString()) :
-                        order.calculatePriceTTC(true);
-                    order.total = order.calculatePriceTTC(true) * order.amount
-                    order.structure = structures.find(structureFilter => structureFilter.id === order.id_structure)
+                orders.all.forEach((order:Order) => {
+                    if(order instanceof  OrderClient){
+                        //à enlever dès que le prix sera mieux gérer
+                        order.priceUnitedTTC = order.price_proposal ?
+                            parseFloat(( order.price_proposal).toString()) :
+                            order.calculatePriceTTC(true);
+                        order.total = order.calculatePriceTTC(true) * order.amount
+                        order.structure = structures.find(structureFilter => structureFilter.id === order.id_structure)
+                    }else if(order instanceof  OrderRegion){
+                        //à enlever dès que le prix sera mieux gérer
+                        order.priceUnitedTTC = order.price_proposal ?
+                            parseFloat(( order.price_proposal).toString()) :
+                            order.price;
+                        order.total = order.price * order.amount
+                        order.structure = structures.find(structureFilter => structureFilter.id === order.id_structure)
+                    }
                 });
             }
             return orders;

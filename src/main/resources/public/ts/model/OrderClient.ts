@@ -35,7 +35,7 @@ import {OrderOptionClient,IOrderClientOptionResponse} from "./OrderOptionClient"
 export interface IOrderClientResponse extends IOrderResponse {
     id: number,
     comment: string,
-    price_proposal: number,
+    price_proposal?: number,
     preference: number,
     id_project: number,
     price: number,

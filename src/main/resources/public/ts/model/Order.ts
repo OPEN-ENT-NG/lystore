@@ -2,18 +2,18 @@ import {
     Campaign,
     Contract,
     ContractType,
-    Equipment, IProjectResponse, ITitleResponse,
+    Equipment, IOrderClientResponse, IOrderRegionResponse, IProjectResponse, ITitleResponse,
     OrderClient,
     OrderOptionClient,
-    OrderRegion,
+    OrderRegion, OrdersClient, OrdersRegion,
     Program,
     Project,
     Structure,
-    Structures,
+    Structures, Supplier,
     Title,
     Utils
 } from './index';
-import {Mix, Selectable} from "entcore-toolkit";
+import {Mix, Selectable,Selection} from "entcore-toolkit";
 import {_} from "entcore";
 import {IOrderClientOptionResponse} from "./OrderOptionClient";
 
@@ -101,7 +101,6 @@ export class Order implements OrderImp{
     title:Title;
     typeOrder:string;
     override_region: boolean;
-
     constructor(order: Order, structures:Structures){
         this.amount  = order.amount? parseInt(order.amount.toString()) : null;
         this.campaign = order.campaign? Mix.castAs(Campaign, JSON.parse(order.campaign.toString())) : null;
@@ -130,8 +129,36 @@ export class Order implements OrderImp{
                 [];
         }
     }
+
 }
 
+
+export class Orders extends Selection<Order> {
+    constructor() {
+        super([]);
+    }
+
+    build(ordersResponse: IOrderResponse[]): Orders {
+        let ordersClient: OrdersClient;
+        let ordersRegion: OrdersRegion;
+
+        ordersClient = new OrdersClient().build(ordersResponse.filter((orderResponse: IOrderResponse) => {
+            return orderResponse.typeOrder === "client"
+        }).map((order: IOrderResponse) => {
+            return order as IOrderClientResponse;
+        }))
+
+        ordersRegion = new OrdersRegion().build(ordersResponse.filter((orderResponse: IOrderResponse) => {
+            return orderResponse.typeOrder === "region"
+        }).map((orderResponse: IOrderResponse) => {
+            return orderResponse as IOrderRegionResponse;
+        }))
+
+        this.all =  this.all.concat(ordersClient.all)
+        this.all =  this.all.concat(ordersRegion.all)
+        return this;
+    }
+}
 export class OrderUtils {
     static initStructure(idStructure:string, structures:Structures):Structure{
         const structure = _.findWhere(structures, { id : idStructure});

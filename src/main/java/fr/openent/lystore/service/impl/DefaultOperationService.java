@@ -526,7 +526,7 @@ GROUP BY
                 "                       END " +
                 "                FROM   " + Lystore.lystoreSchema + ".order_client_options oco " +
                 "                WHERE  oco.id_order_client_equipment = orders.id) " +
-                "               + orders.\"price TTC\" ) * orders.amount, 2)      AS priceTTC, " +
+                "               + orders.\"price TTC\" ) * orders.amount, 2)      AS price_ttc, " +
                 "       orders.priceht as price, " +
                 "       orders.creation_date,  " +
                 "       orders.amount,  " +
@@ -596,7 +596,7 @@ GROUP BY
                             elem.put(LystoreBDD.PRICE, OrderUtils.safeGetDouble(elem, LystoreBDD.PRICE));
 //                            elem.put(LystoreBDD.PRICE_PROPOSAL, OrderUtils.safeGetDouble(elem, LystoreBDD.PRICE_PROPOSAL));
                             elem.put(LystoreBDD.TAX_AMOUNT, OrderUtils.safeGetDouble(elem, LystoreBDD.TAX_AMOUNT));
-                            elem.put(LystoreBDD.PRICETTC, OrderUtils.safeGetDouble(elem, LystoreBDD.PRICETTC));
+                            elem.put(LystoreBDD.PRICETTC, OrderUtils.safeGetDouble(elem, LystoreBDD.PRICE_TTC));
                             return elem;
                         })
                         .collect(Collectors.toList()))));
