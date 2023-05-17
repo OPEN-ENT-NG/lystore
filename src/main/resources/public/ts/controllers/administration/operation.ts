@@ -255,7 +255,6 @@ export const operationController = ng.controller('operationController',
             let idsOrdersClient = [];
             let idsOrdersRegion = [];
             $scope.ordersClientByOperation.all.map(order=>{
-                if(order.selected){
                     if(order.typeOrder === "client")
                     {
                         idsOrdersClient.push(order.id)
@@ -263,7 +262,6 @@ export const operationController = ng.controller('operationController',
                     if(order.typeOrder === "region"){
                         idsOrdersRegion.push(order.id)
                     }
-                }
             });
 
             if(idsOrdersClient.length !== 0){

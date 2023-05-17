@@ -22,7 +22,8 @@
             </tr>
             </thead>
             <tbody bottom-scroll="vm.scrollDisplay.limitTo = vm.scrollDisplay.limitTo + 25">
-            <tr ng-repeat="order in vm.displayedOrders.all | orderBy:sort.order.type:sort.order.reverse | limitTo:vm.scrollDisplay.limitTo" post-ng-repeat>
+            <tr ng-repeat="order in vm.displayedOrders.all | orderBy:sort.order.type:sort.order.reverse | limitTo:vm.scrollDisplay.limitTo" post-ng-repeat
+                ng-class="{ orderEditByRegion: order.typeOrder === 'region' }">
                 <td workflow="lystore.manager" class="table-selector">
                     <label class="checkbox">
                         <input type="checkbox" ng-model="order.selected">
@@ -37,12 +38,12 @@
                 <td ng-if="vm.tableFields[5].display"> <div class="smallTabElem">[[order.structure.department]]</div></td>
                 <td ng-if="vm.tableFields[6].display"> <div class="tabElem">[[order.structure.academy]]</div></td>
                 <td ng-if="vm.tableFields[7].display"> <div class="tabElem"> [[order.campaign.name]]</div></td>
-                <td ng-if="vm.tableFields[8].display"> <div class="tabElem">[[getStructureGroupsList(order.structure_groups)]]</div></td>
-                <td ng-if="vm.tableFields[9].display"> <div class="tabElem">[[order.project_name]]</div></td>
+                <td ng-if="vm.tableFields[8].display"> <div class="tabElem">[[vm.getStructureGroupsList(vm.order.structure_groups)]]</div></td>
+                <td ng-if="vm.tableFields[9].display"> <div class="tabElem">[[order.project.title.name]]</div></td>
                 <td ng-if="vm.tableFields[10].display"> <div ng-init="vm.tableFields[19].fullDisplay = false"
                                                           class="tabElem"
                                                           ng-class="{ellipsis:!vm.tableFields[19].fullDisplay}"
-                                                          ng-click="vm.tableFields[19].fullDisplay = !vm.tableFields[19].fullDisplay">[[order.project_description || '-']]</div></td>
+                                                          ng-click="vm.tableFields[19].fullDisplay = !vm.tableFields[19].fullDisplay">[[order.project.description || '-']]</div></td>
 
                 <td ng-if="vm.tableFields[11].display"> <div class="smallTabElem"> [[order.rankOrder]]</div></td>
                 <td ng-if="vm.tableFields[12].display"> <div class="tabElem"> [[order.name]]</div></td>
@@ -64,8 +65,8 @@
                                                           class="tabElem"
                                                           ng-class="{ellipsis:!vm.tableFields[7].fullDisplay}"
                                                           ng-click="vm.tableFields[7].fullDisplay = !vm.tableFields[7].fullDisplay"> [[order.comment || '-']]</div></td>
-                <td ng-if="vm.tableFields[19].display"> <div class="smallTabElem">[[order.project_room || '-']]</div></td>
-                <td ng-if="vm.tableFields[20].display"> <div class="smallTabElem">[[order.project_building || '-']]</div></td>
+                <td ng-if="vm.tableFields[19].display"> <div class="smallTabElem">[[order.project.room || '-']]</div></td>
+                <td ng-if="vm.tableFields[20].display"> <div class="smallTabElem">[[order.project.building || '-']]</div></td>
                 <td ng-if="vm.tableFields[21].display"> <div class="tabElem">[[order.contract.name]]</div></td>
                 <td ng-if="vm.tableFields[22].display"> <div class="tabElem"> [[order.contract_type_name]]</div></td>
                 <td ng-if="vm.tableFields[23].display"> <div class="tabElem">[[order.program]]</div></td>

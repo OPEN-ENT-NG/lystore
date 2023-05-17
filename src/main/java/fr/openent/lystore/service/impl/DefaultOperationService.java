@@ -4,6 +4,8 @@ import fr.openent.lystore.Lystore;
 import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.helpers.FutureHelper;
 import fr.openent.lystore.service.OperationService;
+import fr.openent.lystore.utils.LystoreUtils;
+import fr.openent.lystore.utils.OrderUtils;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.AsyncResult;
@@ -21,6 +23,7 @@ import io.vertx.core.logging.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DefaultOperationService extends SqlCrudService implements OperationService {
 
@@ -502,7 +505,7 @@ GROUP BY
                 .put("action", "prepared");
     }
 
-    private void getOrderByOperation(int idOperation, Handler<Either<String, JsonArray>> handler){
+    private void getOrderByOperation(int idOperation, Handler<Either<String, JsonArray>> handler) {
         String queryGOrderClient = "" +
                 "SELECT orders.id," +
                 "   instruction.cp_adopted as instruction_cp_adopted, " +
@@ -523,24 +526,39 @@ GROUP BY
                 "                       END " +
                 "                FROM   " + Lystore.lystoreSchema + ".order_client_options oco " +
                 "                WHERE  oco.id_order_client_equipment = orders.id) " +
-                "               + orders.\"price TTC\" ) * orders.amount, 2)      AS price, " +
+                "               + orders.\"price TTC\" ) * orders.amount, 2)      AS priceTTC, " +
+                "       orders.priceht as price, " +
                 "       orders.creation_date,  " +
                 "       orders.amount,  " +
-                "       orders.name,  " +
+                "       orders.name," +
+                "       orders.tax_amount,  " +
                 "       orders.id_structure,  " +
                 "       orders.status,  " +
-                "       c.name AS contract_name  " +
-                "FROM   " + Lystore.lystoreSchema +".allorders orders  " +
-                "INNER JOIN   " + Lystore.lystoreSchema +".contract c ON orders.id_contract = c.id  " +
-                "INNER JOIN   " + Lystore.lystoreSchema +".contract_type ct ON c.id_contract_type = ct.id  " +
-                "INNER JOIN   " + Lystore.lystoreSchema +".operation o ON (orders.id_operation = o.id)" +
-                "LEFT JOIN  " + Lystore.lystoreSchema + ".instruction on o.id_instruction = instruction.id  "+
+                "       c.name AS contract_name," +
+                "   array_to_json(array_agg(order_opts)) as options, " +
+
+                "   to_json(project.*) as project, " +
+                "   to_json(tt.*) as title, " +
+                "       to_json(campaign.*) as campaign  " +
+
+                "FROM   " + Lystore.lystoreSchema + ".allorders orders  " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".contract c ON orders.id_contract = c.id  " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".contract_type ct ON c.id_contract_type = ct.id  " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".campaign campaign ON orders.id_campaign = campaign.id  " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".operation o ON (orders.id_operation = o.id)" +
+                "LEFT JOIN " + Lystore.lystoreSchema + ".order_client_options order_opts  " +
+                "      ON (orders.id = order_opts.id_order_client_equipment AND orders.override_region = false ) " +
+                "LEFT JOIN " + Lystore.lystoreSchema + ".instruction on o.id_instruction = instruction.id  " +
+                "LEFT JOIN " + Lystore.lystoreSchema + ".project on (orders.id_project = project.id  AND orders.override_region = false )  " +
+                "LEFT JOIN  " + Lystore.lystoreSchema + ".title as tt ON tt.id = project.id_title  " +
                 "WHERE" +
                 " orders.override_region is not true   " +
                 "  AND o.id = ? " +
                 "GROUP BY (orders.id,  " +
                 "          orders.\"price TTC\",  " +
-                "          orders.name,  " +
+                "          orders.name," +
+                "          orders.priceht , " +
+                "          orders.tax_amount , " +
                 "          orders.id_structure,  " +
                 "          c.name," +
                 " orders.price_proposal ," +
@@ -549,10 +567,49 @@ GROUP BY
                 "orders.creation_date," +
                 "orders.status," +
                 "instruction_cp_adopted," +
-                "ct.code ) " +
+                "ct.code ,campaign.* ,project.id ,tt.id) " +
                 "ORDER BY override_region;";
 
-        Sql.getInstance().prepared(queryGOrderClient, new JsonArray().add(idOperation), SqlResult.validResultHandler(handler));
+
+        Sql.getInstance().prepared(queryGOrderClient, new JsonArray().add(idOperation), SqlResult.validResultHandler(event -> {
+            if (event.isRight()) {
+                handler.handle(new Either.Right<>(new JsonArray(event.right().getValue().stream()
+                        .filter(JsonObject.class::isInstance)
+                        .map(JsonObject.class::cast)
+                        .map(elem -> {
+                            elem.put(LystoreBDD.CAMPAIGN, new JsonObject(elem.getString(LystoreBDD.CAMPAIGN)));
+                            if(elem.getValue(LystoreBDD.PROJECT) != null ){
+                                elem.put(LystoreBDD.PROJECT, new JsonObject(elem.getString(LystoreBDD.PROJECT)));
+                            }else{
+                                elem.put(LystoreBDD.PROJECT, new JsonObject());
+                            }
+                            if(elem.getValue(LystoreBDD.TITLE) != null ){
+                                elem.put(LystoreBDD.TITLE, new JsonObject(elem.getString(LystoreBDD.TITLE)));
+                            }else{
+                                elem.put(LystoreBDD.TITLE, new JsonObject());
+                            }
+                            if(elem.getValue(LystoreBDD.OPTIONS) != null ){
+                                elem.put(LystoreBDD.OPTIONS,  new JsonArray(elem.getString(LystoreBDD.OPTIONS)));
+                            }else{
+                                elem.put(LystoreBDD.OPTIONS, new JsonArray());
+                            }
+                            elem.put(LystoreBDD.PRICE, OrderUtils.safeGetDouble(elem, LystoreBDD.PRICE));
+//                            elem.put(LystoreBDD.PRICE_PROPOSAL, OrderUtils.safeGetDouble(elem, LystoreBDD.PRICE_PROPOSAL));
+                            elem.put(LystoreBDD.TAX_AMOUNT, OrderUtils.safeGetDouble(elem, LystoreBDD.TAX_AMOUNT));
+                            elem.put(LystoreBDD.PRICETTC, OrderUtils.safeGetDouble(elem, LystoreBDD.PRICETTC));
+                            return elem;
+                        })
+                        .collect(Collectors.toList()))));
+            } else {
+                handler.handle(new Either.Left<>(
+                        LystoreUtils.generateErrorMessage(
+                                this.getClass(),
+                                "listOrder",
+                                "error when getting data",
+                                event.left().getValue()))
+                );
+            }
+        }));
     }
 
 }

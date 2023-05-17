@@ -8,7 +8,7 @@ import {
     ContractType,
     ContractTypes,
     Equipment,
-    Grade, Instruction,
+    Grade, ICampaignResponse, Instruction, IOrderResponse,
     IProjectResponse,
     ITitleResponse,
     Label,
@@ -32,37 +32,38 @@ import http from 'axios';
 import {BCOrder} from "./BCOrder";
 import {OrderOptionClient,IOrderClientOptionResponse} from "./OrderOptionClient";
 
-export interface IOrderClientResponse{
-   id: number,
-   comment: string,
-   price_proposal: number,
-   preference: number,
-   id_project: number,
-   price: number,
-   tax_amount: number,
-   amount: number,
-   creation_date: string,
-   id_campaign: number,
-   id_structure: string,
-   name: string,
-   summary: string,
-   image: string,
-   status: string,
-   id_contract: number,
-   rank:number,
-   options: IOrderClientOptionResponse[],
-   project: IProjectResponse, //IProjectResponse,
-   title: ITitleResponse,//ITitleResponse,
-   name_supplier: string,
-   cp_number: string,
-   operation_label: string,
-   order_creation_date: string,
-   done_date: string,
-   instruction_object: string,
-   date_operation: string,
-   date_cp: string,
+export interface IOrderClientResponse extends IOrderResponse {
+    id: number,
+    comment: string,
+    price_proposal: number,
+    preference: number,
+    id_project: number,
+    price: number,
+    tax_amount: number,
+    amount: number,
+    creation_date: string,
+    id_campaign: number,
+    id_structure: string,
+    name: string,
+    summary: string,
+    image: string,
+    status: string,
+    id_contract: number,
+    rank: number,
+    options: IOrderClientOptionResponse[],
+    project: IProjectResponse,
+    campaign ?: ICampaignResponse, //plus tard mettre ICampaign partout plutôt que id_campaign
+    title: ITitleResponse,
+    name_supplier: string,
+    cp_number: string,
+    operation_label: string,
+    order_creation_date: string,
+    done_date: string,
+    instruction_object: string,
+    date_operation: string,
+    date_cp: string,
     //à adapater dans des refactos ultérieures
-   files: string
+    files: string
 }
 
 
@@ -271,6 +272,10 @@ export class OrderClient implements Order  {
             this.options =orderClientResponse.options.map((options: IOrderClientOptionResponse) => new OrderOptionClient().build(options));
         else
             this.options = [];
+
+        if(orderClientResponse.campaign){
+            this.campaign = new Campaign().build(orderClientResponse.campaign)
+        }
         //à transformer en contact
         this.id_contract = orderClientResponse.id_contract;
         //project

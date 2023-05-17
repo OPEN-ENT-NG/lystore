@@ -2,7 +2,7 @@ import {
     Campaign,
     Contract,
     ContractType,
-    Equipment,
+    Equipment, IProjectResponse, ITitleResponse,
     OrderClient,
     OrderOptionClient,
     OrderRegion,
@@ -15,6 +15,41 @@ import {
 } from './index';
 import {Mix, Selectable} from "entcore-toolkit";
 import {_} from "entcore";
+import {IOrderClientOptionResponse} from "./OrderOptionClient";
+
+export interface IOrderResponse{
+    id: number,
+    comment: string,
+    price_proposal?: number,
+    preference: number,
+    id_project?: number,
+    price: number,
+    tax_amount?: number,
+    amount: number,
+    creation_date: string,
+    id_campaign: number,
+    id_structure: string,
+    name: string,
+    summary?: string,
+    image?: string,
+    status: string,
+    id_contract: number,
+    rank?:number,
+    options: IOrderClientOptionResponse[],
+    project?: IProjectResponse,
+    title?: ITitleResponse,
+    name_supplier?: string,
+    cp_number: string,
+    operation_label: string,
+    order_creation_date: string,
+    done_date?: string,
+    instruction_object: string,
+    date_operation?: string,
+    date_cp?: string,
+    //à adapater dans des refactos ultérieures
+    files: string,
+    typeOrder: string
+}
 
 export interface OrderImp extends Selectable{
     amount: number;

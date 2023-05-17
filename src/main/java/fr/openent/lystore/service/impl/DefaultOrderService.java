@@ -1663,10 +1663,11 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     @Override
     public void listOrderWaiting(List<String> idCampaigns, List<String> filters, Handler<Either<String, JsonArray>> handler) {
 
-        String query = "SELECT oce.id, oce.price, oce.tax_amount, oce.amount, oce.creation_date, oce.id_campaign, oce.id_structure, oce.name, oce.summary, oce.description," +
+        String query = "SELECT oce.id, oce.price, oce.tax_amount, oce.amount, oce.creation_date, oce.id_campaign, oce.id_structure," +
+                " oce.name, oce.summary, oce.description," +
                 " oce.image, oce.technical_spec, oce.status, oce.id_contract, oce.equipment_key,title.name as project_name," +
-                " project.description as project_description,project.room as project_room, project.building as project_building ,contract_type.name as contract_type_name, " +
-                " " +
+                " project.description as project_description,project.room as project_room, project.building as project_building ," +
+                "contract_type.name as contract_type_name, " +
                 " array_to_json(array_agg(DISTINCT order_file.*)) as files , " +
                 " array_to_json(array_agg( DISTINCT oco.*)) as options," +
                 " oce.cause_status, oce.number_validation, oce.id_order, oce.comment, oce.price_proposal, oce.id_project, oce.rank, oce.program," +

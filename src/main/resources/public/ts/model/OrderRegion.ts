@@ -11,12 +11,41 @@ import {
     Utils,
     OrderClient,
     Equipment,
-    Project,
+    Project, IOrderResponse, IProjectResponse, ITitleResponse,
 } from "./index";
 import {Selection} from "entcore-toolkit";
 
+export interface IOrderRegionResponse extends  IOrderResponse{
+    id: number,
+    comment: string,
+    preference: number,
+    price: number,
+    amount: number,
+    creation_date: string,
+    id_campaign: number,
+    id_structure: string,
+    name: string,
+    summary?: string,
+    image?: string,
+    status: string,
+    id_contract: number,
+    rank?:number,
+    project?: IProjectResponse,
+    title?: ITitleResponse,
+    name_supplier?: string,
+    cp_number: string,
+    operation_label: string,
+    order_creation_date: string,
+    done_date?: string,
+    instruction_object: string,
+    date_operation?: string,
+    date_cp?: string,
+    //à adapater dans des refactos ultérieures
+    files: string,
+}
 
-export class OrderRegion implements Order  {
+
+    export class OrderRegion implements Order  {
     amount: number;
     campaign: Campaign;
     comment: string;

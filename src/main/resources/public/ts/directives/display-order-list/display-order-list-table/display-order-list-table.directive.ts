@@ -15,6 +15,7 @@ interface IViewModel {
         limitTo: number
     }
     switchAllOrders():void
+    getStructureGroupsList  (structureGroups : any): string
 }
 
 
@@ -51,11 +52,19 @@ class Controller implements ng.IController, IViewModel {
 
 
     switchAllOrders(): void {
-        console.log("plop")
-        console.log(this.allOrdersSelected)
         this.$scope.vm.displayedOrders.all.map((order) => order.selected = this.allOrdersSelected);
     };
 
+    getStructureGroupsList (structureGroups : any): string  {
+        try{
+            return structureGroups.join(', ');
+        }catch (e) {
+            let result = "-";
+            if(structureGroups)
+               result = structureGroups.replaceAll("\"","").replace("[","").replace("]","")
+            return result
+        }
+    };
 
     countColSpan(field: string): number {
         let totalCol = this.$scope.vm.isManager ? 1 : 0;
