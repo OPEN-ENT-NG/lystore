@@ -38,7 +38,7 @@
                 <td ng-if="vm.tableFields[5].display"> <div class="smallTabElem">[[order.structure.department]]</div></td>
                 <td ng-if="vm.tableFields[6].display"> <div class="tabElem">[[order.structure.academy]]</div></td>
                 <td ng-if="vm.tableFields[7].display"> <div class="tabElem"> [[order.campaign.name]]</div></td>
-                <td ng-if="vm.tableFields[8].display"> <div class="tabElem">[[vm.getStructureGroupsList(vm.order.structure_groups)]]</div></td>
+                <td ng-if="vm.tableFields[8].display"> <div class="tabElem">[[vm.getStructureGroupsList(order.structure_groups)]]</div></td>
                 <td ng-if="vm.tableFields[9].display"> <div class="tabElem">[[order.project.title.name]]</div></td>
                 <td ng-if="vm.tableFields[10].display"> <div ng-init="vm.tableFields[19].fullDisplay = false"
                                                           class="tabElem"

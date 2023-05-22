@@ -392,6 +392,8 @@ export const mainController = ng.controller('MainController', ['$scope', 'route'
                 }
                 $scope.structures = new Structures();
                 await $scope.structures.sync();
+                await $scope.structures.getStructureType();
+
                 $scope.operation = await $scope.operations.all.find(operationFound => operationFound.id.toString() === params.idOperation.toString());
                 $scope.ordersClientByOperation = await $scope.operation.getOrders($scope.structures.all);
                 template.open('administrator-main', 'administrator/operation/operation-container');

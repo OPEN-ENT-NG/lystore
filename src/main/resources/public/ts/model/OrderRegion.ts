@@ -57,6 +57,7 @@ export interface IOrderRegionResponse extends IOrderResponse {
     //à adapater dans des refactos ultérieures
     files: string,
     total?:number
+    structure_groups: string;
 }
 
 
@@ -302,6 +303,7 @@ export class OrderRegion implements Order {
         this.project = new Project().build(orderRegionResponse.project);
         //structure
         this.id_structure = orderRegionResponse.id_structure
+        this.structure_groups = orderRegionResponse.structure_groups
         if (orderRegionResponse.order_creation_date) {
             this.bCOrder = new BCOrder();
             this.bCOrder.dateCreation = new Date(orderRegionResponse.order_creation_date);
