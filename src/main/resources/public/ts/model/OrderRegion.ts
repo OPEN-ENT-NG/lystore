@@ -266,6 +266,7 @@ export class OrderRegion implements Order {
     }
 
     build(orderRegionResponse: IOrderRegionResponse): OrderRegion {
+        this.contract = new Contract().build(orderRegionResponse.contract, orderRegionResponse.contract_type)
         this.amount = orderRegionResponse.amount;
         this.comment = orderRegionResponse.comment;
         this.creation_date = new Date(orderRegionResponse.creation_date);

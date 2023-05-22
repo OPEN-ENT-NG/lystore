@@ -539,7 +539,9 @@ GROUP BY
 
                 "   to_json(project.*) as project, " +
                 "   to_json(tt.*) as title, " +
-                "       to_json(campaign.*) as campaign  " +
+                "   to_json(campaign.*) as campaign," +
+                "   To_json(c.*)   AS contract," +
+                "   To_json(ct.*)  AS contract_type  " +
 
                 "FROM   " + Lystore.lystoreSchema + ".allorders orders  " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".contract c ON orders.id_contract = c.id  " +
@@ -567,7 +569,7 @@ GROUP BY
                 "orders.creation_date," +
                 "orders.status," +
                 "instruction_cp_adopted," +
-                "ct.code ,campaign.* ,project.id ,tt.id) " +
+                "ct.code ,campaign.* ,project.id ,tt.id ,c.id, ct.id) " +
                 "ORDER BY override_region;";
 
 
@@ -597,6 +599,8 @@ GROUP BY
 //                            elem.put(LystoreBDD.PRICE_PROPOSAL, OrderUtils.safeGetDouble(elem, LystoreBDD.PRICE_PROPOSAL));
                             elem.put(LystoreBDD.TAX_AMOUNT, OrderUtils.safeGetDouble(elem, LystoreBDD.TAX_AMOUNT));
                             elem.put(LystoreBDD.PRICETTC, OrderUtils.safeGetDouble(elem, LystoreBDD.PRICE_TTC));
+                            elem.put(LystoreBDD.CONTRACT, new JsonObject(elem.getString(LystoreBDD.CONTRACT)));
+                            elem.put(LystoreBDD.CONTRACT_TYPE, new JsonObject(elem.getString(LystoreBDD.CONTRACT_TYPE)));
                             return elem;
                         })
                         .collect(Collectors.toList()))));

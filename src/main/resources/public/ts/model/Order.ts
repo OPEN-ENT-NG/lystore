@@ -2,14 +2,23 @@ import {
     Campaign,
     Contract,
     ContractType,
-    Equipment, IOrderClientResponse, IOrderRegionResponse, IProjectResponse, ITitleResponse,
+    Equipment,
+    IContractResponse,
+    IContractTypeResponse,
+    IOrderClientResponse,
+    IOrderRegionResponse,
+    IProjectResponse,
+    ITitleResponse,
     OrderClient,
     OrderOptionClient,
-    OrderRegion, OrdersClient, OrdersRegion,
+    OrderRegion,
+    OrdersClient,
+    OrdersRegion,
     Program,
     Project,
     Structure,
-    Structures, Supplier,
+    Structures,
+    Supplier,
     Title,
     Utils
 } from './index';
@@ -49,6 +58,8 @@ export interface IOrderResponse{
     //à adapater dans des refactos ultérieures
     files: string,
     typeOrder: string
+    contract?:IContractResponse,
+    contract_type?:IContractTypeResponse
 }
 
 export interface OrderImp extends Selectable{
@@ -101,6 +112,8 @@ export class Order implements OrderImp{
     title:Title;
     typeOrder:string;
     override_region: boolean;
+    total?:number;
+
     constructor(order: Order, structures:Structures){
         this.amount  = order.amount? parseInt(order.amount.toString()) : null;
         this.campaign = order.campaign? Mix.castAs(Campaign, JSON.parse(order.campaign.toString())) : null;

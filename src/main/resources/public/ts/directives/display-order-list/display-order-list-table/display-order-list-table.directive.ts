@@ -2,7 +2,7 @@ import {ng, idiom as lang} from "entcore";
 import {IDirective, IScope,} from "angular";
 import {RootsConst} from "../../../core/constants/roots.const";
 import {tableFields} from '../TabFields'
-import {AxiosPromise} from "axios";
+import {Utils} from "../../../model";
 
 const NBDISPLAYEDORDERS = 25;
 
@@ -14,13 +14,14 @@ interface IViewModel {
     scrollDisplay: {
         limitTo: number
     }
+    formatDate(date: Date):string
     switchAllOrders():void
     getStructureGroupsList  (structureGroups : any): string
 }
 
 
 interface IDirectiveProperties {
-    displayedOrders: any;//à changer obviously
+    displayedOrders: any;
     isManager: boolean;
     tableFields: typeof tableFields;
 }
@@ -50,6 +51,7 @@ class Controller implements ng.IController, IViewModel {
     $onDestroy() {
     }
 
+    formatDate = Utils.formatDate;
 
     switchAllOrders(): void {
         this.$scope.vm.displayedOrders.all.map((order) => order.selected = this.allOrdersSelected);
@@ -66,17 +68,32 @@ class Controller implements ng.IController, IViewModel {
         }
     };
 
+    calculTotalPriceTTC(limitTo): number {
+        let total = 0;
+        this.$scope.vm.displayedOrders.all.slice(0, limitTo).map((order) => {
+                total += parseFloat(order.total.toString());//obliger pour gérer l'écran initiale à changer si on a le temps
+        });
+        return total;
+    }
+    calculTotalAmount (limitTo):number {
+        let total = 0;
+        this.$scope.vm.displayedOrders.all.slice(0, limitTo).map((order) => {
+            total += order.amount;
+        });
+        return total;
+    }
+
     countColSpan(field: string): number {
         let totalCol = this.$scope.vm.isManager ? 1 : 0;
         let priceCol: number;
         let amount_field = 13;
-        for (let _i = 0; _i < this.$scope.vm.tableFields.length; _i++) {
-            if (_i < amount_field && this.$scope.vm.tableFields[_i].display) {
+        for (let i = 0; i < this.$scope.vm.tableFields.length; i++) {
+            if (i < amount_field && this.$scope.vm.tableFields[i].display) {
                 totalCol++;
             }
         }
         if (this.$scope.vm.tableFields[14].display) {
-            priceCol = 3;
+            priceCol = 2;
             if (!this.$scope.vm.tableFields[13].display) {
                 totalCol++;
             }

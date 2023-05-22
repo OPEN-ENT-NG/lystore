@@ -60,7 +60,7 @@
                         </div>
                     </div>
                 </div></td>
-                <td ng-if="vm.tableFields[17].display"> <div class="smallTabElem">[[order.creation_date]]</div></td>
+                <td ng-if="vm.tableFields[17].display"> <div class="smallTabElem">[[vm.formatDate(order.creation_date)]]</div></td>
                 <td ng-if="vm.tableFields[18].display"> <div ng-init="vm.tableFields[7].fullDisplay = false"
                                                           class="tabElem"
                                                           ng-class="{ellipsis:!vm.tableFields[7].fullDisplay}"
@@ -68,21 +68,21 @@
                 <td ng-if="vm.tableFields[19].display"> <div class="smallTabElem">[[order.project.room || '-']]</div></td>
                 <td ng-if="vm.tableFields[20].display"> <div class="smallTabElem">[[order.project.building || '-']]</div></td>
                 <td ng-if="vm.tableFields[21].display"> <div class="tabElem">[[order.contract.name]]</div></td>
-                <td ng-if="vm.tableFields[22].display"> <div class="tabElem"> [[order.contract_type_name]]</div></td>
+                <td ng-if="vm.tableFields[22].display"> <div class="tabElem"> [[order.contract.contractType.name]]</div></td>
                 <td ng-if="vm.tableFields[23].display"> <div class="tabElem">[[order.program]]</div></td>
 
             </tr>
             </tbody>
             <tfoot>
             <tr >
-                <td colspan="[[countColSpan(vm.lang.translate('totals'))]]">
+                <td colspan="[[vm.countColSpan(vm.lang.translate('totals'))]]">
                     <i18n>totals</i18n>
                 </td>
 
-                <td colspan="[[vm.countColSpan('')]]" ng-if="vm.tableFields[13].display" > <div class="tabElem">[[displayedOrders.calculTotalAmount(vm.scrollDisplay.limitTo) ]]</div></td>
+                <td colspan="[[vm.countColSpan('')]]" ng-if="vm.tableFields[13].display" > <div class="tabElem">[[vm.calculTotalAmount(vm.scrollDisplay.limitTo) ]]</div></td>
 
                 <td ng-if="vm.tableFields[15].display" >
-                    <div class="tabElem"> [[displayedOrders.calculTotalPriceTTC(vm.scrollDisplay.limitTo) | currency]]</div>
+                    <div class="tabElem"> [[vm.calculTotalPriceTTC(vm.scrollDisplay.limitTo) | currency]]</div>
                 </td>
             </tr>
             </tfoot>

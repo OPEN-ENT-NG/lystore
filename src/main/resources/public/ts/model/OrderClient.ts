@@ -8,7 +8,7 @@ import {
     ContractType,
     ContractTypes,
     Equipment,
-    Grade, ICampaignResponse, Instruction, IOrderResponse,
+    Grade, ICampaignResponse, IContractResponse, IContractTypeResponse, Instruction, IOrderResponse,
     IProjectResponse,
     ITitleResponse,
     Label,
@@ -63,7 +63,9 @@ export interface IOrderClientResponse extends IOrderResponse {
     date_operation: string,
     date_cp: string,
     //à adapater dans des refactos ultérieures
-    files: string
+    files: string,
+    contract?:IContractResponse,
+    contract_type?:IContractTypeResponse
 }
 
 
@@ -306,6 +308,9 @@ export class OrderClient implements Order  {
                 this.operation.instruction = instruction;
             }
         }
+        if(orderClientResponse.contract && orderClientResponse.contract_type){
+            this.contract = new Contract().build(orderClientResponse.contract, orderClientResponse.contract_type)
+        }
         return this;
     }
 }
@@ -412,6 +417,7 @@ export class OrdersClient extends Selection<OrderClient> {
             order.contract_type = contractTypes.all.find(c => c.id === order.contract.id_contract_type);
             order.supplier = suppliers.all.find(s => s.id === order.contract.id_supplier);
             order.campaign = campaigns.all.find(c => c.id === order.id_campaign);
+            order.contract.contractType = order.contract_type // redondant mais obligatoire pour coexistance avec vieux code
             //plus utile pour le waiting
             order.project = projects.all.find(p => p.id === order.id_project);
             try {
