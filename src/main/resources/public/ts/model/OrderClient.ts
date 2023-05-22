@@ -33,6 +33,7 @@ import {BCOrder} from "./BCOrder";
 import {OrderOptionClient,IOrderClientOptionResponse} from "./OrderOptionClient";
 
 export interface IOrderClientResponse extends IOrderResponse {
+    structure_groups: string;
     id: number,
     comment: string,
     price_proposal?: number,
@@ -311,6 +312,7 @@ export class OrderClient implements Order  {
         if(orderClientResponse.contract && orderClientResponse.contract_type){
             this.contract = new Contract().build(orderClientResponse.contract, orderClientResponse.contract_type)
         }
+        this.structure_groups = orderClientResponse.structure_groups
         return this;
     }
 }

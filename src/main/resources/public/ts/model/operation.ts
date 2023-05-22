@@ -99,7 +99,6 @@ export class Operation implements Selectable {
                 orders.all.forEach((order:Order) => {
                     if(order instanceof  OrderClient){
                         //à enlever dès que le prix sera mieux gérer
-                        console.log(order.price_proposal)
                         order.priceUnitedTTC = order.price_proposal ?
                             parseFloat(( order.price_proposal).toString()) :
                             order.calculatePriceTTC(true);
