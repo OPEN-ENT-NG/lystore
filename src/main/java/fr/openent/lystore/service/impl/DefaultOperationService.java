@@ -575,7 +575,6 @@ GROUP BY
                 "          orders.id_structure,  " +
                 "          c.name," +
                 " orders.price_proposal," +
-                " orders.price_proposal ," +
                 " orders.override_region," +
                 "orders.amount," +
                 "orders.creation_date," +

@@ -519,7 +519,6 @@ export const orderRegionController = ng.controller('orderRegionController',
 
             $scope.openAddDocumentsLightbox = (orderRegion: OrderRegion) =>
             {
-                console.log("plop")
                 if(orderRegion)
                     $scope.order = JSON.parse(JSON.stringify(orderRegion));
                 else

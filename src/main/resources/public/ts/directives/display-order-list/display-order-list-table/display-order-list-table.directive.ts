@@ -68,14 +68,14 @@ class Controller implements ng.IController, IViewModel {
         }
     };
 
-    calculTotalPriceTTC(limitTo): number {
+    calculTotalPriceTTC(limitTo : number): number {
         let total = 0;
         this.$scope.vm.displayedOrders.all.slice(0, limitTo).map((order) => {
                 total += parseFloat(order.total.toString());//obliger pour gérer l'écran initiale à changer si on a le temps
         });
         return total;
     }
-    calculTotalAmount (limitTo):number {
+    calculTotalAmount (limitTo : number):number {
         let total = 0;
         this.$scope.vm.displayedOrders.all.slice(0, limitTo).map((order) => {
             total += order.amount;

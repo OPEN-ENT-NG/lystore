@@ -38,7 +38,6 @@ class Controller implements ng.IController, IViewModel {
     }
 
     savePreference():void{
-        console.log("plpo")
         this.ub.putPreferences("ordersWaitingDisplay", this.jsonPref(this.tableFields));
     };
 
