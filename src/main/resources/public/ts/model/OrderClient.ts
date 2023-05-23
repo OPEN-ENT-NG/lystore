@@ -277,7 +277,7 @@ export class OrderClient implements Order  {
             this.options = [];
 
         if(orderClientResponse.campaign){
-            this.campaign = new Campaign().build(orderClientResponse.campaign)
+            this.campaign = new Campaign().build(orderClientResponse.campaign);
         }
         //à transformer en contact
         this.id_contract = orderClientResponse.id_contract;
@@ -310,9 +310,9 @@ export class OrderClient implements Order  {
             }
         }
         if(orderClientResponse.contract && orderClientResponse.contract_type){
-            this.contract = new Contract().build(orderClientResponse.contract, orderClientResponse.contract_type)
+            this.contract = new Contract().build(orderClientResponse.contract, orderClientResponse.contract_type);
         }
-        this.structure_groups = orderClientResponse.structure_groups
+        this.structure_groups = orderClientResponse.structure_groups;
         return this;
     }
 }

@@ -535,8 +535,8 @@ GROUP BY
                 "           ( " +
                 "                  SELECT " +
                 "                         CASE " +
-                "                                WHEN orders.override_region IS NULL THEN Array_to_json(Array_agg(file_region.*)) " +
-                "                                ELSE Array_to_json(Array_agg(file_client.*)) " +
+                "                                WHEN orders.override_region IS NULL THEN Array_to_json(Array_agg(DISTINCT file_region.*)) " +
+                "                                ELSE Array_to_json(Array_agg(DISTINCT file_client.*)) " +
                 "                                 END) AS files , " +
                 "           To_json(project.*)                                       AS project, " +
                 "           To_json(tt.*)                                            AS title, " +
@@ -554,11 +554,12 @@ GROUP BY
                 "INNER JOIN lystore.rel_group_structure ON (orders.id_structure = rel_group_structure.id_structure) " +
                 "INNER JOIN lystore.structure_group ON (rel_group_structure.id_structure_group = structure_group.id " +
                 "AND rel_group_campaign.id_structure_group = structure_group.id) " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".project on orders.id_project = project.id   " +
+                "INNER JOIN  " + Lystore.lystoreSchema + ".title as tt ON tt.id = project.id_title  " +
                 "LEFT JOIN " + Lystore.lystoreSchema + ".order_client_options order_opts  " +
                 "      ON (orders.id = order_opts.id_order_client_equipment AND orders.override_region = false ) " +
                 "LEFT JOIN " + Lystore.lystoreSchema + ".instruction on o.id_instruction = instruction.id  " +
-                "LEFT JOIN " + Lystore.lystoreSchema + ".project on (orders.id_project = project.id  AND orders.override_region = false )  " +
-                "LEFT JOIN  " + Lystore.lystoreSchema + ".title as tt ON tt.id = project.id_title  " +
+
                 " LEFT JOIN " + Lystore.lystoreSchema + ".order_file as file_client " +
                 " ON ( orders.id = file_client.id_order_client_equipment AND orders.override_region is false )" +
                 " LEFT JOIN " + Lystore.lystoreSchema + ".order_region_file as file_region " +

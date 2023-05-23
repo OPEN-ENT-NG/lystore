@@ -1090,10 +1090,9 @@ public class OrderController extends ControllerHelper {
         });
     }
 
-    //TODO vérifier les droits
     @Get("/order/download/:id/file/:fileId")
     @ApiDoc("Download specific file")
-    @SecuredAction(value = "", type = ActionType.AUTHENTICATED)
+    @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(ManagerRight.class)
     public void getFileOrderRegion(HttpServerRequest request) {
         String fileId = request.getParam("fileId");

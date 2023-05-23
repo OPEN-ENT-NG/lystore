@@ -10,13 +10,13 @@ interface IViewModel {
     lang: typeof lang
 
     countColSpan(field: string): number
-    allOrdersSelected:boolean
+    allOrdersSelected:boolean;
     scrollDisplay: {
-        limitTo: number
-    }
-    formatDate(date: Date):string
-    switchAllOrders():void
-    getStructureGroupsList  (structureGroups : any): string
+        limitTo: number;
+    };
+    formatDate(date: Date):string;
+    switchAllOrders():void;
+    getStructureGroupsList  (structureGroups : any): string;
 }
 
 

@@ -6,9 +6,9 @@ import {Userbook, Utils} from "../../model";
 
 
 interface IViewModel {
-    lang: typeof lang
+    lang: typeof lang;
     tableFields: typeof tableFields;
-    savePreference():void
+    savePreference():void;
 }
 
 
@@ -49,18 +49,22 @@ class Controller implements ng.IController, IViewModel {
         return json;
     };
 
-    async $onInit () {
-        let preferences = await this.ub.getPreferences();
+    async $onInit() {
+        let preferences
+        try {
+            preferences = await this.ub.getPreferences();
+        } catch (e) {
+            preferences = {}
+        }
         if (preferences && preferences.preference) {
             let loadedPreferences = JSON.parse(preferences.preference);
             if (loadedPreferences.ordersWaitingDisplay)
-                this.tableFields.map(table => {
+                this.tableFields.forEach(table => {
                     table.display = loadedPreferences.ordersWaitingDisplay[table.fieldName]
                 });
         }
         Utils.safeApply(this.$scope)
     }
-
 }
 
 function directive(): IDirective {

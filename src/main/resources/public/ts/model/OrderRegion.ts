@@ -262,8 +262,11 @@ export class OrderRegion implements Order {
         }
     }
 
-    downloadFile(file, id): void {
-        window.open(`/lystore/order/${id}/file/${file.id}`);
+    downloadFile(file, id?): void {
+        if(id)
+            window.open(`/lystore/order/download/${id}/file/${file.id}`);
+        else
+            window.open(`/lystore/order/download/${this.id}/file/${file.id}`);
     }
 
     build(orderRegionResponse: IOrderRegionResponse): OrderRegion {
