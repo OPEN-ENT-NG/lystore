@@ -1,7 +1,24 @@
 import {moment, notify} from 'entcore';
 import {Mix, Provider, Selectable, Selection} from 'entcore-toolkit';
 import http from 'axios';
+import {ContractType, IContractTypeResponse} from "./ContractType";
 
+export interface IContractResponse {
+    id: number,
+    name: string,
+    annual_min: number,
+    annual_max: number,
+    start_date: string,
+    nb_renewal: number,
+    id_contract_type: number,
+    max_brink: number,
+    id_supplier: number,
+    id_agent: number,
+    reference: string,
+    end_date: string,
+    renewal_end: string,
+    file: boolean
+}
 export class Contract implements Selectable {
     id?: number;
     name: string;
@@ -23,7 +40,7 @@ export class Contract implements Selectable {
     annual_min_enabled: boolean;
     annual_max_enabled: boolean;
     max_brink_enabled: boolean;
-
+    contractType: ContractType;
     constructor (name?: string, reference?: string, annual_min?: number, annual_max?: number,
                  start_date?: string | Date, max_brink?: number) {
         if ( name ) this.name = name;
@@ -44,6 +61,24 @@ export class Contract implements Selectable {
         this.file = false;
     }
 
+    build(contractResponse : IContractResponse , contractTypeResponse:IContractTypeResponse):Contract{
+
+        this.name = contractResponse.name;
+        this.annual_min = contractResponse.annual_min;
+        this.annual_max = contractResponse.annual_max;
+        this.start_date = new Date(contractResponse.start_date);
+        this.nb_renewal = contractResponse.nb_renewal.toString();//étrange mais pas impactant
+        this.id_contract_type = contractResponse.id_contract_type;
+        this.max_brink = contractResponse.max_brink;
+        this.id_supplier = contractResponse.id_supplier;
+        this.id_agent = contractResponse.id_agent;
+        this.reference = contractResponse.reference;
+        this.end_date = contractResponse.end_date;
+        this.renewal_end = contractResponse.renewal_end;
+        this.file = contractResponse.file;
+        this.contractType = new ContractType().build(contractTypeResponse);
+        return this
+    }
     toJson() {
         return {
             name: this.name,

@@ -218,22 +218,15 @@ export const operationController = ng.controller('operationController',
             $scope.order = order;
             $scope.redirectTo(`/order/operation/update/${order.id}/${order.typeOrder}`);
         };
-        $scope.switchAllOrders = ():void => {
-            $scope.allOrdersOperationSelected  =  !$scope.allOrdersOperationSelected;
-            if ( $scope.allOrdersOperationSelected) {
-                $scope.ordersClientByOperation.map(order => order.selected = true);
-            } else {
-                $scope.ordersClientByOperation.map(order => order.selected = false);
-            }
-            Utils.safeApply($scope);
-        };
+
+
         $scope.isOrderOperationSelected = ():boolean => {
-            return $scope.ordersClientByOperation.some(order => order.selected)
+            return $scope.ordersClientByOperation.selected.length > 0
         };
 
         $scope.oneOrderSelected = () : boolean =>{
             let nbSelected =  0 ;
-            $scope.ordersClientByOperation.forEach(order =>{
+            $scope.ordersClientByOperation.all.forEach(order =>{
                 if(order.selected){
                     nbSelected++;
                 }
@@ -242,16 +235,11 @@ export const operationController = ng.controller('operationController',
         };
 
         $scope.getSelectedOrder  = () =>{
-            return $scope.ordersClientByOperation.find(order => order.selected);
+            return $scope.ordersClientByOperation.all.find(order => order.selected);
         };
 
         $scope.getSelectedOrders = () =>{
-            let selectedOrders = [] ;
-            $scope.ordersClientByOperation.forEach(order =>{
-                if (order.selected)
-                    selectedOrders.push(order);
-            });
-            return selectedOrders;
+            return  $scope.ordersClientByOperation.selected;
         };
 
 
@@ -266,8 +254,7 @@ export const operationController = ng.controller('operationController',
             template.close('operation.lightbox');
             let idsOrdersClient = [];
             let idsOrdersRegion = [];
-            $scope.ordersClientByOperation.map(order=>{
-                if(order.selected){
+            $scope.ordersClientByOperation.all.map(order=>{
                     if(order.typeOrder === "client")
                     {
                         idsOrdersClient.push(order.id)
@@ -275,7 +262,6 @@ export const operationController = ng.controller('operationController',
                     if(order.typeOrder === "region"){
                         idsOrdersRegion.push(order.id)
                     }
-                }
             });
 
             if(idsOrdersClient.length !== 0){

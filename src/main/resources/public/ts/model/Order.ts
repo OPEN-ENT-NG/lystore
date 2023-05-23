@@ -3,18 +3,64 @@ import {
     Contract,
     ContractType,
     Equipment,
+    IContractResponse,
+    IContractTypeResponse,
+    IOrderClientResponse,
+    IOrderRegionResponse,
+    IProjectResponse,
+    ITitleResponse,
     OrderClient,
     OrderOptionClient,
     OrderRegion,
+    OrdersClient,
+    OrdersRegion,
     Program,
     Project,
     Structure,
     Structures,
+    Supplier,
     Title,
     Utils
 } from './index';
-import {Mix, Selectable} from "entcore-toolkit";
+import {Mix, Selectable,Selection} from "entcore-toolkit";
 import {_} from "entcore";
+import {IOrderClientOptionResponse} from "./OrderOptionClient";
+
+export interface IOrderResponse{
+    id: number,
+    comment: string,
+    price_proposal?: number,
+    preference: number,
+    id_project?: number,
+    price: number,
+    tax_amount?: number,
+    amount: number,
+    creation_date: string,
+    id_campaign: number,
+    id_structure: string,
+    name: string,
+    summary?: string,
+    image?: string,
+    status: string,
+    id_contract: number,
+    rank?:number,
+    options: IOrderClientOptionResponse[],
+    project?: IProjectResponse,
+    title?: ITitleResponse,
+    name_supplier?: string,
+    cp_number: string,
+    operation_label: string,
+    order_creation_date: string,
+    done_date?: string,
+    instruction_object: string,
+    date_operation?: string,
+    date_cp?: string,
+    //à adapater dans des refactos ultérieures
+    files: string,
+    typeOrder: string
+    contract?:IContractResponse,
+    contract_type?:IContractTypeResponse
+}
 
 export interface OrderImp extends Selectable{
     amount: number;
@@ -66,6 +112,7 @@ export class Order implements OrderImp{
     title:Title;
     typeOrder:string;
     override_region: boolean;
+    total?:number;
 
     constructor(order: Order, structures:Structures){
         this.amount  = order.amount? parseInt(order.amount.toString()) : null;
@@ -95,8 +142,36 @@ export class Order implements OrderImp{
                 [];
         }
     }
+
 }
 
+
+export class Orders extends Selection<Order> {
+    constructor() {
+        super([]);
+    }
+
+    build(ordersResponse: IOrderResponse[]): Orders {
+        let ordersClient: OrdersClient;
+        let ordersRegion: OrdersRegion;
+
+        ordersClient = new OrdersClient().build(ordersResponse.filter((orderResponse: IOrderResponse) => {
+            return orderResponse.typeOrder === "client"
+        }).map((order: IOrderResponse) => {
+            return order as IOrderClientResponse;
+        }))
+
+        ordersRegion = new OrdersRegion().build(ordersResponse.filter((orderResponse: IOrderResponse) => {
+            return orderResponse.typeOrder === "region"
+        }).map((orderResponse: IOrderResponse) => {
+            return orderResponse as IOrderRegionResponse;
+        }))
+
+        this.all =  this.all.concat(ordersClient.all)
+        this.all =  this.all.concat(ordersRegion.all)
+        return this;
+    }
+}
 export class OrderUtils {
     static initStructure(idStructure:string, structures:Structures):Structure{
         const structure = _.findWhere(structures, { id : idStructure});

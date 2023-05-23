@@ -4,6 +4,8 @@ import fr.openent.lystore.Lystore;
 import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.helpers.FutureHelper;
 import fr.openent.lystore.service.OperationService;
+import fr.openent.lystore.utils.LystoreUtils;
+import fr.openent.lystore.utils.OrderUtils;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.AsyncResult;
@@ -21,6 +23,7 @@ import io.vertx.core.logging.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DefaultOperationService extends SqlCrudService implements OperationService {
 
@@ -502,57 +505,132 @@ GROUP BY
                 .put("action", "prepared");
     }
 
-    private void getOrderByOperation(int idOperation, Handler<Either<String, JsonArray>> handler){
+    private void getOrderByOperation(int idOperation, Handler<Either<String, JsonArray>> handler) {
         String queryGOrderClient = "" +
-                "SELECT orders.id," +
-                "   instruction.cp_adopted as instruction_cp_adopted, " +
-                "   ct.code, " +
-                "   orders.override_region, " +
-                "                Round(( (SELECT CASE " +
-                "                         WHEN orders.price_proposal IS NOT NULL THEN 0 " +
-                "                         WHEN orders.override_region IS NULL THEN 0 " +
-                "                         WHEN Sum((oco.price + (  oco.price * oco.tax_amount ) / " +
-                "                                                100 ) " +
-                "                                              * " +
-                "                                              oco.amount) IS " +
-                "                              NULL THEN 0 " +
-                "                         ELSE Sum((oco.price +  ( oco.price * oco.tax_amount ) / " +
-                "                                                100 ) " +
-                "                                              * " +
-                "                                              oco.amount) " +
-                "                       END " +
-                "                FROM   " + Lystore.lystoreSchema + ".order_client_options oco " +
-                "                WHERE  oco.id_order_client_equipment = orders.id) " +
-                "               + orders.\"price TTC\" ) * orders.amount, 2)      AS price, " +
-                "       orders.creation_date,  " +
-                "       orders.amount,  " +
-                "       orders.name,  " +
-                "       orders.id_structure,  " +
-                "       orders.status,  " +
-                "       c.name AS contract_name  " +
-                "FROM   " + Lystore.lystoreSchema +".allorders orders  " +
-                "INNER JOIN   " + Lystore.lystoreSchema +".contract c ON orders.id_contract = c.id  " +
-                "INNER JOIN   " + Lystore.lystoreSchema +".contract_type ct ON c.id_contract_type = ct.id  " +
-                "INNER JOIN   " + Lystore.lystoreSchema +".operation o ON (orders.id_operation = o.id)" +
-                "LEFT JOIN  " + Lystore.lystoreSchema + ".instruction on o.id_instruction = instruction.id  "+
+                "SELECT     orders.id, " +
+                "           instruction.cp_adopted AS instruction_cp_adopted, " +
+                "           ct.code, " +
+                "           orders.override_region, " +
+                "           Round(( " +
+                "                    ( " +
+                "                    SELECT " +
+                "                           CASE " +
+                "                                  WHEN orders.price_proposal IS NOT NULL THEN 0 " +
+                "                                  WHEN orders.override_region IS NULL THEN 0 " +
+                "                                  WHEN Sum((oco.price + ( oco.price * oco.tax_amount ) / 100 ) * oco.amount) IS NULL THEN 0 " +
+                "                                  ELSE Sum((oco.price + ( oco.price * oco.tax_amount ) / 100 ) * oco.amount) " +
+                "                           END " +
+                "                    FROM   lystore.order_client_options oco " +
+                "                    WHERE  oco.id_order_client_equipment = orders.id) + orders.\"price TTC\" ) * orders.amount, 2) AS price_ttc, " +
+                "           orders.priceht                                                                                        AS price, " +
+                "           orders.creation_date, " +
+                "           orders.amount, " +
+                "           orders.NAME, " +
+                "           orders.price_proposal, " +
+                "           orders.tax_amount, " +
+                "           orders.id_structure, " +
+                "           orders.status, " +
+                "           c.NAME                               AS contract_name, " +
+                "           Array_to_json(Array_agg(order_opts)) AS options, " +
+                "           ( " +
+                "                  SELECT " +
+                "                         CASE " +
+                "                                WHEN orders.override_region IS NULL THEN Array_to_json(Array_agg(DISTINCT file_region.*)) " +
+                "                                ELSE Array_to_json(Array_agg(DISTINCT file_client.*)) " +
+                "                                 END) AS files , " +
+                "           To_json(project.*)                                       AS project, " +
+                "           To_json(tt.*)                                            AS title, " +
+                "           To_json(campaign.*)                                      AS campaign, " +
+                "           To_json(c.*)                                             AS contract, " +
+                "           To_json(ct.*)                                            AS contract_type, " +
+                "           Array_to_json(Array_agg( DISTINCT structure_group.NAME)) AS structure_groups " +
+
+                "FROM   " + Lystore.lystoreSchema + ".allorders orders  " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".contract c ON orders.id_contract = c.id  " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".contract_type ct ON c.id_contract_type = ct.id  " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".campaign campaign ON orders.id_campaign = campaign.id  " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".operation o ON (orders.id_operation = o.id)" +
+                "INNER JOIN lystore.rel_group_campaign ON (orders.id_campaign = rel_group_campaign.id_campaign) " +
+                "INNER JOIN lystore.rel_group_structure ON (orders.id_structure = rel_group_structure.id_structure) " +
+                "INNER JOIN lystore.structure_group ON (rel_group_structure.id_structure_group = structure_group.id " +
+                "AND rel_group_campaign.id_structure_group = structure_group.id) " +
+                "INNER JOIN " + Lystore.lystoreSchema + ".project on orders.id_project = project.id   " +
+                "INNER JOIN  " + Lystore.lystoreSchema + ".title as tt ON tt.id = project.id_title  " +
+                "LEFT JOIN " + Lystore.lystoreSchema + ".order_client_options order_opts  " +
+                "      ON (orders.id = order_opts.id_order_client_equipment AND orders.override_region = false ) " +
+                "LEFT JOIN " + Lystore.lystoreSchema + ".instruction on o.id_instruction = instruction.id  " +
+
+                " LEFT JOIN " + Lystore.lystoreSchema + ".order_file as file_client " +
+                " ON ( orders.id = file_client.id_order_client_equipment AND orders.override_region is false )" +
+                " LEFT JOIN " + Lystore.lystoreSchema + ".order_region_file as file_region " +
+                " ON orders.id = file_region.id_order_region_equipment AND orders.override_region is null " +
+
                 "WHERE" +
                 " orders.override_region is not true   " +
                 "  AND o.id = ? " +
                 "GROUP BY (orders.id,  " +
                 "          orders.\"price TTC\",  " +
-                "          orders.name,  " +
+                "          orders.name," +
+                "          orders.priceht , " +
+                "          orders.tax_amount , " +
                 "          orders.id_structure,  " +
                 "          c.name," +
-                " orders.price_proposal ," +
+                " orders.price_proposal," +
                 " orders.override_region," +
                 "orders.amount," +
                 "orders.creation_date," +
                 "orders.status," +
                 "instruction_cp_adopted," +
-                "ct.code ) " +
+                "ct.code ,campaign.* ,project.id ,tt.id ,c.id, ct.id) " +
                 "ORDER BY override_region;";
 
-        Sql.getInstance().prepared(queryGOrderClient, new JsonArray().add(idOperation), SqlResult.validResultHandler(handler));
+
+        Sql.getInstance().prepared(queryGOrderClient, new JsonArray().add(idOperation), SqlResult.validResultHandler(event -> {
+            if (event.isRight()) {
+                handler.handle(new Either.Right<>(new JsonArray(event.right().getValue().stream()
+                        .filter(JsonObject.class::isInstance)
+                        .map(JsonObject.class::cast)
+                        .map(elem -> {
+                            elem.put(LystoreBDD.CAMPAIGN, new JsonObject(elem.getString(LystoreBDD.CAMPAIGN)));
+                            if(elem.getValue(LystoreBDD.PROJECT) != null ){
+                                elem.put(LystoreBDD.PROJECT, new JsonObject(elem.getString(LystoreBDD.PROJECT)));
+                            }else{
+                                elem.put(LystoreBDD.PROJECT, new JsonObject());
+                            }
+                            if(elem.getValue(LystoreBDD.TITLE) != null ){
+                                elem.put(LystoreBDD.TITLE, new JsonObject(elem.getString(LystoreBDD.TITLE)));
+                            }else{
+                                elem.put(LystoreBDD.TITLE, new JsonObject());
+                            }
+                            if(elem.getValue(LystoreBDD.OPTIONS) != null ){
+                                elem.put(LystoreBDD.OPTIONS,  new JsonArray(elem.getString(LystoreBDD.OPTIONS)));
+                            }else{
+                                elem.put(LystoreBDD.OPTIONS, new JsonArray());
+                            }
+                            if(elem.getValue(LystoreBDD.FILES) != null ){
+                                elem.put(LystoreBDD.FILES,  new JsonArray(elem.getString(LystoreBDD.FILES)));
+                            }else{
+                                elem.put(LystoreBDD.FILES, new JsonArray());
+                            }
+                            elem.put(LystoreBDD.PRICE, OrderUtils.safeGetDouble(elem, LystoreBDD.PRICE));
+//                            elem.put(LystoreBDD.PRICE_PROPOSAL, OrderUtils.safeGetDouble(elem, LystoreBDD.PRICE_PROPOSAL));
+                            elem.put(LystoreBDD.TAX_AMOUNT, OrderUtils.safeGetDouble(elem, LystoreBDD.TAX_AMOUNT));
+                            elem.put(LystoreBDD.PRICETTC, OrderUtils.safeGetDouble(elem, LystoreBDD.PRICE_TTC));
+                            elem.put(LystoreBDD.CONTRACT, new JsonObject(elem.getString(LystoreBDD.CONTRACT)));
+                            elem.put(LystoreBDD.CONTRACT_TYPE, new JsonObject(elem.getString(LystoreBDD.CONTRACT_TYPE)));
+                            return elem;
+                        })
+                        .collect(Collectors.toList()))));
+            } else {
+                handler.handle(new Either.Left<>(
+                        LystoreUtils.generateErrorMessage(
+                                this.getClass(),
+                                "listOrder",
+                                "error when getting data",
+                                event.left().getValue()))
+                );
+            }
+        }));
     }
 
 }

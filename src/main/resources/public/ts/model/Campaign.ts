@@ -1,10 +1,21 @@
 import http from 'axios';
 import {_, notify,moment,toasts} from 'entcore';
 import {Mix, Selectable, Selection} from 'entcore-toolkit';
-import {Purses, StructureGroup, Tags, Titles, Utils} from './index';
-import {createModifiersFromModifierFlags} from "typescript/lib/tsserverlibrary";
+import {Purses, StructureGroup, Tags, Titles} from './index';
 
+export interface ICampaignResponse {
+    id: number,
+    name: string,
+    description: string,
+    image: string,
+    accessible: boolean,
+    purse_enabled: boolean,
+    priority_enabled: boolean,
+    start_date: string,
+    end_date: string,
+    automatic_close: boolean
 
+}
 export class Campaign implements Selectable  {
     id?: number;
     name: string;
@@ -143,6 +154,19 @@ export class Campaign implements Selectable  {
     }
 
 
+    build(campaign: ICampaignResponse): Campaign {
+        this.id = campaign.id;
+        this.name = campaign.name;
+        this.description = campaign.description;
+        this.image = campaign.image;
+        this.accessible = campaign.accessible;
+        this.purse_enabled = campaign.purse_enabled;
+        this.priority_enabled = campaign.priority_enabled;
+        this.start_date = new Date(campaign.start_date);
+        this.automatic_close = campaign.automatic_close;
+        this.end_date = new Date(campaign.start_date);
+        return this;
+    }
 }
 
 

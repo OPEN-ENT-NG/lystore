@@ -4,11 +4,14 @@ import {_, moment, notify, toasts} from "entcore";
 // @ts-ignore
 import {Utils} from "./Utils";
 import {Instruction} from "./instruction";
-import {OrderClient} from "./OrderClient";
+import {IOrderClientResponse, OrderClient, OrdersClient} from "./OrderClient";
 import {Structure} from "./Structure";
 import {Label} from "./LabelOperation";
 import {Contract} from "./Contract";
 import {Notification} from "./Notification";
+import {Project} from "./project";
+import {Order, Orders} from "./Order";
+import {OrderRegion} from "./OrderRegion";
 
 
 export class Operation implements Selectable {
@@ -89,16 +92,29 @@ export class Operation implements Selectable {
     async getOrders(structures: Structure[] = []) {
         try {
             const {data} = await http.get(`/lystore/operations/${this.id}/orders`);
-            let resultData = data;
+            let OrderClientsResponse: IOrderClientResponse[] = data;
+              new Orders().build(OrderClientsResponse);
+            let orders =  new Orders().build(OrderClientsResponse);
             if (structures.length > 0) {
-                resultData = resultData.map(order => {
-                    return {
-                        ...order,
-                        structure: structures.find(structureFilter => structureFilter.id === order.id_structure),
+                orders.all.forEach((order:Order) => {
+                    if(order instanceof  OrderClient){
+                        //à enlever dès que le prix sera mieux gérer
+                        order.priceUnitedTTC = order.price_proposal ?
+                            parseFloat(( order.price_proposal).toString()) :
+                            order.calculatePriceTTC(true);
+                        order.total = order.calculatePriceTTC(true) * order.amount
+                        order.structure = structures.find(structureFilter => structureFilter.id === order.id_structure)
+                    }else if(order instanceof  OrderRegion){
+                        //à enlever dès que le prix sera mieux gérer
+                        order.priceUnitedTTC = order.price_proposal ?
+                            parseFloat(( order.price_proposal).toString()) :
+                            order.price;
+                        order.total = order.price * order.amount
+                        order.structure = structures.find(structureFilter => structureFilter.id === order.id_structure)
                     }
-                })
+                });
             }
-            return Mix.castArrayAs(OrderClient, resultData);
+            return orders;
         } catch (e) {
             notify.error("lystore.operation.orders.sync.err");
             throw e;
