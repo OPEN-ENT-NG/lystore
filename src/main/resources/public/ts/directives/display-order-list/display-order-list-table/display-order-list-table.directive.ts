@@ -32,10 +32,10 @@ interface IDirectiveScope extends IScope {
 
 class Controller implements ng.IController, IViewModel {
     lang: typeof lang;
-    allOrdersSelected:boolean
+    allOrdersSelected:boolean;
     scrollDisplay: {
-        limitTo: number
-    }
+        limitTo: number;
+    };
 
     constructor(private $scope: IDirectiveScope) {
         this.lang = lang;
