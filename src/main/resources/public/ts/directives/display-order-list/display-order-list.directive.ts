@@ -32,7 +32,7 @@ class Controller implements ng.IController, IViewModel {
     }
 
     constructor(private $scope: IDirectiveScope) {
-        this.lang = lang
+        this.lang = lang;
         this.tableFields = tableFields;
         this.ub = new Userbook();
     }
