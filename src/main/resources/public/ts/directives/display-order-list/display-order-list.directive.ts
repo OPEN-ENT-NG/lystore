@@ -56,9 +56,10 @@ class Controller implements ng.IController, IViewModel {
         } catch (e) {
             preferences = {}
         }
+
         if (preferences && preferences.preference) {
             let loadedPreferences = JSON.parse(preferences.preference);
-            if (loadedPreferences[this.$scope.vm.prefName])
+                if (loadedPreferences[this.$scope.vm.prefName])
                 this.tableFields.forEach(table => {
                     table.display = loadedPreferences[this.$scope.vm.prefName][table.fieldName]
                 });

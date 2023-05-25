@@ -22,7 +22,7 @@ export const tableFields = [
     {
         name:'Commune',
         fieldName:'structure.city',
-        display: true
+        display: false
     },
     {
         name:'lystore.department',
@@ -37,7 +37,7 @@ export const tableFields = [
     {
         name:'campaign',
         fieldName:'campaign.name',
-        display: true
+        display: false
     },
     {
         name:'STRUCTUREGROUP',
@@ -57,7 +57,7 @@ export const tableFields = [
     {
         name:'N° Priorité (Demande/Projet)',
         fieldName: 'rankOrder',
-        display: true
+        display: false
     },
     {
         name:'EQUIPMENT',
@@ -67,7 +67,7 @@ export const tableFields = [
     {
         name:'lystore.amount',
         fieldName:'amount',
-        display: false
+        display: true
     },
     {
         name:'lystore.unit.price.ttc',
@@ -77,7 +77,7 @@ export const tableFields = [
     {
         name: 'lystore.amountTTC',
         fieldName: 'price',
-        display: false,
+        display: true,
     },
     {
         name: 'files',
@@ -87,7 +87,7 @@ export const tableFields = [
     {
         name:'date',
         fieldName:'id',
-        display: false
+        display: true
     },
     {
         name:'comment',
@@ -107,7 +107,7 @@ export const tableFields = [
     {
         name:'contract',
         fieldName:'contract.name',
-        display: false
+        display: true
     },
     {
         name:'lystore.contract.type.name',
