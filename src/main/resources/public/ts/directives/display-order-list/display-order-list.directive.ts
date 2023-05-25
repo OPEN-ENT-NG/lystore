@@ -15,7 +15,7 @@ interface IViewModel {
 interface IDirectiveProperties {
     displayedOrders: any;//à changer obviously
     isManager: boolean;
-    preferences: any;
+    prefName:string;
 }
 
 interface IDirectiveScope extends IScope {
@@ -38,7 +38,7 @@ class Controller implements ng.IController, IViewModel {
     }
 
     savePreference():void{
-        this.ub.putPreferences("ordersWaitingDisplay", this.jsonPref(this.tableFields));
+        this.ub.putPreferences(this.$scope.vm.prefName, this.jsonPref(this.tableFields));
     };
 
     jsonPref (prefs: typeof tableFields) : any{
@@ -58,9 +58,9 @@ class Controller implements ng.IController, IViewModel {
         }
         if (preferences && preferences.preference) {
             let loadedPreferences = JSON.parse(preferences.preference);
-            if (loadedPreferences.ordersWaitingDisplay)
+            if (loadedPreferences[this.$scope.vm.prefName])
                 this.tableFields.forEach(table => {
-                    table.display = loadedPreferences.ordersWaitingDisplay[table.fieldName]
+                    table.display = loadedPreferences[this.$scope.vm.prefName][table.fieldName]
                 });
         }
         Utils.safeApply(this.$scope)
@@ -75,7 +75,7 @@ function directive(): IDirective {
         scope: {
             displayedOrders: '=',
             isManager: '=',
-            preferences: '='
+            prefName:'@'
         },
         controllerAs: 'vm',
         bindToController: true,
