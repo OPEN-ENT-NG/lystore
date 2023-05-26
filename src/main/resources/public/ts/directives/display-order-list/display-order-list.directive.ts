@@ -33,7 +33,7 @@ class Controller implements ng.IController, IViewModel {
 
     constructor(private $scope: IDirectiveScope) {
         this.lang = lang;
-        this.tableFields = tableFields;
+        this.tableFields =  JSON.parse(JSON.stringify(tableFields)); //DEEP COPY
         this.ub = new Userbook();
     }
 
@@ -57,6 +57,7 @@ class Controller implements ng.IController, IViewModel {
             preferences = {}
         }
 
+        //GÉRER REFRESH TABLEAU SI ARG NON EXISTANT
         if (preferences && preferences.preference) {
             let loadedPreferences = JSON.parse(preferences.preference);
                 if (loadedPreferences[this.$scope.vm.prefName])
