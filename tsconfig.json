@@ -11,7 +11,8 @@
       "jquery",
       "core-js",
       "jest"
-    ]
+    ],
+    "allowSyntheticDefaultImports": true
   },
   "exclude": [
     "build", "node_modules"

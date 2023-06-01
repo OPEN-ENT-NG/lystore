@@ -21,3 +21,5 @@ rev-manifest.json
 /src/main/resources/public/font/
 /out/
 /coverage/
+/src/main/resources/public/css/
+/yarn.lock
