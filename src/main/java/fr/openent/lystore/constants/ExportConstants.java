@@ -40,4 +40,9 @@ public class ExportConstants {
     public static final String NOTIFICATION_REGION_COMMAND_PREFIX = "R-";
     public static final String NOTIFICATION_CLIENT_COMMAND_PREFIX = "C-";
     public static final String NOT_SUBV = "NOT SUBV";
+
+    //BC
+    public static final String PRICE_LOCALE= "priceLocale";
+    public static final String TOTAL_PRICE_LOCALE= "totalPriceLocale";
+    public static final String ORDERS= "orders";
 }
