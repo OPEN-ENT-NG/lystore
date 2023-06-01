@@ -5,6 +5,7 @@ import {BcOptions} from "../../model/parameter/bc-options.model";
 import {OrdersClient} from "../../model";
 
 interface IViewModel {
+    displayPriceNumber(priceNumber: number):string;
 }
 
 
@@ -28,7 +29,9 @@ class Controller implements ng.IController, IViewModel {
 
     $onDestroy() {
     }
-
+    displayPriceNumber(priceNumber: number):string{
+        return priceNumber.toFixed(2).toString().replace(".",",");
+    }
 }
 
 function directive(): IDirective {
