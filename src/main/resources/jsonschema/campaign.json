@@ -6,9 +6,6 @@
     "name": {
       "type": "string"
     },
-    "accessible": {
-      "type": "boolean"
-    },
     "description": {
       "type": [ "string", "null" ]
     },
@@ -41,7 +38,6 @@
     "name",
     "description",
     "groups",
-    "accessible",
     "purse_enabled"
   ]
 }
