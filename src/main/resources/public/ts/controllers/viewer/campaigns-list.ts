@@ -4,7 +4,7 @@ import {Campaign, Utils} from '../../model';
 export const campaignsListController = ng.controller('campaignsListController',
     ['$scope', '$rootScope', ($scope, $rootScope) => {
         $scope.openCampaign = (campaign: Campaign) => {
-            if (campaign.accessible) {
+            if (campaign.isOpen) {
                 $scope.emitCampaign(campaign);
                 $scope.redirectTo(`/campaign/${campaign.id}/catalog`);
                 Utils.safeApply($scope);
@@ -15,7 +15,6 @@ export const campaignsListController = ng.controller('campaignsListController',
         };
         $scope.openOrderToMain = (campaign: Campaign) => {
             $scope.redirectTo(`/campaign/${campaign.id}/order`);
-            $scope.campaign.accessible= campaign.accessible;
             $scope.campaign.description= campaign.description;
             $scope.campaign.groups= campaign.groups;
             $scope.campaign.id= campaign.id;

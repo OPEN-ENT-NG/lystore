@@ -598,9 +598,8 @@ export const configurationController = ng.controller('configurationController',
                     toasts.warning('lystore.campaign.update.err');
                 });
         }
-        $scope.cancelManualChange = () =>{
+        $scope.cancelManualChange = () =>{//a modificer
             $scope.display.lightbox.automaticCampaign = false;
-            $scope.automaticCampaign.accessible = !$scope.automaticCampaign.accessible;
             $scope.safeApply($scope);
         }
         $scope.deselectAllStructures = (structures: any) => {

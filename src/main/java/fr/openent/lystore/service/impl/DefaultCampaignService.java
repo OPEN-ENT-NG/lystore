@@ -1,6 +1,8 @@
 package fr.openent.lystore.service.impl;
 
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.constants.CommonConstants;
+import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.service.CampaignService;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.CompositeFuture;
@@ -459,48 +461,25 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
         Sql.getInstance().prepared(query, params, SqlResult.validResultHandler(handler));
     }
 
-    public void updateAccessibility(final Integer id,final JsonObject campaign,
-                                    final Handler<Either<String, JsonObject>> handler){
+    public void updateAccessibility(final Integer id, final JsonObject campaign,
+                                    final Handler<Either<String, JsonObject>> handler) {
         String options = "";
-        String finalCondition  = "";
-        if(!campaign.getBoolean("automatic_close")) {
-            if (campaign.getValue("start_date") == null && campaign.getBoolean("accessible")) {
-                options += "start_date = NOW() ,";
-            }
-            if(!campaign.getBoolean("accessible")){
-                options += "end_date = NOW() ,";
-            }else {
-                options += "end_date = NULL ,";
-            }
-        }else{
-            options += "automatic_close = false,";
-            if(campaign.getBoolean("accessible")){
-                options += "start_date = NOW (),";
-                options += "end_date = NULL ,";
-            }else{
-                options += "end_date = NOW() ,";
-            }
+        String finalCondition = "";
+        options += "start_date = ? ,";
+        if (campaign.containsKey(LystoreBDD.END_DATE) && campaign.getValue(LystoreBDD.END_DATE) != null) {
+            options += "end_date = ? ,";
+        } else {
+            options += "end_date = NULL ,";
         }
-        JsonArray statements = new fr.wseduc.webutils.collections.JsonArray();
-        String query = "UPDATE " + Lystore.lystoreSchema + ".campaign SET " +
-                options +
-                "accessible= ? " +
-                "WHERE id = ? " +
-                finalCondition +
-                ";";
-        JsonArray params = new fr.wseduc.webutils.collections.JsonArray()
-                .add(campaign.getBoolean("accessible"))
-                .add(id);
-        statements.add(new JsonObject()
-                .put("statement", query)
-                .put("values",params)
-                .put("action", "prepared"));
-        sql.transaction(statements, new Handler<Message<JsonObject>>() {
-            @Override
-            public void handle(Message<JsonObject> event) {
-                handler.handle(getTransactionHandler(event, id));
-            }
-        });
+        options += "automatic_close = false ";
+
+        String query = "UPDATE "+ this.resourceTable  +" SET " + options + " WHERE id = ? " + finalCondition + ";";
+        JsonArray params = new JsonArray()
+                .add(campaign.getString(LystoreBDD.START_DATE));
+        if (campaign.containsKey(LystoreBDD.END_DATE) && campaign.getValue(LystoreBDD.END_DATE) != null)
+            params.add(campaign.getString(LystoreBDD.END_DATE));
+        params.add(id);
+        Sql.getInstance().prepared(query, params, SqlResult.validRowsResultHandler(handler));
     }
 
     private JsonObject getCampaignTagsGroupsRelationshipStatement(Number id, JsonArray groups) {

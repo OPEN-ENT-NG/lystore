@@ -8,7 +8,6 @@ export interface ICampaignResponse {
     name: string,
     description: string,
     image: string,
-    accessible: boolean,
     purse_enabled: boolean,
     priority_enabled: boolean,
     start_date: string,
@@ -21,7 +20,6 @@ export class Campaign implements Selectable  {
     name: string;
     description: string;
     image: string;
-    accessible: boolean;
     groups: StructureGroup[];
     selected: boolean;
     purse_amount?: number;
@@ -61,7 +59,6 @@ export class Campaign implements Selectable  {
             name: this.name,
             description: this.description || null,
             image: this.image || null,
-            accessible: this.accessible || false,
             groups: this.groups.map((group) => {
                 return group.toJson();
             }),
@@ -78,8 +75,6 @@ export class Campaign implements Selectable  {
     }
     async save () {
         if (this.id) {
-            if(this.automatic_close)
-                this.accessible = false;
             await this.update();
         } else {
             await this.create();
@@ -152,7 +147,6 @@ export class Campaign implements Selectable  {
         this.name = campaign.name;
         this.description = campaign.description;
         this.image = campaign.image;
-        this.accessible = campaign.accessible;
         this.purse_enabled = campaign.purse_enabled;
         this.priority_enabled = campaign.priority_enabled;
         this.start_date = new Date(campaign.start_date);
