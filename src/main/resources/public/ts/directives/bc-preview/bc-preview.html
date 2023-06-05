@@ -71,10 +71,10 @@
                     [[ order.amount ]]
                 </td>
                 <td class="right-text">
-                    [[ order.priceLocale ]]
+                    [[ vm.displayPriceNumber(order.priceLocale) ]]
                 </td>
                 <td class="right-text">
-                    [[ order.totalPriceLocale ]]
+                    [[ vm.displayPriceNumber(order.totalPriceLocale) ]]
                 </td>
             </tr>
             </tbody>

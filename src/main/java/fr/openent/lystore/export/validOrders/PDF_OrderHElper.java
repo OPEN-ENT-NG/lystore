@@ -194,6 +194,11 @@ public class PDF_OrderHElper {
             ordersByStructure.put("totalPriceTaxeIncludedLocal",
                     OrderController.getReadableNumber(roundWith2Decimals(taxTotal )));
             order.put(s, ordersByStructure);
+            ordersByStructure.getJsonArray(ExportConstants.ORDERS).stream().forEach(orderElem -> {
+                JsonObject orderJo = (JsonObject) orderElem;
+                orderJo.put(ExportConstants.PRICE_LOCALE, OrderController.getReadableNumber(orderJo.getDouble(ExportConstants.PRICE_LOCALE)));
+                orderJo.put(ExportConstants.TOTAL_PRICE_LOCALE, OrderController.getReadableNumber(orderJo.getDouble(ExportConstants.TOTAL_PRICE_LOCALE)));
+            });
         }
     }
     protected void retrieveOrderDataForCertificate(final Handler<Either<String, Buffer>> exportHandler,
@@ -331,6 +336,11 @@ public class PDF_OrderHElper {
                             OrderController.getReadableNumber(roundWith2Decimals(totalTTC - sumWithoutTaxes)));
                     order.put("totalPriceTaxeIncludedLocal",
                             OrderController.getReadableNumber(roundWith2Decimals(totalTTC )));
+                    orders.stream().forEach(orderElem -> {
+                        JsonObject orderJo = (JsonObject) orderElem;
+                        orderJo.put(ExportConstants.PRICE_LOCALE, OrderController.getReadableNumber(orderJo.getDouble(ExportConstants.PRICE_LOCALE)));
+                        orderJo.put(ExportConstants.TOTAL_PRICE_LOCALE, OrderController.getReadableNumber(orderJo.getDouble(ExportConstants.TOTAL_PRICE_LOCALE)));
+                    });
                     handler.handle(order);
 
                 } else {
