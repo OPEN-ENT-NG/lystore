@@ -1,4 +1,4 @@
-import {_, moment, ng, template, toasts} from 'entcore';
+import {_, moment, ng, notify, template, toasts} from 'entcore';
 import {Mix} from 'entcore-toolkit';
 import {
     Agent,
@@ -17,9 +17,10 @@ import {
     Utils,
     PRIORITY_FIELD, Campaigns
 } from '../../model';
+import {CampaignService} from "../../services";
 
 export const configurationController = ng.controller('configurationController',
-    ['$scope', ($scope) => {
+    ['$scope', 'CampaignService', ($scope , campaignService :CampaignService) => {
         $scope.COMBO_LABELS = COMBO_LABELS;
         $scope.display = {
             lightbox: {
@@ -484,15 +485,16 @@ export const configurationController = ng.controller('configurationController',
         }
 
         $scope.checkGapDates = (campaign: Campaign) =>{
-            return !campaign.automatic_close
-            ||
-            (moment(campaign.max_date)._isValid && moment(campaign.min_date)._isValid )
-                ?
-                (moment(moment(campaign.end_date).format('YYYY-MM-DD'),"YYYY-MM-DD")
-                    .diff(moment(moment(campaign.max_date).format('YYYY-MM-DD'),"YYYY-MM-DD"),'days') >= 0)
-                && (moment(campaign.min_date).diff(moment(campaign.start_date),'days') >= 0)
-                :
-                true
+            return true;
+            // !campaign.automatic_close
+            // ||
+            // (moment(campaign.max_date)._isValid && moment(campaign.min_date)._isValid )
+            //     ?
+            //     (moment(moment(campaign.end_date).format('YYYY-MM-DD'),"YYYY-MM-DD")
+            //         .diff(moment(moment(campaign.max_date).format('YYYY-MM-DD'),"YYYY-MM-DD"),'days') >= 0)
+            //     && (moment(campaign.min_date).diff(moment(campaign.start_date),'days') >= 0)
+            //     :
+            //     true
         }
         $scope.isValidDates =  (campaign: Campaign) => {
             return !campaign.automatic_close
@@ -563,31 +565,38 @@ export const configurationController = ng.controller('configurationController',
         };
 
         $scope.updateAccessibility = async (campaign: Campaign) => {
-            $scope.automaticCampaign = campaign;
             if (campaign.automatic_close) {
+                $scope.automaticCampaign = campaign;
                 template.open('campaign.lightbox.automaticCampaign', 'administrator/campaign/campaign-change-manual');
                 $scope.display.lightbox.automaticCampaign = true;
             } else {
                 $scope.loadingArray = true;
                 Utils.safeApply($scope);
-                await campaign.updateAccessibility();
-                await $scope.campaigns.sync();
-                $scope.allCampaignSelected = false;
-                $scope.loadingArray = false;
-
+                await campaignService.updateAccessibility(campaign)
+                await syncCampaignsAfterUpdate();
                 Utils.safeApply($scope);
             }
         }
+        async function syncCampaignsAfterUpdate() :Promise<void> {
+            await $scope.campaigns.sync();
+            $scope.allCampaignSelected = false;
+            $scope.loadingArray = false;
+            return Promise.resolve()
+        }
+
         $scope.confirmManualChange = async () => {
             $scope.display.lightbox.automaticCampaign = false;
             $scope.loadingArray = true;
             Utils.safeApply($scope);
-            $scope.automaticCampaign.updateAccessibility();
-            await $scope.campaigns.sync();
-            $scope.allCampaignSelected = false;
-            $scope.loadingArray = false;
-
-            Utils.safeApply($scope);
+            campaignService.updateAccessibility($scope.automaticCampaign)
+                .then(() => {
+                    syncCampaignsAfterUpdate()
+                        .then(() => Utils.safeApply($scope));
+                })
+                .catch(error => {
+                    console.warn(error)
+                    toasts.warning('lystore.campaign.update.err');
+                });
         }
         $scope.cancelManualChange = () =>{
             $scope.display.lightbox.automaticCampaign = false;
