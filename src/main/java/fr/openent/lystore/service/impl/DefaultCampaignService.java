@@ -184,7 +184,6 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
     }
 
     private void getCampaignsInfo(Handler<Either<String, JsonArray>> handler) {
-        //TODO order BY CALL FCT
         String query = "SELECT campaign.*, COUNT(DISTINCT rel_group_structure.id_structure) as nb_structures " +
                 "FROM " + Lystore.lystoreSchema + ".campaign " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".rel_group_campaign ON (campaign.id = rel_group_campaign.id_campaign) " +
@@ -196,7 +195,6 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
     }
 
     private void getCampaignsInfo(String idStructure, Handler<Either<String, JsonArray>> handler) {
-        //TODO order BY CALL FCT
         String query = "SELECT DISTINCT campaign.*, count(DISTINCT rel_group_structure.id_structure) as nb_structures, count(DISTINCT rel_equipment_tag.id_equipment) as nb_equiments " +
                 "FROM " + Lystore.lystoreSchema + ".campaign " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".rel_group_campaign ON (campaign.id = rel_group_campaign.id_campaign) " +
