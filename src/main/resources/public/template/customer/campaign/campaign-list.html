@@ -14,14 +14,14 @@
     </div>
     <div>
         <article class="twelve cell"
-                 ng-class="{disabled : !campaign.accessible}"
+                 ng-class="{disabled : !campaign.isOpen}"
                  ng-repeat="campaign in campaigns.all track by $index">
             <div class="twelve-mobile two cell campaign-image four-mobile">
-                <img ng-class="!campaign.accessible ? 'image-disabled' : ''" ng-src="[[campaign.image]]" ng-show="campaign.image!==null && campaign.image!==undefined " />
-                <img ng-class="!campaign.accessible ? 'image-disabled' : ''" skin-src="/img/illustrations/pages-default.png" ng-show="campaign.image===null || campaign.image===undefined "/>
+                <img ng-class="!campaign.isOpen ? 'image-disabled' : ''" ng-src="[[campaign.image]]" ng-show="campaign.image!==null && campaign.image!==undefined " />
+                <img ng-class="!campaign.isOpen ? 'image-disabled' : ''" skin-src="/img/illustrations/pages-default.png" ng-show="campaign.image===null || campaign.image===undefined "/>
             </div>
             <div class="ten cell eight-mobile" >
-                <h3 ng-class="!campaign.accessible ? 'title-disabled' : ''" >[[campaign.name]]</h3>
+                <h3 ng-class="!campaign.isOpen ? 'title-disabled' : ''" >[[campaign.name]]</h3>
                 <div>
                     <p ng-bind-html="campaign.description" class="small-text"></p>
                     <div class="groupButtons">
@@ -78,12 +78,12 @@
                                        i18n-value="lystore.demand.empty"/>
                             </div>
                             <div class="twelve-mobile cell">
-                                <input ng-show="campaign.accessible"
+                                <input ng-show="campaign.isOpen"
                                        ng-click="openCampaign(campaign)"
                                        type="button"
                                        class="button"
                                        i18n-value="lystore.access.catalog"/>
-                                <input ng-show="!campaign.accessible"
+                                <input ng-show="!campaign.isOpen"
                                        type="button"
                                        class="button"
                                        ng-disabled="true"

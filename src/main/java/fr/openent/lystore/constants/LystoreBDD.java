@@ -89,5 +89,6 @@ public class LystoreBDD {
     public static final String CAMPAIGN = "campaign";
     public static final String START_DATE = "start_date";
     public static final String END_DATE = "end_date";
+    public static final String IS_OPEN = "is_open";
 
 }

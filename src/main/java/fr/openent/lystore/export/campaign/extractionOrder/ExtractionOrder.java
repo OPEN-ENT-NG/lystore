@@ -627,7 +627,7 @@ public class ExtractionOrder extends TabHelper {
                 "  array_agg( " +
                 "    DISTINCT info_group_and_tag.group_name " +
                 "  ) as structure_groups,  " +
-                "  campaign.accessible as campaign_open,  " +
+                  Lystore.lystoreSchema + ".campaign_is_open(campaign.start_date, campaign.end_date, automatic_close) as campaign_open,  " +
                 "  CASE WHEN orders.prio IS NULL THEN -1 ELSE orders.prio END as priority_order,  " +
                 "  CASE WHEN project.preference IS NULL THEN -1 ELSE project.preference END as priority_project,  " +
                 "  CASE WHEN ss.type IS NULL  " +
@@ -798,7 +798,7 @@ public class ExtractionOrder extends TabHelper {
                 "  orders.status,  " +
                 "  orders.comment,  " +
                 "  priority_order,  " +
-                "  campaign.accessible,  " +
+                "  campaign_open,  " +
                 "  campaign.start_date,  " +
                 "  campaign.end_date,  " +
                 "  campaign.purse_enabled,  " +

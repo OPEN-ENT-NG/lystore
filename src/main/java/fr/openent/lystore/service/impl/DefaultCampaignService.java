@@ -184,26 +184,28 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
     }
 
     private void getCampaignsInfo(Handler<Either<String, JsonArray>> handler) {
+        //TODO order BY CALL FCT
         String query = "SELECT campaign.*, COUNT(DISTINCT rel_group_structure.id_structure) as nb_structures " +
                 "FROM " + Lystore.lystoreSchema + ".campaign " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".rel_group_campaign ON (campaign.id = rel_group_campaign.id_campaign) " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".rel_group_structure ON (rel_group_structure.id_structure_group = rel_group_campaign.id_structure_group) " +
-                "GROUP BY campaign.id,campaign.name,campaign.description,campaign.image,campaign.accessible,campaign.purse_enabled,campaign.automatic_close\n" +
+                "GROUP BY campaign.id,campaign.name,campaign.description,campaign.image,campaign.purse_enabled,campaign.automatic_close\n" +
                 ",campaign.start_date,campaign.end_date,campaign.priority_enabled,campaign.priority_field " +
-                " ORDER BY campaign.start_date DESC, campaign.accessible DESC ; ";
+                " ORDER BY campaign.start_date DESC ,  " +  Lystore.lystoreSchema + ".campaign_is_open(campaign.start_date, campaign.end_date, automatic_close);";
         Sql.getInstance().prepared(query, new JsonArray(), SqlResult.validResultHandler(handler));
     }
 
     private void getCampaignsInfo(String idStructure, Handler<Either<String, JsonArray>> handler) {
+        //TODO order BY CALL FCT
         String query = "SELECT DISTINCT campaign.*, count(DISTINCT rel_group_structure.id_structure) as nb_structures, count(DISTINCT rel_equipment_tag.id_equipment) as nb_equiments " +
                 "FROM " + Lystore.lystoreSchema + ".campaign " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".rel_group_campaign ON (campaign.id = rel_group_campaign.id_campaign) " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".rel_group_structure ON (rel_group_campaign.id_structure_group = rel_group_structure.id_structure_group) " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".rel_equipment_tag ON (rel_group_campaign.id_tag = rel_equipment_tag.id_tag) " +
                 "WHERE rel_group_structure.id_structure = ? " +
-                "GROUP BY campaign.id,campaign.name,campaign.description,campaign.image,campaign.accessible,campaign.purse_enabled,campaign.automatic_close\n" +
+                "GROUP BY campaign.id,campaign.name,campaign.description,campaign.image,campaign.purse_enabled,campaign.automatic_close\n" +
                 ",campaign.start_date,campaign.end_date,campaign.priority_enabled,campaign.priority_field " +
-                " ORDER BY campaign.start_date DESC, campaign.accessible DESC ;";
+                " ORDER BY campaign.start_date DESC ,  " +  Lystore.lystoreSchema + ".campaign_is_open(campaign.start_date, campaign.end_date, automatic_close);";
 
         Sql.getInstance().prepared(query, new JsonArray().add(idStructure), SqlResult.validResultHandler(handler));
     }
@@ -533,8 +535,7 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                 " priority_field=?," +
                 "start_date = ?," +
                 " end_date = ?, " +
-                "automatic_close = ?," +
-                "accessible = ? " +
+                "automatic_close = ?" +
                 "WHERE id = ?";
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray()
                 .add(campaign.getString("name"))
@@ -546,7 +547,6 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                 .add(campaign.getString("start_date"))
                 .add(campaign.getString("end_date"))
                 .add(campaign.getBoolean("automatic_close"))
-                .add(campaign.getBoolean("accessible"))
                 .add(id);
 
         return new JsonObject()
@@ -556,15 +556,14 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
     }
     private JsonObject getCampaignCreationStatement(Number id, JsonObject campaign) {
         String insertCampaignQuery =
-                "INSERT INTO " + Lystore.lystoreSchema + ".campaign(id, name, description, image, accessible," +
+                "INSERT INTO " + Lystore.lystoreSchema + ".campaign(id, name, description, image, " +
                         " purse_enabled, priority_enabled, priority_field, start_date, end_date,automatic_close )" +
-                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?) RETURNING id; ";
+                        "VALUES (?, ?, ?, ?,  ?, ?, ?, ?, ?,?) RETURNING id; ";
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray()
                 .add(id)
                 .add(campaign.getString("name"))
                 .add(campaign.getString("description"))
                 .add(campaign.getString("image"))
-                .add(campaign.getBoolean("accessible"))
                 .add(campaign.getBoolean("purse_enabled"))
                 .add(campaign.getBoolean("priority_enabled"))
                 .add(campaign.getString("priority_field"))
