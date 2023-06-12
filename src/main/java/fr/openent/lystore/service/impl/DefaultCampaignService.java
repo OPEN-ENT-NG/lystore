@@ -184,12 +184,19 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
     }
 
     private void getCampaignsInfo(Handler<Either<String, JsonArray>> handler) {
-        String query = "SELECT campaign.*, COUNT(DISTINCT rel_group_structure.id_structure) as nb_structures " +
+        String query = "SELECT campaign.*, COUNT(DISTINCT rel_group_structure.id_structure) as nb_structures ,  orders_limit_date.min_date , orders_limit_date.max_date " +
                 "FROM " + Lystore.lystoreSchema + ".campaign " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".rel_group_campaign ON (campaign.id = rel_group_campaign.id_campaign) " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".rel_group_structure ON (rel_group_structure.id_structure_group = rel_group_campaign.id_structure_group) " +
-                "GROUP BY campaign.id,campaign.name,campaign.description,campaign.image,campaign.purse_enabled,campaign.automatic_close\n" +
-                ",campaign.start_date,campaign.end_date,campaign.priority_enabled,campaign.priority_field " +
+                "INNER JOIN (SELECT campaign.id , " +
+                "   min(ord.creation_date) as min_date , " +
+                "   max(ord.creation_date) as max_date " +
+                "   FROM " + Lystore.lystoreSchema + ".campaign " +
+                "   LEFT JOIN " + Lystore.lystoreSchema + ".allOrders ord ON (ord.id_campaign = campaign.id) " +
+                "   group by campaign.id " +
+                "     ) as orders_limit_date on orders_limit_date.id = campaign.id " +
+               " GROUP BY campaign.id,campaign.name,campaign.description,campaign.image,campaign.purse_enabled,campaign.automatic_close " +
+                ",campaign.start_date,campaign.end_date,campaign.priority_enabled,campaign.priority_field , min_date ,max_date " +
                 " ORDER BY campaign.start_date DESC ,  " +  Lystore.lystoreSchema + ".campaign_is_open(campaign.start_date, campaign.end_date, automatic_close);";
         Sql.getInstance().prepared(query, new JsonArray(), SqlResult.validResultHandler(handler));
     }
@@ -201,7 +208,7 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                 "INNER JOIN " + Lystore.lystoreSchema + ".rel_group_structure ON (rel_group_campaign.id_structure_group = rel_group_structure.id_structure_group) " +
                 "INNER JOIN " + Lystore.lystoreSchema + ".rel_equipment_tag ON (rel_group_campaign.id_tag = rel_equipment_tag.id_tag) " +
                 "WHERE rel_group_structure.id_structure = ? " +
-                "GROUP BY campaign.id,campaign.name,campaign.description,campaign.image,campaign.purse_enabled,campaign.automatic_close\n" +
+                "GROUP BY campaign.id,campaign.name,campaign.description,campaign.image,campaign.purse_enabled,campaign.automatic_close " +
                 ",campaign.start_date,campaign.end_date,campaign.priority_enabled,campaign.priority_field " +
                 " ORDER BY campaign.start_date DESC ,  " +  Lystore.lystoreSchema + ".campaign_is_open(campaign.start_date, campaign.end_date, automatic_close);";
 
@@ -556,7 +563,7 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
         String insertCampaignQuery =
                 "INSERT INTO " + Lystore.lystoreSchema + ".campaign(id, name, description, image, " +
                         " purse_enabled, priority_enabled, priority_field, start_date, end_date,automatic_close )" +
-                        "VALUES (?, ?, ?, ?,  ?, ?, ?, ?, ?,?) RETURNING id; ";
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?,?) RETURNING id; ";
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray()
                 .add(id)
                 .add(campaign.getString("name"))

@@ -12,7 +12,9 @@ export interface ICampaignResponse {
     priority_enabled: boolean,
     start_date: string,
     end_date: string,
-    automatic_close: boolean
+    automatic_close: boolean,
+    min_date: Date,
+    max_date: Date
 
 }
 export class Campaign implements Selectable  {
@@ -38,6 +40,8 @@ export class Campaign implements Selectable  {
     start_date : Date;
     automatic_close : boolean;
     isOpen: boolean ;
+    min_date:Date;
+    max_date:Date;
 
     constructor (name?: string, description?: string) {
         if (name) this.name = name;
@@ -65,8 +69,8 @@ export class Campaign implements Selectable  {
             purse_enabled: this.purse_enabled,
             priority_enabled: this.priority_enabled,
             priority_field: this.priority_field,
-            end_date: this.end_date,
-            start_date: this.start_date,
+            end_date: moment(this.end_date).format("YYYY-MM-DD HH:mm:ss.SSSSZ"),
+            start_date:  moment(this.start_date).format("YYYY-MM-DD HH:mm:ss.SSSSZ"),
             automatic_close: this.automatic_close
         };
     }
@@ -152,6 +156,8 @@ export class Campaign implements Selectable  {
         this.start_date = new Date(campaign.start_date);
         this.automatic_close = campaign.automatic_close;
         this.end_date = new Date(campaign.start_date);
+        this.min_date = new Date(campaign.min_date);
+        this.max_date = new Date(campaign.max_date);
         return this;
     }
 }

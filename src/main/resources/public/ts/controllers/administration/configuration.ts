@@ -484,18 +484,15 @@ export const configurationController = ng.controller('configurationController',
                 && $scope.checkTags();
         }
 
-        $scope.checkGapDates = (campaign: Campaign) =>{
-            return true;
-            // !campaign.automatic_close
-            // ||
-            // (moment(campaign.max_date)._isValid && moment(campaign.min_date)._isValid )
-            //     ?
-            //     (moment(moment(campaign.end_date).format('YYYY-MM-DD'),"YYYY-MM-DD")
-            //         .diff(moment(moment(campaign.max_date).format('YYYY-MM-DD'),"YYYY-MM-DD"),'days') >= 0)
-            //     && (moment(campaign.min_date).diff(moment(campaign.start_date),'days') >= 0)
-            //     :
-            //     true
+        $scope.checkGapDates = (campaign: Campaign) => {
+            if (campaign.automatic_close)
+                if (campaign.max_date !== null && campaign.min_date !== null)
+                    moment(campaign.start_date).isSameOrBefore(campaign.min_date) && moment(campaign.end_date).isSameOrAfter(campaign.max_date)
+                else
+                    return false
+            return true
         }
+
         $scope.isValidDates =  (campaign: Campaign) => {
             return !campaign.automatic_close
                 || ( moment(campaign.end_date).diff(moment(campaign.start_date),'days') > 0);
