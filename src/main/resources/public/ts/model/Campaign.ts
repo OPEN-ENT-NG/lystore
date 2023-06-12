@@ -69,7 +69,7 @@ export class Campaign implements Selectable  {
             purse_enabled: this.purse_enabled,
             priority_enabled: this.priority_enabled,
             priority_field: this.priority_field,
-            end_date: moment(this.end_date).format("YYYY-MM-DD HH:mm:ss.SSSSZ"),
+            end_date: (this.end_date) ? moment(this.end_date).format("YYYY-MM-DD HH:mm:ss.SSSSZ") : null,
             start_date:  moment(this.start_date).format("YYYY-MM-DD HH:mm:ss.SSSSZ"),
             automatic_close: this.automatic_close
         };
