@@ -1,5 +1,6 @@
 package fr.openent.lystore.security;
 
+import fr.openent.lystore.constants.LystoreBDD;
 import fr.wseduc.webutils.http.Binding;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
@@ -21,18 +22,14 @@ public class AccessUpdateOrderOnClosedCampaigne implements ResourcesProvider {
         }else{
             resourceRequest.pause();
             Integer campaignId = Integer.parseInt(resourceRequest.getParam("idCampaign"));
-            String checkQuery = "SELECT accessible OR ( " +
-                    " CASE WHEN automatic_close = true " +
-                    " THEN (start_date  < NOW()) AND(end_date  > NOW()) " +
-                    " ELSE false END " +
-                    ")  as accessible " +
-                    "FROM  "+ Lystore.lystoreSchema + ".campaign " +
+            String checkQuery = "SELECT is_open  " +
+                    "FROM  "+ Lystore.lystoreSchema + ".campaign_status " +
                     "WHERE id = ? ;";
 
             Sql.getInstance().prepared(checkQuery, new JsonArray().add(campaignId), SqlResult.validResultHandler(event -> {
                 if (event.isRight()) {
                     JsonArray result = event.right().getValue();
-                    boolean campaignIsAccessible = result.getJsonObject(0).getBoolean("accessible");
+                    boolean campaignIsAccessible = result.getJsonObject(0).getBoolean(LystoreBDD.IS_OPEN);
                     resourceRequest.resume();
                     handler.handle( campaignIsAccessible && WorkflowActionUtils.hasRight(user, WorkflowActions.ACCESS_RIGHT.toString()));
                 } else {

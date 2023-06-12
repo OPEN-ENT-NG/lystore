@@ -68,7 +68,7 @@
                 </div>
                 <div workflow="lystore.administrator" style="float: right; padding: 0; margin-top: 10px;">
                     <span class="horizontal-spacing cell"><i18n>lystore.campaign.accessibility</i18n></span>
-                    <switch-toggle ng-model="campaign.accessible" ng-change="updateAccessibility(campaign)"
+                    <switch-toggle ng-model="campaign.isOpen" ng-change="updateAccessibility(campaign)"
                                    class="cell"></switch-toggle>
                 </div>
             </div>
@@ -83,7 +83,7 @@
 </lightbox>
 
 
-<lightbox on-close="display.lightbox.automaticCampaign = false;"
+<lightbox on-close="cancelManualChange()"
           show="display.lightbox.automaticCampaign"
           workflow="lystore.administrator">
     <container template="campaign.lightbox.automaticCampaign"></container>

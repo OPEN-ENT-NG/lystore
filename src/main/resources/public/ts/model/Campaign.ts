@@ -8,12 +8,13 @@ export interface ICampaignResponse {
     name: string,
     description: string,
     image: string,
-    accessible: boolean,
     purse_enabled: boolean,
     priority_enabled: boolean,
     start_date: string,
     end_date: string,
-    automatic_close: boolean
+    automatic_close: boolean,
+    min_date: Date,
+    max_date: Date
 
 }
 export class Campaign implements Selectable  {
@@ -21,7 +22,6 @@ export class Campaign implements Selectable  {
     name: string;
     description: string;
     image: string;
-    accessible: boolean;
     groups: StructureGroup[];
     selected: boolean;
     purse_amount?: number;
@@ -39,8 +39,9 @@ export class Campaign implements Selectable  {
     end_date :Date;
     start_date : Date;
     automatic_close : boolean;
-    max_date:Date;
+    isOpen: boolean ;
     min_date:Date;
+    max_date:Date;
 
     constructor (name?: string, description?: string) {
         if (name) this.name = name;
@@ -51,8 +52,10 @@ export class Campaign implements Selectable  {
         this.priority_enabled = true;
         this.automatic_close = true;
         this.priority_field = PRIORITY_FIELD.ORDER
+        //default value = 1 an
         this.start_date = moment().format('YYYY-MM-DD')
         this.end_date = moment().add(1,'year').format('YYYY-MM-DD')
+        this.isOpen = this.checkIsOpen();
     }
 
     toJson () {
@@ -60,15 +63,14 @@ export class Campaign implements Selectable  {
             name: this.name,
             description: this.description || null,
             image: this.image || null,
-            accessible: this.accessible || false,
             groups: this.groups.map((group) => {
                 return group.toJson();
             }),
             purse_enabled: this.purse_enabled,
             priority_enabled: this.priority_enabled,
             priority_field: this.priority_field,
-            end_date: (this.automatic_close) ? moment(this.end_date).format('YYYY-MM-DD') : null,
-            start_date: this.start_date,
+            end_date: moment(this.end_date).format("YYYY-MM-DD HH:mm:ss.SSSSZ"),
+            start_date:  moment(this.start_date).format("YYYY-MM-DD HH:mm:ss.SSSSZ"),
             automatic_close: this.automatic_close
         };
     }
@@ -77,8 +79,6 @@ export class Campaign implements Selectable  {
     }
     async save () {
         if (this.id) {
-            if(this.automatic_close)
-                this.accessible = false;
             await this.update();
         } else {
             await this.create();
@@ -108,13 +108,7 @@ export class Campaign implements Selectable  {
             notify.error('lystore.campaign.delete.err');
         }
     }
-    async updateAccessibility() {
-        try {
-            await http.put(`/lystore/campaign/accessibility/${this.id}`, this.toJson());
-        } catch (e) {
-            notify.error('lystore.campaign.update.err');
-        }
-    }
+
     projectPriorityEnable(){
         return (this.priority_field == PRIORITY_FIELD.PROJECT || !this.priority_field )  && this.priority_enabled ;
     }
@@ -127,16 +121,7 @@ export class Campaign implements Selectable  {
             Mix.extend(this, Mix.castAs(Campaign, data));
             this.start_date =  moment(this.start_date);
             this.end_date = moment(this.end_date);
-            if(this.automatic_close) {
-                this.max_date = moment(data.max_date)
-                this.min_date = moment(data.min_date)
-            }
-            this.accessible = this.accessible
-                || (
-                    (this.start_date < this.end_date)
-                    &&  (moment(this.start_date).diff(moment(),'days') <= 0
-                    && moment(this.end_date).diff(moment(),'days') > 0)
-                    && this.automatic_close);//
+            this.isOpen = this.checkIsOpen();
             if (this.groups[0] !== null ) {
                 this.groups = Mix.castArrayAs(StructureGroup, JSON.parse(this.groups.toString())) ;
                 if (tags) {
@@ -147,10 +132,17 @@ export class Campaign implements Selectable  {
                     });
                 }
             } else this.groups = [];
-
         } catch (e) {
             notify.error('lystore.campaign.sync.err');
         }
+    }
+
+    checkIsOpen(): boolean {
+        return (this.automatic_close)
+            ? moment().isBetween(moment(this.start_date), moment(this.end_date), "days", "[]")
+            : (this.end_date)
+                ? moment().isBetween(moment(this.start_date), moment(this.end_date), "days", "[)")
+                : moment().isSameOrAfter(moment(this.start_date));
     }
 
 
@@ -159,12 +151,13 @@ export class Campaign implements Selectable  {
         this.name = campaign.name;
         this.description = campaign.description;
         this.image = campaign.image;
-        this.accessible = campaign.accessible;
         this.purse_enabled = campaign.purse_enabled;
         this.priority_enabled = campaign.priority_enabled;
         this.start_date = new Date(campaign.start_date);
         this.automatic_close = campaign.automatic_close;
         this.end_date = new Date(campaign.start_date);
+        this.min_date = new Date(campaign.min_date);
+        this.max_date = new Date(campaign.max_date);
         return this;
     }
 }
@@ -192,13 +185,8 @@ export class Campaigns extends Selection<Campaign> {
             let { data } = await http.get( Structure ? `/lystore/campaigns?idStructure=${Structure}`  : `/lystore/campaigns`  );
             this.all = Mix.castArrayAs(Campaign, data);
             this.all.forEach(c =>{
-                if(c.id == 2)
-                c.accessible = c.accessible
-                    ||
-                    (c.end_date != null && c.start_date != null && moment(c.start_date).diff(moment(),'days') <= 0
-                        && moment(c.end_date).diff(moment().format('YYYY-MM-DD'),'days') > 0);
-
-            })
+                    c.isOpen = c.checkIsOpen();
+            });
         } catch (e) {
             notify.error('lystore.campaigns.sync.err');
         }

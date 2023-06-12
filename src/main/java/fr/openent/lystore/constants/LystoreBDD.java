@@ -23,7 +23,6 @@ public class LystoreBDD {
     public static final String ID_STRUCTURE = "id_structure";
     public static final String TOTAL_ORDER = "total_order";
     public static final String AMOUNT = "amount";
-    public static final String CAMPAIGN = "campaign";
     public static final String MARKET = "market";
     public static final String CODE = "code";
     public static final String ROOM = "room";
@@ -85,4 +84,11 @@ public class LystoreBDD {
     //TITLE
     public static final String TITLES = "titles";
     public static final String TITLE = "title";
+
+    //CAMPAIGN
+    public static final String CAMPAIGN = "campaign";
+    public static final String START_DATE = "start_date";
+    public static final String END_DATE = "end_date";
+    public static final String IS_OPEN = "is_open";
+
 }
