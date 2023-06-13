@@ -254,7 +254,7 @@ export const operationController = ng.controller('operationController',
             template.close('operation.lightbox');
             let idsOrdersClient = [];
             let idsOrdersRegion = [];
-            $scope.ordersClientByOperation.all.map(order=>{
+            $scope.ordersClientByOperation.selected.map(order=>{
                     if(order.typeOrder === "client")
                     {
                         idsOrdersClient.push(order.id)
