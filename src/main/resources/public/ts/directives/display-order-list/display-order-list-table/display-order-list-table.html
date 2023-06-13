@@ -13,16 +13,16 @@
                 </td>
                 <td ng-repeat="field in vm.tableFields "
                     ng-hide="!field.display"
-                    ng-click="sort.order.type = field.fieldName;
-                    sort.order.reverse = !sort.order.reverse">
+                    ng-click="vm.sort.order.type = field.fieldName;
+                    vm.sort.order.reverse = !vm.sort.order.reverse">
                     <div class="smallTabElem">  [[vm.lang.translate(field.name)]] </div>
-                    <i class="up-open" ng-show="sort.order.type === field.fieldName && !sort.order.reverse"></i>
-                    <i class="down-open" ng-show="sort.order.type === field.fieldName && sort.order.reverse"></i>
+                    <i class="up-open" ng-show="vm.sort.order.type === field.fieldName && !vm.sort.order.reverse"></i>
+                    <i class="down-open" ng-show="vm.sort.order.type === field.fieldName && vm.sort.order.reverse"></i>
                 </td>
             </tr>
             </thead>
             <tbody bottom-scroll="vm.scrollDisplay.limitTo = vm.scrollDisplay.limitTo + 25">
-            <tr ng-repeat="order in vm.displayedOrders.all | orderBy:sort.order.type:sort.order.reverse | limitTo:vm.scrollDisplay.limitTo" post-ng-repeat
+            <tr ng-repeat="order in vm.displayedOrders.all | orderBy:vm.sort.order.type:vm.sort.order.reverse | limitTo:vm.scrollDisplay.limitTo" post-ng-repeat
                 ng-class="{ orderEditByRegion: order.typeOrder === 'region' }">
                 <td workflow="lystore.manager" class="table-selector">
                     <label class="checkbox">

@@ -17,6 +17,13 @@ interface IViewModel {
     formatDate(date: Date):string;
     switchAllOrders():void;
     getStructureGroupsList  (structureGroups : any): string;
+
+    sort: {
+        order: {
+            type: string,
+            reverse: boolean
+        }
+    }
 }
 
 
@@ -35,6 +42,12 @@ class Controller implements ng.IController, IViewModel {
     allOrdersSelected:boolean;
     scrollDisplay: {
         limitTo: number;
+    };
+    sort = {
+        order : {
+            type: 'name_structure',
+            reverse: false
+        }
     };
 
     constructor(private $scope: IDirectiveScope) {
