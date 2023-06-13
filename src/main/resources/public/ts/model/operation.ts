@@ -101,8 +101,8 @@ export class Operation implements Selectable {
                         //à enlever dès que le prix sera mieux gérer
                         order.priceUnitedTTC = order.price_proposal ?
                             parseFloat(( order.price_proposal).toString()) :
-                            order.calculatePriceTTC(true);
-                        order.total = order.calculatePriceTTC(true) * order.amount
+                            order.priceTTC;
+                        order.total = order.priceUnitedTTC * order.amount
                         order.structure = structures.find(structureFilter => structureFilter.id === order.id_structure)
                     }else if(order instanceof  OrderRegion){
                         //à enlever dès que le prix sera mieux gérer

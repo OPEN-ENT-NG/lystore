@@ -521,7 +521,8 @@ GROUP BY
                 "                                  ELSE Sum((oco.price + ( oco.price * oco.tax_amount ) / 100 ) * oco.amount) " +
                 "                           END " +
                 "                    FROM   lystore.order_client_options oco " +
-                "                    WHERE  oco.id_order_client_equipment = orders.id) + orders.\"price TTC\" ) * orders.amount, 2) AS price_ttc, " +
+                "                    WHERE  oco.id_order_client_equipment = orders.id AND orders.override_region is false) " +
+                "           + orders.\"price TTC\" ) , 2) AS price_ttc, " +
                 "           orders.priceht                                                                                        AS price, " +
                 "           orders.creation_date, " +
                 "           orders.amount, " +

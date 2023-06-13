@@ -66,7 +66,8 @@ export interface IOrderClientResponse extends IOrderResponse {
     //à adapater dans des refactos ultérieures
     files: string,
     contract?:IContractResponse,
-    contract_type?:IContractTypeResponse
+    contract_type?:IContractTypeResponse,
+    priceTTC?: number
 }
 
 
@@ -136,6 +137,7 @@ export class OrderClient implements Order  {
     instruction_cp_adopted : string;
     operation: Operation;
     bCOrder?:BCOrder;
+    priceTTC?: number;
     constructor() {
         this.typeOrder= "client";
     }
@@ -264,6 +266,7 @@ export class OrderClient implements Order  {
         this.name = orderClientResponse.name;
         this.preference = orderClientResponse.preference;
         this.price = orderClientResponse.price;
+        this.priceTTC = orderClientResponse.priceTTC;
         this.price_proposal = orderClientResponse.price_proposal;
         this.rank = orderClientResponse.rank;
         this.status = orderClientResponse.status;
