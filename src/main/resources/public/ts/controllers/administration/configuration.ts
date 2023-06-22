@@ -485,7 +485,7 @@ export const configurationController = ng.controller('configurationController',
         }
 
         $scope.checkGapDates = (campaign: Campaign) => {
-            if (campaign.automatic_close && campaign.max_date !== null && campaign.min_date !== null)
+            if (campaign.automatic_close && campaign.max_date && campaign.min_date)
                    return moment(campaign.start_date).isSameOrBefore(campaign.min_date) && moment(campaign.end_date).isSameOrAfter(campaign.max_date)
             else
                 return true
