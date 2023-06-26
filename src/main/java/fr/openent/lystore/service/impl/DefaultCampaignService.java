@@ -197,7 +197,7 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                 "     ) as orders_limit_date on orders_limit_date.id = campaign.id " +
                " GROUP BY campaign.id,campaign.name,campaign.description,campaign.image,campaign.purse_enabled,campaign.automatic_close " +
                 ",campaign.start_date,campaign.end_date,campaign.priority_enabled,campaign.priority_field , min_date ,max_date " +
-                " ORDER BY campaign.start_date DESC ,  " +  Lystore.lystoreSchema + ".campaign_is_open(campaign.start_date, campaign.end_date, automatic_close);";
+                " ORDER BY campaign.start_date DESC ;";
         Sql.getInstance().prepared(query, new JsonArray(), SqlResult.validResultHandler(handler));
     }
 
@@ -210,7 +210,7 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
                 "WHERE rel_group_structure.id_structure = ? " +
                 "GROUP BY campaign.id,campaign.name,campaign.description,campaign.image,campaign.purse_enabled,campaign.automatic_close " +
                 ",campaign.start_date,campaign.end_date,campaign.priority_enabled,campaign.priority_field " +
-                " ORDER BY campaign.start_date DESC ,  " +  Lystore.lystoreSchema + ".campaign_is_open(campaign.start_date, campaign.end_date, automatic_close);";
+                " ORDER BY campaign.start_date DESC ;";
 
         Sql.getInstance().prepared(query, new JsonArray().add(idStructure), SqlResult.validResultHandler(handler));
     }

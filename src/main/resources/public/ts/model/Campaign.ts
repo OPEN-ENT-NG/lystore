@@ -70,7 +70,7 @@ export class Campaign implements Selectable  {
             priority_enabled: this.priority_enabled,
             priority_field: this.priority_field,
             end_date: (this.end_date) ? moment(this.end_date).format("YYYY-MM-DD HH:mm:ss.SSSSZ") : null,
-            start_date:  moment(this.start_date).format("YYYY-MM-DD HH:mm:ss.SSSSZ"),
+            start_date: (this.start_date) ? moment(this.start_date).format("YYYY-MM-DD HH:mm:ss.SSSSZ") : null,
             automatic_close: this.automatic_close
         };
     }
@@ -87,6 +87,11 @@ export class Campaign implements Selectable  {
 
     async create () {
         try {
+            if(!this.automatic_close){
+                this.end_date = undefined;
+                this.start_date = undefined;
+                console.log(this.toJson())
+            }
             await http.post(`/lystore/campaign`, this.toJson());
         } catch (e) {
             notify.error('lystore.campaign.create.err');
