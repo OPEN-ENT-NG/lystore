@@ -16,6 +16,9 @@ module.exports = {
     "verbose": true,
     "testURL": "http://localhost/",
     "coverageDirectory": "coverage/front",
+    moduleNameMapper: {
+        '^axios$': require.resolve('axios'),
+    },
     "coverageReporters": [
         "text",
         "cobertura"

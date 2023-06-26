@@ -28,7 +28,7 @@ import {
     Titles,
     Utils
 } from './index';
-import http from 'axios';
+import http, {AxiosRequestConfig} from 'axios';
 import {BCOrder} from "./BCOrder";
 import {OrderOptionClient,IOrderClientOptionResponse} from "./OrderOptionClient";
 
@@ -529,7 +529,7 @@ export class OrdersClient extends Selection<OrderClient> {
             if (status === "IN PROGRESS") {
                 statusURL = "inprogress";
             }
-            let config = status === 'SENT' ? {responseType: 'arraybuffer'} : {};
+            let config : AxiosRequestConfig = status === 'SENT' ? {responseType: 'arraybuffer'} : {};
             return await  http.put(`/lystore/orders/${statusURL.toLowerCase()}`, this.toJson(status), config);
         } catch (e) {
             notify.error('lystore.order.update.err');
