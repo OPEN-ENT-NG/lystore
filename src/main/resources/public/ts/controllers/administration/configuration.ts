@@ -493,7 +493,7 @@ export const configurationController = ng.controller('configurationController',
 
         $scope.isValidDates =  (campaign: Campaign) => {
             return !campaign.automatic_close
-                || ( moment(campaign.end_date).isAfter(moment(campaign.start_date)));
+                || ( moment(campaign.end_date).isSameOrAfter(moment(campaign.start_date)));
         }
 
         $scope.validCampaignForm = (campaign: Campaign) => {
