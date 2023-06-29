@@ -371,7 +371,7 @@ export const orderController = ng.controller('orderController',
         };
         $scope.isNotValidated = ( orders:OrderClient[]) =>{
 
-            let order  = orders.find(order => order.status === "SENT")
+            let order  = orders.find(order => order.status === "SENT" || order.status === "DONE")
             return order != undefined
         };
 
