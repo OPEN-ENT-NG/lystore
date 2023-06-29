@@ -100,6 +100,11 @@ export class Campaign implements Selectable  {
 
     async update () {
         try {
+            //verification transformation campagne auto du futur en manuelle
+            if(!this.automatic_close && moment(this.start_date).isAfter(moment()) && this.start_date && this.end_date ){
+                this.start_date = undefined
+                this.end_date = undefined
+            }
             await http.put(`/lystore/campaign/${this.id}`, this.toJson());
         } catch (e) {
             notify.error('lystore.campaign.update.err');
