@@ -1,6 +1,7 @@
 import { ng, template, angular, notify, moment, _ } from 'entcore';
-import { PurseImporter, Utils, Purse, Purses } from '../../model';
+import {PurseImporter, Utils, Purse, Purses, Structures, Campaign, TitleImporter, Structure} from '../../model';
 import { Mix } from 'entcore-toolkit';
+import {IScope} from "angular";
 
 declare let window: any;
 
@@ -31,9 +32,8 @@ export const purseController = ng.controller('PurseController',
             }
         };
 
-        $scope.openEditPurseForm = (purse: Purse = new Purse()) => {
-            $scope.purse = new Purse();
-            Mix.extend($scope.purse, purse);
+        $scope.openEditPurseForm = (purse: Purse) => {
+            $scope.purse = purse.copy();
             $scope.purse.initial_amount = parseFloat($scope.purse.initial_amount)
             template.open('purse.lightbox', 'administrator/campaign/purse/edit-purse-form');
             $scope.lightbox.open = true;
