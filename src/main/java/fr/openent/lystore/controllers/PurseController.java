@@ -121,8 +121,6 @@ public class PurseController extends ControllerHelper {
                     uais.add(values[0]);
                 }
                 if (uais.size() > 0) {
-                    log.info(uais);
-                    log.info(amounts);
                     matchUAIID(request, filename, uais, amounts, event.toString());
                 } else {
                     returnErrorMessage(request, new Throwable("missing.uai"), filename);
@@ -255,7 +253,9 @@ public class PurseController extends ControllerHelper {
      * @param cause   Cause error
      */
     private static void renderErrorMessage(HttpServerRequest request, Throwable cause) {
-        renderError(request, new JsonObject().put("message", cause.getMessage()));
+
+        badRequest(request, cause.getMessage());
+//        renderError(request, new JsonObject().put("message", cause.getMessage()));
     }
 
     @Get("/campaign/:id/purses/export")

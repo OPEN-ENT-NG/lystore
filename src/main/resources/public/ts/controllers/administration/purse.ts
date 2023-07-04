@@ -1,4 +1,4 @@
-import {ng, template, idiom as lang} from 'entcore';
+import {ng, template, idiom as lang, workspace, notify, toasts} from 'entcore';
 import {
     PurseImporter,
     Utils,
@@ -13,6 +13,9 @@ import {
 import {Mix} from 'entcore-toolkit';
 import {IScope} from "angular";
 import {PurseService, TitleService} from "../../services/app/admin";
+import service = workspace.v2.service;
+import {AxiosError, AxiosResponse} from "axios";
+import any = jasmine.any;
 
 declare let window: any;
 
@@ -53,6 +56,9 @@ interface IMainScope extends IScope {
     vm: IViewModel;
 }
 
+// class LystoreAxiosError  extends AxiosError{
+//     response : {data: { error: string }};
+// }
 
 class Controller implements IViewModel {
     purse: Purse;
@@ -95,20 +101,13 @@ class Controller implements IViewModel {
 
     async $onInit() {
         await this.campaign.sync(parseInt(this.$routeParams.idCampaign))
-        this.campaign.purses = new Purses(parseInt(this.$routeParams.idCampaign));
-        await this.campaign.purses.sync().then(() => {
-            this.campaign.purses.all.forEach(purse => {
-                if (isNaN(purse.total_order)) {
-                    purse.total_order = 0;
-                }
-            })
-        });
+        this.campaign.purses  = await this.purseService.sync(this.campaign.id)
         Utils.safeApply(this.$scope)
     }
 
     openEditPurseForm = (purse: Purse) => {
         this.purse = purse.copy();
-        this.purse.initial_amount = parseFloat(this.purse.initial_amount)
+        this.purse.initial_amount = parseFloat(this.purse.initial_amount.toFixed(2))
         template.open('purse.lightbox', 'administrator/campaign/purse/edit-purse-form');
         this.lightbox.open = true;
         Utils.safeApply(this.$scope);
@@ -121,14 +120,17 @@ class Controller implements IViewModel {
 
 
     validPurse = async (purse: Purse) => {
-        let status = await purse.save();
-        if (status === 202) {
-            this.isNegativePurse = true;
-        } else {
+        await this.purseService.save(purse).then( async (res :AxiosResponse) =>{
+            if(res.status === 202){
+                this.isNegativePurse = true;
+            }  else {
             this.lightbox.open = false;
-            await this.campaign.purses.sync();
-            delete this.purse;
+             this.campaign.purses = await this.purseService.sync(this.campaign.id);
         }
+        }).catch((e:AxiosResponse)=>{
+            console.log(e)
+            notify.error('lystore.purse.update.err');
+        })
         this.allHolderSelected = false;
         Utils.safeApply(this.$scope);
     };
@@ -141,20 +143,18 @@ class Controller implements IViewModel {
     };
 
     importPurses = async (importer: PurseImporter): Promise<void> => {
-        try {
-            await importer.validate();
-        } catch (err) {
-            importer.message = err.message;
-        } finally {
-            if (!importer.message) {
-                await this.campaign.purses.sync();
-                this.lightbox.open = false;
-                delete this.importer;
-            } else {
-                importer.files = [];
-            }
-            Utils.safeApply(this.$scope);
-        }
+            await this.purseService.validateImport(importer)
+                .then(async () =>{
+                    this.campaign.purses = await this.purseService.sync(this.campaign.id);
+                    this.lightbox.open = false;
+                    importer.files = [];
+                    Utils.safeApply(this.$scope);
+                    toasts.confirm("lystore.purse.import.confirm")
+                }).catch((e:AxiosError  )=>{
+                    importer.message = (e.response.data as {error: string}).error;
+                    Utils.safeApply(this.$scope);
+            });
+
     };
 
     exportPurses = (id: number) => {
@@ -162,7 +162,7 @@ class Controller implements IViewModel {
     };
     checkPurses = async (id_Campaign: number) => {
         this.isChecked = true;
-        await this.campaign.purses.check(id_Campaign);
+        await this.purseService.check(id_Campaign,this.campaign.purses);
         Utils.safeApply(this.$scope)
     }
 }

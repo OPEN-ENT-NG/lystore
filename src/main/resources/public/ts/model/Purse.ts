@@ -1,4 +1,4 @@
-import { notify,toasts } from 'entcore';
+import {notify, toasts} from 'entcore';
 import http from 'axios';
 import {Mix, Selectable, Selection} from 'entcore-toolkit';
 import {Structure} from "./Structure";
@@ -12,8 +12,9 @@ export interface IPurseStructureResponse {
     total_order: number,
     uai: string,//à changer en Istruct surement
     id_structure: string,
-    name:string
+    name: string
 }
+
 export class Purse implements Selectable {
     id?: number;
     id_structure: string;
@@ -24,9 +25,9 @@ export class Purse implements Selectable {
     bigDifference: boolean;
     initial_amount: any;
     total_order: number;
-    structure :Structure;
+    structure: Structure;
 
-    constructor (id_structure?: string, amount?: number, id_campaign?: number,initial_amount?:number) {
+    constructor(id_structure?: string, amount?: number, id_campaign?: number, initial_amount?: number) {
         if (id_structure) this.id_structure = id_structure;
         if (amount) this.amount = amount;
         if (initial_amount) this.initial_amount = initial_amount;
@@ -35,23 +36,7 @@ export class Purse implements Selectable {
         this.selected = false;
     }
 
-    async save (): Promise<number> {
-        try {
-            this.amount = parseFloat(this.initial_amount);
-            let {status, data} = await http.put(`/lystore/purse/${this.id}`, this.toJson());
-            if(status===200) {
-                let {amount} = data.amount;
-                this.amount = amount;
-            }else{
-                return status;
-            }
-        } catch (e) {
-            console.log(e)
-            notify.error('lystore.purse.update.err');
-        }
-    }
-
-    toJson () {
+    toJson() {
         return {
             id_structure: this.id_structure,
             amount: this.amount,
@@ -59,8 +44,8 @@ export class Purse implements Selectable {
         };
     }
 
-    copy():Purse{
-        let copyPurse =  new Purse()
+    copy(): Purse {
+        let copyPurse = new Purse()
         copyPurse.id = this.id;
         copyPurse.id_campaign = this.id_campaign;
         copyPurse.amount = this.amount;
@@ -70,12 +55,14 @@ export class Purse implements Selectable {
         copyPurse.selected = this.selected;
         return copyPurse;
     }
-    build(purseData: IPurseStructureResponse):Purse {
+
+    build(purseData: IPurseStructureResponse): Purse {
         this.id = purseData.id;
         this.id_campaign = purseData.id_campaign;
         this.amount = purseData.amount
         this.initial_amount = purseData.initial_amount;
-        this.total_order = purseData.total_order;
+
+        (!isNaN(purseData.total_order)) ? this.total_order = purseData.total_order : 0;
         this.structure.name = purseData.name;
         this.structure.uai = purseData.name;
         this.structure.id = purseData.id_structure;
@@ -87,7 +74,8 @@ export class Purse implements Selectable {
 export class Purses extends Selection<Purse> {
 
     id_campaign: number;
-    constructor (id_campaign: number) {
+
+    constructor(id_campaign: number) {
         super([]);
         this.id_campaign = id_campaign;
     }
@@ -98,36 +86,6 @@ export class Purses extends Selection<Purse> {
         })
         return this
     }
-    async sync () {
-        let {data} = await http.get(`/lystore/campaign/${this.id_campaign}/purses/list`);
-        let purseData:IPurseStructureResponse[] = data
-
-
-
-        // this.all = Mix.castArrayAs(Purse, purseData);
-        this.build(purseData)
-    }
-
-    async check(id_campaign){
-        let {data, status} =  await  http.get(`/lystore/campaign/${id_campaign}/purse/check`);
-        if(status===201){
-            this.all.map(purse => {
-                purse.substraction = 0.00;
-                data.map( back_data =>{
-                    if (back_data.id_structure && back_data.id_structure === purse.id_structure){
-                        purse.substraction = back_data.substraction;
-                        if(purse.substraction !== 0){
-                            if(Math.abs(purse.substraction) < 2){
-                                purse.bigDifference = false;
-                            }else{
-                                purse.bigDifference = true;
-                            }
-                        }
-                    }
-                })
-            })
-        }
-    }
 }
 
 export class PurseImporter {
@@ -135,7 +93,7 @@ export class PurseImporter {
     id_campaign: number;
     message: string;
 
-    constructor (id_campaign: number) {
+    constructor(id_campaign: number) {
         this.files = [];
         this.id_campaign = id_campaign;
     }
@@ -144,26 +102,5 @@ export class PurseImporter {
         return this.files.length > 0
             ? this.files[0].name.endsWith('.csv') && this.files[0].name.trim() !== ''
             : false;
-    }
-
-    async validate(): Promise<any> {
-        try {
-            await this.postFile();
-        } catch (err) {
-            throw err;
-        }
-    }
-
-    private async postFile(): Promise<any> {
-        let formData = new FormData();
-        formData.append('file', this.files[0], this.files[0].name);
-        let response;
-        try {
-            response = await http.post(`/lystore/campaign/${this.id_campaign}/purses/import`,
-                formData, {'headers' : { 'Content-Type': 'multipart/form-data' }});
-        } catch (err) {
-            throw err.response.data;
-        }
-        return response;
     }
 }
