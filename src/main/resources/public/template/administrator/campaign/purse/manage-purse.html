@@ -15,7 +15,7 @@
                     <td workflow="lystore.administrator">
                         <label class="checkbox">
                             <input type="checkbox"
-                                   ng-change="vm.switchAll(vm.allPurseSelected, vm.campaign.purses)"
+                                   ng-change="vm.switchAll(vm.campaign.purses)"
                                    ng-model="allPurseSelected">
                             <span></span>
                         </label>
@@ -23,7 +23,7 @@
                     <td ng-click="vm.sort.purse.type = 'uai';
                         vm.sort.purse.reverse = !vm.sort.purse.reverse">
                         <i18n>UAI</i18n>
-<!--                        <i class="up-open" ng-show="vm.sort.purse.type === 'uai' && !vm.ort.purse.reverse"></i>-->
+                        <i class="up-open" ng-show="vm.sort.purse.type === 'uai' && !vm.ort.purse.reverse"></i>
                         <i class="down-open" ng-show="vm.sort.purse.type === 'uai' && vm.sort.purse.reverse"></i>
                     </td>
                     <td ng-click="vm.sort.purse.type = 'name';

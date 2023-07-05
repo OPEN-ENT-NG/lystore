@@ -50,6 +50,7 @@ interface IViewModel extends ng.IController {
     exportPurses(id: number): void;
 
     checkPurses(id_Campaign: number): void;
+    switchAll(purses: Purses):void;
 }
 
 interface IMainScope extends IScope {
@@ -77,8 +78,7 @@ class Controller implements IViewModel {
     };
 
     constructor(private $scope: IMainScope, private $routeParams,
-                private purseService: PurseService
-                /*  inject service etc..just as we do in controller */) {
+                private purseService: PurseService) {
         this.$scope.vm = this;
         this.campaign = new Campaign()
 
@@ -160,6 +160,18 @@ class Controller implements IViewModel {
         this.isChecked = true;
         await this.purseService.check(id_Campaign,this.campaign.purses);
         Utils.safeApply(this.$scope)
+    }
+
+    switchAll = (purses: Purses): void => {
+        if (purses.selected.length === purses.all.length) {
+            purses.all.forEach((purse: Purse) => {
+                purse.selected = false;
+            });
+        } else {
+            purses.all.forEach((purse: Purse) => {
+                purse.selected = true;
+            });
+        }
     }
 }
 
