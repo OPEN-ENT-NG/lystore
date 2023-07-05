@@ -56,10 +56,6 @@ interface IMainScope extends IScope {
     vm: IViewModel;
 }
 
-// class LystoreAxiosError  extends AxiosError{
-//     response : {data: { error: string }};
-// }
-
 class Controller implements IViewModel {
     purse: Purse;
     campaign: Campaign;
@@ -105,7 +101,7 @@ class Controller implements IViewModel {
         Utils.safeApply(this.$scope)
     }
 
-    openEditPurseForm = (purse: Purse) => {
+    openEditPurseForm = (purse: Purse) : void => {
         this.purse = purse.copy();
         this.purse.initial_amount = parseFloat(this.purse.initial_amount.toFixed(2))
         template.open('purse.lightbox', 'administrator/campaign/purse/edit-purse-form');
@@ -113,13 +109,13 @@ class Controller implements IViewModel {
         Utils.safeApply(this.$scope);
     };
 
-    cancelPurseForm = () => {
+    cancelPurseForm = (): void => {
         this.lightbox.open = false;
         delete this.purse;
     };
 
 
-    validPurse = async (purse: Purse) => {
+    validPurse = async (purse: Purse): Promise<void>  => {
         await this.purseService.save(purse).then( async (res :AxiosResponse) =>{
             if(res.status === 202){
                 this.isNegativePurse = true;
@@ -157,10 +153,10 @@ class Controller implements IViewModel {
 
     };
 
-    exportPurses = (id: number) => {
+    exportPurses = (id: number) :void => {
         window.location = `/lystore/campaign/${id}/purses/export`;
     };
-    checkPurses = async (id_Campaign: number) => {
+    checkPurses = async (id_Campaign: number): Promise<void>   => {
         this.isChecked = true;
         await this.purseService.check(id_Campaign,this.campaign.purses);
         Utils.safeApply(this.$scope)

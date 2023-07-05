@@ -10,7 +10,7 @@ export interface IPurseStructureResponse {
     id_campaign: number,
     initial_amount: number,
     total_order: number,
-    uai: string,//à changer en Istruct surement
+    uai: string,
     id_structure: string,
     name: string
 }
@@ -83,7 +83,7 @@ export class Purses extends Selection<Purse> {
     build(pursesData: IPurseStructureResponse[]): Purses {
         this.all = pursesData.map(purseData => {
             return new Purse().build(purseData);
-        })
+        });
         return this
     }
 }

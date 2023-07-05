@@ -6,7 +6,7 @@ import http, {AxiosPromise, AxiosResponse} from "axios";
 export interface PurseService {
     save(purse: Purse): AxiosPromise;
 
-    sync(idCampaign: number);
+    sync(idCampaign: number) :Promise<Purses>;
 
     check(idCampaign: number, purses: Purses): Promise<void>;
 
@@ -25,8 +25,8 @@ export const purseService: PurseService = {
             return new Purses(idCampaign).build(PurseStructureResponses);
         }).catch(e => {
             console.error(e);
-            notify.error("lystore.purse.get.err")
-            return new Purses(idCampaign)
+            notify.error("lystore.purse.get.err");
+            return new Purses(idCampaign);
         });
     },
     check(idCampaign: number, purses: Purses): Promise<void> {
@@ -41,8 +41,8 @@ export const purseService: PurseService = {
                                 purse.bigDifference = Math.abs(purse.substraction) >= 2;
                             }
                         }
-                    })
-                })
+                    });
+                });
             }
         });
     },

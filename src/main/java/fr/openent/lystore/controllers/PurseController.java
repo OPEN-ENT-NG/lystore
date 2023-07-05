@@ -253,9 +253,7 @@ public class PurseController extends ControllerHelper {
      * @param cause   Cause error
      */
     private static void renderErrorMessage(HttpServerRequest request, Throwable cause) {
-
         badRequest(request, cause.getMessage());
-//        renderError(request, new JsonObject().put("message", cause.getMessage()));
     }
 
     @Get("/campaign/:id/purses/export")
