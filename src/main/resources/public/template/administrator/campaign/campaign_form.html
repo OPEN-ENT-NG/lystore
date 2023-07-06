@@ -28,7 +28,8 @@
                             </span>
                         <label class="seven checkbox">
                             <input type="checkbox"
-                                   ng-model="campaign.automatic_close"/>
+                                   ng-model="campaign.automatic_close"
+                                   ng-change="initializeEndDate(campaign)"/>
                             <span></span>
                         </label>
                         <label class="four vertical-spacing">

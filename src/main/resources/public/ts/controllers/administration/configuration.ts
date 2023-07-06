@@ -475,6 +475,12 @@ export const configurationController = ng.controller('configurationController',
                 return structureGroup.tags.length > 0;
             })
         };
+        $scope.initializeEndDate = (campaign: Campaign)=>{
+            if(campaign.start_date && (!campaign.end_date || !moment(campaign.end_date).isValid())){
+                campaign.end_date = moment(campaign.start_date).add(1, 'y').format('YYYY-MM-DD');
+                Utils.safeApply($scope);
+            }
+        }
 
         $scope.checkNamesAndTags = (campaign: Campaign)  => {
             return campaign.name !== undefined
