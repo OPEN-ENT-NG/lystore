@@ -111,12 +111,11 @@ class Controller implements IViewModel {
 
     cancelPurseForm = (): void => {
         this.lightbox.open = false;
-        delete this.purse;
     };
 
 
-    validPurse = async (purse: Purse): Promise<void>  => {
-        await this.purseService.save(purse).then( async (res :AxiosResponse) =>{
+    validPurse = async (): Promise<void>  => {
+        await this.purseService.save(this.purse).then( async (res :AxiosResponse) =>{
             if(res.status === 202){
                 this.isNegativePurse = true;
             }  else {

@@ -1,6 +1,7 @@
 package fr.openent.lystore.service.impl;
 
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.model.Purse;
 import fr.openent.lystore.model.Structure;
 import fr.openent.lystore.model.utils.Domain;
@@ -172,8 +173,8 @@ public class DefaultPurseService implements PurseService {
                 "SET amount = amount + ( ? - initial_amount)  , initial_amount = ?" +
                 "WHERE id = ? returning * ;";
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray()
-                .add(purse.getDouble("amount"))
-                .add(purse.getDouble("amount"))
+                .add(purse.getDouble(LystoreBDD.INITIAL_AMOUNT))
+                .add(purse.getDouble(LystoreBDD.INITIAL_AMOUNT))
                 .add(id);
         Sql.getInstance().prepared(query, params, SqlResult.validUniqueResultHandler(handler));
 //        Sql.getInstance().prepared(query, params, new Handler<Message<JsonObject>>() {
