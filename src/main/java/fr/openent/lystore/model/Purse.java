@@ -5,19 +5,19 @@ import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.utils.OrderUtils;
 import io.vertx.core.json.JsonObject;
 
-public class Purse extends Model{
+public class Purse {
     private double amount;
     private double initialAmount;
     private Campaign campaign;
     private Structure structure;
     private double totalOrder;
-
+    private Integer id;
     public Purse(JsonObject purseJO) {
         this.build(purseJO);
     }
 
     private void build(JsonObject purseJO) {
-        this.id = purseJO.getValue(CommonConstants.ID).toString();
+        this.id = purseJO.getInteger(CommonConstants.ID);
         this.amount = OrderUtils.safeGetDouble(purseJO, LystoreBDD.AMOUNT);
         this.initialAmount = OrderUtils.safeGetDouble(purseJO, LystoreBDD.INITIAL_AMOUNT);
         this.campaign = new Campaign();
@@ -67,13 +67,13 @@ public class Purse extends Model{
         this.structure = structure;
     }
 
-    @Override
+
     public JsonObject toJsonObject() {
         return new JsonObject()
                 .put(CommonConstants.ID,id)
                 .put(LystoreBDD.AMOUNT,amount)
                 .put(LystoreBDD.INITIAL_AMOUNT,initialAmount)
-                .put(LystoreBDD.ID_CAMPAIGN,campaign.getId())
+                .put(LystoreBDD.ID_CAMPAIGN, Integer.parseInt(campaign.getId()))
                 .put(LystoreBDD.ID_STRUCTURE, structure.getId())
                 .put(LystoreBDD.TOTAL_ORDER , totalOrder);
     }
