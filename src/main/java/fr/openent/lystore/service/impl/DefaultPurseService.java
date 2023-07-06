@@ -177,24 +177,6 @@ public class DefaultPurseService implements PurseService {
                 .add(purse.getDouble(LystoreBDD.INITIAL_AMOUNT))
                 .add(id);
         Sql.getInstance().prepared(query, params, SqlResult.validUniqueResultHandler(handler));
-//        Sql.getInstance().prepared(query, params, new Handler<Message<JsonObject>>() {
-//            @Override
-//            public void handle(Message<JsonObject> event) {
-//                log.info(event.body());
-//                String status = event.body().getString("status");
-//
-//                if(status.equals("ok")){
-//                    handler
-//                }else{
-//                    String message = event.body().getString("message");
-//                    if(message.contains("Check_amount_positive"))
-//                        log.info("Pas de chance");
-//                    else{
-//                        log.info("plop");
-//                    }
-//                }
-//            }
-//        });
     }
 
     @Override
