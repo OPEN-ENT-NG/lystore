@@ -39,7 +39,7 @@ export class Purse implements Selectable {
     toJson() {
         return {
             id_structure: this.id_structure,
-            amount: this.amount,
+            initial_amount: this.initial_amount,
             id_campaign: this.id_campaign
         };
     }

@@ -1,6 +1,7 @@
 package fr.openent.lystore.service.impl;
 
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.model.Purse;
 import fr.openent.lystore.model.Structure;
 import fr.openent.lystore.model.utils.Domain;
@@ -172,28 +173,10 @@ public class DefaultPurseService implements PurseService {
                 "SET amount = amount + ( ? - initial_amount)  , initial_amount = ?" +
                 "WHERE id = ? returning * ;";
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray()
-                .add(purse.getDouble("amount"))
-                .add(purse.getDouble("amount"))
+                .add(purse.getDouble(LystoreBDD.INITIAL_AMOUNT))
+                .add(purse.getDouble(LystoreBDD.INITIAL_AMOUNT))
                 .add(id);
         Sql.getInstance().prepared(query, params, SqlResult.validUniqueResultHandler(handler));
-//        Sql.getInstance().prepared(query, params, new Handler<Message<JsonObject>>() {
-//            @Override
-//            public void handle(Message<JsonObject> event) {
-//                log.info(event.body());
-//                String status = event.body().getString("status");
-//
-//                if(status.equals("ok")){
-//                    handler
-//                }else{
-//                    String message = event.body().getString("message");
-//                    if(message.contains("Check_amount_positive"))
-//                        log.info("Pas de chance");
-//                    else{
-//                        log.info("plop");
-//                    }
-//                }
-//            }
-//        });
     }
 
     @Override
