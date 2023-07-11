@@ -476,8 +476,13 @@ export const configurationController = ng.controller('configurationController',
             })
         };
         $scope.initializeEndDate = (campaign: Campaign)=>{
+            if (!moment(campaign.start_date).isValid()) {
+                campaign.start_date = Utils.formatDatePost(moment());
+                campaign.end_date = Utils.formatDatePost(moment(campaign.start_date).add(1, 'y'));
+                Utils.safeApply($scope);
+            }
             if(campaign.start_date && (!campaign.end_date || !moment(campaign.end_date).isValid())){
-                campaign.end_date = moment(campaign.start_date).add(1, 'y').format('YYYY-MM-DD');
+                campaign.end_date = Utils.formatDatePost(moment(campaign.start_date).add(1, 'y'))
                 Utils.safeApply($scope);
             }
         }
