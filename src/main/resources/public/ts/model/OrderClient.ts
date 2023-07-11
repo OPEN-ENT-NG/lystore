@@ -438,10 +438,7 @@ export class OrdersClient extends Selection<OrderClient> {
                 order.files.sort(function (a, b) {
                     return  a.filename.localeCompare(b.filename);
                 });
-            if (status !== 'VALID') {
-                this.makeOrderNotValid(order);
-                return;
-            }
+            order.creation_date = moment(order.creation_date)
         });
 
     }
