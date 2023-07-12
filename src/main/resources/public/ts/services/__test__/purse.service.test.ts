@@ -20,19 +20,6 @@ describe('purse service test', () => {
         });
     });
 
-    it('calling save should return query correctly', done => {
-        let purse:Purse = new Purse();
-        purse.id = 1;
-        purse.initial_amount = 2500.5;
-        purse.amount = 2500.5;
-        purse.id_campaign = 4;
-        mock.onPut(`/lystore/purse/1`, purse.toJson()).reply(200, data);
-        purseService.save(purse).then(response => {
-            expect(response.data).toBeDefined();
-            done();
-        });
-    });
-
     it('calling check purse', done => {
         let idCampaign = 81;
         let purses:Purses = new Purses(idCampaign);

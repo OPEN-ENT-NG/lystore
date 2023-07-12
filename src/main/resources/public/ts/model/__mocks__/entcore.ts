@@ -28,3 +28,7 @@ export const notify = {
     success: (message: any, timeout?: any) => jest.fn(),
     close: () => jest.fn()
 };
+
+export const console = {
+    error:(message: any) => jest.fn()
+};

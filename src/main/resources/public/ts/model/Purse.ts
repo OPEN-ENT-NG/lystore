@@ -79,9 +79,10 @@ export class Purses extends Selection<Purse> {
     }
 
     build(pursesData: IPurseStructureResponse[]): Purses {
-        this.all = pursesData.map(purseData => {
-            return new Purse().build(purseData);
-        });
+        if (pursesData)
+            this.all = pursesData.map(purseData => {
+                return new Purse().build(purseData);
+            });
         return this
     }
 }
