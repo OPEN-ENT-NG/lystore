@@ -16,3 +16,19 @@ export const model = {
         hasRight: jest.fn(() => true)
     },
 };
+
+export const idiom = {
+    translate: jest.fn((key: string) => key)
+};
+
+export const notify = {
+    message: (type: any, message: any, timeout?: any) => jest.fn(),
+    error: (message: any, timeout?: any) => jest.fn(),
+    info: (message: any, timeout?: any) => jest.fn(),
+    success: (message: any, timeout?: any) => jest.fn(),
+    close: () => jest.fn()
+};
+
+export const console = {
+    error:(message: any) => jest.fn()
+};

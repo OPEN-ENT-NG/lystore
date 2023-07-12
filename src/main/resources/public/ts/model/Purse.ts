@@ -1,6 +1,4 @@
-import {notify, toasts} from 'entcore';
-import http from 'axios';
-import {Mix, Selectable, Selection} from 'entcore-toolkit';
+import {Selectable, Selection} from 'entcore-toolkit';
 import {Structure} from "./Structure";
 
 
@@ -81,9 +79,10 @@ export class Purses extends Selection<Purse> {
     }
 
     build(pursesData: IPurseStructureResponse[]): Purses {
-        this.all = pursesData.map(purseData => {
-            return new Purse().build(purseData);
-        });
+        if (pursesData)
+            this.all = pursesData.map(purseData => {
+                return new Purse().build(purseData);
+            });
         return this
     }
 }
