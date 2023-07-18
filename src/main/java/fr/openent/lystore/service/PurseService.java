@@ -42,7 +42,7 @@ public interface PurseService {
      * @param purse purse object
      * @param handler Function handler returning data
      */
-     void update(Integer id, JsonObject purse, Handler<Either<String, JsonObject>> handler);
+     void update(Integer id,double totalOrder, double purse, Handler<Either<String, JsonObject>> handler);
 
     /**
      * get statement to decrease or increase an amount of Purse
@@ -63,4 +63,6 @@ public interface PurseService {
      * @return
      */
      Future<String> getExport(Map<Structure, Purse> values, Domain domain);
+
+    Future<Double> getTotalOrder(int id);
 }

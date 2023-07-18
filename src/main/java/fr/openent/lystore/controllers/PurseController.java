@@ -300,26 +300,35 @@ public class PurseController extends ControllerHelper {
             @Override
             public void handle(JsonObject body) {
                 try {
-                    purseService.update(Integer.parseInt(request.params().get("id")), body, new Handler<Either<String, JsonObject>>() {
-                                @Override
-                                public void handle(Either<String, JsonObject> event) {
-                                    if(event.isRight()){
-                                        Logging.defaultResponseHandler(eb,
-                                                request,
-                                                Contexts.PURSE.toString(),
-                                                Actions.UPDATE.toString(),
-                                                request.params().get("id"),
-                                                body).handle(new Either.Right<>(event.right().getValue()));
-                                    }else{
-                                        if(event.left().getValue().contains("Check_amount_positive")){
-                                            request.response().setStatusMessage("Amount negative").setStatusCode(202).end();
-                                        }else{
-                                            badRequest(request);
-                                        }
-                                    }
+                    int id = Integer.parseInt(request.params().get("id"));
+                    purseService.getTotalOrder(id).onSuccess(getTotalResult -> {
+                                if (body.getDouble(LystoreBDD.INITIAL_AMOUNT) >= getTotalResult) {
+                                    purseService.update(Integer.parseInt(request.params().get("id")),getTotalResult,
+                                            body.getDouble(LystoreBDD.INITIAL_AMOUNT),
+                                            event -> {
+                                                if (event.isRight()) {
+                                                    Logging.defaultResponseHandler(eb,
+                                                            request,
+                                                            Contexts.PURSE.toString(),
+                                                            Actions.UPDATE.toString(),
+                                                            request.params().get("id"),
+                                                            body).handle(new Either.Right<>(event.right().getValue()));
+                                                } else {
+                                                    if (event.left().getValue().contains("Check_amount_positive")) {
+                                                        request.response().setStatusMessage("Amount negative").setStatusCode(202).end();
+                                                    } else {
+                                                        badRequest(request);
+                                                    }
+                                                }
+                                            }
+                                    );
+                                }else {
+                                    request.response().setStatusMessage("update.purse.amount.smaller.total").setStatusCode(202).end();
+//                                    badRequest(request, "update.purse.amount.smaller.total");
                                 }
                             }
                     );
+
 //                    purseService.update(Integer.parseInt(request.params().get("id")), body, Logging.defaultResponseHandler(eb,
 //                                                request,
 //                                                Contexts.PURSE.toString(),

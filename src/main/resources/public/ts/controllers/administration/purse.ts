@@ -111,6 +111,7 @@ class Controller implements IViewModel {
 
     cancelPurseForm = (): void => {
         this.lightbox.open = false;
+        this.isNegativePurse = false;
     };
 
 
