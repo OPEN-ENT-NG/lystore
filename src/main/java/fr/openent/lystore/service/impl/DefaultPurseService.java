@@ -7,6 +7,7 @@ import fr.openent.lystore.model.Structure;
 import fr.openent.lystore.model.utils.Domain;
 import fr.openent.lystore.service.PurseService;
 import fr.openent.lystore.utils.LystoreUtils;
+import fr.openent.lystore.utils.OrderUtils;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import io.vertx.core.Future;
@@ -22,10 +23,11 @@ import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+
+import static fr.openent.lystore.constants.LystoreBDD.TOTAL_ORDER;
 
 public class DefaultPurseService implements PurseService {
     private Boolean invalidDatas= false;
@@ -167,15 +169,17 @@ public class DefaultPurseService implements PurseService {
                 .put("action", "prepared");
     }
 
-    public void update(Integer id, JsonObject purse, Handler<Either<String, JsonObject>> handler) {
+    public void update(Integer id, double totalOrder, double initialAmount, Handler<Either<String, JsonObject>> handler) {
 
         String query = "UPDATE lystore.purse " +
-                "SET amount = amount + ( ? - initial_amount)  , initial_amount = ?" +
-                "WHERE id = ? returning * ;";
+                " SET amount =  ? , initial_amount = ?" +
+                " WHERE id = ? returning * ;";
         JsonArray params = new fr.wseduc.webutils.collections.JsonArray()
-                .add(purse.getDouble(LystoreBDD.INITIAL_AMOUNT))
-                .add(purse.getDouble(LystoreBDD.INITIAL_AMOUNT))
+                .add(initialAmount - totalOrder)
+                .add(initialAmount)
                 .add(id);
+        log.info(query);
+        log.info(params);
         Sql.getInstance().prepared(query, params, SqlResult.validUniqueResultHandler(handler));
     }
 
@@ -296,6 +300,45 @@ public class DefaultPurseService implements PurseService {
                 exportString.append(getCSVLine(entry.getKey(), entry.getValue()));
         }
         promise.complete(exportString.toString());
+        return promise.future();
+    }
+
+    @Override
+    public Future<Double> getTotalOrder(int id) {
+        Promise<Double> promise = Promise.promise();
+        String query = "SELECT  Sum(( (SELECT CASE " +
+                "                               WHEN oce.price_proposal IS NOT NULL THEN 0 " +
+                "                               WHEN Sum(oco.price + ( oco.price * oco.tax_amount " +
+                "                                                      / 100 " +
+                "                                                    ) * " +
+                "                                                    oco.amount " +
+                "                                    ) IS " +
+                "                                    NULL THEN 0 " +
+                "                               ELSE Sum(Round(oco.price + ( " +
+                "                                              oco.price * oco.tax_amount " +
+                "                                              / 100 )  * oco.amount, 2)) " +
+                "                             END " +
+                "                      FROM   " + Lystore.lystoreSchema + ".order_client_options oco " +
+                "                      WHERE  oco.id_order_client_equipment = oce.id) " +
+                "                     + Round((oce.price + oce.price * oce.tax_amount /100), 2) ) " +
+                "                   * " +
+                "                   oce.amount ) " +
+                "               AS total_order " +
+                "        FROM   " + Lystore.lystoreSchema + ".order_client_equipment oce " +
+                "               INNER JOIN " + Lystore.lystoreSchema + ".purse " +
+                "                       ON purse.id_campaign = oce.id_campaign " +
+                "                          AND oce.id_structure = purse.id_structure " +
+                "  Where purse.id = ?       " +
+                "        GROUP  BY oce.id_structure, " +
+                "                  oce.id_campaign";
+        JsonArray params = new JsonArray();
+        params.add(id);
+
+        Sql.getInstance().prepared(query,params, SqlResult.validUniqueResultHandler(event -> {
+            log.info(event.right().getValue());
+            promise.complete(OrderUtils.safeGetDouble(event.right().getValue(),TOTAL_ORDER));
+        }));
+
         return promise.future();
     }
 
