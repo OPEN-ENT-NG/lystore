@@ -178,8 +178,6 @@ public class DefaultPurseService implements PurseService {
                 .add(initialAmount - totalOrder)
                 .add(initialAmount)
                 .add(id);
-        log.info(query);
-        log.info(params);
         Sql.getInstance().prepared(query, params, SqlResult.validUniqueResultHandler(handler));
     }
 
@@ -335,7 +333,6 @@ public class DefaultPurseService implements PurseService {
         params.add(id);
 
         Sql.getInstance().prepared(query,params, SqlResult.validUniqueResultHandler(event -> {
-            log.info(event.right().getValue());
             promise.complete(OrderUtils.safeGetDouble(event.right().getValue(),TOTAL_ORDER));
         }));
 
