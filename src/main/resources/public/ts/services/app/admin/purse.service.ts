@@ -1,7 +1,6 @@
 import {ng, notify} from "entcore";
 import {IPurseStructureResponse, Purse, PurseImporter, Purses} from "../../../model";
 import http, {AxiosPromise, AxiosResponse} from "axios";
-import {parse} from "ts-jest/dist/utils/json";
 
 
 export interface PurseService {
