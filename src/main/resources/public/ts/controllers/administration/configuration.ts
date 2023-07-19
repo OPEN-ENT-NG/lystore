@@ -330,7 +330,7 @@ export const configurationController = ng.controller('configurationController',
                 && $scope.validEquipmentOptions(equipment.options)
                 && equipment.warranty !== undefined
                 && equipment.warranty >= 0
-                && (!equipment.id || equipment.reference)
+                && equipment.reference
         };
 
         $scope.validEquipment = async (equipment: Equipment) => {
