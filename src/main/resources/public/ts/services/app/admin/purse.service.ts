@@ -1,6 +1,7 @@
 import {ng, notify} from "entcore";
 import {IPurseStructureResponse, Purse, PurseImporter, Purses} from "../../../model";
 import http, {AxiosPromise, AxiosResponse} from "axios";
+import {parse} from "ts-jest/dist/utils/json";
 
 
 export interface PurseService {
@@ -35,8 +36,8 @@ export const purseService: PurseService = {
                 purses.all.map(purse => {
                     purse.substraction = 0.00;
                     res.data.map(back_data => {
-                        if (back_data.id_structure && back_data.id_structure === purse.id_structure) {
-                            purse.substraction = back_data.substraction;
+                        if (back_data.id_structure && back_data.id_structure === purse.structure.id) {
+                            purse.substraction = parseFloat(back_data.difference);
                             if (purse.substraction !== 0) {
                                 purse.bigDifference = Math.abs(purse.substraction) >= 2;
                             }
