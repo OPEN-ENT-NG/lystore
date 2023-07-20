@@ -151,14 +151,14 @@
             <button ng-click="openEquipmentForm(equipments.selected[0])" ng-show="equipments.selected.length === 1">
                 <i18n>modify</i18n>
             </button>
-            <button ng-click="openEquipmentsDeletion()"><i18n>delete</i18n></button>
-            <button ng-click="setStatus('AVAILABLE')">
+            <button ng-click="openEquipmentsDeletion()" ><i18n>delete</i18n></button>
+            <button ng-click="setStatus('AVAILABLE')"  ng-disabled="checkStatus('AVAILABLE')">
                 <i18n>lystore.set.AVAILABLE</i18n>
             </button>
-            <button ng-click="setStatus('UNAVAILABLE')">
+            <button ng-click="setStatus('UNAVAILABLE')" ng-disabled="checkStatus('UNAVAILABLE')">
                 <i18n>lystore.set.UNAVAILABLE</i18n>
             </button>
-            <button ng-click="setStatus('OUT_OF_STOCK')">
+            <button ng-click="setStatus('OUT_OF_STOCK')" ng-disabled="checkStatus('OUT_OF_STOCK')">
                 <i18n>lystore.set.OUT_OF_STOCK</i18n>
             </button>
         </div>
