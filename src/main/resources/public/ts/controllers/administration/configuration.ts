@@ -254,6 +254,11 @@ export const configurationController = ng.controller('configurationController',
             Utils.safeApply($scope);
         };
 
+        $scope.checkStatus = (status:string) : boolean =>{
+            return $scope.equipments.selected.filter((equipment :Equipment) => {
+                return equipment.status === status;
+            }).length !== 0;
+        }
         $scope.openEquipmentImporter = (): void => {
             delete $scope.importer;
             $scope.importer = new EquipmentImporter();
