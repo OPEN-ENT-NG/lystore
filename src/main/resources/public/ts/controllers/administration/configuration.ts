@@ -255,7 +255,7 @@ export const configurationController = ng.controller('configurationController',
         };
 
         $scope.checkStatus = (status:string) : boolean =>{
-            return $scope.equipments.selected.filter(equipment => {
+            return $scope.equipments.selected.filter((equipment :Equipment) => {
                 return equipment.status === status;
             }).length !== 0;
         }
