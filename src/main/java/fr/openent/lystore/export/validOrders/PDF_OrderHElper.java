@@ -362,6 +362,7 @@ public class PDF_OrderHElper {
                         public void handle(Either<String, JsonObject> supplier) {
                             if (supplier.isRight()) {
                                 JsonObject supplierObject = supplier.right().getValue();
+                                supplierObject.put("address",supplierObject.getString("address").replace("\n"," <br> "));
                                 handler.handle(
                                         new JsonObject()
                                                 .put("userInfo", userObject)
