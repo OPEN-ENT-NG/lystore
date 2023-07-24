@@ -62,7 +62,7 @@ export class Purse implements Selectable {
 
         (!isNaN(purseData.total_order)) ? this.total_order = purseData.total_order : 0;
         this.structure.name = purseData.name;
-        this.structure.uai = purseData.name;
+        this.structure.uai = purseData.uai;
         this.structure.id = purseData.id_structure;
         this.selected = false;
         return this;
