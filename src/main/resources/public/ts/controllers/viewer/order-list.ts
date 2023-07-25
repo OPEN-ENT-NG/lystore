@@ -237,6 +237,10 @@ export const orderPersonnelController = ng.controller('orderPersonnelController'
             }]
         };
 
+        $scope.getPlaceHolder = () =>{
+            return `${lang.translate("lystore.project.placeholder")} ${$scope.regionTypeName}`;
+        } ;
+
         $scope.switchProjectClient = async (index: number, to: string) =>{
             let projectOrderJson = await $scope.getProjectRanksSwitchedToJson(index, to);
             await $scope.ordersClient.updateReference(projectOrderJson, $scope.ordersClient.all[0].id_campaign,
