@@ -21,7 +21,7 @@ export const projectController = ng.controller("projectController",
             Utils.safeApply($scope);
         };
 
-        $scope.getPlaceholder = () =>{
+        $scope.getPlaceHolder = () =>{
             return `${lang.translate("lystore.project.placeholder")} ${$scope.regionTypeName}`;
         } ;
         $scope.project.eventer.on('create:end', () => {
