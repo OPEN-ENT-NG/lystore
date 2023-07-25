@@ -22,7 +22,7 @@ export const projectController = ng.controller("projectController",
         };
 
         $scope.getPlaceholder = () =>{
-            return `${lang.translate("lysore.project.placeholder")} ${$scope.regionTypeName}`;
+            return `${lang.translate("lystore.project.placeholder")} ${$scope.regionTypeName}`;
         } ;
         $scope.project.eventer.on('create:end', () => {
             $scope.takeClientOrder($scope.baskets, $scope.project.id);
