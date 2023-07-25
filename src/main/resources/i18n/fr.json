@@ -698,6 +698,7 @@
   "lystore.updated.values": "Valeurs modifiées",
   "total.price": "Prix total",
   "select.all": "Tout sélectionner",
-  "deselect.all": "Tout désélectionner"
+  "deselect.all": "Tout désélectionner",
+  "lystore.letter.limit.255" : "(limite : 255 caractères)"
 
 }
