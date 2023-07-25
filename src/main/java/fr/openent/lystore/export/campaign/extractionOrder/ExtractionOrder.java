@@ -511,7 +511,7 @@ public class ExtractionOrder extends TabHelper {
         excel.insertWithStyle(22,4,"Status Demande",excel.labelOnOrange);
         excel.insertWithStyle(23,4,"Priorité Projet",excel.labelOnOrange);
         excel.insertWithStyle(24,4,"Priorité Demande",excel.labelOnOrange);
-        excel.insertWithStyle(25,4,"Commentare demande",excel.labelOnOrange);
+        excel.insertWithStyle(25,4,"Commentaire demande",excel.labelOnOrange);
         excel.insertWithStyle(26,4,"Pièces jointes",excel.labelOnOrange);
         excel.insertWithStyle(27,4,"Équipement",excel.labelOnOrange);
         excel.insertWithStyle(28,4,"Quantité",excel.labelOnOrange);
