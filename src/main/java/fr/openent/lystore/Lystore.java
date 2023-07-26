@@ -4,6 +4,8 @@ import fr.openent.lystore.controllers.*;
 import fr.openent.lystore.controllers.parameter.ActiveStructureController;
 import fr.openent.lystore.controllers.parameter.ParameterController;
 import fr.openent.lystore.export.ExportLystoreWorker;
+import fr.openent.lystore.service.ServiceFactory;
+import fr.wseduc.mongodb.MongoDb;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
@@ -11,6 +13,8 @@ import io.vertx.core.json.JsonObject;
 import org.entcore.common.events.EventStore;
 import org.entcore.common.events.EventStoreFactory;
 import org.entcore.common.http.BaseServer;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.sql.Sql;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.storage.StorageFactory;
 
@@ -49,6 +53,8 @@ public class Lystore extends BaseServer {
         STORAGE = storage;
         JsonObject mail = config.getJsonObject("mail", new JsonObject());
 
+        ServiceFactory serviceFactory = new ServiceFactory(vertx, storage, Neo4j.getInstance(), Sql.getInstance(),
+                MongoDb.getInstance(), config);
 
         EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Lystore.class.getSimpleName());
 
