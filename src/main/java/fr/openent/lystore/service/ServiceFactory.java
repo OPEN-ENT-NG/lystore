@@ -2,18 +2,20 @@ package fr.openent.lystore.service;
 
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.constants.LystoreBDD;
-import fr.openent.lystore.model.Instruction;
-import fr.openent.lystore.model.Project;
 import fr.openent.lystore.service.impl.*;
+import fr.openent.lystore.service.parameter.ActiveStructureService;
+import fr.openent.lystore.service.parameter.ParameterService;
+import fr.openent.lystore.service.parameter.impl.DefaultActiveStructureService;
+import fr.openent.lystore.service.parameter.impl.DefaultParameterService;
 import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.email.EmailSender;
 import io.vertx.core.Vertx;
+import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.email.EmailFactory;
 import org.entcore.common.neo4j.Neo4j;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.storage.Storage;
-import org.entcore.common.user.UserUtils;
 
 public class ServiceFactory {
 
@@ -25,8 +27,9 @@ public class ServiceFactory {
     private final JsonObject config;
     private final JsonObject slackConfig;
     private final EmailSender emailSender;
+    private final EventBus eb;
 
-    public ServiceFactory(Vertx vertx, Storage storage, Neo4j neo4j, Sql sql, MongoDb mongoDb, JsonObject config) {
+    public ServiceFactory(Vertx vertx, Storage storage, Neo4j neo4j, Sql sql, MongoDb mongoDb, JsonObject config, EventBus eb) {
         this.vertx = vertx;
         this.storage = storage;
         this.neo4j = neo4j;
@@ -36,7 +39,12 @@ public class ServiceFactory {
         this.slackConfig = config.getJsonObject("slack", new JsonObject());
         EmailFactory emailFactory = new EmailFactory(vertx, config);
         this.emailSender = emailFactory.getSender();
+        this.eb = eb;
 
+    }
+
+    public ActiveStructureService activeStructureService() {
+        return new DefaultActiveStructureService(eb);
     }
 
     public AgentService agentService() {
@@ -115,6 +123,10 @@ public class ServiceFactory {
         return new DefaultOrderService(Lystore.lystoreSchema, LystoreBDD.ORDER_CLIENT_EQUIPMENT, emailSender);
     }
 
+    public ParameterService parameterService() {
+        return new DefaultParameterService(Lystore.lystoreSchema, LystoreBDD.PARAMETER_BC_OPTIONS);
+    }
+
     public ProgramService programService() {
         return new DefaultProgramService(Lystore.lystoreSchema, LystoreBDD.PROGRAM);
     }
@@ -143,19 +155,19 @@ public class ServiceFactory {
         return new DefaultTagService(Lystore.lystoreSchema, LystoreBDD.TAG);
     }
 
-    public TaxService taxService(){
+    public TaxService taxService() {
         return new DefaultTaxService(Lystore.lystoreSchema, LystoreBDD.TAX);
     }
 
-    public TitleService titleService(){
-        return new DefaultTitleService(Lystore.lystoreSchema,LystoreBDD.TITLE);
+    public TitleService titleService() {
+        return new DefaultTitleService(Lystore.lystoreSchema, LystoreBDD.TITLE);
     }
 
-    public UserInfoService userInfoService(){
+    public UserInfoService userInfoService() {
         return new DefaultUserInfoService();
     }
 
-    public UserService userService(){
+    public UserService userService() {
         return new DefaultUserService();
     }
 }

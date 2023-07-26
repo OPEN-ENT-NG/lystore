@@ -9,13 +9,11 @@ import fr.openent.lystore.logging.Logging;
 import fr.openent.lystore.security.*;
 import fr.openent.lystore.service.CampaignService;
 import fr.openent.lystore.service.ExportService;
-import fr.openent.lystore.service.impl.DefaultCampaignService;
-import fr.openent.lystore.service.impl.DefaultExportServiceService;
+import fr.openent.lystore.service.ServiceFactory;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
-import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
@@ -23,7 +21,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.http.filter.ResourceFilter;
-import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 
@@ -37,10 +34,10 @@ public class CampaignController extends ControllerHelper {
     private final CampaignService campaignService;
     private ExportService exportService;
 
-    public CampaignController (Storage storage) {
+    public CampaignController(ServiceFactory serviceFactory) {
         super();
-        this.campaignService = new DefaultCampaignService(Lystore.lystoreSchema, "campaign");
-        this.exportService = new DefaultExportServiceService(storage);
+        this.campaignService = serviceFactory.campaignService();
+        this.exportService = serviceFactory.exportService();
     }
 
     @Get("/campaigns")

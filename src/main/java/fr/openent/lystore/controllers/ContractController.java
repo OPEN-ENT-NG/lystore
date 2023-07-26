@@ -1,39 +1,34 @@
 package fr.openent.lystore.controllers;
 
-import fr.openent.lystore.Lystore;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
 import fr.openent.lystore.security.AdministratorRight;
 import fr.openent.lystore.security.ManagerRight;
 import fr.openent.lystore.service.ContractService;
-import fr.openent.lystore.service.impl.DefaultContractService;
+import fr.openent.lystore.service.ServiceFactory;
 import fr.openent.lystore.utils.SqlQueryUtils;
-import fr.wseduc.rs.ApiDoc;
-import fr.wseduc.rs.Delete;
-import fr.wseduc.rs.Get;
-import fr.wseduc.rs.Post;
-import fr.wseduc.rs.Put;
+import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.request.RequestUtils;
-import org.entcore.common.controller.ControllerHelper;
-import org.entcore.common.http.filter.ResourceFilter;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.controller.ControllerHelper;
+import org.entcore.common.http.filter.ResourceFilter;
 
 import java.util.List;
 
-import static fr.wseduc.webutils.http.response.DefaultResponseHandler.*;
+import static fr.wseduc.webutils.http.response.DefaultResponseHandler.arrayResponseHandler;
 
 public class ContractController extends ControllerHelper {
 
     private ContractService contractService;
 
-    public ContractController () {
+    public ContractController(ServiceFactory serviceFactory) {
         super();
-        this.contractService = new DefaultContractService(Lystore.lystoreSchema, "contract");
+        this.contractService = serviceFactory.contractService();
     }
 
     @Get("/contracts")

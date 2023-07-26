@@ -1,13 +1,11 @@
 package fr.openent.lystore.controllers;
 
-import fr.openent.lystore.Lystore;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
-import fr.openent.lystore.security.AccesProjectRight;
 import fr.openent.lystore.security.AccessUpdateOrderOnClosedCampaigne;
 import fr.openent.lystore.service.ProjectService;
-import fr.openent.lystore.service.impl.DefaultProjectService;
+import fr.openent.lystore.service.ServiceFactory;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
@@ -31,9 +29,9 @@ public class ProjectController extends ControllerHelper {
 
     private final ProjectService projectService;
 
-    public ProjectController() {
+    public ProjectController(ServiceFactory serviceFactory) {
         super();
-        projectService = new DefaultProjectService(Lystore.lystoreSchema, "project");
+        projectService = serviceFactory.projectService();
     }
 
     @Get("/projects")

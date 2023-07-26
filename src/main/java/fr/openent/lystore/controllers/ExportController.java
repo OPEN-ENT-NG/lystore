@@ -1,14 +1,13 @@
 package fr.openent.lystore.controllers;
 
 import fr.openent.lystore.Lystore;
-import fr.openent.lystore.export.ExportTypes;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
 import fr.openent.lystore.security.AccessExportDownload;
 import fr.openent.lystore.security.ManagerRight;
 import fr.openent.lystore.service.ExportService;
-import fr.openent.lystore.service.impl.DefaultExportServiceService;
+import fr.openent.lystore.service.ServiceFactory;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
@@ -22,7 +21,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.http.filter.ResourceFilter;
-import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 
@@ -30,12 +28,10 @@ import static fr.wseduc.webutils.http.response.DefaultResponseHandler.arrayRespo
 
 public class ExportController extends ControllerHelper {
     private ExportService exportService;
-    private Storage storage;
 
-    public ExportController(Storage storage) {
+    public ExportController(ServiceFactory serviceFactory) {
         super();
-        this.storage = storage;
-        this.exportService = new DefaultExportServiceService(storage);
+        this.exportService = serviceFactory.exportService();
     }
 
     @Get("/exports")

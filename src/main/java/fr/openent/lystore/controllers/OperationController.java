@@ -1,34 +1,28 @@
 package fr.openent.lystore.controllers;
 
-import fr.openent.lystore.Lystore;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
-import fr.openent.lystore.security.AdministratorRight;
 import fr.openent.lystore.security.ManagerRight;
 import fr.openent.lystore.service.OperationService;
-import fr.openent.lystore.service.impl.DefaultOperationService;
+import fr.openent.lystore.service.ServiceFactory;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
-import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.request.RequestUtils;
-import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.http.filter.ResourceFilter;
 
-
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.arrayResponseHandler;
 
 public class OperationController  extends ControllerHelper {
-    private OperationService operationService;
+    private final OperationService operationService;
 
-    public OperationController () {
+    public OperationController(ServiceFactory serviceFactory) {
         super();
-        this.operationService = new DefaultOperationService(Lystore.lystoreSchema, "operation");
+        this.operationService = serviceFactory.operationService();
     }
 
     @Get("/operations/")

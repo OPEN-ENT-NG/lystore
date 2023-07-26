@@ -1,13 +1,13 @@
 package fr.openent.lystore.controllers;
 
-import fr.openent.lystore.Lystore;
-import fr.openent.lystore.service.impl.DefaultStructureService;
+import fr.openent.lystore.service.ServiceFactory;
+import fr.openent.lystore.service.StructureService;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Get;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
-import org.entcore.common.controller.ControllerHelper;
 import io.vertx.core.http.HttpServerRequest;
+import org.entcore.common.controller.ControllerHelper;
 
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.arrayResponseHandler;
 
@@ -17,11 +17,11 @@ import static fr.wseduc.webutils.http.response.DefaultResponseHandler.arrayRespo
  */
 public class StructureController extends ControllerHelper {
 
-    private DefaultStructureService structureService;
+    private StructureService structureService;
 
-    public StructureController(){
+    public StructureController(ServiceFactory serviceFactory){
         super();
-        this.structureService = new DefaultStructureService( Lystore.lystoreSchema);
+        this.structureService = serviceFactory.structureService();
     }
 
     @Get("/structures")

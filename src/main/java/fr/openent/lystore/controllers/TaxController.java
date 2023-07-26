@@ -1,14 +1,13 @@
 package fr.openent.lystore.controllers;
 
-import fr.openent.lystore.Lystore;
+import fr.openent.lystore.service.ServiceFactory;
 import fr.openent.lystore.service.TaxService;
-import fr.openent.lystore.service.impl.DefaultTaxService;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Get;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
-import org.entcore.common.controller.ControllerHelper;
 import io.vertx.core.http.HttpServerRequest;
+import org.entcore.common.controller.ControllerHelper;
 
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.arrayResponseHandler;
 
@@ -16,9 +15,9 @@ public class TaxController extends ControllerHelper {
 
     private final TaxService taxService;
 
-    public TaxController () {
+    public TaxController(ServiceFactory serviceFactory) {
         super();
-        this.taxService = new DefaultTaxService(Lystore.lystoreSchema, "tax");
+        this.taxService = serviceFactory.taxService();
     }
 
     @Get("/taxes")

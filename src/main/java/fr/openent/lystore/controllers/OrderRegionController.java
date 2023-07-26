@@ -8,21 +8,20 @@ import fr.openent.lystore.logging.Logging;
 import fr.openent.lystore.model.file.Attachment;
 import fr.openent.lystore.security.ManagerRight;
 import fr.openent.lystore.service.OrderRegionService;
-import fr.openent.lystore.service.impl.DefaultOrderRegionService;
+import fr.openent.lystore.service.ServiceFactory;
 import fr.openent.lystore.service.impl.DefaultOrderService;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
-import io.vertx.core.Future;
-import io.vertx.core.Promise;
-import io.vertx.core.json.Json;
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.logging.Logger;
-import io.vertx.core.logging.LoggerFactory;
 import fr.wseduc.webutils.http.BaseController;
 import fr.wseduc.webutils.request.RequestUtils;
+import io.vertx.core.Future;
+import io.vertx.core.Promise;
 import io.vertx.core.http.HttpServerRequest;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.logging.Logger;
+import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
@@ -36,16 +35,16 @@ import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultRes
 public class OrderRegionController extends BaseController {
 
 
-    private OrderRegionService orderRegionService;
-    private Storage storage;
+    private final OrderRegionService orderRegionService;
+    private final Storage storage;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultOrderService.class);
 
     public static final String UTF8_BOM = "\uFEFF";
 
 
-    public OrderRegionController(Storage storage) {
-        this.orderRegionService = new DefaultOrderRegionService("equipment");
+    public OrderRegionController(Storage storage, ServiceFactory serviceFactory) {
+        this.orderRegionService = serviceFactory.orderRegionService();
         this.storage = storage;
 
     }

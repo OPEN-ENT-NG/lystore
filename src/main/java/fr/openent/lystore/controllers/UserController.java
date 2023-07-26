@@ -1,5 +1,6 @@
 package fr.openent.lystore.controllers;
 
+import fr.openent.lystore.service.ServiceFactory;
 import fr.openent.lystore.service.UserService;
 import fr.openent.lystore.service.impl.DefaultUserService;
 import fr.wseduc.rs.ApiDoc;
@@ -18,9 +19,9 @@ public class UserController extends ControllerHelper {
 
     private UserService userService;
 
-    public UserController() {
+    public UserController(ServiceFactory serviceFactory) {
         super();
-        this.userService = new DefaultUserService();
+        this.userService = serviceFactory.userService();
     }
 
 

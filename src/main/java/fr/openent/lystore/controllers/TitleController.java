@@ -5,6 +5,7 @@ import fr.openent.lystore.Lystore;
 import fr.openent.lystore.constants.CommonConstants;
 import fr.openent.lystore.helpers.ImportCSVHelper;
 import fr.openent.lystore.service.CampaignService;
+import fr.openent.lystore.service.ServiceFactory;
 import fr.openent.lystore.service.StructureService;
 import fr.openent.lystore.service.TitleService;
 import fr.openent.lystore.service.impl.DefaultCampaignService;
@@ -41,11 +42,11 @@ public class TitleController extends ControllerHelper {
     private final CampaignService campaignService;
     private final ImportCSVHelper importCSVHelper;
 
-    public TitleController(Vertx vertx, EventBus eb) {
+    public TitleController(Vertx vertx, EventBus eb, ServiceFactory serviceFactory) {
         super();
-        titleService = new DefaultTitleService(Lystore.lystoreSchema, "title");
-        structureService = new DefaultStructureService(Lystore.lystoreSchema);
-        this.campaignService = new DefaultCampaignService(Lystore.lystoreSchema, "campaign");
+        this.titleService =  serviceFactory.titleService();
+        this.structureService = serviceFactory.structureService();
+        this.campaignService = serviceFactory.campaignService();
         importCSVHelper = new ImportCSVHelper(vertx, eb);
     }
 

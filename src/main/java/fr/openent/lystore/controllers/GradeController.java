@@ -2,6 +2,7 @@ package fr.openent.lystore.controllers;
 
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.service.GradeService;
+import fr.openent.lystore.service.ServiceFactory;
 import fr.openent.lystore.service.impl.DefaultGradeService;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Get;
@@ -15,9 +16,9 @@ import static org.entcore.common.http.response.DefaultResponseHandler.arrayRespo
 public class GradeController extends ControllerHelper {
     private final GradeService gradeService;
 
-    public GradeController() {
+    public GradeController(ServiceFactory serviceFactory) {
         super();
-        gradeService = new DefaultGradeService(Lystore.lystoreSchema, "grade");
+        gradeService = serviceFactory.gradeService();
     }
 
     @Get("/grades")

@@ -1,25 +1,24 @@
 package fr.openent.lystore.controllers;
 
-import fr.openent.lystore.Lystore;
 import fr.openent.lystore.security.ManagerRight;
 import fr.openent.lystore.service.ProgramService;
-import fr.openent.lystore.service.impl.DefaultProgramService;
+import fr.openent.lystore.service.ServiceFactory;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Get;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
-import org.entcore.common.http.filter.ResourceFilter;
 import io.vertx.core.http.HttpServerRequest;
+import org.entcore.common.http.filter.ResourceFilter;
 
-import static fr.wseduc.webutils.http.response.DefaultResponseHandler.*;
+import static fr.wseduc.webutils.http.response.DefaultResponseHandler.arrayResponseHandler;
 
 public class ProgramController extends ContractController {
 
     private ProgramService programService;
 
-    public ProgramController () {
-        super();
-        this.programService = new DefaultProgramService(Lystore.lystoreSchema, "program");
+    public ProgramController(ServiceFactory serviceFactory) {
+        super(serviceFactory);
+        this.programService = serviceFactory.programService();
     }
 
     @Get("/programs")

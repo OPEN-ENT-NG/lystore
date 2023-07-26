@@ -1,7 +1,7 @@
 package fr.openent.lystore.controllers.parameter;
 
+import fr.openent.lystore.service.ServiceFactory;
 import fr.openent.lystore.service.parameter.ActiveStructureService;
-import fr.openent.lystore.service.parameter.impl.DefaultActiveStructureService;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;
@@ -9,7 +9,6 @@ import fr.wseduc.rs.Post;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.request.RequestUtils;
-import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.http.filter.ResourceFilter;
@@ -19,9 +18,9 @@ import org.entcore.common.http.response.DefaultResponseHandler;
 public class ActiveStructureController extends ControllerHelper {
 
     ActiveStructureService activeStructureService;
-    public ActiveStructureController(EventBus eb) {
+    public ActiveStructureController(ServiceFactory serviceFactory) {
         super();
-        this.activeStructureService = new DefaultActiveStructureService(eb);
+        this.activeStructureService = serviceFactory.activeStructureService();
     }
 
     @Get("/parameter")

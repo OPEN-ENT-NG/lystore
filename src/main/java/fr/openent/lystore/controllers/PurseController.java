@@ -1,7 +1,6 @@
 package fr.openent.lystore.controllers;
 
 import com.opencsv.CSVReader;
-import fr.openent.lystore.Lystore;
 import fr.openent.lystore.constants.CommonConstants;
 import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.logging.Actions;
@@ -13,10 +12,8 @@ import fr.openent.lystore.model.utils.Domain;
 import fr.openent.lystore.security.AdministratorRight;
 import fr.openent.lystore.service.CampaignService;
 import fr.openent.lystore.service.PurseService;
+import fr.openent.lystore.service.ServiceFactory;
 import fr.openent.lystore.service.StructureService;
-import fr.openent.lystore.service.impl.DefaultCampaignService;
-import fr.openent.lystore.service.impl.DefaultPurseService;
-import fr.openent.lystore.service.impl.DefaultStructureService;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Post;
@@ -28,7 +25,6 @@ import fr.wseduc.webutils.I18n;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -56,12 +52,12 @@ public class PurseController extends ControllerHelper {
     private PurseService purseService;
     private CampaignService campaignService;
     private String fileId ;
-    public PurseController(Vertx vertx, Storage storage) {
+    public PurseController(Storage storage, ServiceFactory serviceFactory) {
         super();
         this.storage = storage;
-        this.structureService = new DefaultStructureService(Lystore.lystoreSchema);
-        this.purseService = new DefaultPurseService();
-        this.campaignService = new DefaultCampaignService(Lystore.lystoreSchema, "campaign");
+        this.structureService = serviceFactory.structureService();
+        this.purseService = serviceFactory.purseService();
+        this.campaignService = serviceFactory.campaignService();
     }
 
     @Post("/campaign/:id/purses/import")

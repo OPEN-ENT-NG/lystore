@@ -7,6 +7,7 @@ import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
 import fr.openent.lystore.security.AdministratorRight;
+import fr.openent.lystore.service.ServiceFactory;
 import fr.openent.lystore.service.StructureGroupService;
 import fr.openent.lystore.service.StructureService;
 import fr.openent.lystore.service.impl.DefaultStructureGroupService;
@@ -51,11 +52,11 @@ public class StructureGroupController extends ControllerHelper {
     private StructureGroupService structureGroupService;
     private StructureService structureService;
 
-    public StructureGroupController(Vertx vertx) {
+    public StructureGroupController(Vertx vertx, ServiceFactory serviceFactory) {
         super();
-        this.structureGroupService = new DefaultStructureGroupService(Lystore.lystoreSchema, "structure_group");
+        this.structureGroupService = serviceFactory.structureGroupService();
         this.importCSVHelper = new ImportCSVHelper(vertx, this.eb);
-        this.structureService = new DefaultStructureService(Lystore.lystoreSchema);
+        this.structureService = serviceFactory.structureService();
     }
 
     @Post("/structure/group/import")

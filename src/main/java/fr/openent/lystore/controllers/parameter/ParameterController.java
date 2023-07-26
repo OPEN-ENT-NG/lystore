@@ -1,10 +1,8 @@
 package fr.openent.lystore.controllers.parameter;
 
-import fr.openent.lystore.Lystore;
-import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.security.LystoreManagerAdminAccesOrSuperAdminRight;
+import fr.openent.lystore.service.ServiceFactory;
 import fr.openent.lystore.service.parameter.ParameterService;
-import fr.openent.lystore.service.parameter.impl.DefaultParameterService;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Get;
 import fr.wseduc.rs.Put;
@@ -20,7 +18,11 @@ import org.entcore.common.http.response.DefaultResponseHandler;
 import static fr.openent.lystore.constants.ParametersConstants.BCOPTIONS;
 
 public class ParameterController extends ControllerHelper {
-    ParameterService parameterService = new DefaultParameterService(Lystore.lystoreSchema, LystoreBDD.PARAMETER_BC_OPTIONS);
+    final ParameterService parameterService;
+
+    public ParameterController(ServiceFactory serviceFactory) {
+        parameterService = serviceFactory.parameterService();
+    }
 
     @Get("/parameter/bc/options")
     @SecuredAction(value = "", type = ActionType.RESOURCE)

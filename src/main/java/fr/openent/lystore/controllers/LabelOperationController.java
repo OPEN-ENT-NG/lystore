@@ -1,13 +1,12 @@
 package fr.openent.lystore.controllers;
 
-import fr.openent.lystore.Lystore;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
 import fr.openent.lystore.security.AdministratorRight;
 import fr.openent.lystore.security.ManagerRight;
 import fr.openent.lystore.service.LabelOperationService;
-import fr.openent.lystore.service.impl.DefaultLabelOperationService;
+import fr.openent.lystore.service.ServiceFactory;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
@@ -23,11 +22,11 @@ import org.entcore.common.http.filter.ResourceFilter;
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.arrayResponseHandler;
 
 public class LabelOperationController extends ControllerHelper {
-    private LabelOperationService labelOperationService;
+    private final LabelOperationService labelOperationService;
 
-    public LabelOperationController() {
+    public LabelOperationController(ServiceFactory serviceFactory) {
         super();
-        this.labelOperationService = new DefaultLabelOperationService("label_operation");
+        this.labelOperationService = serviceFactory.labelOperationService();
     }
 
     @Get("/labels/")

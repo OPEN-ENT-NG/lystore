@@ -1,8 +1,7 @@
 package fr.openent.lystore.controllers;
 
-import fr.openent.lystore.Lystore;
 import fr.openent.lystore.service.EquipmentTypeService;
-import fr.openent.lystore.service.impl.DefaultEquipmentType;
+import fr.openent.lystore.service.ServiceFactory;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Get;
 import fr.wseduc.security.ActionType;
@@ -15,9 +14,9 @@ import static fr.wseduc.webutils.http.response.DefaultResponseHandler.arrayRespo
 public class EquipmentTypeController extends ControllerHelper {
     private final EquipmentTypeService equipmentTypeService;
 
-    public EquipmentTypeController () {
+    public EquipmentTypeController(ServiceFactory serviceFactory) {
         super();
-        this.equipmentTypeService = new DefaultEquipmentType(Lystore.lystoreSchema, "equipment_type");
+        this.equipmentTypeService = serviceFactory.equipmentTypeService();
     }
 
     @Get("/equipmentType")

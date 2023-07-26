@@ -9,8 +9,7 @@ import fr.openent.lystore.logging.Logging;
 import fr.openent.lystore.security.ManagerRight;
 import fr.openent.lystore.service.ExportService;
 import fr.openent.lystore.service.InstructionService;
-import fr.openent.lystore.service.impl.DefaultExportServiceService;
-import fr.openent.lystore.service.impl.DefaultInstructionService;
+import fr.openent.lystore.service.ServiceFactory;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
@@ -19,21 +18,18 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.http.filter.ResourceFilter;
-import org.entcore.common.storage.Storage;
 
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultResponseHandler;
 
 public class InstructionController extends ControllerHelper {
     private InstructionService instructionService ;
-    private Storage storage;
     private ExportService exportService;
 
-    public InstructionController(Storage storage) {
+    public InstructionController(ServiceFactory serviceFactory) {
         super();
-        this.storage = storage;
-        this.instructionService = new DefaultInstructionService(Lystore.lystoreSchema, "instruction");
-        this.exportService = new DefaultExportServiceService(storage);
+        this.instructionService = serviceFactory.instructionService();
+        this.exportService = serviceFactory.exportService();
     }
 
     @Get("/exercises")

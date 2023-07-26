@@ -1,14 +1,13 @@
 package fr.openent.lystore.controllers;
 
 import com.opencsv.CSVReader;
-import fr.openent.lystore.Lystore;
 import fr.openent.lystore.helpers.ImportCSVHelper;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
 import fr.openent.lystore.security.AdministratorRight;
 import fr.openent.lystore.service.EquipmentService;
-import fr.openent.lystore.service.impl.DefaultEquipmentService;
+import fr.openent.lystore.service.ServiceFactory;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
@@ -40,11 +39,11 @@ import static org.entcore.common.utils.FileUtils.deleteImportPath;
 public class EquipmentController extends ControllerHelper {
 
     private final EquipmentService equipmentService;
-    private ImportCSVHelper importCSVHelper;
+    private final ImportCSVHelper importCSVHelper;
 
-    public EquipmentController(Vertx vertx) {
+    public EquipmentController(Vertx vertx, ServiceFactory serviceFactory) {
         super();
-        this.equipmentService = new DefaultEquipmentService(Lystore.lystoreSchema, "equipment");
+        this.equipmentService = serviceFactory.equipmentService();
         this.importCSVHelper = new ImportCSVHelper(vertx, this.eb);
     }
 
