@@ -99,7 +99,6 @@ public class ServiceFactory {
         return new DefaultLogService();
     }
 
-    //TODO vérifier interaction avec BasketSErvice
     public NotificationService notificationService() {
         return new SlackService(
                 vertx,
