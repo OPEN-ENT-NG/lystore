@@ -52,8 +52,7 @@ public class ServiceFactory {
     }
 
     public BasketService basketService() {
-        return new DefaultBasketService(Lystore.lystoreSchema, LystoreBDD.BASKET,
-                vertx, config.getJsonObject("slack", new JsonObject()), config.getJsonObject("mail", new JsonObject()));
+        return new DefaultBasketService(Lystore.lystoreSchema, LystoreBDD.BASKET,config.getJsonObject("mail", new JsonObject()));
     }
 
     public CampaignService campaignService() {

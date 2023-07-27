@@ -6,7 +6,9 @@ import fr.openent.lystore.constants.EnumConstant;
 import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.helpers.FutureHelper;
 import fr.openent.lystore.model.InstructionStatus;
+import fr.openent.lystore.model.Order;
 import fr.openent.lystore.service.InstructionService;
+import fr.openent.lystore.service.OperationService;
 import fr.openent.lystore.service.OrderRegionService;
 import fr.openent.lystore.service.OrderService;
 import fr.openent.lystore.utils.SqlQueryUtils;
@@ -37,9 +39,6 @@ import static fr.wseduc.webutils.http.Renders.getHost;
 public class DefaultInstructionService  extends SqlCrudService implements InstructionService {
 
     private static final Logger log = LoggerFactory.getLogger (DefaultOrderService.class);
-    private DefaultOperationService operationService = new DefaultOperationService(Lystore.lystoreSchema, "operation");
-    private final OrderService orderService = new DefaultOrderService(Lystore.lystoreSchema, LystoreBDD.ORDER_CLIENT_EQUIPMENT , null);
-    private final OrderRegionService orderRegionService = new DefaultOrderRegionService(LystoreBDD.ORDER_REGION_EQUIPMENT);
 
     public DefaultInstructionService(
             String schema, String table) {
@@ -141,7 +140,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
         }));
     }
 
-    public void getOperationOfInstruction(Integer IdInstruction, Handler<Either<String, JsonArray>> handler) {
+    public void getOperationOfInstruction(Integer IdInstruction, OperationService operationService, Handler<Either<String, JsonArray>> handler) {
         JsonArray idInstructionParams = new JsonArray().add(IdInstruction);
 
         String queryOperation = "" +
@@ -249,13 +248,14 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
 
 
     @Override
-    public void checkCpValue(Number id, String cp_adopted, Handler<Either<String, JsonObject>> handler) {
-        switch (cp_adopted){
-            case EnumConstant.VALID_CP_STATUS :
-                handleCpAdopted(id,  handler);
+    public void checkCpValue(Number id, String cp_adopted, OrderService orderService, OrderRegionService orderRegionService,
+                             Handler<Either<String, JsonObject>> handler) {
+        switch (cp_adopted) {
+            case EnumConstant.VALID_CP_STATUS:
+                handleCpAdopted(id, handler);
                 break;
-            case EnumConstant.REJECTED_CP_STATUS :
-                handleCpRejected(id,  handler);
+            case EnumConstant.REJECTED_CP_STATUS:
+                handleCpRejected(id, orderService, orderRegionService, handler);
                 break;
             default:
                 handler.handle(new Either.Right<>(new JsonObject()));
@@ -263,7 +263,8 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
         }
     }
 
-    private void handleCpRejected(Number id,  Handler<Either<String, JsonObject>> handler) {
+    private void handleCpRejected(Number id, OrderService orderService, OrderRegionService orderRegionService,
+                                  Handler<Either<String, JsonObject>> handler) {
         String queryGetOrders = "SELECT distinct orders.id as " + LystoreBDD.ID_ORDER + ", " +
                 "CASE WHEN orders.override_region is null" +
                 " then '" + CommonConstants.REGION + "' " +
@@ -277,12 +278,13 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
 
         sql.prepared(queryGetOrders, new JsonArray().add(id), SqlResult.validResultHandler(event -> {
                     JsonArray sqlResults = event.right().getValue();
-                    generateOrdersRejectStatements(sqlResults,  handler, id);
+                    generateOrdersRejectStatements(sqlResults, id, orderService, orderRegionService, handler);
                 })
         );
     }
 
-    private void generateOrdersRejectStatements(JsonArray sqlResults, Handler<Either<String, JsonObject>> handler, Number id) {
+    private void generateOrdersRejectStatements(JsonArray sqlResults, Number id, OrderService orderService,
+                                                OrderRegionService orderRegionService, Handler<Either<String, JsonObject>> handler) {
         JsonArray statements = new JsonArray();
         sqlResults.stream()
                 .filter(JsonObject.class::isInstance)

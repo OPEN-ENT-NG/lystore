@@ -231,6 +231,7 @@ GROUP BY
         Sql.getInstance().prepared(queryGetTotalOperation, idsOperations, SqlResult.validResultHandler(handler));
     }
 
+    @Override
     public void getNumberOrderSubvention (JsonArray idsOperations, Handler<Either<String, JsonArray>> handler ){
         String queryGetContractClient = "" +
                 "WITH operations AS " +

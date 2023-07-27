@@ -2,8 +2,6 @@ package fr.openent.lystore.export.instructions.RME;
 
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.export.TabHelper;
-import fr.openent.lystore.service.StructureService;
-import fr.openent.lystore.service.impl.DefaultStructureService;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -38,13 +36,11 @@ public class RecapEPLETab extends TabHelper {
     private int yTotalLabel = 3;
 
     private ArrayList<String> structuresId;
-    private StructureService structureService;
     private int nbLine = 0;
     private String totalLabelInt = "";
 
     public RecapEPLETab(Workbook workbook, JsonObject instruction, Map<String, JsonObject> structuresMap) {
         super(workbook, instruction, TabName.EPLE.toString(),structuresMap);
-        structureService = new DefaultStructureService(Lystore.lystoreSchema);
     }
 
     @Override

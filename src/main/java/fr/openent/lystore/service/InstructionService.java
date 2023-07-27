@@ -16,11 +16,12 @@ public interface InstructionService {
 
     void create(JsonObject instruction,  Handler<Either<String, JsonObject>> handler);
 
-    void checkCpValue(Number id, String cp_adopted, Handler<Either<String, JsonObject>> handler);
+    void checkCpValue(Number id, String cp_adopted, OrderService orderService, OrderRegionService orderRegionService,
+                      Handler<Either<String, JsonObject>> handler);
 
     void updateInstruction(Integer id, JsonObject instruction, Handler<Either<String, JsonObject>> handler);
 
     void deleteInstruction(JsonArray instructionIds,  Handler<Either<String, JsonObject>> handler);
 
-    void getOperationOfInstruction(Integer IdInstruction,  Handler<Either<String, JsonArray>> handler);
+    void getOperationOfInstruction(Integer IdInstruction, OperationService operationService,  Handler<Either<String, JsonArray>> handler);
 }

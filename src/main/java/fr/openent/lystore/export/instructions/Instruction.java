@@ -13,12 +13,12 @@ import fr.openent.lystore.export.instructions.subventionEquipment.Market;
 import fr.openent.lystore.export.instructions.subventionEquipment.Subventions;
 import fr.openent.lystore.export.helpers.ExportHelper;
 import fr.openent.lystore.service.ExportService;
+import fr.openent.lystore.service.ServiceFactory;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.data.FileResolver;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.buffer.impl.BufferImpl;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -28,11 +28,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 
-import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -82,32 +80,11 @@ public class Instruction extends ExportObject {
                     try {
                         FileInputStream templateInputStream = new FileInputStream(path);
                         Workbook workbook = new XSSFWorkbook(templateInputStream);
-//                        List<Future> futures = new ArrayList<>();
-//                        Future<Boolean> lyceeFuture = Future.future();
-//                        Future<Boolean> CMRFuture = Future.future();
-//                        Future<Boolean> CMDfuture = Future.future();
-//                        Future<Boolean> Fonctionnementfuture = Future.future();
-//                        Future<Boolean> RecapEPLEfuture = Future.future();
-//                        Future<Boolean> RecapImputationBudfuture = Future.future();
-//                        futures.add(lyceeFuture);
-//                        futures.add(CMRFuture);
-//                        futures.add(CMDfuture);
-//                        futures.add(Fonctionnementfuture);
-//                        futures.add(RecapEPLEfuture);
-//                        futures.add(RecapImputationBudfuture);
-//                        futureHandler(handler, workbook, futures);
-//
-//                        new LyceeTab(workbook, instruction).create(getHandler(lyceeFuture));
-//                        new CMRTab(workbook, instruction).create(getHandler(CMRFuture));
-//                        new CMDTab(workbook, instruction).create(getHandler(CMDfuture));
-//                        new FonctionnementTab(workbook, instruction).create(getHandler(Fonctionnementfuture));
-//                        new RecapEPLETab(workbook, instruction).create(getHandler(RecapEPLEfuture));
-//                        new RecapImputationBud(workbook, instruction).create(getHandler(RecapImputationBudfuture));
                         new LyceeTab(workbook, instruction,structuresMap).create()
                                 .compose(v ->  new CMRTab(workbook, instruction,structuresMap).create())
                                 .compose(v->  new CMDTab(workbook, instruction,structuresMap).create())
                                 .compose(v ->  new FonctionnementTab(workbook, instruction,structuresMap).create())
-                                .compose(v ->   new RecapEPLETab(workbook, instruction,structuresMap).create())
+                                .compose(v ->   new RecapEPLETab(workbook, instruction, structuresMap).create())
                                 .compose(v ->    new RecapImputationBud(workbook, instruction,structuresMap).create())
                                 .onSuccess(getFinalHandler(handler, workbook)
                                 ).onFailure(failure ->{

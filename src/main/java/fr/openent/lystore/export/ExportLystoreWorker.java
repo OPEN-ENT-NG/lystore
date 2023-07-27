@@ -6,13 +6,17 @@ import fr.openent.lystore.export.instructions.Instruction;
 import fr.openent.lystore.export.validOrders.ValidOrders;
 import fr.openent.lystore.export.helpers.ExportHelper;
 import fr.openent.lystore.service.ExportService;
+import fr.openent.lystore.service.ServiceFactory;
 import fr.openent.lystore.service.impl.DefaultExportServiceService;
+import fr.wseduc.mongodb.MongoDb;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import io.vertx.core.*;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
+import org.entcore.common.neo4j.Neo4j;
+import org.entcore.common.sql.Sql;
 import org.entcore.common.storage.Storage;
 import org.vertx.java.busmods.BusModBase;
 
@@ -26,7 +30,7 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
     private Instruction instruction;
     private ValidOrders validOrders;
     private Storage storage;
-    private ExportService exportService = new DefaultExportServiceService(storage);
+    private ExportService exportService ;
     private String idNewFile;
     private boolean isWorking = false;
     private boolean isSleeping = true;
@@ -35,7 +39,7 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
     private final String PDFHEADER = "application/pdf";
     private CampaignExport campaign;
     public static String url;
-
+    private ServiceFactory serviceFactory;
     @Override
     public void start() {
         super.start();
@@ -43,6 +47,9 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
         this.config = CONFIG;
         this.storage = STORAGE;
         this.vertx = vertx;
+        this.serviceFactory = new ServiceFactory(vertx, storage, Neo4j.getInstance(), Sql.getInstance(),
+                MongoDb.getInstance(), config ,eb);
+        this.exportService = serviceFactory.exportService();
 
     }
 
@@ -225,25 +232,28 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
 
         logger.info("Export BC per structures from Orders before validation started : ");
 
-        this.validOrders = new ValidOrders(exportService,params,idNewFile,this.eb,this.vertx,this.config, this.storage);
+        this.validOrders = new ValidOrders(exportService, params, idNewFile, this.eb, this.vertx, this.config, this.storage, this.serviceFactory);
         this.validOrders.exportBCBeforeValidationByStructures(event1 -> {
             saveExportHandler(titleFile, exportHandler, event1, "error when creating BCOrdersBeforeValidationStruct PDF ", PDFHEADER);
         });
     }
+
     private void exportBCOrdersAfterValidationStruct(String object_id, String titleFile, Handler<Either<String, Boolean>> exportHandler) {
 
-        logger.info("Export BC per structures from Orders after validation started BC : "+ object_id);
+        logger.info("Export BC per structures from Orders after validation started BC : " + object_id);
 
-        this.validOrders = new ValidOrders(exportService,object_id,idNewFile,this.eb,this.vertx,this.config,false, this.storage);
+        this.validOrders = new ValidOrders(exportService, object_id, idNewFile, this.eb, this.vertx, this.config, false,
+                this.storage, this.serviceFactory);
         this.validOrders.exportBCAfterValidationByStructures(event1 -> {
             saveExportHandler(titleFile, exportHandler, event1, "error when creating BCOrdersAfterValidationStruct PDF ", PDFHEADER);
         });
     }
 
     private void exportBCOrdersAfterValidation(String object_id, String titleFile, Handler<Either<String, Boolean>> handler) {
-        logger.info("Export BC per structures from Orders after validation started BC : "+ object_id);
+        logger.info("Export BC per structures from Orders after validation started BC : " + object_id);
 
-        this.validOrders = new ValidOrders(exportService,object_id,idNewFile,this.eb,this.vertx,this.config,false, this.storage);
+        this.validOrders = new ValidOrders(exportService, object_id, idNewFile, this.eb, this.vertx, this.config, false,
+                this.storage, this.serviceFactory);
         this.validOrders.exportBCAfterValidation(event1 -> {
             saveExportHandler(titleFile, handler, event1, "error when creating BCOrdersAfterValidation PDF ", PDFHEADER);
         });
@@ -251,7 +261,7 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
 
     private void exportBCOrdersDuringValidation(JsonObject params, String titleFile, Handler<Either<String, Boolean>> handler) {
         logger.info("Export BC from Orders during validation started");
-        this.validOrders = new ValidOrders(exportService,params,idNewFile,this.eb,this.vertx,this.config, this.storage);
+        this.validOrders = new ValidOrders(exportService, params, idNewFile, this.eb, this.vertx, this.config, this.storage, this.serviceFactory);
         this.validOrders.exportBCDuringValidation(event1 -> {
             saveExportHandler(titleFile, handler, event1, "error when creating BCOrdersDuringValidation PDF ", PDFHEADER);
         });
@@ -259,7 +269,7 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
 
     private void exportBCOrders(JsonObject params, String titleFile, Handler<Either<String, Boolean>> handler) {
         logger.info("Export BC from Orders started");
-        this.validOrders = new ValidOrders(exportService,params,idNewFile,this.eb,this.vertx,this.config, this.storage);
+        this.validOrders = new ValidOrders(exportService, params, idNewFile, this.eb, this.vertx, this.config, this.storage, this.serviceFactory);
         this.validOrders.exportBC(event1 -> {
             saveExportHandler(titleFile, handler, event1, "error when creating BCorders PDF ", PDFHEADER);
         });
@@ -267,13 +277,12 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
 
     private void exportListLycOrders(String object_id, String titleFile, Handler<Either<String, Boolean>> handler) {
         logger.info("Export list lycee from Orders started");
-        this.validOrders = new ValidOrders(exportService,object_id,idNewFile,this.eb,this.vertx,this.config,true, this.storage );
+        this.validOrders = new ValidOrders(exportService, object_id, idNewFile, this.eb, this.vertx, this.config, true,
+                this.storage, this.serviceFactory);
         this.validOrders.exportListLycee(event1 -> {
             saveExportHandler(titleFile, handler, event1, "error when creating ListLycOrder xlsx :", XLSXHEADER);
         });
-
     }
-
 
 
     private void exportIris(Integer instructionId, String titleFile, Handler<Either<String, Boolean>> handler) {

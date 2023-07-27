@@ -65,6 +65,7 @@ public class OrderController extends ControllerHelper {
     private final AgentService agentService;
     private final ProgramService programService;
     private final ExportService exportService;
+    private final PurseService purseService;
     LystoreEmailFactoryHelper notificationHelpDeskEmailFactory;
     LystoreEmailFactoryHelper notificationEmailFactory;
     public static final String UTF8_BOM = "\uFEFF";
@@ -84,6 +85,7 @@ public class OrderController extends ControllerHelper {
         this.exportService = serviceFactory.exportService();
         this.workspaceHelper  = new WorkspaceHelper(eb,storage);
         this.parameterService =  serviceFactory.parameterService();
+        this.purseService =  serviceFactory.purseService();
 
         String emailNotificationHelpDeskSender = config.getJsonObject("mail",new JsonObject()).getString("notificationHelpDeskMail","cesame.lystore@monlycee.net");
         this.notificationHelpDeskEmailFactory = new LystoreEmailFactoryHelper(vertx, config,emailNotificationHelpDeskSender);
@@ -137,14 +139,14 @@ public class OrderController extends ControllerHelper {
                     getValidOrders(request, status);
                     break;
                 case "sent":
-                    orderService.listOrderSent(status, queries, arrayResponseHandler(request));
+                    orderService.listOrderSent(status, queries, structureService, arrayResponseHandler(request) );
                     break;
                 case "waiting":
                     List<String> idCampaigns = request.params().getAll("idCampaign");
-                    orderService.listOrderWaiting(idCampaigns, queries, arrayResponseHandler(request));
+                    orderService.listOrderWaiting(idCampaigns, queries, structureService, arrayResponseHandler(request));
                     break;
                 default:
-                    orderService.listOrder(status, queries, arrayResponseHandler(request));
+                    orderService.listOrder(status, queries,structureService , arrayResponseHandler(request));
                     break;
 
             }
@@ -267,9 +269,10 @@ public class OrderController extends ControllerHelper {
                             @Override
                             public void handle(Either<String, JsonObject> order) {
                                 if (order.isRight()) {
-                                    orderService.deleteOrder(idOrder, order.right().getValue(), idStructure,
+                                    orderService.deleteOrder(idOrder, order.right().getValue(), idStructure, purseService,
                                             Logging.defaultResponseHandler(eb, request, Contexts.ORDER.toString(),
-                                                    Actions.DELETE.toString(), "idOrder", order.right().getValue()));
+                                                    Actions.DELETE.toString(), "idOrder", order.right().getValue())
+                                    );
                                 }
                             }
                         });
@@ -1239,7 +1242,7 @@ public class OrderController extends ControllerHelper {
             try{
                 String domainMail =  config.getJsonObject("mail").getString("domainMail");
                 EmailSender emailSender = notificationEmailFactory.getSender();
-                orderService.sendNotification(orderNumber,domainMail,request,emailSender);
+                orderService.sendNotification(orderNumber,domainMail,request,structureService , emailSender);
             }catch (Exception e){
                 badRequest(request,e.getMessage());
             }
@@ -1261,7 +1264,7 @@ public class OrderController extends ControllerHelper {
                         config.getJsonObject("mail",new JsonObject()).getString("notificationHelpDeskReceiver","collecteur.lystore@monlycee.net");
 
                 EmailSender emailSender = notificationHelpDeskEmailFactory.getSender();
-                orderService.sendNotificationHelpDesk(orderNumber,domainMail,request,emailSender,emailNotificationHelpDeskReceiver);
+                orderService.sendNotificationHelpDesk(orderNumber,domainMail,request,emailSender,structureService , emailNotificationHelpDeskReceiver);
             }catch (Exception e){
                 badRequest(request,e.getMessage());
             }

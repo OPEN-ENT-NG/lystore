@@ -69,7 +69,7 @@ public class Lystore extends BaseServer {
         addController(new GradeController(serviceFactory));
         addController(new InstructionController(serviceFactory));
         addController(new LabelOperationController(serviceFactory));
-        addController(new LogController());
+        addController(new LogController(serviceFactory));
         addController(new LystoreController(eventStore));
         addController(new OrderController(storage, vertx, config, eb, serviceFactory));
         addController(new OrderRegionController(storage, serviceFactory));

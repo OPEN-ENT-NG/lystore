@@ -1,7 +1,6 @@
 package fr.openent.lystore.export.validOrders;
 
 import fr.openent.lystore.Lystore;
-import fr.openent.lystore.constants.CommonConstants;
 import fr.openent.lystore.constants.ExportConstants;
 import fr.openent.lystore.controllers.OrderController;
 import fr.openent.lystore.export.validOrders.BC.BCExport;
@@ -15,13 +14,11 @@ import fr.openent.lystore.utils.LystoreUtils;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.email.EmailSender;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -34,8 +31,6 @@ import org.entcore.common.storage.Storage;
 
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -56,27 +51,25 @@ public class PDF_OrderHElper {
     protected Logger log = LoggerFactory.getLogger(BCExport.class);
     protected OrderService orderService;
     protected ProgramService programService;
-    protected DefaultContractService contractService;
+    protected ContractService contractService;
     protected StructureService structureService;
     protected AgentService agentService;
     protected RendersHelper renders ;
     private WorkspaceHelper workspaceHelper;
     private PdfFactory pdfFactory;
-    public PDF_OrderHElper(EventBus eb, Vertx vertx, JsonObject config, Storage storage){
+    public PDF_OrderHElper(EventBus eb, Vertx vertx, JsonObject config, Storage storage, ServiceFactory serviceFactory){
         this.vertx = vertx;
         this.config = config;
-        EmailFactory emailFactory = new EmailFactory(vertx, config);
-        EmailSender emailSender = emailFactory.getSender();
         this.eb = eb;
-        this.supplierService = new DefaultSupplierService(Lystore.lystoreSchema, "supplier");
-        this.orderService = new DefaultOrderService(Lystore.lystoreSchema, "order_client_equipment", emailSender);
-        this.structureService = new DefaultStructureService(Lystore.lystoreSchema);
-        this.supplierService = new DefaultSupplierService(Lystore.lystoreSchema, "supplier");
-        this.contractService = new DefaultContractService(Lystore.lystoreSchema, "contract");
-        this.agentService = new DefaultAgentService(Lystore.lystoreSchema, "agent");
+        this.supplierService = serviceFactory.supplierService();
+        this.orderService = serviceFactory.orderService();
+        this.structureService = serviceFactory.structureService();
+        this.supplierService = serviceFactory.supplierService();
+        this.contractService = serviceFactory.contractService();
+        this.agentService = serviceFactory.agentService();
         this.renders = new RendersHelper(this.vertx, config);
-        programService = new DefaultProgramService(Lystore.lystoreSchema,"program");
-        this.parameterService = new DefaultParameterService(Lystore.lystoreSchema, "parameter_bc_options");
+        programService = serviceFactory.programService();
+        this.parameterService = serviceFactory.parameterService();
         this.workspaceHelper = new WorkspaceHelper(eb,storage);
         pdfFactory = new PdfFactory(vertx, new JsonObject().put(NODE_PDF_GENERATOR,
                 config.getJsonObject(NODE_PDF_GENERATOR, new JsonObject())));

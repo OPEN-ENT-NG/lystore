@@ -4,7 +4,8 @@ package fr.openent.lystore.export.validOrders.BC;
 import fr.openent.lystore.constants.CommonConstants;
 import fr.openent.lystore.constants.ExportConstants;
 import fr.openent.lystore.export.validOrders.PDF_OrderHElper;
-        import fr.openent.lystore.utils.LystoreUtils;
+import fr.openent.lystore.service.ServiceFactory;
+import fr.openent.lystore.utils.LystoreUtils;
 import fr.wseduc.webutils.Either;
         import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
@@ -26,8 +27,8 @@ public class BCExport extends PDF_OrderHElper {
     private Logger log = LoggerFactory.getLogger(BCExport.class);
 
 
-    public BCExport(EventBus eb, Vertx vertx, JsonObject config, Storage storage) {
-        super(eb, vertx, config, storage);
+    public BCExport(EventBus eb, Vertx vertx, JsonObject config, Storage storage, ServiceFactory serviceFactory) {
+        super(eb, vertx, config, storage, serviceFactory);
 
     }
 

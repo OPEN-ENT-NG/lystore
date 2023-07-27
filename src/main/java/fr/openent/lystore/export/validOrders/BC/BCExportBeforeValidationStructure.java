@@ -3,6 +3,7 @@ package fr.openent.lystore.export.validOrders.BC;
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.constants.ExportConstants;
 import fr.openent.lystore.export.validOrders.PDF_OrderHElper;
+import fr.openent.lystore.service.ServiceFactory;
 import fr.openent.lystore.utils.LystoreUtils;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
@@ -27,8 +28,8 @@ import static fr.openent.lystore.helpers.OrderHelper.*;
 public class BCExportBeforeValidationStructure extends PDF_OrderHElper {
     private Logger log = LoggerFactory.getLogger(BCExportBeforeValidationStructure.class);
 
-    public BCExportBeforeValidationStructure(EventBus eb, Vertx vertx, JsonObject config, Storage storage) {
-        super(eb, vertx, config, storage);
+    public BCExportBeforeValidationStructure(EventBus eb, Vertx vertx, JsonObject config, Storage storage, ServiceFactory serviceFactory) {
+        super(eb, vertx, config, storage ,serviceFactory);
     }
 
 

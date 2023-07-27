@@ -3,8 +3,10 @@ package fr.openent.lystore.controllers;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
+import fr.openent.lystore.model.Purse;
 import fr.openent.lystore.security.AccessUpdateOrderOnClosedCampaigne;
 import fr.openent.lystore.service.ProjectService;
+import fr.openent.lystore.service.PurseService;
 import fr.openent.lystore.service.ServiceFactory;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
@@ -28,10 +30,12 @@ import static org.entcore.common.http.response.DefaultResponseHandler.arrayRespo
 public class ProjectController extends ControllerHelper {
 
     private final ProjectService projectService;
+    private final PurseService purseService;
 
     public ProjectController(ServiceFactory serviceFactory) {
         super();
         projectService = serviceFactory.projectService();
+        purseService = serviceFactory.purseService();
     }
 
     @Get("/projects")
@@ -108,7 +112,8 @@ public class ProjectController extends ControllerHelper {
                                     @Override
                                     public void handle(Either<String, JsonArray> listOrder) {
                                         if (listOrder.isRight() && listOrder.right().getValue().size() > 0) {
-                                            projectService.revertOrderAndDeleteProject(listOrder.right().getValue(), id, idCampaign, idStructure, event -> {
+                                            projectService.revertOrderAndDeleteProject(listOrder.right().getValue(),
+                                                    id, idCampaign, idStructure,purseService , event -> {
                                                 if (event.isRight()) {
 
                                                     UserUtils.getUserInfos(eb, request, user -> {

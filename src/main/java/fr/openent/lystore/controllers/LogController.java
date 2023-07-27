@@ -2,21 +2,19 @@ package fr.openent.lystore.controllers;
 
 import fr.openent.lystore.security.AdministratorRight;
 import fr.openent.lystore.service.LogService;
-import fr.openent.lystore.service.impl.DefaultLogService;
+import fr.openent.lystore.service.ServiceFactory;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Get;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
-import org.entcore.common.controller.ControllerHelper;
-import org.entcore.common.http.filter.ResourceFilter;
 import io.vertx.core.Handler;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-
-import static fr.wseduc.webutils.http.response.DefaultResponseHandler.arrayResponseHandler;
+import org.entcore.common.controller.ControllerHelper;
+import org.entcore.common.http.filter.ResourceFilter;
 
 public class LogController extends ControllerHelper {
 
@@ -24,8 +22,8 @@ public class LogController extends ControllerHelper {
 
     private final LogService logService;
 
-    public LogController () {
-        this.logService = new DefaultLogService();
+    public LogController (ServiceFactory serviceFactory) {
+        this.logService = serviceFactory.logService();
     }
 
     @Get("/logs")

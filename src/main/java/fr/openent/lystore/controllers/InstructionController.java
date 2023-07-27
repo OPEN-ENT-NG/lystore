@@ -1,15 +1,16 @@
 package fr.openent.lystore.controllers;
 
 import fr.openent.lystore.Lystore;
+import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.export.ExportTypes;
 import fr.openent.lystore.export.helpers.ExportHelper;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
 import fr.openent.lystore.security.ManagerRight;
-import fr.openent.lystore.service.ExportService;
-import fr.openent.lystore.service.InstructionService;
-import fr.openent.lystore.service.ServiceFactory;
+import fr.openent.lystore.service.*;
+import fr.openent.lystore.service.impl.DefaultOrderRegionService;
+import fr.openent.lystore.service.impl.DefaultOrderService;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
@@ -23,13 +24,19 @@ import static fr.wseduc.webutils.http.response.DefaultResponseHandler.arrayRespo
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultResponseHandler;
 
 public class InstructionController extends ControllerHelper {
-    private InstructionService instructionService ;
-    private ExportService exportService;
+    private final InstructionService instructionService ;
+    private final ExportService exportService;
+    private final OperationService operationService;
+    private final OrderService orderService ;
+    private final OrderRegionService orderRegionService;
 
     public InstructionController(ServiceFactory serviceFactory) {
         super();
         this.instructionService = serviceFactory.instructionService();
         this.exportService = serviceFactory.exportService();
+        this.operationService = serviceFactory.operationService();
+        this.orderRegionService = serviceFactory.orderRegionService();
+        this.orderService = serviceFactory.orderService();
     }
 
     @Get("/exercises")
@@ -77,8 +84,7 @@ public class InstructionController extends ControllerHelper {
     public void checkCpValue(final HttpServerRequest request){
         final Integer idInstruction = Integer.parseInt(request.params().get("idInstruction"));
         final String status = request.params().get("status");
-        instructionService.checkCpValue(idInstruction,status,defaultResponseHandler(request));
-
+        instructionService.checkCpValue(idInstruction, status, orderService, orderRegionService, defaultResponseHandler(request));
     }
 
     @Put("/instruction/:idInstruction")
@@ -129,7 +135,8 @@ public class InstructionController extends ControllerHelper {
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(ManagerRight.class)
     public void getOperationOfInstruction(HttpServerRequest request) {
-        instructionService.getOperationOfInstruction(Integer.parseInt(request.getParam("id")), arrayResponseHandler(request));
+        instructionService.getOperationOfInstruction(Integer.parseInt(request.getParam("id")),
+                operationService,arrayResponseHandler(request));
     }
 
     @Get("/instructions/export/notification/equpment/:id")
