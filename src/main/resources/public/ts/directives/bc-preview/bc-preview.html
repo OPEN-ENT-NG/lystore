@@ -24,7 +24,7 @@
                         <i18n>lystore.bc.preview.of</i18n> <span ng-bind="formatDate(vm.orderToSend.dateGeneration, 'DD/MM/YYYY')"></span><br/>
                         <br/>
                         [[ vm.orderToSend.preview.supplier.name ]] <br/>
-                        [[ vm.orderToSend.preview.supplier.address ]]  <br/>
+                        <span class="order-preview-supplier-address" >[[ vm.orderToSend.preview.supplier.address ]]</span> <br/>
                         <i18n>lystore.bc.preview.tel</i18n> : [[ vm.orderToSend.preview.supplier.phone ]]  <br/>
 
                         <i18n>lystore.bc.preview.number.engagement</i18n>:  <span ng-bind="vm.orderToSend.engagement_number"></span>
