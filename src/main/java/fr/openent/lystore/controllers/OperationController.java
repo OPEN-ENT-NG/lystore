@@ -5,7 +5,7 @@ import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
 import fr.openent.lystore.security.ManagerRight;
 import fr.openent.lystore.service.OperationService;
-import fr.openent.lystore.service.ServiceFactory;
+import fr.openent.lystore.factory.ServiceFactory;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;

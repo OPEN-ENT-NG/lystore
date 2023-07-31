@@ -9,7 +9,7 @@ import fr.openent.lystore.logging.Logging;
 import fr.openent.lystore.security.*;
 import fr.openent.lystore.service.CampaignService;
 import fr.openent.lystore.service.ExportService;
-import fr.openent.lystore.service.ServiceFactory;
+import fr.openent.lystore.factory.ServiceFactory;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;

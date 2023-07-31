@@ -4,7 +4,7 @@ import fr.openent.lystore.controllers.*;
 import fr.openent.lystore.controllers.parameter.ActiveStructureController;
 import fr.openent.lystore.controllers.parameter.ParameterController;
 import fr.openent.lystore.export.ExportLystoreWorker;
-import fr.openent.lystore.service.ServiceFactory;
+import fr.openent.lystore.factory.ServiceFactory;
 import fr.wseduc.mongodb.MongoDb;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.eventbus.DeliveryOptions;
@@ -59,11 +59,11 @@ public class Lystore extends BaseServer {
 
         addController(new ActiveStructureController(serviceFactory));
         addController(new AgentController(serviceFactory));
-        addController(new BasketController(storage, serviceFactory));
+        addController(new BasketController(serviceFactory));
         addController(new CampaignController(serviceFactory));
         addController(new ContractController(serviceFactory));
         addController(new ContractTypeController(serviceFactory));
-        addController(new EquipmentController(vertx, serviceFactory));
+        addController(new EquipmentController(serviceFactory));
         addController(new EquipmentTypeController(serviceFactory));
         addController(new ExportController(serviceFactory));
         addController(new GradeController(serviceFactory));
@@ -71,18 +71,18 @@ public class Lystore extends BaseServer {
         addController(new LabelOperationController(serviceFactory));
         addController(new LogController(serviceFactory));
         addController(new LystoreController(eventStore));
-        addController(new OrderController(storage, vertx, config, eb, serviceFactory));
-        addController(new OrderRegionController(storage, serviceFactory));
+        addController(new OrderController(serviceFactory));
+        addController(new OrderRegionController(serviceFactory));
         addController(new ParameterController(serviceFactory));
         addController(new ProgramController(serviceFactory));
         addController(new ProjectController(serviceFactory));
-        addController(new PurseController(storage, serviceFactory));
+        addController(new PurseController(serviceFactory));
         addController(new StructureController(serviceFactory));
-        addController(new StructureGroupController(vertx, serviceFactory));
+        addController(new StructureGroupController(serviceFactory));
         addController(new SupplierController(serviceFactory));
         addController(new TagController(serviceFactory));
         addController(new TaxController(serviceFactory));
-        addController(new TitleController(vertx, eb, serviceFactory));
+        addController(new TitleController(serviceFactory));
         addController(new UserController(serviceFactory));
 
         CONFIG = config;

@@ -8,7 +8,7 @@ import fr.openent.lystore.logging.Logging;
 import fr.openent.lystore.model.file.Attachment;
 import fr.openent.lystore.security.ManagerRight;
 import fr.openent.lystore.service.OrderRegionService;
-import fr.openent.lystore.service.ServiceFactory;
+import fr.openent.lystore.factory.ServiceFactory;
 import fr.openent.lystore.service.impl.DefaultOrderService;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
@@ -43,9 +43,9 @@ public class OrderRegionController extends BaseController {
     public static final String UTF8_BOM = "\uFEFF";
 
 
-    public OrderRegionController(Storage storage, ServiceFactory serviceFactory) {
+    public OrderRegionController( ServiceFactory serviceFactory) {
         this.orderRegionService = serviceFactory.orderRegionService();
-        this.storage = storage;
+        this.storage = serviceFactory.getStorage();
 
     }
 

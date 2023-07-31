@@ -1,7 +1,7 @@
 package fr.openent.lystore.controllers;
 
 import fr.openent.lystore.service.EquipmentTypeService;
-import fr.openent.lystore.service.ServiceFactory;
+import fr.openent.lystore.factory.ServiceFactory;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Get;
 import fr.wseduc.security.ActionType;

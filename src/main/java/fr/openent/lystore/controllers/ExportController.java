@@ -7,7 +7,7 @@ import fr.openent.lystore.logging.Logging;
 import fr.openent.lystore.security.AccessExportDownload;
 import fr.openent.lystore.security.ManagerRight;
 import fr.openent.lystore.service.ExportService;
-import fr.openent.lystore.service.ServiceFactory;
+import fr.openent.lystore.factory.ServiceFactory;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Delete;
 import fr.wseduc.rs.Get;

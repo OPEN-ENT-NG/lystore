@@ -1,7 +1,8 @@
-package fr.openent.lystore.service;
+package fr.openent.lystore.factory;
 
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.constants.LystoreBDD;
+import fr.openent.lystore.service.*;
 import fr.openent.lystore.service.impl.*;
 import fr.openent.lystore.service.parameter.ActiveStructureService;
 import fr.openent.lystore.service.parameter.ParameterService;
@@ -41,6 +42,22 @@ public class ServiceFactory {
         this.emailSender = emailFactory.getSender();
         this.eb = eb;
 
+    }
+
+    public JsonObject getConfig() {
+        return config;
+    }
+
+    public Storage getStorage() {
+        return storage;
+    }
+
+    public Vertx getVertx() {
+        return vertx;
+    }
+
+    public EventBus getEb() {
+        return eb;
     }
 
     public ActiveStructureService activeStructureService() {

@@ -12,7 +12,7 @@ import fr.openent.lystore.model.utils.Domain;
 import fr.openent.lystore.security.AdministratorRight;
 import fr.openent.lystore.service.CampaignService;
 import fr.openent.lystore.service.PurseService;
-import fr.openent.lystore.service.ServiceFactory;
+import fr.openent.lystore.factory.ServiceFactory;
 import fr.openent.lystore.service.StructureService;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Get;
@@ -51,10 +51,9 @@ public class PurseController extends ControllerHelper {
     private StructureService structureService;
     private PurseService purseService;
     private CampaignService campaignService;
-    private String fileId ;
-    public PurseController(Storage storage, ServiceFactory serviceFactory) {
+    public PurseController(ServiceFactory serviceFactory) {
         super();
-        this.storage = storage;
+        this.storage = serviceFactory.getStorage();
         this.structureService = serviceFactory.structureService();
         this.purseService = serviceFactory.purseService();
         this.campaignService = serviceFactory.campaignService();

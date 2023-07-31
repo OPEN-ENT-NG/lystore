@@ -1,7 +1,7 @@
 package fr.openent.lystore.controllers.parameter;
 
 import fr.openent.lystore.security.LystoreManagerAdminAccesOrSuperAdminRight;
-import fr.openent.lystore.service.ServiceFactory;
+import fr.openent.lystore.factory.ServiceFactory;
 import fr.openent.lystore.service.parameter.ParameterService;
 import fr.wseduc.rs.ApiDoc;
 import fr.wseduc.rs.Get;

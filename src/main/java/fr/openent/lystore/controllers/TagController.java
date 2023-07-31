@@ -4,7 +4,7 @@ import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
 import fr.openent.lystore.security.AdministratorRight;
-import fr.openent.lystore.service.ServiceFactory;
+import fr.openent.lystore.factory.ServiceFactory;
 import fr.openent.lystore.service.TagService;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.rs.*;

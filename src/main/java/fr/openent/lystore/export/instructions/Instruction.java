@@ -13,7 +13,6 @@ import fr.openent.lystore.export.instructions.subventionEquipment.Market;
 import fr.openent.lystore.export.instructions.subventionEquipment.Subventions;
 import fr.openent.lystore.export.helpers.ExportHelper;
 import fr.openent.lystore.service.ExportService;
-import fr.openent.lystore.service.ServiceFactory;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.data.FileResolver;
 import io.vertx.core.Future;

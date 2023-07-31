@@ -7,6 +7,7 @@ import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.constants.ParametersConstants;
 import fr.openent.lystore.export.ExportTypes;
 import fr.openent.lystore.export.helpers.ExportHelper;
+import fr.openent.lystore.factory.ServiceFactory;
 import fr.openent.lystore.helpers.LystoreEmailFactoryHelper;
 import fr.openent.lystore.helpers.OrderHelper;
 import fr.openent.lystore.logging.Actions;
@@ -30,8 +31,6 @@ import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -56,7 +55,7 @@ import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultRes
 public class OrderController extends ControllerHelper {
 
     private static final String NULL_DATA = "Pas d'informations";
-    private Storage storage;
+    private final Storage storage;
     private final OrderService orderService;
     private final StructureService structureService;
     private final SupplierService supplierService;
@@ -73,8 +72,8 @@ public class OrderController extends ControllerHelper {
     WorkspaceHelper workspaceHelper;
     private static DecimalFormat decimals = new DecimalFormat("0.00");
 
-    public OrderController(Storage storage, Vertx vertx, JsonObject config, EventBus eb, ServiceFactory serviceFactory) {
-        this.storage = storage;
+    public OrderController( ServiceFactory serviceFactory) {
+        this.storage = serviceFactory.getStorage();
         this.orderService = serviceFactory.orderService();
         this.exportPDFService = serviceFactory.exportPDFService();
         this.structureService = serviceFactory.structureService();
@@ -83,14 +82,16 @@ public class OrderController extends ControllerHelper {
         this.agentService =serviceFactory.agentService();
         this.programService = serviceFactory.programService();
         this.exportService = serviceFactory.exportService();
-        this.workspaceHelper  = new WorkspaceHelper(eb,storage);
+        this.workspaceHelper  = new WorkspaceHelper(serviceFactory.getEb(),this.storage);
         this.parameterService =  serviceFactory.parameterService();
         this.purseService =  serviceFactory.purseService();
+        this.config = serviceFactory.getConfig();
 
-        String emailNotificationHelpDeskSender = config.getJsonObject("mail",new JsonObject()).getString("notificationHelpDeskMail","cesame.lystore@monlycee.net");
-        this.notificationHelpDeskEmailFactory = new LystoreEmailFactoryHelper(vertx, config,emailNotificationHelpDeskSender);
-        String emailNotificationSender = config.getJsonObject("mail",new JsonObject()).getString("notificationMail","ne-pas-repondre@ent.iledefrance.fr");
-        this.notificationEmailFactory = new LystoreEmailFactoryHelper(vertx, config,emailNotificationSender);
+        String emailNotificationHelpDeskSender = this.config.getJsonObject("mail",new JsonObject()).getString("notificationHelpDeskMail",
+                "cesame.lystore@monlycee.net");
+        this.notificationHelpDeskEmailFactory = new LystoreEmailFactoryHelper(this.vertx, this.config,emailNotificationHelpDeskSender);
+        String emailNotificationSender = this.config.getJsonObject("mail",new JsonObject()).getString("notificationMail","ne-pas-repondre@ent.iledefrance.fr");
+        this.notificationEmailFactory = new LystoreEmailFactoryHelper(this.vertx, this.config,emailNotificationSender);
 
     }
 

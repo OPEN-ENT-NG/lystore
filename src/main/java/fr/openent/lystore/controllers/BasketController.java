@@ -7,7 +7,7 @@ import fr.openent.lystore.security.*;
 import fr.openent.lystore.service.BasketService;
 import fr.openent.lystore.service.NotificationService;
 import fr.openent.lystore.service.PurseService;
-import fr.openent.lystore.service.ServiceFactory;
+import fr.openent.lystore.factory.ServiceFactory;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
@@ -31,9 +31,9 @@ public class BasketController extends ControllerHelper {
     private final PurseService purseService;
     private final NotificationService notificationService;
 
-    public BasketController(Storage storage, ServiceFactory serviceFactory) {
+    public BasketController( ServiceFactory serviceFactory) {
         super();
-        this.storage = storage;
+        this.storage = serviceFactory.getStorage();
         this.basketService = serviceFactory.basketService();
         this.purseService = serviceFactory.purseService();
         this.notificationService = serviceFactory.notificationService();
