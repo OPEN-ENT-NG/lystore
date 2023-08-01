@@ -86,12 +86,11 @@ public class OrderController extends ControllerHelper {
         this.parameterService =  serviceFactory.parameterService();
         this.purseService =  serviceFactory.purseService();
         this.config = serviceFactory.config();
-
         String emailNotificationHelpDeskSender = this.config.getJsonObject("mail",new JsonObject()).getString("notificationHelpDeskMail",
                 "cesame.lystore@monlycee.net");
-        this.notificationHelpDeskEmailFactory = new LystoreEmailFactoryHelper(this.vertx, this.config,emailNotificationHelpDeskSender);
+        this.notificationHelpDeskEmailFactory = new LystoreEmailFactoryHelper(serviceFactory.vertx(), this.config, emailNotificationHelpDeskSender);
         String emailNotificationSender = this.config.getJsonObject("mail",new JsonObject()).getString("notificationMail","ne-pas-repondre@ent.iledefrance.fr");
-        this.notificationEmailFactory = new LystoreEmailFactoryHelper(this.vertx, this.config,emailNotificationSender);
+        this.notificationEmailFactory = new LystoreEmailFactoryHelper(serviceFactory.vertx(), this.config,emailNotificationSender);
 
     }
 
