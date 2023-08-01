@@ -149,7 +149,7 @@ public class ServiceFactory {
     }
 
     public ProjectService projectService() {
-        return new DefaultProjectService(Lystore.lystoreSchema, LystoreBDD.PROJECT);
+        return new DefaultProjectService(Lystore.lystoreSchema, LystoreBDD.PROJECT,this.purseService());
     }
 
     public PurseService purseService() {
