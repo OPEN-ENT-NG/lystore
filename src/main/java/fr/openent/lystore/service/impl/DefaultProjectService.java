@@ -16,11 +16,11 @@ import org.entcore.common.sql.SqlResult;
 
 
 public class DefaultProjectService extends SqlCrudService implements ProjectService {
-    private PurseService purseService;
     private Logger log = LoggerFactory.getLogger(DefaultProjectService.class);
-    public DefaultProjectService(String schema, String table) {
+    private final PurseService purseService;
+    public DefaultProjectService(String schema, String table, PurseService purseService) {
         super(schema, table);
-        purseService = new DefaultPurseService();
+        this.purseService = purseService;
     }
 
     /**
@@ -124,7 +124,9 @@ public class DefaultProjectService extends SqlCrudService implements ProjectServ
         ));
     }
 
-    private Handler<Either<String, JsonArray>> deleteProjectAndUpdateLinkedDatas(JsonArray orders, Integer id, Integer idCampaign, String idStructure, Handler<Either<String, JsonObject>> handler) {
+    private Handler<Either<String, JsonArray>> deleteProjectAndUpdateLinkedDatas(JsonArray orders, Integer id, Integer idCampaign,
+                                                                                 String idStructure,
+                                                                                 Handler<Either<String, JsonObject>> handler) {
         return new Handler<Either<String, JsonArray>>() {
             @Override
             public void handle(Either<String, JsonArray> event) {
@@ -213,8 +215,8 @@ public class DefaultProjectService extends SqlCrudService implements ProjectServ
                 .put("action", "prepared");
     }
 
-    private JsonObject getUpdatePurse(Integer idCampaign, String idStructure,Double price) {
-        return purseService.updatePurseAmountStatement(price, idCampaign, idStructure, "+");
+    private JsonObject getUpdatePurse(Integer idCampaign, String idStructure, Double price) {
+        return this.purseService.updatePurseAmountStatement(price, idCampaign, idStructure, "+");
     }
 
     private JsonObject getNewNbORDER(Integer idCampaign, String idStructure) {

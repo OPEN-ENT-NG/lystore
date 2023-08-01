@@ -1,41 +1,32 @@
 package fr.openent.lystore.export.validOrders;
 
-import fr.openent.lystore.Lystore;
-import fr.openent.lystore.constants.CommonConstants;
 import fr.openent.lystore.constants.ExportConstants;
 import fr.openent.lystore.controllers.OrderController;
 import fr.openent.lystore.export.validOrders.BC.BCExport;
+import fr.openent.lystore.factory.ServiceFactory;
 import fr.openent.lystore.helpers.OrderHelper;
 import fr.openent.lystore.helpers.RendersHelper;
 import fr.openent.lystore.service.*;
-import fr.openent.lystore.service.impl.*;
+import fr.openent.lystore.service.impl.DefaultExportPDFService;
 import fr.openent.lystore.service.parameter.ParameterService;
-import fr.openent.lystore.service.parameter.impl.DefaultParameterService;
 import fr.openent.lystore.utils.LystoreUtils;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.data.FileResolver;
-import fr.wseduc.webutils.email.EmailSender;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.bus.WorkspaceHelper;
-import org.entcore.common.email.EmailFactory;
 import org.entcore.common.pdf.PdfFactory;
 import org.entcore.common.pdf.PdfGenerator;
-import org.entcore.common.storage.Storage;
 
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -44,9 +35,8 @@ import static fr.openent.lystore.constants.ExportConstants.NODE_PDF_GENERATOR;
 import static fr.openent.lystore.constants.ParametersConstants.BC_OPTIONS;
 import static fr.openent.lystore.helpers.OrderHelper.getSumWithoutTaxes;
 import static fr.openent.lystore.helpers.OrderHelper.roundWith2Decimals;
-import static fr.wseduc.webutils.http.Renders.badRequest;
 
-public class PDF_OrderHElper {
+public class PDF_OrderHelper {
     protected ParameterService parameterService;
     protected SupplierService supplierService;
     protected JsonObject config;
@@ -56,30 +46,28 @@ public class PDF_OrderHElper {
     protected Logger log = LoggerFactory.getLogger(BCExport.class);
     protected OrderService orderService;
     protected ProgramService programService;
-    protected DefaultContractService contractService;
+    protected ContractService contractService;
     protected StructureService structureService;
     protected AgentService agentService;
     protected RendersHelper renders ;
     private WorkspaceHelper workspaceHelper;
     private PdfFactory pdfFactory;
-    public PDF_OrderHElper(EventBus eb, Vertx vertx, JsonObject config, Storage storage){
-        this.vertx = vertx;
-        this.config = config;
-        EmailFactory emailFactory = new EmailFactory(vertx, config);
-        EmailSender emailSender = emailFactory.getSender();
-        this.eb = eb;
-        this.supplierService = new DefaultSupplierService(Lystore.lystoreSchema, "supplier");
-        this.orderService = new DefaultOrderService(Lystore.lystoreSchema, "order_client_equipment", emailSender);
-        this.structureService = new DefaultStructureService(Lystore.lystoreSchema);
-        this.supplierService = new DefaultSupplierService(Lystore.lystoreSchema, "supplier");
-        this.contractService = new DefaultContractService(Lystore.lystoreSchema, "contract");
-        this.agentService = new DefaultAgentService(Lystore.lystoreSchema, "agent");
-        this.renders = new RendersHelper(this.vertx, config);
-        programService = new DefaultProgramService(Lystore.lystoreSchema,"program");
-        this.parameterService = new DefaultParameterService(Lystore.lystoreSchema, "parameter_bc_options");
-        this.workspaceHelper = new WorkspaceHelper(eb,storage);
-        pdfFactory = new PdfFactory(vertx, new JsonObject().put(NODE_PDF_GENERATOR,
-                config.getJsonObject(NODE_PDF_GENERATOR, new JsonObject())));
+    public PDF_OrderHelper(ServiceFactory serviceFactory){
+        this.vertx = serviceFactory.vertx();
+        this.config = serviceFactory.config();
+        this.eb = serviceFactory.eventBus();
+        this.supplierService = serviceFactory.supplierService();
+        this.orderService = serviceFactory.orderService();
+        this.structureService = serviceFactory.structureService();
+        this.supplierService = serviceFactory.supplierService();
+        this.contractService = serviceFactory.contractService();
+        this.agentService = serviceFactory.agentService();
+        this.renders = new RendersHelper(this.vertx, this.config);
+        programService = serviceFactory.programService();
+        this.parameterService = serviceFactory.parameterService();
+        this.workspaceHelper = new WorkspaceHelper(serviceFactory.eventBus(),serviceFactory.storage());
+        pdfFactory = new PdfFactory(this.vertx, new JsonObject().put(NODE_PDF_GENERATOR,
+                this.config.getJsonObject(NODE_PDF_GENERATOR, new JsonObject())));
 
 
     }
@@ -471,7 +459,7 @@ public class PDF_OrderHElper {
         String imgId = imgIdString[imgIdString.length - 1];
         workspaceHelper.readDocument(imgId, document -> {
             if (document == null){
-                log.error(LystoreUtils.generateErrorMessage(PDF_OrderHElper.class,"generatePDF" ,
+                log.error(LystoreUtils.generateErrorMessage(PDF_OrderHelper.class,"generatePDF" ,
                         "Cannot load image in getBase64File for id : " + imgId,"document is null"));
                 get64BaseImgFromWorkspace.complete("");
             } else {
@@ -492,7 +480,7 @@ public class PDF_OrderHElper {
                     renders.processTemplate(exportHandler, templateProps, templateName, reader, writer -> {
                         String processedTemplate = ((StringWriter) writer).getBuffer().toString();
                         if (processedTemplate.isEmpty()) {
-                            log.error(LystoreUtils.generateErrorMessage(PDF_OrderHElper.class,"generatePDF","Processed Template is empty" ,""));
+                            log.error(LystoreUtils.generateErrorMessage(PDF_OrderHelper.class,"generatePDF","Processed Template is empty" ,""));
                             exportHandler.handle(new Either.Left<>("processed template is null"));
                             return;
                         }
@@ -503,13 +491,13 @@ public class PDF_OrderHElper {
                                     .onSuccess(pdf -> exportHandler.handle(new Either.Right<>(pdf.getContent())))
                                     .onFailure(error -> {
                                         exportHandler.handle(new Either.Left<>(
-                                                LystoreUtils.generateErrorMessage(PDF_OrderHElper.class,"generatePDF",error.getMessage() ,
+                                                LystoreUtils.generateErrorMessage(PDF_OrderHelper.class,"generatePDF",error.getMessage() ,
                                                         "error when generatePdfFromTemplate")));
-                                        log.error(LystoreUtils.generateErrorMessage(PDF_OrderHElper.class,"generatePDF",error.getMessage() ,"error when generatePdfFromTemplate"));
+                                        log.error(LystoreUtils.generateErrorMessage(PDF_OrderHelper.class,"generatePDF",error.getMessage() ,"error when generatePdfFromTemplate"));
 
                                     });
                         } catch (Exception exception) {
-                            log.error(LystoreUtils.generateErrorMessage(PDF_OrderHElper.class,"generatePDF",exception.getMessage() ,"PdfGenerator is null"));
+                            log.error(LystoreUtils.generateErrorMessage(PDF_OrderHelper.class,"generatePDF",exception.getMessage() ,"PdfGenerator is null"));
                             exportHandler.handle(new Either.Left<>(LystoreUtils.generateErrorMessage(DefaultExportPDFService.class,"generatePDF",exception.getMessage() ,"PdfGenerator is null")));
                         }
                     });

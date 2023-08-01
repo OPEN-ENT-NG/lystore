@@ -2,10 +2,7 @@ package fr.openent.lystore.service.impl;
 
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.constants.LystoreBDD;
-import fr.openent.lystore.model.BCOrder;
-import fr.openent.lystore.model.Market;
-import fr.openent.lystore.model.Order;
-import fr.openent.lystore.model.Structure;
+import fr.openent.lystore.model.*;
 import fr.openent.lystore.service.OrderService;
 import fr.openent.lystore.service.PurseService;
 import fr.openent.lystore.service.StructureService;
@@ -26,7 +23,10 @@ import org.entcore.common.sql.Sql;
 import org.entcore.common.sql.SqlResult;
 import org.entcore.common.user.UserInfos;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static fr.wseduc.webutils.http.Renders.badRequest;
@@ -34,16 +34,16 @@ import static fr.wseduc.webutils.http.Renders.badRequest;
 public class DefaultOrderService extends SqlCrudService implements OrderService {
 
     private static final Logger log = LoggerFactory.getLogger (DefaultOrderService.class);
-    private PurseService purseService ;
     private EmailSendService emailSender ;
-    private StructureService structureService;
+    private final StructureService structureService;
+    private final PurseService purseService;
 
     public DefaultOrderService(
-            String schema, String table, EmailSender emailSender){
+            String schema, String table, EmailSender emailSender, StructureService structureService, PurseService purseService){
         super(schema,table);
-        this.purseService = new DefaultPurseService();
         this.emailSender = new EmailSendService(emailSender);
-        this.structureService = new DefaultStructureService(Lystore.lystoreSchema);
+        this.structureService = structureService;
+        this.purseService = purseService;
     }
 
     @Override
@@ -217,7 +217,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
         JsonArray params = new JsonArray().add(status);
 
         if (!filters.isEmpty()) {
-            sql.prepared(query, params, SqlResult.validResultHandler(filterOrders(filters,  status , handler)));
+            sql.prepared(query, params, SqlResult.validResultHandler(filterOrders(filters,  status , handler )));
         }else{
             sql.prepared(query, params, SqlResult.validResultHandler(handler));
         }
@@ -582,7 +582,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 try {
                     JsonArray statements = new fr.wseduc.webutils.collections.JsonArray();
                     if (purseEnabled) {
-                        statements.add(purseService.updatePurseAmountStatement(price, idCampaign, idStructure, "+"));
+                        statements.add(this.purseService.updatePurseAmountStatement(price, idCampaign, idStructure, "+"));
                     }
                     statements.add(getOptionsOrderDeletion(idOrder));
                     statements.add(getEquipmentOrderDeletion(idOrder));
@@ -1450,7 +1450,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 " ;";
         JsonArray params = new JsonArray().add(status);
         if (!filters.isEmpty()) {
-            sql.prepared(query, params, SqlResult.validResultHandler(filterOrders(filters, status, handler)));
+            sql.prepared(query, params, SqlResult.validResultHandler(filterOrders(filters, status, handler )));
         }else{
             sql.prepared(query, params, SqlResult.validResultHandler(handler));
         }
@@ -1706,13 +1706,13 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
             params.add(Integer.parseInt(idC));
         }
         if (!filters.isEmpty()) {
-            sql.prepared(query, params, SqlResult.validResultHandler(filterOrders(filters,"WAITING",   handler)));
+            sql.prepared(query, params, SqlResult.validResultHandler(filterOrders(filters,"WAITING", handler )));
         }else{
             sql.prepared(query, params, SqlResult.validResultHandler(handler));
         }
     }
     @Override
-    public void sendNotification(String order_number, String domainMail, HttpServerRequest request , EmailSender emailSend){
+    public void sendNotification(String order_number, String domainMail, HttpServerRequest request, EmailSender emailSend){
         String query = "SELECT orders.id_structure,orders.name, orders.amount , order_validate.order_number, order_validate.date_creation , contract.reference,contract.name\n" +
                 "FROM   lystore.allorders orders\n" +
                 "       INNER JOIN lystore.order AS order_validate\n" +
@@ -1764,7 +1764,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     }
 
     @Override
-    public void sendNotificationHelpDesk(String orderNumber, String domainMail, HttpServerRequest request , EmailSender emailSend, String recipientMail) {
+    public void sendNotificationHelpDesk(String orderNumber, String domainMail, HttpServerRequest request, EmailSender emailSend, String recipientMail) {
         String query = "SELECT orders.id_structure,orders.name, orders.amount , order_validate.order_number, order_validate.date_creation , contract.reference,contract.name\n" +
                 "FROM   lystore.allorders orders\n" +
                 "       INNER JOIN lystore.order AS order_validate\n" +

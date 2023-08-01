@@ -7,6 +7,7 @@ import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.constants.ParametersConstants;
 import fr.openent.lystore.export.ExportTypes;
 import fr.openent.lystore.export.helpers.ExportHelper;
+import fr.openent.lystore.factory.ServiceFactory;
 import fr.openent.lystore.helpers.LystoreEmailFactoryHelper;
 import fr.openent.lystore.helpers.OrderHelper;
 import fr.openent.lystore.logging.Actions;
@@ -18,9 +19,7 @@ import fr.openent.lystore.security.AccessOrderRight;
 import fr.openent.lystore.security.AccessUpdateOrderOnClosedCampaigne;
 import fr.openent.lystore.security.ManagerRight;
 import fr.openent.lystore.service.*;
-import fr.openent.lystore.service.impl.*;
 import fr.openent.lystore.service.parameter.ParameterService;
-import fr.openent.lystore.service.parameter.impl.DefaultParameterService;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
@@ -32,14 +31,11 @@ import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Handler;
 import io.vertx.core.MultiMap;
 import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
-import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.bus.WorkspaceHelper;
 import org.entcore.common.controller.ControllerHelper;
-import org.entcore.common.email.EmailFactory;
 import org.entcore.common.http.filter.ResourceFilter;
 import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
@@ -49,7 +45,8 @@ import java.text.*;
 import java.util.*;
 
 import static fr.openent.lystore.constants.ParametersConstants.REGION_TYPE_NAME;
-import static fr.openent.lystore.helpers.OrderHelper.*;
+import static fr.openent.lystore.helpers.OrderHelper.getSumWithoutTaxes;
+import static fr.openent.lystore.helpers.OrderHelper.roundWith2Decimals;
 import static fr.openent.lystore.utils.LystoreUtils.generateErrorMessage;
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultResponseHandler;
@@ -58,15 +55,16 @@ import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultRes
 public class OrderController extends ControllerHelper {
 
     private static final String NULL_DATA = "Pas d'informations";
-    private Storage storage;
-    private OrderService orderService;
-    private StructureService structureService;
-    private SupplierService supplierService;
-    private ExportPDFService exportPDFService;
-    private ContractService contractService;
-    private AgentService agentService;
-    private ProgramService programService;
-    private ExportService exportService;
+    private final Storage storage;
+    private final OrderService orderService;
+    private final StructureService structureService;
+    private final SupplierService supplierService;
+    private final ExportPDFService exportPDFService;
+    private final ContractService contractService;
+    private final AgentService agentService;
+    private final ProgramService programService;
+    private final ExportService exportService;
+    private final PurseService purseService;
     LystoreEmailFactoryHelper notificationHelpDeskEmailFactory;
     LystoreEmailFactoryHelper notificationEmailFactory;
     public static final String UTF8_BOM = "\uFEFF";
@@ -74,25 +72,25 @@ public class OrderController extends ControllerHelper {
     WorkspaceHelper workspaceHelper;
     private static DecimalFormat decimals = new DecimalFormat("0.00");
 
-    public OrderController (Storage storage, Vertx vertx, JsonObject config, EventBus eb) {
-        this.storage = storage;
-        EmailFactory emailFactory = new EmailFactory(vertx, config);
-        EmailSender emailSender = emailFactory.getSender();
-        this.orderService = new DefaultOrderService(Lystore.lystoreSchema, "order_client_equipment", emailSender);
-        this.exportPDFService = new DefaultExportPDFService(vertx, config);
-        this.structureService = new DefaultStructureService(Lystore.lystoreSchema);
-        this.supplierService = new DefaultSupplierService(Lystore.lystoreSchema, "supplier");
-        this.contractService = new DefaultContractService(Lystore.lystoreSchema, "contract");
-        this.agentService = new DefaultAgentService(Lystore.lystoreSchema, "agent");
-        this.programService = new DefaultProgramService(Lystore.lystoreSchema, "program");
-        exportService = new DefaultExportServiceService(storage);
-        workspaceHelper  = new WorkspaceHelper(eb,storage);
-        this.parameterService = new DefaultParameterService(Lystore.lystoreSchema, LystoreBDD.PARAMETER_BC_OPTIONS);
-
-        String emailNotificationHelpDeskSender = config.getJsonObject("mail",new JsonObject()).getString("notificationHelpDeskMail","cesame.lystore@monlycee.net");
-        this.notificationHelpDeskEmailFactory = new LystoreEmailFactoryHelper(vertx, config,emailNotificationHelpDeskSender);
-        String emailNotificationSender = config.getJsonObject("mail",new JsonObject()).getString("notificationMail","ne-pas-repondre@ent.iledefrance.fr");
-        this.notificationEmailFactory = new LystoreEmailFactoryHelper(vertx, config,emailNotificationSender);
+    public OrderController( ServiceFactory serviceFactory) {
+        this.storage = serviceFactory.storage();
+        this.orderService = serviceFactory.orderService();
+        this.exportPDFService = serviceFactory.exportPDFService();
+        this.structureService = serviceFactory.structureService();
+        this.supplierService = serviceFactory.supplierService();
+        this.contractService = serviceFactory.contractService();
+        this.agentService =serviceFactory.agentService();
+        this.programService = serviceFactory.programService();
+        this.exportService = serviceFactory.exportService();
+        this.workspaceHelper  = new WorkspaceHelper(serviceFactory.eventBus(),this.storage);
+        this.parameterService =  serviceFactory.parameterService();
+        this.purseService =  serviceFactory.purseService();
+        this.config = serviceFactory.config();
+        String emailNotificationHelpDeskSender = this.config.getJsonObject("mail",new JsonObject()).getString("notificationHelpDeskMail",
+                "cesame.lystore@monlycee.net");
+        this.notificationHelpDeskEmailFactory = new LystoreEmailFactoryHelper(serviceFactory.vertx(), this.config, emailNotificationHelpDeskSender);
+        String emailNotificationSender = this.config.getJsonObject("mail",new JsonObject()).getString("notificationMail","ne-pas-repondre@ent.iledefrance.fr");
+        this.notificationEmailFactory = new LystoreEmailFactoryHelper(serviceFactory.vertx(), this.config,emailNotificationSender);
 
     }
 
@@ -141,7 +139,7 @@ public class OrderController extends ControllerHelper {
                     getValidOrders(request, status);
                     break;
                 case "sent":
-                    orderService.listOrderSent(status, queries, arrayResponseHandler(request));
+                    orderService.listOrderSent(status, queries, arrayResponseHandler(request) );
                     break;
                 case "waiting":
                     List<String> idCampaigns = request.params().getAll("idCampaign");
@@ -273,7 +271,8 @@ public class OrderController extends ControllerHelper {
                                 if (order.isRight()) {
                                     orderService.deleteOrder(idOrder, order.right().getValue(), idStructure,
                                             Logging.defaultResponseHandler(eb, request, Contexts.ORDER.toString(),
-                                                    Actions.DELETE.toString(), "idOrder", order.right().getValue()));
+                                                    Actions.DELETE.toString(), "idOrder", order.right().getValue())
+                                    );
                                 }
                             }
                         });
@@ -1243,7 +1242,7 @@ public class OrderController extends ControllerHelper {
             try{
                 String domainMail =  config.getJsonObject("mail").getString("domainMail");
                 EmailSender emailSender = notificationEmailFactory.getSender();
-                orderService.sendNotification(orderNumber,domainMail,request,emailSender);
+                orderService.sendNotification(orderNumber,domainMail,request, emailSender);
             }catch (Exception e){
                 badRequest(request,e.getMessage());
             }
@@ -1265,7 +1264,7 @@ public class OrderController extends ControllerHelper {
                         config.getJsonObject("mail",new JsonObject()).getString("notificationHelpDeskReceiver","collecteur.lystore@monlycee.net");
 
                 EmailSender emailSender = notificationHelpDeskEmailFactory.getSender();
-                orderService.sendNotificationHelpDesk(orderNumber,domainMail,request,emailSender,emailNotificationHelpDeskReceiver);
+                orderService.sendNotificationHelpDesk(orderNumber,domainMail,request,emailSender, emailNotificationHelpDeskReceiver);
             }catch (Exception e){
                 badRequest(request,e.getMessage());
             }
