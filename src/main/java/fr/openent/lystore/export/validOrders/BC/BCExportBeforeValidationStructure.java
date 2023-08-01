@@ -2,7 +2,7 @@ package fr.openent.lystore.export.validOrders.BC;
 
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.constants.ExportConstants;
-import fr.openent.lystore.export.validOrders.PDF_OrderHElper;
+import fr.openent.lystore.export.validOrders.PDF_OrderHelper;
 import fr.openent.lystore.factory.ServiceFactory;
 import fr.openent.lystore.utils.LystoreUtils;
 import fr.wseduc.webutils.Either;
@@ -25,11 +25,11 @@ import java.util.List;
 import static fr.openent.lystore.constants.ParametersConstants.BC_OPTIONS;
 import static fr.openent.lystore.helpers.OrderHelper.*;
 
-public class BCExportBeforeValidationStructure extends PDF_OrderHElper {
+public class BCExportBeforeValidationStructure extends PDF_OrderHelper {
     private Logger log = LoggerFactory.getLogger(BCExportBeforeValidationStructure.class);
 
-    public BCExportBeforeValidationStructure(EventBus eb, Vertx vertx, JsonObject config, Storage storage, ServiceFactory serviceFactory) {
-        super(eb, vertx, config, storage ,serviceFactory);
+    public BCExportBeforeValidationStructure(ServiceFactory serviceFactory) {
+        super(serviceFactory);
     }
 
 

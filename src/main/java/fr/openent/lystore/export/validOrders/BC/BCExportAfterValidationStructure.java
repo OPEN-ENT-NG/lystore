@@ -4,7 +4,7 @@ import fr.openent.lystore.Lystore;
 import fr.openent.lystore.constants.CommonConstants;
 import fr.openent.lystore.constants.ExportConstants;
 import fr.openent.lystore.constants.LystoreBDD;
-import fr.openent.lystore.export.validOrders.PDF_OrderHElper;
+import fr.openent.lystore.export.validOrders.PDF_OrderHelper;
 import fr.openent.lystore.helpers.OrderHelper;
 import fr.openent.lystore.factory.ServiceFactory;
 import fr.openent.lystore.utils.LystoreUtils;
@@ -26,11 +26,11 @@ import java.util.ArrayList;
 
 import static fr.openent.lystore.constants.ParametersConstants.BC_OPTIONS;
 
-public class BCExportAfterValidationStructure extends PDF_OrderHElper {
+public class BCExportAfterValidationStructure extends PDF_OrderHelper {
     private Logger log = LoggerFactory.getLogger(BCExport.class);
 
-    public BCExportAfterValidationStructure(EventBus eb, Vertx vertx, JsonObject config, Storage storage, ServiceFactory serviceFactory) {
-        super(eb, vertx, config, storage, serviceFactory);
+    public BCExportAfterValidationStructure(ServiceFactory serviceFactory) {
+        super(serviceFactory);
     }
 
 

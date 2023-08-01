@@ -33,7 +33,7 @@ public class BasketController extends ControllerHelper {
 
     public BasketController( ServiceFactory serviceFactory) {
         super();
-        this.storage = serviceFactory.getStorage();
+        this.storage = serviceFactory.storage();
         this.basketService = serviceFactory.basketService();
         this.purseService = serviceFactory.purseService();
         this.notificationService = serviceFactory.notificationService();
@@ -196,8 +196,8 @@ public class BasketController extends ControllerHelper {
                 listBasket -> {
                     if (listBasket.isRight() && listBasket.right().getValue().size() > 0) {
                         basketService.takeOrder(request, listBasket.right().getValue(),
-                                idCampaign, idStructure, nameStructure, idProject, baskets, this.purseService, this.notificationService
-                                , Logging.defaultCreateResponsesHandler(eb,
+                                idCampaign, idStructure, nameStructure, idProject, baskets,
+                                Logging.defaultCreateResponsesHandler(eb,
                                         request,
                                         Contexts.ORDER.toString(),
                                         Actions.CREATE.toString(),

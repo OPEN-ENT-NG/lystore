@@ -2,10 +2,7 @@ package fr.openent.lystore.service.impl;
 
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.constants.LystoreBDD;
-import fr.openent.lystore.model.BCOrder;
-import fr.openent.lystore.model.Market;
-import fr.openent.lystore.model.Order;
-import fr.openent.lystore.model.Structure;
+import fr.openent.lystore.model.*;
 import fr.openent.lystore.service.OrderService;
 import fr.openent.lystore.service.PurseService;
 import fr.openent.lystore.service.StructureService;
@@ -38,11 +35,15 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
 
     private static final Logger log = LoggerFactory.getLogger (DefaultOrderService.class);
     private EmailSendService emailSender ;
+    private final StructureService structureService;
+    private final PurseService purseService;
 
     public DefaultOrderService(
-            String schema, String table, EmailSender emailSender){
+            String schema, String table, EmailSender emailSender, StructureService structureService, PurseService purseService){
         super(schema,table);
         this.emailSender = new EmailSendService(emailSender);
+        this.structureService = structureService;
+        this.purseService = purseService;
     }
 
     @Override
@@ -175,7 +176,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     }
 
     @Override
-    public  void listOrder(String status, List<String> filters, StructureService structureService, Handler<Either<String, JsonArray>> handler){
+    public  void listOrder(String status, List<String> filters, Handler<Either<String, JsonArray>> handler){
 
         String query = "SELECT oce.id, oce.price, oce.tax_amount, oce.amount, oce.creation_date, oce.id_campaign, oce.id_structure, oce.name, oce.summary, oce.description," +
                 " oce.image, oce.technical_spec, oce.status, oce.id_contract, oce.equipment_key,title.name as project_name," +
@@ -216,7 +217,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
         JsonArray params = new JsonArray().add(status);
 
         if (!filters.isEmpty()) {
-            sql.prepared(query, params, SqlResult.validResultHandler(filterOrders(filters,  status , structureService , handler )));
+            sql.prepared(query, params, SqlResult.validResultHandler(filterOrders(filters,  status , handler )));
         }else{
             sql.prepared(query, params, SqlResult.validResultHandler(handler));
         }
@@ -569,7 +570,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
 
     @Override
     public void deleteOrder(final Integer idOrder, JsonObject order,
-                            final String idStructure, PurseService purseService, final Handler<Either<String, JsonObject>> handler) {
+                            final String idStructure, final Handler<Either<String, JsonObject>> handler) {
         Integer idCampaign = order.getInteger("id_campaign");
         String getCampaignPurseEnabledQuery = "SELECT purse_enabled FROM " + Lystore.lystoreSchema + ".campaign WHERE id = ?";
         JsonArray params = new JsonArray().add(idCampaign);
@@ -581,7 +582,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 try {
                     JsonArray statements = new fr.wseduc.webutils.collections.JsonArray();
                     if (purseEnabled) {
-                        statements.add(purseService.updatePurseAmountStatement(price, idCampaign, idStructure, "+"));
+                        statements.add(this.purseService.updatePurseAmountStatement(price, idCampaign, idStructure, "+"));
                     }
                     statements.add(getOptionsOrderDeletion(idOrder));
                     statements.add(getEquipmentOrderDeletion(idOrder));
@@ -666,7 +667,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     }
 
     @Override
-    public void sendOrders(List<Integer> ids, List<String> filters, final Handler<Either<String, JsonObject>> handler, StructureService structureService){
+    public void sendOrders(List<Integer> ids, List<String> filters, final Handler<Either<String, JsonObject>> handler){
 
         this.listOrders(ids, filters, new Handler<Either<String, JsonArray>>() {
             @Override
@@ -1377,7 +1378,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     }
 
     @Override
-    public void listOrderSent(String status, List<String> filters, StructureService structureService, Handler<Either<String, JsonArray>> handler) {
+    public void listOrderSent(String status, List<String> filters, Handler<Either<String, JsonArray>> handler) {
         String query = "SELECT orders.id, " +
                 "       orders.amount, " +
                 "       orders.id_campaign, " +
@@ -1449,7 +1450,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 " ;";
         JsonArray params = new JsonArray().add(status);
         if (!filters.isEmpty()) {
-            sql.prepared(query, params, SqlResult.validResultHandler(filterOrders(filters, status, structureService , handler )));
+            sql.prepared(query, params, SqlResult.validResultHandler(filterOrders(filters, status, handler )));
         }else{
             sql.prepared(query, params, SqlResult.validResultHandler(handler));
         }
@@ -1562,7 +1563,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
                 "WHERE order_client_equipment.id_campaign = ?;";
         sql.prepared(query, new JsonArray().add(idCampaign), SqlResult.validResultHandler(handler));
     }
-    private Handler<Either<String, JsonArray>> filterOrders(List<String> filters, String status, StructureService structureService, Handler<Either<String, JsonArray>> handler) {
+    private Handler<Either<String, JsonArray>> filterOrders(List<String> filters, String status, Handler<Either<String, JsonArray>> handler) {
         return new Handler<Either<String, JsonArray>>() {
             @Override
             public void handle(Either<String, JsonArray> event) {
@@ -1660,7 +1661,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     }
 
     @Override
-    public void listOrderWaiting(List<String> idCampaigns, List<String> filters, StructureService structureService, Handler<Either<String, JsonArray>> handler) {
+    public void listOrderWaiting(List<String> idCampaigns, List<String> filters, Handler<Either<String, JsonArray>> handler) {
 
         String query = "SELECT oce.id, oce.price, oce.tax_amount, oce.amount, oce.creation_date, oce.id_campaign, oce.id_structure," +
                 " oce.name, oce.summary, oce.description," +
@@ -1705,13 +1706,13 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
             params.add(Integer.parseInt(idC));
         }
         if (!filters.isEmpty()) {
-            sql.prepared(query, params, SqlResult.validResultHandler(filterOrders(filters,"WAITING", structureService , handler )));
+            sql.prepared(query, params, SqlResult.validResultHandler(filterOrders(filters,"WAITING", handler )));
         }else{
             sql.prepared(query, params, SqlResult.validResultHandler(handler));
         }
     }
     @Override
-    public void sendNotification(String order_number, String domainMail, HttpServerRequest request, StructureService structureService, EmailSender emailSend){
+    public void sendNotification(String order_number, String domainMail, HttpServerRequest request, EmailSender emailSend){
         String query = "SELECT orders.id_structure,orders.name, orders.amount , order_validate.order_number, order_validate.date_creation , contract.reference,contract.name\n" +
                 "FROM   lystore.allorders orders\n" +
                 "       INNER JOIN lystore.order AS order_validate\n" +
@@ -1763,7 +1764,7 @@ public class DefaultOrderService extends SqlCrudService implements OrderService 
     }
 
     @Override
-    public void sendNotificationHelpDesk(String orderNumber, String domainMail, HttpServerRequest request, EmailSender emailSend, StructureService structureService, String recipientMail) {
+    public void sendNotificationHelpDesk(String orderNumber, String domainMail, HttpServerRequest request, EmailSender emailSend, String recipientMail) {
         String query = "SELECT orders.id_structure,orders.name, orders.amount , order_validate.order_number, order_validate.date_creation , contract.reference,contract.name\n" +
                 "FROM   lystore.allorders orders\n" +
                 "       INNER JOIN lystore.order AS order_validate\n" +

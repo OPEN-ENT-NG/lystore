@@ -84,7 +84,7 @@ public class ValidOrders extends ExportObject {
             ExportHelper.catchError(exportService, idFile, "number validations is not nullable");
             handler.handle(new Either.Left<>("number validations is not nullable"));
         } else {
-            new BCExport(eb, vertx, config, storage, serviceFactory).create(params.getJsonArray("numberValidations"), handler);
+            new BCExport(serviceFactory).create(params.getJsonArray("numberValidations"), handler);
         }
     }
 
@@ -94,7 +94,7 @@ public class ValidOrders extends ExportObject {
             ExportHelper.catchError(exportService, idFile, "number validations is not nullable");
             handler.handle(new Either.Left<>("number validations is not nullable"));
         } else {
-            new BCExportDuringValidation(eb, vertx, config, storage, serviceFactory).create(params, handler);
+            new BCExportDuringValidation(serviceFactory).create(params, handler);
         }
 
     }
@@ -106,7 +106,7 @@ public class ValidOrders extends ExportObject {
             ExportHelper.catchError(exportService, idFile, "number validations is not nullable");
             handler.handle(new Either.Left<>("number validations is not nullable"));
         } else {
-            new BCExportAfterValidationStructure(eb, vertx, config, storage, serviceFactory).create(bcNumber, handler);
+            new BCExportAfterValidationStructure(serviceFactory).create(bcNumber, handler);
         }
     }
 
@@ -115,7 +115,7 @@ public class ValidOrders extends ExportObject {
             ExportHelper.catchError(exportService, idFile, "number validations is not nullable");
             handler.handle(new Either.Left<>("number validations is not nullable"));
         } else {
-            new BCExportBeforeValidationStructure(eb, vertx, config, storage, serviceFactory)
+            new BCExportBeforeValidationStructure(serviceFactory)
                     .create(params.getJsonArray("numberValidations"), handler);
         }
     }
@@ -125,7 +125,7 @@ public class ValidOrders extends ExportObject {
             ExportHelper.catchError(exportService, idFile, "number validations is not nullable");
             handler.handle(new Either.Left<>("number validations is not nullable"));
         } else {
-            new BCExportAfterValidation(eb, vertx, config, storage, serviceFactory).create(bcNumber, handler);
+            new BCExportAfterValidation(serviceFactory).create(bcNumber, handler);
         }
     }
 }

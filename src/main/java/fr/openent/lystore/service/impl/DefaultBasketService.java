@@ -29,10 +29,13 @@ public class DefaultBasketService extends SqlCrudService implements BasketServic
 
     private static final Logger log = LoggerFactory.getLogger(DefaultBasketService.class);
     private static JsonObject mail;
-
-    public DefaultBasketService(String schema, String table,JsonObject mail) {
+    private final PurseService purseService;
+    private final NotificationService notificationService;
+    public DefaultBasketService(String schema, String table,JsonObject mail , PurseService purseService, NotificationService notificationService) {
         super(schema, table);
         DefaultBasketService.mail = mail;
+        this.purseService = purseService;
+        this.notificationService = notificationService;
     }
 
     public void listBasket(Integer idCampaign, String idStructure, Handler<Either<String, JsonArray>> handler){
@@ -277,7 +280,7 @@ public class DefaultBasketService extends SqlCrudService implements BasketServic
 
     public void takeOrder(final HttpServerRequest request, final JsonArray baskets, Integer idCampaign,
                           String idStructure, final String nameStructure,
-                          Integer idProject, JsonArray baskets_objects, PurseService purseService, NotificationService notificationService, final Handler<Either<String, JsonObject>> handler) {
+                          Integer idProject, JsonArray baskets_objects, final Handler<Either<String, JsonObject>> handler) {
         try {
             JsonArray statements = new fr.wseduc.webutils.collections.JsonArray();
 
@@ -286,7 +289,7 @@ public class DefaultBasketService extends SqlCrudService implements BasketServic
             for (int i = 0; i < baskets.size(); i++) {
                 basket = baskets.getJsonObject(i);
                 if (purse_enabled) {
-                    statements.add(purseService.updatePurseAmountStatement(Double.valueOf(basket.getString("total_price")),
+                    statements.add(this.purseService.updatePurseAmountStatement(Double.valueOf(basket.getString("total_price")),
                             idCampaign, idStructure, "-"));
 
                 }
@@ -309,7 +312,7 @@ public class DefaultBasketService extends SqlCrudService implements BasketServic
                     JsonArray objectResult = results.getJsonArray("results").getJsonArray(0);
                     String jsonValue = objectResult.getString(0) == null ? "{}" : objectResult.getString(0);
                     getTransactionHandler(request, nameStructure, getTotalPriceOfBasketList(baskets),
-                            event, new JsonObject(jsonValue), notificationService , handler);
+                            event, new JsonObject(jsonValue), this.notificationService , handler);
                 }else if (status.equals("error")){
                     if(event.body().getString("message").contains("Check_amount_positive")){ // c est pas biien
                         request.response().setStatusCode(210).end();

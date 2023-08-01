@@ -26,10 +26,9 @@ public interface OrderService {
      * Get the list of all orders
      * @param status order status to retrieve
      * @param queries
-     * @param structureService
      * @param handler Function handler returning data
      */
-    void listOrder(String status, List<String> queries, StructureService structureService, Handler<Either<String, JsonArray>> handler);
+    void listOrder(String status, List<String> queries, Handler<Either<String, JsonArray>> handler);
     /**
      * Valid order ( change status to 'VALID', add validation number to the order,
      * then send mail to Agents )
@@ -61,11 +60,10 @@ public interface OrderService {
   * @param idOrder id of the order item
   * @param order order to delete
   * @param idstructure id structure
-  * @param purseService
   * @param handler function returning data
   */
     void deleteOrder(Integer idOrder, JsonObject order, String idstructure,
-                     PurseService purseService, Handler<Either<String, JsonObject>> handler);
+                     Handler<Either<String, JsonObject>> handler);
 
     /**
      * Wind up orders
@@ -86,9 +84,8 @@ public interface OrderService {
      * Send orders
      * @param ids List containing ids
      * @param handler Function handler returning data
-     * @param structureService
      */
-    void sendOrders(List<Integer> ids, List<String> filters, Handler<Either<String, JsonObject>> handler, StructureService structureService);
+    void sendOrders(List<Integer> ids, List<String> filters, Handler<Either<String, JsonObject>> handler);
 
     /**
      * Update status order
@@ -220,7 +217,7 @@ public interface OrderService {
 
     void getOrderBCParams(JsonArray validationNumbers, Handler<Either<String, JsonObject>> handler);
 
-    void listOrderSent(String status, List<String> filters, StructureService structureService, Handler<Either<String, JsonArray>> arrayResponseHandler);
+    void listOrderSent(String status, List<String> filters, Handler<Either<String, JsonArray>> arrayResponseHandler);
 
     void createRejectOrders(JsonObject rejectOrder, Handler<Either<String, JsonObject>> handler);
 
@@ -230,9 +227,9 @@ public interface OrderService {
 
    JsonArray filterValidOrders(JsonArray orders, List<String> queries);
 
-    void listOrderWaiting(List<String> idCampaigns, List<String> queries, StructureService structureService, Handler<Either<String, JsonArray>> arrayResponseHandler);
+    void listOrderWaiting(List<String> idCampaigns, List<String> queries, Handler<Either<String, JsonArray>> arrayResponseHandler);
 
-    void sendNotification(String order, String domainMail, HttpServerRequest request, StructureService structureService, EmailSender emailSend);
+    void sendNotification(String order, String domainMail, HttpServerRequest request, EmailSender emailSend);
 
-    void sendNotificationHelpDesk(String orderNumber, String domainMail, HttpServerRequest request, EmailSender emailSender, StructureService structureService, String recipientMail);
+    void sendNotificationHelpDesk(String orderNumber, String domainMail, HttpServerRequest request, EmailSender emailSender, String recipientMail);
 }

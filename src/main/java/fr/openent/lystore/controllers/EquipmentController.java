@@ -43,7 +43,7 @@ public class EquipmentController extends ControllerHelper {
     public EquipmentController(ServiceFactory serviceFactory) {
         super();
         this.equipmentService = serviceFactory.equipmentService();
-        this.importCSVHelper = new ImportCSVHelper(serviceFactory.getVertx(), this.eb);
+        this.importCSVHelper = new ImportCSVHelper(serviceFactory.vertx(), this.eb);
     }
 
     @Get("/equipments")

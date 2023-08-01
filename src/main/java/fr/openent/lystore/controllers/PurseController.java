@@ -53,7 +53,7 @@ public class PurseController extends ControllerHelper {
     private CampaignService campaignService;
     public PurseController(ServiceFactory serviceFactory) {
         super();
-        this.storage = serviceFactory.getStorage();
+        this.storage = serviceFactory.storage();
         this.structureService = serviceFactory.structureService();
         this.purseService = serviceFactory.purseService();
         this.campaignService = serviceFactory.campaignService();

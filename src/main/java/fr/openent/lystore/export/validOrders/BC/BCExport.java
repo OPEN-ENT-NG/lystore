@@ -1,34 +1,29 @@
 package fr.openent.lystore.export.validOrders.BC;
 
-//import fr.openent.lystore.helpers.RendersHelper;
 import fr.openent.lystore.constants.CommonConstants;
 import fr.openent.lystore.constants.ExportConstants;
-import fr.openent.lystore.export.validOrders.PDF_OrderHElper;
+import fr.openent.lystore.export.validOrders.PDF_OrderHelper;
 import fr.openent.lystore.factory.ServiceFactory;
 import fr.openent.lystore.utils.LystoreUtils;
 import fr.wseduc.webutils.Either;
-        import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
+import io.vertx.core.Handler;
 import io.vertx.core.buffer.Buffer;
-import io.vertx.core.eventbus.EventBus;
-        import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
-        import org.entcore.common.storage.Storage;
 
-        import java.util.*;
+import java.util.List;
 
 import static fr.openent.lystore.constants.ParametersConstants.BC_OPTIONS;
-import static fr.wseduc.webutils.http.Renders.badRequest;
 
 
-public class BCExport extends PDF_OrderHElper {
+public class BCExport extends PDF_OrderHelper {
     private Logger log = LoggerFactory.getLogger(BCExport.class);
 
 
-    public BCExport(EventBus eb, Vertx vertx, JsonObject config, Storage storage, ServiceFactory serviceFactory) {
-        super(eb, vertx, config, storage, serviceFactory);
+    public BCExport(ServiceFactory serviceFactory) {
+        super(serviceFactory);
 
     }
 

@@ -50,7 +50,7 @@ public class StructureGroupController extends ControllerHelper {
 
     public StructureGroupController(ServiceFactory serviceFactory) {
         super();
-        this.vertx = serviceFactory.getVertx();
+        this.vertx = serviceFactory.vertx();
         this.structureGroupService = serviceFactory.structureGroupService();
         this.importCSVHelper = new ImportCSVHelper(vertx, this.eb);
         this.structureService = serviceFactory.structureService();

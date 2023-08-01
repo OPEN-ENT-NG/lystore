@@ -6,7 +6,6 @@ import fr.openent.lystore.constants.EnumConstant;
 import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.helpers.FutureHelper;
 import fr.openent.lystore.model.InstructionStatus;
-import fr.openent.lystore.model.Order;
 import fr.openent.lystore.service.InstructionService;
 import fr.openent.lystore.service.OperationService;
 import fr.openent.lystore.service.OrderRegionService;
@@ -39,10 +38,16 @@ import static fr.wseduc.webutils.http.Renders.getHost;
 public class DefaultInstructionService  extends SqlCrudService implements InstructionService {
 
     private static final Logger log = LoggerFactory.getLogger (DefaultOrderService.class);
+    private final OrderRegionService  orderRegionService;
+    private final OrderService orderService;
+    private final OperationService operationService;
 
     public DefaultInstructionService(
-            String schema, String table) {
+            String schema, String table, OrderRegionService orderRegionService, OperationService operationService, OrderService orderService) {
         super(schema, table);
+        this.orderRegionService = orderRegionService;
+        this.operationService = operationService;
+        this.orderService = orderService;
     }
 
     public void getExercises (Handler<Either<String, JsonArray>> handler) {
@@ -140,7 +145,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
         }));
     }
 
-    public void getOperationOfInstruction(Integer IdInstruction, OperationService operationService, Handler<Either<String, JsonArray>> handler) {
+    public void getOperationOfInstruction(Integer IdInstruction, Handler<Either<String, JsonArray>> handler) {
         JsonArray idInstructionParams = new JsonArray().add(IdInstruction);
 
         String queryOperation = "" +
@@ -206,7 +211,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
 
                     SqlUtils.getCountOrderInOperation(idsOperations,  FutureHelper.handlerJsonArray(getCountOrderInOperationFuture));
                     SqlUtils.getAllPriceOperation(idsOperations,  FutureHelper.handlerJsonArray(getAllPriceOperationFuture));
-                    operationService.getNumberOrderSubvention(idsOperations,  FutureHelper.handlerJsonArray(getNumberOrderSubventionFuture));
+                    this.operationService.getNumberOrderSubvention(idsOperations,  FutureHelper.handlerJsonArray(getNumberOrderSubventionFuture));
                 }
             } catch ( Exception e){
                 log.error("An error when you want get all instructions", e);
@@ -248,14 +253,14 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
 
 
     @Override
-    public void checkCpValue(Number id, String cp_adopted, OrderService orderService, OrderRegionService orderRegionService,
+    public void checkCpValue(Number id, String cp_adopted,
                              Handler<Either<String, JsonObject>> handler) {
         switch (cp_adopted) {
             case EnumConstant.VALID_CP_STATUS:
                 handleCpAdopted(id, handler);
                 break;
             case EnumConstant.REJECTED_CP_STATUS:
-                handleCpRejected(id, orderService, orderRegionService, handler);
+                handleCpRejected(id, handler);
                 break;
             default:
                 handler.handle(new Either.Right<>(new JsonObject()));
@@ -263,7 +268,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
         }
     }
 
-    private void handleCpRejected(Number id, OrderService orderService, OrderRegionService orderRegionService,
+    private void handleCpRejected(Number id,
                                   Handler<Either<String, JsonObject>> handler) {
         String queryGetOrders = "SELECT distinct orders.id as " + LystoreBDD.ID_ORDER + ", " +
                 "CASE WHEN orders.override_region is null" +
@@ -278,13 +283,13 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
 
         sql.prepared(queryGetOrders, new JsonArray().add(id), SqlResult.validResultHandler(event -> {
                     JsonArray sqlResults = event.right().getValue();
-                    generateOrdersRejectStatements(sqlResults, id, orderService, orderRegionService, handler);
+                    generateOrdersRejectStatements(sqlResults, id, handler);
                 })
         );
     }
 
-    private void generateOrdersRejectStatements(JsonArray sqlResults, Number id, OrderService orderService,
-                                                OrderRegionService orderRegionService, Handler<Either<String, JsonObject>> handler) {
+    private void generateOrdersRejectStatements(JsonArray sqlResults, Number id,
+                                                Handler<Either<String, JsonObject>> handler) {
         JsonArray statements = new JsonArray();
         sqlResults.stream()
                 .filter(JsonObject.class::isInstance)
@@ -293,9 +298,9 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                     Integer orderId = result.getInteger(LystoreBDD.ID_ORDER);
                     String type = result.getString(LystoreBDD.ORDER_ORIGIN);
                     if (type.equals(CommonConstants.EPLE)) {
-                        orderService.addRejectedOrderStatements(statements, orderId, "");
+                        this.orderService.addRejectedOrderStatements(statements, orderId, "");
                     } else {
-                        statements.add(orderRegionService.getUpdateRejectOrderRegionStatement(orderId));
+                        statements.add(this.orderRegionService.getUpdateRejectOrderRegionStatement(orderId));
                     }
                 });
         if (statements.size() > 0)

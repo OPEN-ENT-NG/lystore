@@ -44,19 +44,19 @@ public class ServiceFactory {
 
     }
 
-    public JsonObject getConfig() {
+    public JsonObject config() {
         return config;
     }
 
-    public Storage getStorage() {
+    public Storage storage() {
         return storage;
     }
 
-    public Vertx getVertx() {
+    public Vertx vertx() {
         return vertx;
     }
 
-    public EventBus getEb() {
+    public EventBus eventBus() {
         return eb;
     }
 
@@ -69,7 +69,8 @@ public class ServiceFactory {
     }
 
     public BasketService basketService() {
-        return new DefaultBasketService(Lystore.lystoreSchema, LystoreBDD.BASKET,config.getJsonObject("mail", new JsonObject()));
+        return new DefaultBasketService(Lystore.lystoreSchema, LystoreBDD.BASKET,config.getJsonObject("mail", new JsonObject()),
+                this.purseService(), this.notificationService());
     }
 
     public CampaignService campaignService() {
@@ -105,7 +106,8 @@ public class ServiceFactory {
     }
 
     public InstructionService instructionService() {
-        return new DefaultInstructionService(Lystore.lystoreSchema, LystoreBDD.INSTRUCTION);
+        return new DefaultInstructionService(Lystore.lystoreSchema, LystoreBDD.INSTRUCTION, this.orderRegionService(),
+                this.operationService(), this.orderService());
     }
 
     public LabelOperationService labelOperationService() {
@@ -135,7 +137,7 @@ public class ServiceFactory {
     }
 
     public OrderService orderService() {
-        return new DefaultOrderService(Lystore.lystoreSchema, LystoreBDD.ORDER_CLIENT_EQUIPMENT, emailSender);
+        return new DefaultOrderService(Lystore.lystoreSchema, LystoreBDD.ORDER_CLIENT_EQUIPMENT, emailSender, this.structureService(), this.purseService());
     }
 
     public ParameterService parameterService() {

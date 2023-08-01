@@ -41,7 +41,7 @@ public class TitleController extends ControllerHelper {
         this.titleService =  serviceFactory.titleService();
         this.structureService = serviceFactory.structureService();
         this.campaignService = serviceFactory.campaignService();
-        importCSVHelper = new ImportCSVHelper(serviceFactory.getVertx(), serviceFactory.getEb());
+        importCSVHelper = new ImportCSVHelper(serviceFactory.vertx(), serviceFactory.eventBus());
     }
 
     @Get("/titles/")

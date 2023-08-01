@@ -24,17 +24,11 @@ import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultRes
 public class InstructionController extends ControllerHelper {
     private final InstructionService instructionService ;
     private final ExportService exportService;
-    private final OperationService operationService;
-    private final OrderService orderService ;
-    private final OrderRegionService orderRegionService;
 
     public InstructionController(ServiceFactory serviceFactory) {
         super();
         this.instructionService = serviceFactory.instructionService();
         this.exportService = serviceFactory.exportService();
-        this.operationService = serviceFactory.operationService();
-        this.orderRegionService = serviceFactory.orderRegionService();
-        this.orderService = serviceFactory.orderService();
     }
 
     @Get("/exercises")
@@ -82,7 +76,7 @@ public class InstructionController extends ControllerHelper {
     public void checkCpValue(final HttpServerRequest request){
         final Integer idInstruction = Integer.parseInt(request.params().get("idInstruction"));
         final String status = request.params().get("status");
-        instructionService.checkCpValue(idInstruction, status, orderService, orderRegionService, defaultResponseHandler(request));
+        instructionService.checkCpValue(idInstruction, status, defaultResponseHandler(request));
     }
 
     @Put("/instruction/:idInstruction")
@@ -134,7 +128,7 @@ public class InstructionController extends ControllerHelper {
     @ResourceFilter(ManagerRight.class)
     public void getOperationOfInstruction(HttpServerRequest request) {
         instructionService.getOperationOfInstruction(Integer.parseInt(request.getParam("id")),
-                operationService,arrayResponseHandler(request));
+                arrayResponseHandler(request));
     }
 
     @Get("/instructions/export/notification/equpment/:id")

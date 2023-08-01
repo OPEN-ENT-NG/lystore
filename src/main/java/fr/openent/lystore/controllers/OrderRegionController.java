@@ -45,7 +45,7 @@ public class OrderRegionController extends BaseController {
 
     public OrderRegionController( ServiceFactory serviceFactory) {
         this.orderRegionService = serviceFactory.orderRegionService();
-        this.storage = serviceFactory.getStorage();
+        this.storage = serviceFactory.storage();
 
     }
 

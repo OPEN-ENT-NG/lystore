@@ -3,7 +3,7 @@ package fr.openent.lystore.export.validOrders.BC;
 import fr.openent.lystore.constants.CommonConstants;
 import fr.openent.lystore.constants.ExportConstants;
 import fr.openent.lystore.constants.LystoreBDD;
-import fr.openent.lystore.export.validOrders.PDF_OrderHElper;
+import fr.openent.lystore.export.validOrders.PDF_OrderHelper;
 import fr.openent.lystore.factory.ServiceFactory;
 import fr.openent.lystore.utils.LystoreUtils;
 import fr.wseduc.webutils.Either;
@@ -19,11 +19,11 @@ import org.entcore.common.storage.Storage;
 
 import static fr.openent.lystore.constants.ParametersConstants.BC_OPTIONS;
 
-public class BCExportAfterValidation extends PDF_OrderHElper {
+public class BCExportAfterValidation extends PDF_OrderHelper {
     private Logger log = LoggerFactory.getLogger(BCExport.class);
 
-    public BCExportAfterValidation(EventBus eb, Vertx vertx, JsonObject config, Storage storage, ServiceFactory serviceFactory) {
-        super(eb, vertx, config, storage, serviceFactory);
+    public BCExportAfterValidation(ServiceFactory serviceFactory) {
+        super(serviceFactory);
 
     }
 
