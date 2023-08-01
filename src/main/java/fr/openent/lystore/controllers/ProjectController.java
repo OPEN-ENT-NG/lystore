@@ -29,12 +29,10 @@ import static org.entcore.common.http.response.DefaultResponseHandler.arrayRespo
 public class ProjectController extends ControllerHelper {
 
     private final ProjectService projectService;
-    private final PurseService purseService;
 
     public ProjectController(ServiceFactory serviceFactory) {
         super();
         projectService = serviceFactory.projectService();
-        purseService = serviceFactory.purseService();
     }
 
     @Get("/projects")
@@ -112,7 +110,7 @@ public class ProjectController extends ControllerHelper {
                                     public void handle(Either<String, JsonArray> listOrder) {
                                         if (listOrder.isRight() && listOrder.right().getValue().size() > 0) {
                                             projectService.revertOrderAndDeleteProject(listOrder.right().getValue(),
-                                                    id, idCampaign, idStructure,purseService , event -> {
+                                                    id, idCampaign, idStructure, event -> {
                                                 if (event.isRight()) {
 
                                                     UserUtils.getUserInfos(eb, request, user -> {

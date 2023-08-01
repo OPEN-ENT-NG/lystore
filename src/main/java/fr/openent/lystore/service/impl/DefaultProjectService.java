@@ -17,8 +17,10 @@ import org.entcore.common.sql.SqlResult;
 
 public class DefaultProjectService extends SqlCrudService implements ProjectService {
     private Logger log = LoggerFactory.getLogger(DefaultProjectService.class);
-    public DefaultProjectService(String schema, String table) {
+    private final PurseService purseService;
+    public DefaultProjectService(String schema, String table, PurseService purseService) {
         super(schema, table);
+        this.purseService = purseService;
     }
 
     /**
@@ -99,7 +101,7 @@ public class DefaultProjectService extends SqlCrudService implements ProjectServ
 
 
     @Override
-    public void revertOrderAndDeleteProject(JsonArray orders, Integer id, Integer idCampaign, String idStructure, PurseService purseService, Handler<Either<String, JsonObject>> handler) {
+    public void revertOrderAndDeleteProject(JsonArray orders, Integer id, Integer idCampaign, String idStructure, Handler<Either<String, JsonObject>> handler) {
         String getTotalToUpdate = " WITH values as ( SELECT  " +
                 "                CASE count(opts) " +
                 "                WHEN 0 THEN ROUND((oe.price + (oe.tax_amount * oe.price)/100), 2) * oe.amount " +
@@ -118,12 +120,12 @@ public class DefaultProjectService extends SqlCrudService implements ProjectServ
                 "    ";
 
         sql.prepared(getTotalToUpdate,new JsonArray().add(idCampaign).add(id), SqlResult.validResultHandler(
-                deleteProjectAndUpdateLinkedDatas(orders, id, idCampaign, idStructure,purseService, handler)
+                deleteProjectAndUpdateLinkedDatas(orders, id, idCampaign, idStructure, handler)
         ));
     }
 
     private Handler<Either<String, JsonArray>> deleteProjectAndUpdateLinkedDatas(JsonArray orders, Integer id, Integer idCampaign,
-                                                                                 String idStructure, PurseService purseService,
+                                                                                 String idStructure,
                                                                                  Handler<Either<String, JsonObject>> handler) {
         return new Handler<Either<String, JsonArray>>() {
             @Override
@@ -132,7 +134,7 @@ public class DefaultProjectService extends SqlCrudService implements ProjectServ
                     JsonObject order;
                     JsonArray statements = new JsonArray();
                     Double totalToAdd =Double.parseDouble( event.right().getValue().getJsonObject(0).getString("total"));
-                    statements.add(getUpdatePurse(idCampaign,idStructure,totalToAdd ,purseService));
+                    statements.add(getUpdatePurse(idCampaign,idStructure,totalToAdd));
                     //Query
                     for (int i = 0; i < orders.size(); i++) {
                         order = orders.getJsonObject(i);
@@ -213,8 +215,8 @@ public class DefaultProjectService extends SqlCrudService implements ProjectServ
                 .put("action", "prepared");
     }
 
-    private JsonObject getUpdatePurse(Integer idCampaign, String idStructure,Double price , PurseService purseService) {
-        return purseService.updatePurseAmountStatement(price, idCampaign, idStructure, "+");
+    private JsonObject getUpdatePurse(Integer idCampaign, String idStructure, Double price) {
+        return this.purseService.updatePurseAmountStatement(price, idCampaign, idStructure, "+");
     }
 
     private JsonObject getNewNbORDER(Integer idCampaign, String idStructure) {
