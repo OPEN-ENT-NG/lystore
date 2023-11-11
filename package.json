@@ -26,7 +26,7 @@
   "homepage": "https://github.com/OPEN-ENT-NG/Lystore#readme",
   "dependencies": {
     "awesome-typescript-loader": "3.2.1",
-    "axios": "0.27.2",
+    "axios": "1.6.0",
     "core-js": "2.4.1",
     "entcore": "~4.8.0-dev",
     "entcore-toolkit": "^1.0.1",
