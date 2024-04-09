@@ -426,7 +426,7 @@ export class OrdersClient extends Selection<OrderClient> {
             //plus utile pour le waiting
             order.project = projects.all.find(p => p.id === order.id_project);
             try {
-                order.title = titles.all.find(t => t.id === order.project.id_title);
+                order.project.title = titles.all.find(t => t.id === order.project.id_title);
             }catch (e) {
             }
             order.name_structure =  structures.length > 0 ? OrderUtils.initNameStructure(order.id_structure, structures) : '';

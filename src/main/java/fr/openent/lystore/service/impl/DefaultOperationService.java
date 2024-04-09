@@ -530,7 +530,8 @@ GROUP BY
                 "           orders.price_proposal, " +
                 "           orders.tax_amount, " +
                 "           orders.id_structure, " +
-                "           orders.status, " +
+                "           orders.status," +
+                "           orders.prio as rank, " +
                 "           c.NAME                               AS contract_name, " +
                 "           Array_to_json(Array_agg(order_opts)) AS options, " +
                 "           ( " +
@@ -576,6 +577,7 @@ GROUP BY
                 "          orders.tax_amount , " +
                 "          orders.id_structure,  " +
                 "          c.name," +
+                "          orders.prio, " +
                 " orders.price_proposal," +
                 " orders.override_region," +
                 "orders.amount," +
