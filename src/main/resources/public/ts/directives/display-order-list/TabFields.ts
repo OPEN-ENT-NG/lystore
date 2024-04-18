@@ -56,7 +56,7 @@ export const tableFields = [
     },
     {
         name:'N° Priorité (Demande/Projet)',
-        fieldName: 'rankOrder',
+        fieldName: 'rank',
         display: false
     },
     {

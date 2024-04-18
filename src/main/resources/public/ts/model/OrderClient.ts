@@ -423,6 +423,7 @@ export class OrdersClient extends Selection<OrderClient> {
             order.supplier = suppliers.all.find(s => s.id === order.contract.id_supplier);
             order.campaign = campaigns.all.find(c => c.id === order.id_campaign);
             order.contract.contractType = order.contract_type // redondant mais obligatoire pour coexistance avec vieux code
+            order.rank = Number.parseInt(order.rank.toString());
             //plus utile pour le waiting
             order.project = projects.all.find(p => p.id === order.id_project);
             try {
