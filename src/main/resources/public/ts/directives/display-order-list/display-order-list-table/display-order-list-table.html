@@ -45,7 +45,7 @@
                                                           ng-class="{ellipsis:!vm.tableFields[19].fullDisplay}"
                                                           ng-click="vm.tableFields[19].fullDisplay = !vm.tableFields[19].fullDisplay">[[order.project.description || '-']]</div></td>
 
-                <td ng-if="vm.tableFields[11].display"> <div class="smallTabElem"> [[order.rank]]</div></td>
+                <td ng-if="vm.tableFields[11].display"> <div class="smallTabElem"> [[vm.getRank(order.rank)]]</div></td>
                 <td ng-if="vm.tableFields[12].display"> <div class="tabElem"> [[order.name]]</div></td>
                 <td ng-if="vm.tableFields[13].display"> <div class="smallTabElem"> [[order.amount]]</div></td>
                 <td ng-if="vm.tableFields[14].display"> <div class="smallTabElem"><span ng-bind="order.priceUnitedTTC | currency"></span></div></td>
