@@ -16,7 +16,7 @@ interface IViewModel {
     };
     formatDate(date: Date):string;
     switchAllOrders():void;
-    getRank(rank: string):string;
+    getRank(rank: number):number;
     getStructureGroupsList  (structureGroups : any): string;
 
     sort: {
@@ -82,11 +82,11 @@ class Controller implements ng.IController, IViewModel {
         }
     };
 
-    getRank(rank: string): string {
-        if (!isNaN(Number.parseInt(rank)))
-            return (Number.parseInt(rank) + 1).toString();
+    getRank(rank: number): number {
+        if (!isNaN(rank))
+            return rank + 1;
         else
-            return "-"
+            return null;
     }
 
     calculTotalPriceTTC(limitTo : number): number {
