@@ -3,7 +3,6 @@ package fr.openent.lystore.export;
 import fr.openent.lystore.model.Project;
 import fr.openent.lystore.service.ExportService;
 import fr.wseduc.webutils.Either;
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
@@ -32,8 +31,8 @@ public class ExportObject {
         this.exportService = exportService;
         this.idFile = idNewFile;
     }
-    protected void futureHandler(Handler<Either<String, Buffer>> handler, Workbook workbook, List<Future> futures) {
-        CompositeFuture.all(futures).setHandler(event -> {
+    protected <T> void futureHandler(Handler<Either<String, Buffer>> handler, Workbook workbook, List<Future<T>> futures) {
+        Future.all(futures).onComplete(event -> {
             if (event.succeeded()) {
                 try {
                     ByteArrayOutputStream fileOut = new ByteArrayOutputStream();
@@ -50,12 +49,13 @@ public class ExportObject {
         });
     }
 
-    protected Handler<Either<String, Boolean>> getHandler(Future<Boolean> future) {
+
+    protected Handler<Either<String, Boolean>> getHandler(Promise<Boolean> promise){
         return event -> {
             if (event.isRight()) {
-                future.complete(event.right().getValue());
+                promise.complete(event.right().getValue());
             } else {
-                future.fail(event.left().getValue());
+                promise.fail(event.left().getValue());
             }
         };
     }

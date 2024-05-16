@@ -3,11 +3,12 @@ package fr.openent.lystore.export.campaign.extractionOrder;
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.export.ExportLystoreWorker;
 import fr.openent.lystore.export.TabHelper;
+import fr.openent.lystore.helpers.FutureHelper;
 import fr.openent.lystore.model.*;
 import fr.wseduc.webutils.Either;
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -849,22 +850,22 @@ public class ExtractionOrder extends TabHelper {
     }
 
     private void launchSQLFutures(Handler<Either<String,JsonArray>> handler) {
-        List<Future> futures = new ArrayList<>();
+        List<Promise<JsonObject>> promises = new ArrayList<>();
         datas = new JsonArray();
         for(Integer id : ids_campaigns){
-            Future<JsonObject> getDatasForOneCampaignFuture = Future.future();
-            futures.add(getDatasForOneCampaignFuture);
+            Promise<JsonObject> getDatasForOneCampaignPromise = Promise.promise();
+            promises.add(getDatasForOneCampaignPromise);
         }
-        getDatasForOneCampaignFutureHandler(handler,futures);
+        getDatasForOneCampaignFutureHandler(handler, FutureHelper.promisesToFutures(promises));
         for (int i = 0 ; i < ids_campaigns.size() ; i++){
-            Future future = futures.get(i);
+            Promise promise = promises.get(i);
             Integer id = ids_campaigns.get(i);
-            sqlHandler(getHandler(future),new JsonArray().add(id));
+            sqlHandler(getHandler(promise),new JsonArray().add(id));
         }
     }
 
-    protected void getDatasForOneCampaignFutureHandler(Handler<Either<String, JsonArray>> handler, List<Future> futures) {
-        CompositeFuture.all(futures).setHandler(event -> {
+    protected <T> void getDatasForOneCampaignFutureHandler(Handler<Either<String, JsonArray>> handler, List<Future<T>> futures) {
+        Future.all(futures).onComplete(event -> {
             if (event.succeeded()) {
                 JsonArray results =new JsonArray();
                 List<JsonArray> resultsList = event.result().list();

@@ -17,6 +17,7 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.data.FileResolver;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.buffer.impl.BufferImpl;
 import io.vertx.core.json.JsonArray;
@@ -229,14 +230,14 @@ public class Instruction extends ExportObject {
                     instruction.put(operationStr, new JsonArray(instruction.getString(operationStr)));
                     Map<String, JsonObject> structuresMap = getStructureMap(structures);
                     Workbook workbook = new XSSFWorkbook();
-                    List<Future> futures = new ArrayList<>();
-                    Future<Boolean> PublipostageFuture = Future.future();
+                    List<Future<Boolean>> futures = new ArrayList<>();
+                    Promise<Boolean> publipostagePromise = Promise.promise();
 
-                    futures.add(PublipostageFuture);
+                    futures.add(publipostagePromise.future());
 
                     futureHandler(handler, workbook, futures);
 
-                    new Publipostage(workbook, instruction,structuresMap).create(getHandler(PublipostageFuture));
+                    new Publipostage(workbook, instruction,structuresMap).create(getHandler(publipostagePromise));
                 }
             }
         }))).onFailure(f->{

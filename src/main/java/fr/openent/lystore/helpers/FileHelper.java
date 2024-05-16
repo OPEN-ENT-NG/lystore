@@ -2,7 +2,7 @@ package fr.openent.lystore.helpers;
 
 import fr.openent.lystore.model.file.Attachment;
 import fr.openent.lystore.model.file.Metadata;
-import fr.wseduc.swift.utils.FileUtils;
+import org.entcore.common.utils.FileUtils;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import io.vertx.core.*;
 import io.vertx.core.file.FileSystem;
