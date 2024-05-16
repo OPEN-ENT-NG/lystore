@@ -73,7 +73,7 @@ public class DefaultActiveStructureService implements ActiveStructureService {
                             .put("group", body);
                     log.info(body);
 
-                    eb.send("entcore.feeder", action, (Handler<AsyncResult<Message<JsonObject>>>) createGarResult -> {
+                    eb.request("entcore.feeder", action, (Handler<AsyncResult<Message<JsonObject>>>) createGarResult -> {
                         if (createGarResult.failed()) {
                             handler.handle(new Either.Left<>("Failed to create lystore group"));
                             return;

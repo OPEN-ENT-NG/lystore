@@ -8,10 +8,7 @@ import fr.openent.lystore.utils.LystoreUtils;
 import fr.openent.lystore.utils.OrderUtils;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.webutils.Either;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import io.vertx.core.*;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -146,23 +143,28 @@ GROUP BY
                     }
                     JsonArray idsOperations = SqlQueryUtils.getArrayAllIdsResult(operations);
 
-                    Future<JsonArray> getCountOrderInOperationFuture = Future.future();
-                    Future<JsonArray> getInstructionForOperationFuture = Future.future();
-                    Future<JsonArray> getAllPriceOperationFuture = Future.future();
-                    Future<JsonArray> getNumberOrderSubventionFuture = Future.future();
 
-                    List<Future> listFuture = new ArrayList<>();
+                    Promise<JsonArray> getCountOrderInOperationPromise = Promise.promise();
+                    Promise<JsonArray> getInstructionForOperationPromise = Promise.promise();
+                    Promise<JsonArray> getAllPriceOperationPromise = Promise.promise();
+                    Promise<JsonArray> getNumberOrderSubventionPromise = Promise.promise();
 
-                    listFuture.add(getCountOrderInOperationFuture);
-                    listFuture.add(getInstructionForOperationFuture);
-                    listFuture.add(getAllPriceOperationFuture);
-                    listFuture.add(getNumberOrderSubventionFuture);
-                    CompositeFuture.all(listFuture).setHandler(makeOperationsDataArray(handler, operations, getCountOrderInOperationFuture, getInstructionForOperationFuture, getAllPriceOperationFuture, getNumberOrderSubventionFuture));
+                    List<Future<JsonArray>> listFuture = new ArrayList<>();
 
-                    SqlUtils.getCountOrderInOperation(idsOperations, FutureHelper.handlerJsonArray(getCountOrderInOperationFuture));
-                    getInstructionForOperation(idsOperations, FutureHelper.handlerJsonArray(getInstructionForOperationFuture));
-                    getAllPriceOperation(idsOperations,FutureHelper.handlerJsonArray(getAllPriceOperationFuture));
-                    getNumberOrderSubvention(idsOperations,  FutureHelper.handlerJsonArray(getNumberOrderSubventionFuture));
+                    listFuture.add(getCountOrderInOperationPromise.future());
+                    listFuture.add(getInstructionForOperationPromise.future());
+                    listFuture.add(getAllPriceOperationPromise.future());
+                    listFuture.add(getNumberOrderSubventionPromise.future());
+                    Future.all(listFuture).onComplete(makeOperationsDataArray(handler, operations,
+                            getCountOrderInOperationPromise.future(),
+                            getInstructionForOperationPromise.future(),
+                            getAllPriceOperationPromise.future(),
+                            getNumberOrderSubventionPromise.future()));
+
+                    SqlUtils.getCountOrderInOperation(idsOperations, FutureHelper.handlerJsonArray(getCountOrderInOperationPromise));
+                    getInstructionForOperation(idsOperations, FutureHelper.handlerJsonArray(getInstructionForOperationPromise));
+                    getAllPriceOperation(idsOperations,FutureHelper.handlerJsonArray(getAllPriceOperationPromise));
+                    getNumberOrderSubvention(idsOperations,  FutureHelper.handlerJsonArray(getNumberOrderSubventionPromise));
 
                 } else {
                     handler.handle(new Either.Left<>("404"));

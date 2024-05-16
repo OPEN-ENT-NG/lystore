@@ -5,6 +5,7 @@ import fr.openent.lystore.controllers.parameter.ActiveStructureController;
 import fr.openent.lystore.controllers.parameter.ParameterController;
 import fr.openent.lystore.export.ExportLystoreWorker;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.json.JsonObject;
@@ -35,8 +36,8 @@ public class Lystore extends BaseServer {
     public static final String PDF = "pdf";
 
     @Override
-    public void start() throws Exception {
-        super.start();
+    public void start(Promise<Void> startPromise) throws Exception {
+        super.start(startPromise);
         lystoreSchema = config.getString("db-schema");
        if(config.containsKey("iteration-worker")){
            iterationWorker = config.getInteger("iteration-worker");
@@ -83,15 +84,17 @@ public class Lystore extends BaseServer {
         CONFIG = config;
         vertx.deployVerticle(ExportLystoreWorker.class, new DeploymentOptions().setConfig(config).setWorker(true));
         launchWorker(eb);
-
+        startPromise.tryComplete();
+        startPromise.tryFail("[Lystore@Lystore::start] Fail to start LyStore");
     }
 
     public static void launchWorker(EventBus eb) {
-        eb.send(ExportLystoreWorker.class.getSimpleName(), new JsonObject(), new DeliveryOptions().setSendTimeout(1000 * 1000L), handlerToAsyncHandler(eventExport ->{
+        eb.request(ExportLystoreWorker.class.getSimpleName(), new JsonObject(), new DeliveryOptions().setSendTimeout(1000 * 1000L), handlerToAsyncHandler(eventExport ->{
                     if(!eventExport.body().getString("status").equals("ok"))
                         launchWorker(eb);
                     log.info("Ok calling worker " + eventExport.body().toString());
                 }
         ));
+
     }
 }

@@ -12,10 +12,7 @@ import fr.openent.lystore.service.OrderService;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import io.vertx.core.*;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -112,24 +109,24 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                         return;
                     }
                     JsonArray idsInstructions = SqlQueryUtils.getArrayAllIdsResult(instructions);
-                    Future<JsonArray> getSumOperationsFutur = Future.future();
+                    Promise<JsonArray> getSumOperationsPromise = Promise.promise();
 
-                    List<Future> futursArray = new ArrayList<>();
-                    futursArray.add(getSumOperationsFutur);
+                    List<Future<JsonArray>> futursArray = new ArrayList<>();
+                    futursArray.add(getSumOperationsPromise.future());
 
-                    CompositeFuture.join( futursArray ).setHandler(asyncEvent -> {
+                    Future.join(futursArray).onComplete(asyncEvent -> {
                         if (asyncEvent.failed()) {
                             String message = "Failed to retrieve instructions";
                             handler.handle(new Either.Left<>(message));
                             return;
                         }
 
-                        JsonArray getSumOperations = getSumOperationsFutur.result();
+                        JsonArray getSumOperations = getSumOperationsPromise.future().result();
                         JsonArray instructionsResult =  SqlQueryUtils.addDataByIdJoin(instructions, getSumOperations,"amount");
                         handler.handle(new Either.Right<>(instructionsResult));
                     });
 
-                    SqlUtils.getSumOperations(idsInstructions, FutureHelper.handlerJsonArray(getSumOperationsFutur));
+                    SqlUtils.getSumOperations(idsInstructions, FutureHelper.handlerJsonArray(getSumOperationsPromise));
 
                 } else {
                     handler.handle(new Either.Left<>("404"));
@@ -163,11 +160,11 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                     }
                     JsonArray idsOperations = SqlQueryUtils.getArrayAllIdsResult(operations);
 
-                    Future<JsonArray> getCountOrderInOperationFuture = Future.future();
-                    Future<JsonArray> getAllPriceOperationFuture = Future.future();
-                    Future<JsonArray> getNumberOrderSubventionFuture = Future.future();
+                    Promise<JsonArray> getCountOrderInOperationPromise = Promise.promise();
+                    Promise<JsonArray> getAllPriceOperationPromise = Promise.promise();
+                    Promise<JsonArray> getNumberOrderSubventionPromise = Promise.promise();
 
-                    CompositeFuture.all( getCountOrderInOperationFuture, getAllPriceOperationFuture, getNumberOrderSubventionFuture ).setHandler(asyncEvent -> {
+                    Future.all( getCountOrderInOperationPromise.future(), getAllPriceOperationPromise.future(), getNumberOrderSubventionPromise.future() ).onComplete(asyncEvent -> {
                         if (asyncEvent.failed()) {
                             String message = "Failed to retrieve instructions";
                             handler.handle(new Either.Left<>(message));
@@ -175,9 +172,9 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                         }
 
                         JsonArray operationsFinal = new JsonArray();
-                        JsonArray getNbrOrder = getCountOrderInOperationFuture.result();
-                        JsonArray getAmountsDemands = getAllPriceOperationFuture.result();
-                        JsonArray getNumberSubvention = getNumberOrderSubventionFuture.result();
+                        JsonArray getNbrOrder = getCountOrderInOperationPromise.future().result();
+                        JsonArray getAmountsDemands = getAllPriceOperationPromise.future().result();
+                        JsonArray getNumberSubvention = getNumberOrderSubventionPromise.future().result();
 
                         for (int i = 0; i < operations.size(); i++) {
                             JsonObject operation = operations.getJsonObject(i);
@@ -205,9 +202,9 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
                         handler.handle(new Either.Right<>(operationsFinal));
                     });
 
-                    SqlUtils.getCountOrderInOperation(idsOperations,  FutureHelper.handlerJsonArray(getCountOrderInOperationFuture));
-                    SqlUtils.getAllPriceOperation(idsOperations,  FutureHelper.handlerJsonArray(getAllPriceOperationFuture));
-                    operationService.getNumberOrderSubvention(idsOperations,  FutureHelper.handlerJsonArray(getNumberOrderSubventionFuture));
+                    SqlUtils.getCountOrderInOperation(idsOperations,  FutureHelper.handlerJsonArray(getCountOrderInOperationPromise));
+                    SqlUtils.getAllPriceOperation(idsOperations,  FutureHelper.handlerJsonArray(getAllPriceOperationPromise));
+                    operationService.getNumberOrderSubvention(idsOperations,  FutureHelper.handlerJsonArray(getNumberOrderSubventionPromise));
                 }
             } catch ( Exception e){
                 log.error("An error when you want get all instructions", e);
@@ -337,12 +334,12 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
     }
     private void generateOrdersUpdateStatements(Map<Integer, JsonArray> mapMarket, JsonArray statements,
                                                 Handler<Either<String, JsonObject>> handler, Number id) {
-        List<Future> futures = new ArrayList<>();
-        for (Map.Entry<Integer, JsonArray> entry : mapMarket.entrySet()) {
-            Future<JsonArray> future = Future.future();
-            futures.add(future);
+        List<Promise<JsonArray>> promises = new ArrayList<>();
+         for (Map.Entry<Integer, JsonArray> entry : mapMarket.entrySet()) {
+            Promise<JsonArray> promise = Promise.promise();
+            promises.add(promise);
         }
-        CompositeFuture.all(futures).setHandler(new Handler<AsyncResult<CompositeFuture>>() {
+        Future.all(FutureHelper.promisesToFutures(promises)).onComplete(new Handler<AsyncResult<CompositeFuture>>() {
             @Override
             public void handle(AsyncResult<CompositeFuture> event) {
                 if (event.succeeded()) {
@@ -361,7 +358,7 @@ public class DefaultInstructionService  extends SqlCrudService implements Instru
 
         int i = 0;
         for (Map.Entry<Integer, JsonArray> entry : mapMarket.entrySet()) {
-            createNewValidationNumber(id,entry,FutureHelper.handlerJsonArray(futures.get(i++)));
+            createNewValidationNumber(id,entry,FutureHelper.handlerJsonArray(promises.get(i++)));
         }
     }
 

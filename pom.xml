@@ -12,7 +12,7 @@
 
     <groupId>fr.openent</groupId>
     <artifactId>lystore</artifactId>
-    <version>2.3-migration-SNAPSHOT</version>
+    <version>3.0-b2school-SNAPSHOT</version>
 
     <scm>
         <connection>scm:git:https://github.com/OPEN-ENT-NG/lystore.git</connection>
@@ -29,7 +29,6 @@
     </repositories>
 
     <properties>
-        <vertxVersion>3.9.5</vertxVersion>
         <toolsVersion>2.0.0-final</toolsVersion>
         <junitVersion>5.1.0</junitVersion>
         <opencsvVersion>3.9</opencsvVersion>
@@ -51,6 +50,7 @@
             <groupId>org.entcore</groupId>
             <artifactId>common</artifactId>
             <version>${entCoreVersion}</version>
+            <classifier>fat</classifier>
             <scope>compile</scope>
         </dependency>
         <dependency>
