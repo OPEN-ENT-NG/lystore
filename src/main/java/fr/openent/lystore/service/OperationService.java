@@ -26,4 +26,6 @@ public interface OperationService {
     void deleteOrdersOperation(JsonArray ordersIds, Handler<Either<String, JsonObject>> handler);
 
     void listOperations(List<String> q, Handler<Either<String, JsonArray>> arrayResponseHandler);
+
+    void getNumberOrderSubvention(JsonArray idsOperations, Handler<Either<String, JsonArray>> handlerJsonArray);
 }

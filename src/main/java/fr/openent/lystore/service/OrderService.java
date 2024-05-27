@@ -3,7 +3,6 @@ package fr.openent.lystore.service;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.email.EmailSender;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -58,13 +57,13 @@ public interface OrderService {
 
  /**
      * delete an order
-     * @param idOrder id of the order item
-     * @param order order to delete
-     * @param idstructure id structure
-     * @param handler function returning data
-     */
-    void deleteOrder( Integer idOrder, JsonObject order, String idstructure,
-                      Handler<Either<String,JsonObject>> handler);
+  * @param idOrder id of the order item
+  * @param order order to delete
+  * @param idstructure id structure
+  * @param handler function returning data
+  */
+    void deleteOrder(Integer idOrder, JsonObject order, String idstructure,
+                     Handler<Either<String, JsonObject>> handler);
 
     /**
      * Wind up orders
@@ -230,7 +229,7 @@ public interface OrderService {
 
     void listOrderWaiting(List<String> idCampaigns, List<String> queries, Handler<Either<String, JsonArray>> arrayResponseHandler);
 
-    void sendNotification(String order, String domainMail, HttpServerRequest request , EmailSender emailSend);
+    void sendNotification(String order, String domainMail, HttpServerRequest request, EmailSender emailSend);
 
     void sendNotificationHelpDesk(String orderNumber, String domainMail, HttpServerRequest request, EmailSender emailSender, String recipientMail);
 }

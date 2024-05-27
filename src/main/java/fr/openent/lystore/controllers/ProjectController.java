@@ -1,13 +1,12 @@
 package fr.openent.lystore.controllers;
 
-import fr.openent.lystore.Lystore;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
-import fr.openent.lystore.security.AccesProjectRight;
 import fr.openent.lystore.security.AccessUpdateOrderOnClosedCampaigne;
 import fr.openent.lystore.service.ProjectService;
-import fr.openent.lystore.service.impl.DefaultProjectService;
+import fr.openent.lystore.service.PurseService;
+import fr.openent.lystore.factory.ServiceFactory;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
@@ -31,9 +30,9 @@ public class ProjectController extends ControllerHelper {
 
     private final ProjectService projectService;
 
-    public ProjectController() {
+    public ProjectController(ServiceFactory serviceFactory) {
         super();
-        projectService = new DefaultProjectService(Lystore.lystoreSchema, "project");
+        projectService = serviceFactory.projectService();
     }
 
     @Get("/projects")
@@ -110,7 +109,8 @@ public class ProjectController extends ControllerHelper {
                                     @Override
                                     public void handle(Either<String, JsonArray> listOrder) {
                                         if (listOrder.isRight() && listOrder.right().getValue().size() > 0) {
-                                            projectService.revertOrderAndDeleteProject(listOrder.right().getValue(), id, idCampaign, idStructure, event -> {
+                                            projectService.revertOrderAndDeleteProject(listOrder.right().getValue(),
+                                                    id, idCampaign, idStructure, event -> {
                                                 if (event.isRight()) {
 
                                                     UserUtils.getUserInfos(eb, request, user -> {

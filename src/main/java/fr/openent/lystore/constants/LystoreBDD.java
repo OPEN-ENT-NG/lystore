@@ -91,4 +91,16 @@ public class LystoreBDD {
     public static final String END_DATE = "end_date";
     public static final String IS_OPEN = "is_open";
 
+    //tables
+    public static final String BASKET = "basket";
+    public static final String EQUIPMENT = "equipment";
+    public static final String EQUIPMENT_TYPE = "equipment_type";
+    public static final String GRADE = "grade";
+    public static final String INSTRUCTION = "instruction";
+    public static final String OPERATION = "operation";
+    public static final String LABEL_OPERATION = "label_operation";
+    public static final String PROGRAM = "program";
+    public static final String STRUCTURE_GROUP = "structure_group";
+    public static final String TAG = "tag";
+    public static final String TAX = "tax";
 }

@@ -2,26 +2,19 @@ package fr.openent.lystore.export.instructions.publipostage;
 
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.export.TabHelper;
-import fr.openent.lystore.service.StructureService;
-import fr.openent.lystore.service.impl.DefaultStructureService;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
-import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.apache.poi.ss.usermodel.Workbook;
-import org.entcore.common.sql.Sql;
-import org.entcore.common.sql.SqlResult;
 
 import java.util.Map;
 
 public class Publipostage extends TabHelper {
-    private StructureService structureService;
     private int lengthGlobalCols = 7;
     private int lengthGlobalRows = 1;
-    public Publipostage(Workbook workbook, JsonObject instruction, Map<String, JsonObject> structuresMap) {
+    public Publipostage(Workbook workbook, JsonObject instruction,  Map<String, JsonObject> structuresMap) {
         super(workbook, instruction, "Publipostage",structuresMap);
-        structureService = new DefaultStructureService(Lystore.lystoreSchema);
     }
 
     @Override

@@ -8,7 +8,6 @@ import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.I18n;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -29,22 +28,14 @@ import static fr.wseduc.webutils.http.Renders.getHost;
 public class DefaultBasketService extends SqlCrudService implements BasketService {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultBasketService.class);
-
-    private static NotificationService notificationService;
-    private PurseService purseService;
     private static JsonObject mail;
-
-    public DefaultBasketService(String schema, String table, Vertx vertx, JsonObject slackConfiguration,JsonObject mail) {
+    private final PurseService purseService;
+    private final NotificationService notificationService;
+    public DefaultBasketService(String schema, String table,JsonObject mail , PurseService purseService, NotificationService notificationService) {
         super(schema, table);
-        this.purseService = new DefaultPurseService();
-        this.mail = mail;
-        notificationService = new SlackService(
-                vertx,
-                slackConfiguration.getString("api-uri"),
-                slackConfiguration.getString("token"),
-                slackConfiguration.getString("bot-username"),
-                slackConfiguration.getString("channel")
-        );
+        DefaultBasketService.mail = mail;
+        this.purseService = purseService;
+        this.notificationService = notificationService;
     }
 
     public void listBasket(Integer idCampaign, String idStructure, Handler<Either<String, JsonArray>> handler){
@@ -298,7 +289,7 @@ public class DefaultBasketService extends SqlCrudService implements BasketServic
             for (int i = 0; i < baskets.size(); i++) {
                 basket = baskets.getJsonObject(i);
                 if (purse_enabled) {
-                    statements.add(purseService.updatePurseAmountStatement(Double.valueOf(basket.getString("total_price")),
+                    statements.add(this.purseService.updatePurseAmountStatement(Double.valueOf(basket.getString("total_price")),
                             idCampaign, idStructure, "-"));
 
                 }
@@ -321,7 +312,7 @@ public class DefaultBasketService extends SqlCrudService implements BasketServic
                     JsonArray objectResult = results.getJsonArray("results").getJsonArray(0);
                     String jsonValue = objectResult.getString(0) == null ? "{}" : objectResult.getString(0);
                     getTransactionHandler(request, nameStructure, getTotalPriceOfBasketList(baskets),
-                            event, new JsonObject(jsonValue), handler);
+                            event, new JsonObject(jsonValue), this.notificationService , handler);
                 }else if (status.equals("error")){
                     if(event.body().getString("message").contains("Check_amount_positive")){ // c est pas biien
                         request.response().setStatusCode(210).end();
@@ -614,11 +605,12 @@ public class DefaultBasketService extends SqlCrudService implements BasketServic
      *
      * @param event PostgreSQL event
      * @param basicBDObject
+     * @param notificationService
      * @return Transaction handler
      */
     private static void getTransactionHandler(HttpServerRequest request, String nameStructure, Double totalPrice,
                                               Message<JsonObject> event, JsonObject basicBDObject,
-                                              Handler<Either<String, JsonObject>> handler) {
+                                              NotificationService notificationService, Handler<Either<String, JsonObject>> handler) {
         JsonObject result = event.body();
         if (result.containsKey("status") && "ok".equals(result.getString("status"))) {
             JsonObject returns = new JsonObject()

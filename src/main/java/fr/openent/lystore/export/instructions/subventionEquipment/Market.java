@@ -2,8 +2,6 @@ package fr.openent.lystore.export.instructions.subventionEquipment;
 
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.export.TabHelper;
-import fr.openent.lystore.service.StructureService;
-import fr.openent.lystore.service.impl.DefaultStructureService;
 import fr.wseduc.webutils.Either;
 import io.vertx.core.Handler;
 import io.vertx.core.json.JsonArray;
@@ -14,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Map;
 
 public class Market extends TabHelper {
-    private StructureService structureService;
     private ArrayList<Integer> codes = new ArrayList<>();
     private int arraylength = 5;
     private int lineNumber = 0;
@@ -29,7 +26,6 @@ public class Market extends TabHelper {
 
     public Market(Workbook workbook, JsonObject instruction, boolean isCMR, Map<String, JsonObject> structuresMap) {
         super(workbook, instruction, (isCMR) ? "ANN. 1 Rapport CMR Marchés" : "ANN. 1 Rapport PUB. Marchés",structuresMap);
-        structureService = new DefaultStructureService(Lystore.lystoreSchema);
         this.isCMR = isCMR;
     }
 

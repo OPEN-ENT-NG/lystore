@@ -1,16 +1,14 @@
 package fr.openent.lystore.controllers;
 
 import com.opencsv.CSVReader;
-import fr.openent.lystore.Lystore;
 import fr.openent.lystore.helpers.ImportCSVHelper;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
 import fr.openent.lystore.security.AdministratorRight;
+import fr.openent.lystore.factory.ServiceFactory;
 import fr.openent.lystore.service.StructureGroupService;
 import fr.openent.lystore.service.StructureService;
-import fr.openent.lystore.service.impl.DefaultStructureGroupService;
-import fr.openent.lystore.service.impl.DefaultStructureService;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
@@ -20,7 +18,6 @@ import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
@@ -51,11 +48,12 @@ public class StructureGroupController extends ControllerHelper {
     private StructureGroupService structureGroupService;
     private StructureService structureService;
 
-    public StructureGroupController(Vertx vertx) {
+    public StructureGroupController(ServiceFactory serviceFactory) {
         super();
-        this.structureGroupService = new DefaultStructureGroupService(Lystore.lystoreSchema, "structure_group");
+        this.vertx = serviceFactory.vertx();
+        this.structureGroupService = serviceFactory.structureGroupService();
         this.importCSVHelper = new ImportCSVHelper(vertx, this.eb);
-        this.structureService = new DefaultStructureService(Lystore.lystoreSchema);
+        this.structureService = serviceFactory.structureService();
     }
 
     @Post("/structure/group/import")

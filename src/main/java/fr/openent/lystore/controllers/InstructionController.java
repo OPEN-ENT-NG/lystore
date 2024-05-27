@@ -3,14 +3,12 @@ package fr.openent.lystore.controllers;
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.export.ExportTypes;
 import fr.openent.lystore.export.helpers.ExportHelper;
+import fr.openent.lystore.factory.ServiceFactory;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
 import fr.openent.lystore.security.ManagerRight;
-import fr.openent.lystore.service.ExportService;
-import fr.openent.lystore.service.InstructionService;
-import fr.openent.lystore.service.impl.DefaultExportServiceService;
-import fr.openent.lystore.service.impl.DefaultInstructionService;
+import fr.openent.lystore.service.*;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
@@ -19,21 +17,18 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.http.filter.ResourceFilter;
-import org.entcore.common.storage.Storage;
 
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.arrayResponseHandler;
 import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultResponseHandler;
 
 public class InstructionController extends ControllerHelper {
-    private InstructionService instructionService ;
-    private Storage storage;
-    private ExportService exportService;
+    private final InstructionService instructionService ;
+    private final ExportService exportService;
 
-    public InstructionController(Storage storage) {
+    public InstructionController(ServiceFactory serviceFactory) {
         super();
-        this.storage = storage;
-        this.instructionService = new DefaultInstructionService(Lystore.lystoreSchema, "instruction");
-        this.exportService = new DefaultExportServiceService(storage);
+        this.instructionService = serviceFactory.instructionService();
+        this.exportService = serviceFactory.exportService();
     }
 
     @Get("/exercises")
@@ -81,8 +76,7 @@ public class InstructionController extends ControllerHelper {
     public void checkCpValue(final HttpServerRequest request){
         final Integer idInstruction = Integer.parseInt(request.params().get("idInstruction"));
         final String status = request.params().get("status");
-        instructionService.checkCpValue(idInstruction,status,defaultResponseHandler(request));
-
+        instructionService.checkCpValue(idInstruction, status, defaultResponseHandler(request));
     }
 
     @Put("/instruction/:idInstruction")
@@ -133,7 +127,8 @@ public class InstructionController extends ControllerHelper {
     @SecuredAction(value = "", type = ActionType.RESOURCE)
     @ResourceFilter(ManagerRight.class)
     public void getOperationOfInstruction(HttpServerRequest request) {
-        instructionService.getOperationOfInstruction(Integer.parseInt(request.getParam("id")), arrayResponseHandler(request));
+        instructionService.getOperationOfInstruction(Integer.parseInt(request.getParam("id")),
+                arrayResponseHandler(request));
     }
 
     @Get("/instructions/export/notification/equpment/:id")

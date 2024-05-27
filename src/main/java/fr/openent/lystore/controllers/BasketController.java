@@ -1,12 +1,13 @@
 package fr.openent.lystore.controllers;
 
-import fr.openent.lystore.Lystore;
 import fr.openent.lystore.logging.Actions;
 import fr.openent.lystore.logging.Contexts;
 import fr.openent.lystore.logging.Logging;
 import fr.openent.lystore.security.*;
 import fr.openent.lystore.service.BasketService;
-import fr.openent.lystore.service.impl.DefaultBasketService;
+import fr.openent.lystore.service.NotificationService;
+import fr.openent.lystore.service.PurseService;
+import fr.openent.lystore.factory.ServiceFactory;
 import fr.wseduc.rs.*;
 import fr.wseduc.security.ActionType;
 import fr.wseduc.security.SecuredAction;
@@ -14,7 +15,6 @@ import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.http.Renders;
 import fr.wseduc.webutils.request.RequestUtils;
 import io.vertx.core.Handler;
-import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -28,11 +28,15 @@ import static fr.wseduc.webutils.http.response.DefaultResponseHandler.defaultRes
 public class BasketController extends ControllerHelper {
     private final BasketService basketService;
     private final Storage storage;
+    private final PurseService purseService;
+    private final NotificationService notificationService;
 
-    public BasketController(Vertx vertx, Storage storage, JsonObject slackConfiguration,JsonObject mail) {
+    public BasketController( ServiceFactory serviceFactory) {
         super();
-        this.storage = storage;
-        this.basketService = new DefaultBasketService(Lystore.lystoreSchema, "basket", vertx, slackConfiguration, mail);
+        this.storage = serviceFactory.storage();
+        this.basketService = serviceFactory.basketService();
+        this.purseService = serviceFactory.purseService();
+        this.notificationService = serviceFactory.notificationService();
     }
     @Get("/basket/:idCampaign/:idStructure")
     @ApiDoc("List  basket liste of a campaigne and a structure")
