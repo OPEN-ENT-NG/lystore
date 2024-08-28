@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>io.edifice</groupId>
+        <artifactId>app-parent</artifactId>
+        <version>1.0</version>
+    </parent>
+
+    <groupId>fr.openent</groupId>
+    <artifactId>lystore</artifactId>
+    <version>2.3-migration-SNAPSHOT</version>
+
+    <scm>
+        <connection>scm:git:https://github.com/OPEN-ENT-NG/lystore.git</connection>
+        <developerConnection>scm:git:https://github.com/OPEN-ENT-NG/lystore.git</developerConnection>
+        <url>https://github.com/OPEN-ENT-NG/lystore</url>
+    </scm>
+
+    <repositories>
+        <repository>
+            <id>ode</id>
+            <name>ODE Repository</name>
+            <url>https://maven.opendigitaleducation.com/nexus/content/groups/public</url>
+        </repository>
+    </repositories>
+
+    <properties>
+        <vertxVersion>3.9.5</vertxVersion>
+        <toolsVersion>2.0.0-final</toolsVersion>
+        <junitVersion>5.1.0</junitVersion>
+        <opencsvVersion>3.9</opencsvVersion>
+        <apachePoiVersion>4.1.0</apachePoiVersion>
+        <powerMockVersion>2.0.2</powerMockVersion>
+        <mockitoVersion>[2.0,3.0)</mockitoVersion>
+        <entCoreVersion>5.0-b2school-SNAPSHOT</entCoreVersion>
+    </properties>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-core</artifactId>
+            <version>${vertxVersion}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.entcore</groupId>
+            <artifactId>common</artifactId>
+            <version>${entCoreVersion}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.opencsv</groupId>
+            <artifactId>opencsv</artifactId>
+            <version>${opencsvVersion}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi</artifactId>
+            <version>${apachePoiVersion}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.poi</groupId>
+            <artifactId>poi-ooxml</artifactId>
+            <version>${apachePoiVersion}</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>vertx-unit</artifactId>
+            <version>${vertxVersion}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.entcore</groupId>
+            <artifactId>tests</artifactId>
+            <version>${entCoreVersion}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.gatling.highcharts</groupId>
+            <artifactId>gatling-charts-highcharts</artifactId>
+            <version>2.2.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junitVersion}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.mockito</groupId>
+            <artifactId>mockito-core</artifactId>
+            <version>${mockitoVersion}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-core</artifactId>
+            <version>${powerMockVersion}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.vertx</groupId>
+            <artifactId>testtools</artifactId>
+            <version>${toolsVersion}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>
