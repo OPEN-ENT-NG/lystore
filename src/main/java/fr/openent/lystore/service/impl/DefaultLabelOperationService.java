@@ -4,10 +4,7 @@ import fr.openent.lystore.Lystore;
 import fr.openent.lystore.helpers.FutureHelper;
 import fr.openent.lystore.service.LabelOperationService;
 import fr.wseduc.webutils.Either;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.Future;
-import io.vertx.core.Handler;
+import io.vertx.core.*;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -42,18 +39,18 @@ public class DefaultLabelOperationService extends SqlCrudService implements Labe
     }
 
     public void getLabels (List<String> filters, Handler<Either<String, JsonArray>> handler) {
-        Future<JsonArray> getLabelsInfoFuture = Future.future();
-        Future<JsonArray> getMaxOrdersDateLabelFuture = Future.future();
+        Promise<JsonArray> getLabelsInfoPromise = Promise.promise();
+        Promise<JsonArray> getMaxOrdersDateLabelPromise = Promise.promise();
 
-        List<Future> listFuture = new ArrayList<>();
+        List<Future<JsonArray>> listFuture = new ArrayList<>();
 
-        listFuture.add(getLabelsInfoFuture);
-        listFuture.add(getMaxOrdersDateLabelFuture);
+        listFuture.add(getLabelsInfoPromise.future());
+        listFuture.add(getMaxOrdersDateLabelPromise.future());
 
-        CompositeFuture.all(listFuture).setHandler(makeLabelsDataArray(handler, getLabelsInfoFuture, getMaxOrdersDateLabelFuture));
+        Future.all(listFuture).onComplete(makeLabelsDataArray(handler, getLabelsInfoPromise.future(), getMaxOrdersDateLabelPromise.future()));
 
-        getLabelsInfo(filters, FutureHelper.handlerJsonArray(getLabelsInfoFuture));
-        getMaxOrdersDateLabel(FutureHelper.handlerJsonArray(getMaxOrdersDateLabelFuture));
+        getLabelsInfo(filters, FutureHelper.handlerJsonArray(getLabelsInfoPromise));
+        getMaxOrdersDateLabel(FutureHelper.handlerJsonArray(getMaxOrdersDateLabelPromise));
     }
 
     private Handler<AsyncResult<CompositeFuture>> makeLabelsDataArray(Handler<Either<String, JsonArray>> handler, Future<JsonArray> getLabelsInfoFuture, Future<JsonArray> getMaxOrdersDateLabelFuture) {

@@ -1,5 +1,5 @@
     {
-      "name": "fr.openent~lystore~2.3-migration-SNAPSHOT",
+      "name": "fr.openent~lystore~3.0-b2school-SNAPSHOT",
       "config": {
         "main" : "fr.openent.lystore.Lystore",
         "port" : 8140,

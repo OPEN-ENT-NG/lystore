@@ -4,9 +4,9 @@ import fr.openent.lystore.Lystore;
 import fr.openent.lystore.helpers.FutureHelper;
 import fr.openent.lystore.utils.SqlQueryUtils;
 import fr.wseduc.webutils.Either;
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.sql.Sql;
@@ -46,10 +46,10 @@ public final class SqlUtils {
      */
     public static void getSumPriceOperation(Number idOperation, Handler<Either<String, JsonObject>> handler) {
         try {
-            Future<JsonObject> getTotalOrderClientFuture = Future.future();
-            Future<JsonObject> getTotalOrderRegionFuture = Future.future();
+            Promise<JsonObject> getTotalOrderClientPromise = Promise.promise();
+            Promise<JsonObject> getTotalOrderRegionPromise = Promise.promise();
 
-            CompositeFuture.all(getTotalOrderClientFuture, getTotalOrderRegionFuture).setHandler(asyncEvent -> {
+            Future.all(getTotalOrderClientPromise.future(), getTotalOrderRegionPromise.future()).onComplete(asyncEvent -> {
                 if (asyncEvent.failed()) {
                     String message = "Failed to retrieve operation";
                     handler.handle(new Either.Left<>(message));
@@ -60,8 +60,8 @@ public final class SqlUtils {
                 String resultTotalOperation;
 
 
-                JsonObject getTotalClient = getTotalOrderClientFuture.result();
-                JsonObject getTotalRegion = getTotalOrderRegionFuture.result();
+                JsonObject getTotalClient = getTotalOrderClientPromise.future().result();
+                JsonObject getTotalRegion = getTotalOrderRegionPromise.future().result();
 
                 totalPriceClient = Double.parseDouble(getTotalClient.getString("price_total_orders_clients") != null? getTotalClient.getString("price_total_orders_clients"):"0.0");
                 totalPriceRegion = Double.parseDouble(getTotalRegion.getString("price_total_orders_regions") != null? getTotalRegion.getString("price_total_orders_regions"):"0.0");
@@ -71,8 +71,8 @@ public final class SqlUtils {
                 handler.handle(new Either.Right<>(result.put("id", idOperation).put("amount", resultTotalOperation)));
             });
 
-            getTotalOrderClient(idOperation, FutureHelper.handlerJsonObject(getTotalOrderClientFuture));
-            getTotalOrderRegion(idOperation, FutureHelper.handlerJsonObject(getTotalOrderRegionFuture));
+            getTotalOrderClient(idOperation, FutureHelper.handlerJsonObject(getTotalOrderClientPromise));
+            getTotalOrderRegion(idOperation, FutureHelper.handlerJsonObject(getTotalOrderRegionPromise));
 
         } catch (Exception e) {
             LOGGER.error("Error in SqlUtils ->", e);
@@ -124,17 +124,17 @@ public final class SqlUtils {
      */
     public static void getAllPriceOperation(JsonArray idsOperations, Handler<Either<String, JsonArray>> handler) {
         try {
-            List<Future> futuresArray = new ArrayList<>();
+            List<Future<JsonObject>> futuresArray = new ArrayList<>();
             JsonArray result = new JsonArray();
 
             for (int i = 0; i < idsOperations.size(); i++) {
-                Future future = Future.future();
+                Promise<JsonObject> promise = Promise.promise();
                 Number id = idsOperations.getInteger(i);
-                SqlUtils.getSumPriceOperation(id, FutureHelper.handlerJsonObject(future));
-                futuresArray.add(future);
+                SqlUtils.getSumPriceOperation(id, FutureHelper.handlerJsonObject(promise));
+                futuresArray.add(promise.future());
             }
 
-            CompositeFuture.join(futuresArray).setHandler(asyncEvent -> {
+            Future.join(futuresArray).onComplete(asyncEvent -> {
                 if (asyncEvent.failed()) {
                     String message = "Failed to retrieve operation";
                     handler.handle(new Either.Left<>(message));

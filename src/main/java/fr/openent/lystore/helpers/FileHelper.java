@@ -2,6 +2,7 @@ package fr.openent.lystore.helpers;
 
 import fr.openent.lystore.model.file.Attachment;
 import fr.openent.lystore.model.file.Metadata;
+import org.entcore.common.utils.FileUtils;
 import fr.wseduc.webutils.DefaultAsyncResult;
 import io.vertx.core.*;
 import io.vertx.core.file.FileSystem;
@@ -10,7 +11,6 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import org.entcore.common.storage.Storage;
-import org.entcore.common.utils.FileUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;

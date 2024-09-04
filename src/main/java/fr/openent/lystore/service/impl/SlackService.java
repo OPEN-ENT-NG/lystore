@@ -3,10 +3,7 @@ package fr.openent.lystore.service.impl;
 import fr.openent.lystore.service.NotificationService;
 import io.vertx.core.Handler;
 import io.vertx.core.Vertx;
-import io.vertx.core.http.HttpClient;
-import io.vertx.core.http.HttpClientOptions;
-import io.vertx.core.http.HttpClientRequest;
-import io.vertx.core.http.HttpClientResponse;
+import io.vertx.core.http.*;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
 import java.io.UnsupportedEncodingException;
@@ -49,17 +46,22 @@ public class SlackService implements NotificationService {
                 + "&channel=" + encodeParam(this.channel) + "&text=" + encodeParam(text)
                 + "&username=" + encodeParam(this.botUsername)
                 + "&pretty=1";
-        final HttpClientRequest notification = httpClient.post(address,
-                new Handler<HttpClientResponse>() {
-            @Override
-            public void handle(HttpClientResponse response) {
-                if (response.statusCode() != 200) {
-                    LOGGER.error("An error occurred when notify slack");
-                }
-            }
-        }).putHeader("Content-Type", "application/json");
+        RequestOptions requestOptions = new RequestOptions()
+                .setAbsoluteURI(address)
+                .setMethod(HttpMethod.POST)
+                .putHeader("Content-Type", "application/json");
 
-        notification.end();
+        httpClient.request(requestOptions)
+                .flatMap(HttpClientRequest::send)
+                .onSuccess( response -> {
+                    if (response.statusCode() != 200) {
+                        LOGGER.error("An error occurred when notify slack", response.statusCode(), response.statusMessage());
+                    }
+                })
+                .onFailure( throwable -> {
+                    LOGGER.error("An error occurred when notify slack", throwable);
+                });
+
     }
 
     private static String encodeParam(String param) {

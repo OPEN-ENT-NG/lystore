@@ -2,14 +2,13 @@ package fr.openent.lystore.export;
 
 import fr.openent.lystore.Lystore;
 import fr.openent.lystore.export.helpers.ExcelHelper;
+import fr.openent.lystore.helpers.FutureHelper;
 import fr.openent.lystore.service.impl.DefaultProjectService;
 import fr.wseduc.webutils.Either;
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -539,8 +538,8 @@ public abstract class TabHelper {
     protected String makeCellWithoutNull ( String valueGet){
         return valueGet != null? valueGet : "Pas d'informations";
     }
-    protected void futureHandler(Handler<Either<String, JsonArray>> handler, List<Future> futures) {
-        CompositeFuture.all(futures).setHandler(event -> {
+    protected <T> void futureHandler(Handler<Either<String, JsonArray>> handler, List<Future<T>> futures) {
+        Future.all(futures).onComplete(event -> {
             if (event.succeeded()) {
                 JsonArray results =new JsonArray();
                 List<JsonArray> resultsList = event.result().list();
@@ -553,7 +552,12 @@ public abstract class TabHelper {
                 handler.handle(new Either.Left<>("Error when resolving futures : " + event.cause().getMessage()));
             }
         });
+
     }
+
+
+
+
     /**
      * get structures from neo
      * @param ids
@@ -561,69 +565,24 @@ public abstract class TabHelper {
      */
     protected void getStructures(JsonArray ids, Handler<Either<String, JsonArray>> handler)  {
         LocalDateTime test = LocalDateTime.now();
-        List<Future> futuresOld = new ArrayList<>();
+        List<Promise<JsonArray>> promisesOld = new ArrayList<>();
         DateTimeFormatter formatter  = DateTimeFormatter.ofPattern("hh:mm:ss");
         log.info("@LystoreWorker["+ this.getClass() +"] START " +   test.format(formatter) + " Array structures id to send SIZE : " + ids.size());
 
 
         for(int i = 0 ; i < ids.size();i++){
-            Future<JsonArray> future = Future.future();
-            futuresOld.add(future);
+            Promise<JsonArray> promise = Promise.promise();
+            promisesOld.add(promise);
         }
-        futureHandler(handler,futuresOld);
+
+        futureHandler(handler, FutureHelper.promisesToFutures(promisesOld));
+
         for(int i = 0 ; i < ids.size();i++){
             String id = ids.getString(i);
-            getStructure(id,getHandler(futuresOld.get(i)));
+            getStructure(id,getHandler(promisesOld.get(i)));
         }
 
 
-
-//        List<Future<JsonObject>> futures = new ArrayList<>();
-//        Promise<JsonObject> init = Promise.promise();
-//        Future<JsonObject>  current = init.future();
-//        for (int i = 0 ; i<ids.size(); i++){
-//            int indice = i;
-//            current = current.compose( v ->{
-//                Future<JsonObject> next = getStructure(ids.getString(indice));
-//                futures.add(next);
-//                return  next;
-//            });
-//        }
-//        current.onSuccess(l ->{
-//            List<JsonObject> structures = new ArrayList<>();
-//            for(Future<JsonObject> future : futures){
-//                structures.add(future.result());
-//            }
-//          handler.handle(new Either.Right(new JsonArray(structures)));
-////
-//        }).onFailure(f->{
-//            handler.handle(new Either.Left("Error when resolving futures "));
-//        });
-//
-//        init.complete();
-
-//        String query = "" +
-//                "MATCH (s:Structure) " +
-//                "WHERE s.id IN {ids} " +
-//                "RETURN " +
-//                "s.id as id," +
-//                " s.UAI as uai," +
-//                " s.name as name," +
-//                " s.address + ' ,' + s.zipCode +' ' + s.city as address,  " +
-//                "s.zipCode as zipCode," +
-//                " s.city as city," +
-//                " s.type as type," +
-//                " s.phone as phone";
-//        try {
-//            Neo4j.getInstance().execute(query, new JsonObject().put("ids", ids), Neo4jResult.validResultHandler(handler));
-//        }catch (VertxException e){
-//            logger.error( "@LystoreWorker["+ e.getClass() +"] " + e.getMessage() +" tabHelper");
-//            getStructures(ids,handler);
-//        }
-//        catch (NullPointerException e){
-//            logger.error( "@LystoreWorker["+ e.getClass() +"] " + e.getMessage() +" tabHelper");
-//            getStructures(ids,handler);
-//        }
     }
 
     private void getStructure(String id, Handler<Either<String, JsonArray>> handler) {
@@ -647,10 +606,6 @@ public abstract class TabHelper {
             logger.error( "@LystoreWorker["+ e.getClass() +"] " + e.getMessage() +" tabHelper");
             getStructure(id,handler);
         }
-//        catch (NullPointerException e){
-//            logger.error( "@LystoreWorker["+ e.getClass() +"] " + e.getMessage() +" tabHelper");
-//            getStructure(id, handler);
-//        }
     }
 
     private Future<JsonObject> getStructure(String id) {
@@ -685,42 +640,17 @@ public abstract class TabHelper {
         }
         return promise.future();
     }
-    //
-//    private void getStructure(String id, Handler<Either<String, JsonObject>> handler) {
-//
-//        String query = "" +
-//                "MATCH (s:Structure) " +
-//                "WHERE s.id = {id} " +
-//                "RETURN " +
-//                "s.id as id," +
-//                " s.UAI as uai," +
-//                " s.name as name," +
-//                " s.academy as academy ," +
-//                " s.address + ' ,' + s.zipCode +' ' + s.city as address,  " +
-//                "s.zipCode as zipCode," +
-//                " s.city as city," +
-//                " s.type as type," +
-//                " s.phone as phone";
-//        try {
-//            Neo4j.getInstance().execute(query, new JsonObject().put("id", id), Neo4jResult.validUniqueResultHandler(handler));
-//        }catch (Exception e){
-//            logger.error( "@LystoreWorker["+ e.getClass() +"] " + e.getMessage() +" tabHelper");
-//            getStructure(id,handler);
-//        }
-////        catch (NullPointerException e){
-////            logger.error( "@LystoreWorker["+ e.getClass() +"] " + e.getMessage() +" tabHelper");
-////            getStructure(id, handler);
-////        }
-//    }
-    protected Handler<Either<String, JsonArray>> getHandler(Future<JsonArray> future) {
+
+    protected  Handler<Either<String, JsonArray>> getHandler(Promise<JsonArray> promise){
         return event -> {
             if (event.isRight()) {
-                future.complete(event.right().getValue());
+                promise.complete(event.right().getValue());
             } else {
-                future.fail(event.left().getValue());
+                promise.fail(event.left().getValue());
             }
         };
     }
+
     /**
      *
      * @param structures Result of getStructures ( neoStructures)

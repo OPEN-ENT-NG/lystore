@@ -1,13 +1,12 @@
 package fr.openent.lystore.service.impl;
 
 import fr.openent.lystore.Lystore;
-import fr.openent.lystore.constants.CommonConstants;
 import fr.openent.lystore.constants.LystoreBDD;
 import fr.openent.lystore.service.CampaignService;
 import fr.wseduc.webutils.Either;
-import io.vertx.core.CompositeFuture;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
+import io.vertx.core.Promise;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -29,19 +28,21 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
     }
 
     public void listCampaigns(Handler<Either<String, JsonArray>> handler) {
-        Future<JsonArray> campaignFuture = Future.future();
-        Future<JsonArray> equipmentFuture = Future.future();
-        Future<JsonArray> purseFuture = Future.future();
-        Future<JsonArray> basketFuture = Future.future();
-        Future<JsonArray> orderFuture = Future.future();
+        Promise<JsonArray> campaignPromise = Promise.promise();
+        Promise<JsonArray> equipmentPromise = Promise.promise();
+        Promise<JsonArray> pursePromise = Promise.promise();
+        Promise<JsonArray> basketPromise = Promise.promise();
+        Promise<JsonArray> orderPromise = Promise.promise();
 
-        CompositeFuture.all(campaignFuture, equipmentFuture, purseFuture, orderFuture,basketFuture).setHandler(event -> {
+
+
+        Future.all(campaignPromise.future(), equipmentPromise.future(), pursePromise.future(), orderPromise.future(), basketPromise.future()).onComplete(event -> {
             if (event.succeeded()) {
-                JsonArray campaigns = campaignFuture.result();
-                JsonArray equipments = equipmentFuture.result();
-                JsonArray baskets = basketFuture.result();
-                JsonArray purses = purseFuture.result();
-                JsonArray orders = orderFuture.result();
+                JsonArray campaigns = campaignPromise.future().result();
+                JsonArray equipments = equipmentPromise.future().result();
+                JsonArray baskets = basketPromise.future().result();
+                JsonArray purses = pursePromise.future().result();
+                JsonArray orders =  orderPromise.future().result();
 
                 JsonObject campaignMap = new JsonObject();
                 JsonObject object, campaign;
@@ -110,11 +111,11 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
             }
         });
 
-        getCampaignsInfo(handlerFuture(campaignFuture));
-        getCampaignEquipmentCount(handlerFuture(equipmentFuture));
-        getBasketCount(handlerFuture(basketFuture));
-        getCampaignsPurses(handlerFuture(purseFuture));
-        getCampaignOrderStatusCount(handlerFuture(orderFuture));
+        getCampaignsInfo(handlerPromise(campaignPromise));
+        getCampaignEquipmentCount(handlerPromise(equipmentPromise));
+        getBasketCount(handlerPromise(basketPromise));
+        getCampaignsPurses(handlerPromise(pursePromise));
+        getCampaignOrderStatusCount(handlerPromise(orderPromise));
     }
 
     private void getBasketCount(Handler<Either<String, JsonArray>> handler) {
@@ -125,13 +126,14 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
         Sql.getInstance().prepared(query, new JsonArray(), SqlResult.validResultHandler(handler));
     }
 
-    private Handler<Either<String, JsonArray>> handlerFuture(Future<JsonArray> future) {
+
+    private Handler<Either<String, JsonArray>> handlerPromise(Promise<JsonArray> promise) {
         return event -> {
             if (event.isRight()) {
-                future.complete(event.right().getValue());
+                promise.complete(event.right().getValue());
             } else {
                 log.error(event.left().getValue());
-                future.fail(event.left().getValue());
+                promise.fail(event.left().getValue());
             }
         };
     }
@@ -216,17 +218,17 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
     }
 
     public void listCampaigns(String idStructure,  Handler<Either<String, JsonArray>> handler) {
-        Future<JsonArray> campaignFuture = Future.future();
-        Future<JsonArray> purseFuture = Future.future();
-        Future<JsonArray> basketFuture = Future.future();
-        Future<JsonArray> orderFuture = Future.future();
+        Promise<JsonArray> campaignPromise = Promise.promise();
+        Promise<JsonArray> pursePromise = Promise.promise();
+        Promise<JsonArray> basketPromise = Promise.promise();
+        Promise<JsonArray> orderPromise = Promise.promise();
 
-        CompositeFuture.all(campaignFuture, purseFuture, basketFuture, orderFuture).setHandler(event -> {
+        Future.all(campaignPromise.future(), pursePromise.future(), basketPromise.future(), orderPromise.future()).onComplete(event -> {
             if (event.succeeded()) {
-                JsonArray campaigns = campaignFuture.result();
-                JsonArray baskets = basketFuture.result();
-                JsonArray purses = purseFuture.result();
-                JsonArray orders = orderFuture.result();
+                JsonArray campaigns = campaignPromise.future().result();
+                JsonArray baskets = basketPromise.future().result();
+                JsonArray purses = pursePromise.future().result();
+                JsonArray orders = orderPromise.future().result();
 
                 JsonObject campaignMap = new JsonObject();
                 JsonObject object, campaign;
@@ -276,10 +278,10 @@ public class DefaultCampaignService extends SqlCrudService implements CampaignSe
             }
         });
 
-        getCampaignsInfo(idStructure, handlerFuture(campaignFuture));
-        getCampaignsPurses(idStructure, handlerFuture(purseFuture));
-        getCampaignOrderStatusCount(idStructure, handlerFuture(orderFuture));
-        getBasketCampaigns(idStructure, handlerFuture(basketFuture));
+        getCampaignsInfo(idStructure, handlerPromise(campaignPromise));
+        getCampaignsPurses(idStructure, handlerPromise(pursePromise));
+        getCampaignOrderStatusCount(idStructure, handlerPromise(orderPromise));
+        getBasketCampaigns(idStructure, handlerPromise(basketPromise));
     }
 
     private void getBasketCampaigns(String idStructure, Handler<Either<String, JsonArray>> handler) {
