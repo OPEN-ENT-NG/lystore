@@ -1,5 +1,5 @@
 
-CREATE OR REPLACE FUNCTION order_without_ref()
+CREATE OR REPLACE FUNCTION lystore.order_without_ref()
 RETURNS trigger AS  $$
 BEGIN
 DELETE FROM Lystore.order
@@ -14,4 +14,4 @@ END;
 CREATE TRIGGER check_order_no_ref AFTER UPDATE
 ON Lystore.order_client_equipment
 FOR EACH ROW
-EXECUTE PROCEDURE order_without_ref();
+EXECUTE PROCEDURE lystore.order_without_ref();

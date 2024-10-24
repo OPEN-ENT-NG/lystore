@@ -1,7 +1,7 @@
 ALTER TABLE lystore.project ALTER COLUMN id_grade DROP NOT NULL;
 INSERT INTO lystore.title (name) VALUES ('Campagne PPE');
 
-CREATE OR REPLACE FUNCTION project_data_recovery()
+CREATE OR REPLACE FUNCTION lystore.project_data_recovery()
 RETURNS VOID as $$
 DECLARE
   structures record;
@@ -28,6 +28,6 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-SELECT project_data_recovery();
+SELECT lystore.project_data_recovery();
 
-DROP FUNCTION project_data_recovery();
+DROP FUNCTION lystore.project_data_recovery();
