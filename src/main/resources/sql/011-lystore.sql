@@ -1,5 +1,5 @@
 
-CREATE OR REPLACE FUNCTION delete_empty_project()
+CREATE OR REPLACE FUNCTION lystore.delete_empty_project()
 RETURNS trigger AS  $$
 BEGIN
 DELETE FROM Lystore.project as prj
@@ -15,4 +15,4 @@ END;
 CREATE TRIGGER check_empty_project AFTER DELETE
 ON Lystore.order_client_equipment
 FOR EACH ROW
-EXECUTE PROCEDURE delete_empty_project();
+EXECUTE PROCEDURE lystore.delete_empty_project();

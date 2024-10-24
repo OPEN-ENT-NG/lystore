@@ -5,7 +5,7 @@ ALTER TABLE lystore.order_client_equipment
     OR (id_operation is null)) ;
 
 
-CREATE OR REPLACE FUNCTION order_without_ref()
+CREATE OR REPLACE FUNCTION lystore.order_without_ref()
 RETURNS trigger AS  $$
 BEGIN
 DELETE FROM Lystore.order
