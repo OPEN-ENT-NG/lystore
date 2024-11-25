@@ -1,5 +1,5 @@
     {
-      "name": "fr.openent~lystore~3.0-b2school-SNAPSHOT",
+      "name": "fr.openent~lystore~${lystoreVersion}",
       "config": {
         "main" : "fr.openent.lystore.Lystore",
         "port" : 8140,

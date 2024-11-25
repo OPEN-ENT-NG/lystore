@@ -12,7 +12,7 @@
 
     <groupId>fr.openent</groupId>
     <artifactId>lystore</artifactId>
-    <version>3.0-b2school-SNAPSHOT</version>
+    <version>3.0-SNAPSHOT</version>
 
     <scm>
         <connection>scm:git:https://github.com/OPEN-ENT-NG/lystore.git</connection>
@@ -35,7 +35,7 @@
         <apachePoiVersion>4.1.0</apachePoiVersion>
         <powerMockVersion>2.0.2</powerMockVersion>
         <mockitoVersion>[2.0,3.0)</mockitoVersion>
-        <entCoreVersion>5.0-b2school-SNAPSHOT</entCoreVersion>
+        <entCoreVersion>6.0-SNAPSHOT</entCoreVersion>
     </properties>
 
 
