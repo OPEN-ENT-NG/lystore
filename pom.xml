@@ -7,7 +7,7 @@
     <parent>
         <groupId>io.edifice</groupId>
         <artifactId>app-parent</artifactId>
-        <version>1.0.1</version>
+        <version>1.0.2</version>
     </parent>
 
     <groupId>fr.openent</groupId>
@@ -36,6 +36,7 @@
         <powerMockVersion>2.0.2</powerMockVersion>
         <mockitoVersion>[2.0,3.0)</mockitoVersion>
         <entCoreVersion>6.7-SNAPSHOT</entCoreVersion>
+        <shade.minimizeJar>false</shade.minimizeJar>
     </properties>
 
 
