@@ -12,7 +12,7 @@
 
     <groupId>fr.openent</groupId>
     <artifactId>lystore</artifactId>
-    <version>3.0-SNAPSHOT</version>
+    <version>3.0.5-rc+2</version>
 
     <scm>
         <connection>scm:git:https://github.com/OPEN-ENT-NG/lystore.git</connection>
