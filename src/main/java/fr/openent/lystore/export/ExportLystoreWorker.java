@@ -336,7 +336,9 @@ public class ExportLystoreWorker extends BusModBase implements Handler<Message<J
                 handler.handle(new Either.Left<>("An error occurred when inserting file"));
             } else {
                 logger.info(fileName + " insert in storage");
-                exportService.updateWhenSuccess(file.getString("_id"), idNewFile,handler);
+                String fileId =  file.getString("_id").replace("/", "")
+                        ;
+                exportService.updateWhenSuccess(fileId, idNewFile, handler);
             }
         });
     }
