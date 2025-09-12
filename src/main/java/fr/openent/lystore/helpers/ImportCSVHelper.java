@@ -13,6 +13,7 @@ import io.vertx.core.http.HttpServerFileUpload;
 import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.logging.Logger;
 import io.vertx.core.logging.LoggerFactory;
+import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 
@@ -23,13 +24,15 @@ import static org.entcore.common.utils.FileUtils.deleteImportPath;
 
 public class ImportCSVHelper {
 
+    private final Storage storage;
     private Vertx vertx;
     private EventBus eb;
     private static final Logger log = LoggerFactory.getLogger(ImportCSVHelper.class);
 
-    public ImportCSVHelper(Vertx vertx, EventBus eb) {
+    public ImportCSVHelper(Vertx vertx, EventBus eb, Storage storage) {
         this.vertx = vertx;
         this.eb = eb;
+        this.storage = storage;
     }
 
     public void getParsedCSV(final HttpServerRequest request, final String path, final Handler<Either<String, Buffer>> handler) {
@@ -101,7 +104,7 @@ public class ImportCSVHelper {
                             handler.handle(new DefaultAsyncResult(null));
                         } else {
                             handler.handle(new DefaultAsyncResult(new RuntimeException("invalid.admin")));
-                            deleteImportPath(vertx, path);
+                            deleteImportPath(vertx, storage, path);
                         }
                     }
                 });
@@ -122,7 +125,7 @@ public class ImportCSVHelper {
             @Override
             public void handle(Throwable event) {
                 handler.handle(new DefaultAsyncResult(event));
-                deleteImportPath(vertx, path);
+                deleteImportPath(vertx, storage, path);
             }
         };
     }
@@ -180,13 +183,13 @@ public class ImportCSVHelper {
                                 handler.handle(new Either.Left<>("Can not read the file"));
                             }
                             if (deletePath) {
-                                deleteImportPath(vertx, path);
+                                deleteImportPath(vertx, storage, path);
                             }
                         }
                     });
                 } else {
                     handler.handle(new Either.Left<>("Can not read the file"));
-                    deleteImportPath(vertx, path);
+                    deleteImportPath(vertx, storage, path);
                 }
             }
         });

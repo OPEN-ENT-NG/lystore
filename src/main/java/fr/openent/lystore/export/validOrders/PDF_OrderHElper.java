@@ -1,7 +1,6 @@
 package fr.openent.lystore.export.validOrders;
 
 import fr.openent.lystore.Lystore;
-import fr.openent.lystore.constants.CommonConstants;
 import fr.openent.lystore.constants.ExportConstants;
 import fr.openent.lystore.controllers.OrderController;
 import fr.openent.lystore.export.validOrders.BC.BCExport;
@@ -15,13 +14,11 @@ import fr.openent.lystore.utils.LystoreUtils;
 import fr.wseduc.webutils.Either;
 import fr.wseduc.webutils.data.FileResolver;
 import fr.wseduc.webutils.email.EmailSender;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
 import io.vertx.core.Promise;
 import io.vertx.core.Vertx;
 import io.vertx.core.buffer.Buffer;
 import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.Logger;
@@ -34,8 +31,6 @@ import org.entcore.common.storage.Storage;
 
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -44,7 +39,6 @@ import static fr.openent.lystore.constants.ExportConstants.NODE_PDF_GENERATOR;
 import static fr.openent.lystore.constants.ParametersConstants.BC_OPTIONS;
 import static fr.openent.lystore.helpers.OrderHelper.getSumWithoutTaxes;
 import static fr.openent.lystore.helpers.OrderHelper.roundWith2Decimals;
-import static fr.wseduc.webutils.http.Renders.badRequest;
 
 public class PDF_OrderHElper {
     protected ParameterService parameterService;
@@ -65,7 +59,7 @@ public class PDF_OrderHElper {
     public PDF_OrderHElper(EventBus eb, Vertx vertx, JsonObject config, Storage storage){
         this.vertx = vertx;
         this.config = config;
-        EmailFactory emailFactory = new EmailFactory(vertx, config);
+        EmailFactory emailFactory = EmailFactory.getInstance();
         EmailSender emailSender = emailFactory.getSender();
         this.eb = eb;
         this.supplierService = new DefaultSupplierService(Lystore.lystoreSchema, "supplier");

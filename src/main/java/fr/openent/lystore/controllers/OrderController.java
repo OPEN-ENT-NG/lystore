@@ -76,7 +76,7 @@ public class OrderController extends ControllerHelper {
 
     public OrderController (Storage storage, Vertx vertx, JsonObject config, EventBus eb) {
         this.storage = storage;
-        EmailFactory emailFactory = new EmailFactory(vertx, config);
+        EmailFactory emailFactory = EmailFactory.getInstance();
         EmailSender emailSender = emailFactory.getSender();
         this.orderService = new DefaultOrderService(Lystore.lystoreSchema, "order_client_equipment", emailSender);
         this.exportPDFService = new DefaultExportPDFService(vertx, config);

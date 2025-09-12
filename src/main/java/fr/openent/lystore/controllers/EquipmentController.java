@@ -24,6 +24,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.storage.Storage;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -41,11 +42,13 @@ public class EquipmentController extends ControllerHelper {
 
     private final EquipmentService equipmentService;
     private ImportCSVHelper importCSVHelper;
+    private final Storage storage;
 
-    public EquipmentController(Vertx vertx) {
+    public EquipmentController(Vertx vertx, Storage storage) {
         super();
         this.equipmentService = new DefaultEquipmentService(Lystore.lystoreSchema, "equipment");
-        this.importCSVHelper = new ImportCSVHelper(vertx, this.eb);
+        this.importCSVHelper = new ImportCSVHelper(vertx, this.eb, storage);
+        this.storage = storage;
     }
 
     @Get("/equipments")
@@ -285,7 +288,7 @@ public class EquipmentController extends ControllerHelper {
         } catch (IOException e) {
             log.error("[Lystore@CSVImport]: csv exception", e);
             returnErrorMessage(request, e.getCause(), path);
-            deleteImportPath(vertx, path);
+            deleteImportPath(vertx, storage, path);
         }
     }
 
@@ -298,7 +301,7 @@ public class EquipmentController extends ControllerHelper {
      */
     private void returnErrorMessage(HttpServerRequest request, Throwable cause, String path) {
         renderErrorMessage(request, cause);
-        deleteImportPath(vertx, path);
+        deleteImportPath(vertx, storage, path);
     }
 
     /**

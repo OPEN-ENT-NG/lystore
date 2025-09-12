@@ -20,6 +20,11 @@ case `uname -s` in
     fi
 esac
 
+init() {
+  me=`id -u`:`id -g`
+  echo "DEFAULT_DOCKER_USER=$me" > .env
+}
+
 clean () {
   docker-compose run --rm maven mvn $MVN_OPTS clean
 }
@@ -101,6 +106,9 @@ publishNexus() {
 for param in "$@"
 do
   case $param in
+    init)
+      init
+      ;;
     clean)
       clean
       ;;

@@ -222,7 +222,7 @@ public class PurseController extends ControllerHelper {
                                 JsonObject contentObject = new JsonObject().put("content", contentFile);
                                 Logging.insert(eb, request, Contexts.PURSE.toString(),
                                         Actions.IMPORT.toString(), campaignId.toString(), contentObject);
-                                deleteImportPath(vertx, path);
+                                deleteImportPath(vertx, storage, path);
                             } else {
                                 returnErrorMessage(request, new Throwable(event.left().getValue()), path);
                             }
@@ -243,7 +243,7 @@ public class PurseController extends ControllerHelper {
      */
     private void returnErrorMessage(HttpServerRequest request, Throwable cause, String path) {
         renderErrorMessage(request, cause);
-        deleteImportPath(vertx, path);
+        deleteImportPath(vertx, storage, path);
     }
 
     /**

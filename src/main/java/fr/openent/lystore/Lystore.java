@@ -5,6 +5,7 @@ import fr.openent.lystore.controllers.parameter.ActiveStructureController;
 import fr.openent.lystore.controllers.parameter.ParameterController;
 import fr.openent.lystore.export.ExportLystoreWorker;
 import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
 import io.vertx.core.Promise;
 import io.vertx.core.eventbus.DeliveryOptions;
 import io.vertx.core.eventbus.EventBus;
@@ -37,55 +38,65 @@ public class Lystore extends BaseServer {
 
     @Override
     public void start(Promise<Void> startPromise) throws Exception {
-        super.start(startPromise);
+      final Promise<Void> promise = Promise.promise();
+      super.start(promise);
+      promise.future()
+        .compose(e -> this.initLystore())
+        .onComplete(startPromise);
+    }
+
+    public Future<Void> initLystore() {
         lystoreSchema = config.getString("db-schema");
-       if(config.containsKey("iteration-worker")){
+        if(config.containsKey("iteration-worker")){
            iterationWorker = config.getInteger("iteration-worker");
-       }else{
+        } else {
            log.info("no iteration worker in config");
            iterationWorker = 10 ;
         }
         EventBus eb = getEventBus(vertx);
-        Storage storage = new StorageFactory(vertx, config).getStorage();
-        STORAGE = storage;
-        JsonObject mail = config.getJsonObject("mail", new JsonObject());
+        return StorageFactory.build(vertx, config)
+          .compose(storageFactory -> {
+              STORAGE = storageFactory.getStorage();
+              JsonObject mail = config.getJsonObject("mail", new JsonObject());
 
 
-        EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Lystore.class.getSimpleName());
+              EventStore eventStore = EventStoreFactory.getFactory().getEventStore(Lystore.class.getSimpleName());
 
-        addController(new LystoreController(eventStore));
-        addController(new AgentController());
-        addController(new SupplierController());
-        addController(new ProgramController());
-        addController(new ContractTypeController());
-        addController(new ContractController());
-        addController(new TagController());
-        addController(new EquipmentController(vertx));
-        addController(new TaxController());
-        addController(new LogController());
-        addController(new CampaignController(storage));
-        addController(new PurseController(vertx,storage));
-        addController(new StructureGroupController(vertx));
-        addController(new StructureController());
-        addController(new BasketController(vertx, storage, config.getJsonObject("slack", new JsonObject()), mail));
-        addController(new OrderController(storage, vertx, config, eb));
-        addController(new UserController());
-        addController(new EquipmentTypeController());
-        addController(new TitleController(vertx, eb));
-        addController(new GradeController());
-        addController(new ProjectController());
-        addController(new OperationController());
-        addController(new InstructionController(storage));
-        addController(new OrderRegionController(storage));
-        addController(new ExportController(storage));
-        addController(new ActiveStructureController(eb));
-        addController(new LabelOperationController());
-        addController(new ParameterController());
-        CONFIG = config;
-        vertx.deployVerticle(ExportLystoreWorker.class, new DeploymentOptions().setConfig(config).setWorker(true));
-        launchWorker(eb);
-        startPromise.tryComplete();
-        startPromise.tryFail("[Lystore@Lystore::start] Fail to start LyStore");
+              addController(new LystoreController(eventStore));
+              addController(new AgentController());
+              addController(new SupplierController());
+              addController(new ProgramController());
+              addController(new ContractTypeController());
+              addController(new ContractController());
+              addController(new TagController());
+              addController(new EquipmentController(vertx, STORAGE));
+              addController(new TaxController());
+              addController(new LogController());
+              addController(new CampaignController(STORAGE));
+              addController(new PurseController(vertx, STORAGE));
+              addController(new StructureGroupController(vertx, STORAGE));
+              addController(new StructureController());
+              addController(new BasketController(vertx, STORAGE, config.getJsonObject("slack", new JsonObject()), mail));
+              addController(new OrderController(STORAGE, vertx, config, eb));
+              addController(new UserController());
+              addController(new EquipmentTypeController());
+              addController(new TitleController(vertx, eb, STORAGE));
+              addController(new GradeController());
+              addController(new ProjectController());
+              addController(new OperationController());
+              addController(new InstructionController(STORAGE));
+              addController(new OrderRegionController(STORAGE));
+              addController(new ExportController(STORAGE));
+              addController(new ActiveStructureController(eb));
+              addController(new LabelOperationController());
+              addController(new ParameterController());
+              CONFIG = config;
+              return vertx.deployVerticle(ExportLystoreWorker.class, new DeploymentOptions().setConfig(config).setWorker(true));
+            })
+          .map(e -> {
+            launchWorker(eb);
+            return null;
+          });
     }
 
     public static void launchWorker(EventBus eb) {

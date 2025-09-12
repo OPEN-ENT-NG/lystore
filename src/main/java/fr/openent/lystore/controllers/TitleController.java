@@ -24,6 +24,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.controller.ControllerHelper;
+import org.entcore.common.storage.Storage;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -41,12 +42,12 @@ public class TitleController extends ControllerHelper {
     private final CampaignService campaignService;
     private final ImportCSVHelper importCSVHelper;
 
-    public TitleController(Vertx vertx, EventBus eb) {
+    public TitleController(Vertx vertx, EventBus eb, Storage storage) {
         super();
         titleService = new DefaultTitleService(Lystore.lystoreSchema, "title");
         structureService = new DefaultStructureService(Lystore.lystoreSchema);
         this.campaignService = new DefaultCampaignService(Lystore.lystoreSchema, "campaign");
-        importCSVHelper = new ImportCSVHelper(vertx, eb);
+        importCSVHelper = new ImportCSVHelper(vertx, eb, storage);
     }
 
     @Get("/titles/")

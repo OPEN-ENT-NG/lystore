@@ -27,6 +27,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.entcore.common.controller.ControllerHelper;
 import org.entcore.common.http.filter.ResourceFilter;
+import org.entcore.common.storage.Storage;
 import org.entcore.common.user.UserInfos;
 import org.entcore.common.user.UserUtils;
 
@@ -50,12 +51,14 @@ public class StructureGroupController extends ControllerHelper {
     private ImportCSVHelper importCSVHelper;
     private StructureGroupService structureGroupService;
     private StructureService structureService;
+    private final Storage storage;
 
-    public StructureGroupController(Vertx vertx) {
+    public StructureGroupController(Vertx vertx, Storage storage) {
         super();
         this.structureGroupService = new DefaultStructureGroupService(Lystore.lystoreSchema, "structure_group");
-        this.importCSVHelper = new ImportCSVHelper(vertx, this.eb);
+        this.importCSVHelper = new ImportCSVHelper(vertx, this.eb, storage);
         this.structureService = new DefaultStructureService(Lystore.lystoreSchema);
+        this.storage = storage;
     }
 
     @Post("/structure/group/import")
@@ -104,7 +107,7 @@ public class StructureGroupController extends ControllerHelper {
         } catch (IOException e) {
             log.error("[Lystore@CSVImport]: csv exception", e);
             returnErrorMessage(request, e.getCause(), path);
-            deleteImportPath(vertx, path);
+            deleteImportPath(vertx, storage, path);
         }
     }
 
@@ -128,7 +131,7 @@ public class StructureGroupController extends ControllerHelper {
                                 Pattern r = Pattern.compile(regexp);
                                 Matcher m = r.matcher(event.result().get(0));
                                 String name = m.find() ? m.group(0).replace(".csv", "") : UUID.randomUUID().toString();
-                                deleteImportPath(vertx, path);
+                                deleteImportPath(vertx, storage, path);
 
                                 JsonArray data = uaisEvent.right().getValue();
                                 JsonArray ids = new JsonArray();
@@ -182,7 +185,7 @@ public class StructureGroupController extends ControllerHelper {
      */
     private void returnErrorMessage(HttpServerRequest request, Throwable cause, String path) {
         renderErrorMessage(request, cause);
-        deleteImportPath(vertx, path);
+        deleteImportPath(vertx, storage, path);
     }
 
     /**
