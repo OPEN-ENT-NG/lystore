@@ -35,7 +35,7 @@
         <apachePoiVersion>4.1.0</apachePoiVersion>
         <powerMockVersion>2.0.2</powerMockVersion>
         <mockitoVersion>[2.0,3.0)</mockitoVersion>
-        <entCoreVersion>6.9-SNAPSHOT</entCoreVersion>
+        <entCoreVersion>6.10-SNAPSHOT</entCoreVersion>
         <shade.minimizeJar>false</shade.minimizeJar>
     </properties>
 
