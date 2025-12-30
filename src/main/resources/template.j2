@@ -1,0 +1,33 @@
+{
+  "name": "fr.openent~lystore",
+  "config": {
+    "main" : "fr.openent.lystore.Lystore",
+    "port" : 8140,
+    "app-name" : "Lystore",
+    "app-address" : "/lystore",
+    "app-icon" : "https://{{ host }}/lystore/public/img/logo.png",
+    "host": "https://{{ host }}",
+    "ssl" : true,
+    "auto-redeploy": false,
+    "userbook-host": "https://{{ host }}",
+    "integration-mode": "{{ integration_mode|default('HTTP') }}",
+    "app-registry.port" : 8012,
+    "mode" : "prod",
+    "sql": true,
+    "entcore.port" : 8009,
+    {% if lystoreSlack is defined %}"slack": {{ lystoreSlack }},{% endif %}
+    "db-schema": "lystore",
+    "exports" : {
+    	"template-path" : "./public/template/pdf/",
+    	"logo-path": "./public/img/ile_de_france.png"
+    },
+    "mail": {
+      "enableMail": {{ lystoreEnableMail | default('false') }},
+      "domainMail": "{{ lystoreDomainMail | default('') }}",
+      "notificationMail": "{{ lystoreNotificationMail | default('') }}",
+      "notificationHelpDeskMail": "{{ lystoreNotificationHelpDeskMail | default('') }}",
+      "notificationHelpDeskReceiver": "{{ lystoreNotificationHelpDeskReceiver | default('') }}"
+    },
+    "region-type-name":  "{{ lystoreRegionTypeName  | default('lystore.config.region.type.name') }}"
+  }
+}
