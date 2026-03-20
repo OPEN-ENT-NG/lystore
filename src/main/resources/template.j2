@@ -2,6 +2,11 @@
   "name": "fr.openent~lystore",
   "config": {
     "main" : "fr.openent.lystore.Lystore",
+    "probes": [
+      "org.entcore.common.http.health.Neo4jProbe",
+      "org.entcore.common.http.health.MongoProbe",
+      "org.entcore.common.http.health.PostgresProbe"
+    ],
     "port" : 8140,
     "app-name" : "Lystore",
     "app-address" : "/lystore",
