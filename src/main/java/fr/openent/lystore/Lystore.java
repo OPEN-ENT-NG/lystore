@@ -42,6 +42,7 @@ public class Lystore extends BaseServer {
       super.start(promise);
       promise.future()
         .compose(e -> this.initLystore())
+        .onFailure(t -> log.error("Error starting Lystore", t))
         .onComplete(startPromise);
     }
 
