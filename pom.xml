@@ -37,6 +37,7 @@
     <entCoreLibsVersion>6.14-separation-SNAPSHOT</entCoreLibsVersion>
     <modMongoVersion>4.1-separation-SNAPSHOT</modMongoVersion>
     <modPostgresVersion>2.1-separation-SNAPSHOT</modPostgresVersion>
+    <modPdfGeneratorVersion>2.1-separation-SNAPSHOT</modPdfGeneratorVersion>
   </properties>
   <dependencies>
     <dependency>
@@ -143,6 +144,13 @@
       <groupId>fr.wseduc</groupId>
       <artifactId>mod-postgresql</artifactId>
       <version>${modPostgresVersion}</version>
+      <scope>runtime</scope>
+      <classifier>fat</classifier>
+    </dependency>
+    <dependency>
+      <groupId>fr.wseduc</groupId>
+      <artifactId>mod-pdf-generator</artifactId>
+      <version>${modPdfGeneratorVersion}</version>
       <scope>runtime</scope>
       <classifier>fat</classifier>
     </dependency>
