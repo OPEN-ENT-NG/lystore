@@ -12,7 +12,7 @@ import {
     Utils,
     Equipments, ContractType, ContractTypes, Contracts, Order, Basket
 } from "../../model";
-import http, {AxiosResponse} from "axios";
+import { http, HttpResponse } from 'entcore-toolkit';
 import {IStatementsOrdersService} from "../../services";
 
 declare let window: any;
@@ -78,7 +78,7 @@ export const orderRegionController = ng.controller('orderRegionController',
                             ordersOldFiles += file.id + ","
                             ordersOldFilesName += file.filename + "/";
                         })
-                    const promises: Array<Promise<AxiosResponse>> = [];
+                    const promises: Array<Promise<HttpResponse>> = [];
                     let statement =  statementsOrdersService.createOne({
                         id_campaign: $scope.orderToUpdate.campaign.id,
                         id_structure: $scope.orderToUpdate.structure.id_structure,
@@ -100,7 +100,7 @@ export const orderRegionController = ng.controller('orderRegionController',
                     },$scope.orderToUpdate.id);
                     promises.push(statement)
                     try {
-                        let responses: Array<AxiosResponse> = await Promise.all(promises);
+                        let responses: Array<HttpResponse> = await Promise.all(promises);
                         if (responses) {
                             toasts.confirm('lystore.order.region.update');
                             $scope.cancelUpdate();
@@ -170,7 +170,7 @@ export const orderRegionController = ng.controller('orderRegionController',
                         ordersOldFiles += file.id + ","
                         ordersOldFilesName += file.filename + "/";
                     })
-                const promises: Array<Promise<AxiosResponse>> = [];
+                const promises: Array<Promise<HttpResponse>> = [];
 
                 if( $scope.orderToUpdate.typeOrder === "client" ) {
                     let statement = statementsOrdersService.createOne({
@@ -215,7 +215,7 @@ export const orderRegionController = ng.controller('orderRegionController',
                     promises.push(statement)
                 }
                 try {
-                    let responses: Array<AxiosResponse> = await Promise.all(promises);
+                    let responses: Array<HttpResponse> = await Promise.all(promises);
                     if (responses) {
                         if (responses) {
                             toasts.confirm('lystore.order.region.update');
@@ -387,7 +387,7 @@ export const orderRegionController = ng.controller('orderRegionController',
 
             $scope.createOrder = async ():Promise<void> => {
                 //let ordersToCreate = new OrdersRegion();
-                const promises: Array<Promise<AxiosResponse>> = [];
+                const promises: Array<Promise<HttpResponse>> = [];
                 $scope.orderToCreate.rows.forEach(row => {
                     if (checkRow(row)) {
                         if (row.structure instanceof StructureGroup) {
@@ -480,7 +480,7 @@ export const orderRegionController = ng.controller('orderRegionController',
                 });
 
                 try {
-                    let responses: Array<AxiosResponse> = await Promise.all(promises);
+                    let responses: Array<HttpResponse> = await Promise.all(promises);
                     if (responses) {
                         toasts.confirm('lystore.order.region.create.message');
                         $scope.orderToCreate = new OrderRegion();

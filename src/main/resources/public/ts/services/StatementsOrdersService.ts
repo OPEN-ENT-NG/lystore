@@ -1,5 +1,5 @@
 import {ng} from 'entcore'
-import http, {AxiosResponse} from 'axios';
+import { http, HttpResponse } from 'entcore-toolkit';
 import {Equipment} from "../model";
 
 export interface FileLystore {
@@ -29,9 +29,9 @@ interface IStatementOrderBody {
 }
 
 export interface IStatementsOrdersService {
-    create(statementsOrders: IStatementOrderBody): Promise<AxiosResponse>;
-    update(statementsOrders: IStatementOrderBody, orderId: number): Promise<AxiosResponse>;
-    createOne(statementsOrders: IStatementOrderBody,orderClientId : number): Promise<AxiosResponse>;
+    create(statementsOrders: IStatementOrderBody): Promise<HttpResponse>;
+    update(statementsOrders: IStatementOrderBody, orderId: number): Promise<HttpResponse>;
+    createOne(statementsOrders: IStatementOrderBody,orderClientId : number): Promise<HttpResponse>;
 
 }
 
@@ -66,15 +66,15 @@ function getOrderData(statementsOrders: IStatementOrderBody) {
 
 export const statementsOrdersService: IStatementsOrdersService = {
 
-    createOne: async (statementOder : IStatementOrderBody ,orderClientId): Promise<AxiosResponse> =>{
+    createOne: async (statementOder : IStatementOrderBody ,orderClientId): Promise<HttpResponse> =>{
         const {formData, headers} = getOrderData(statementOder);
         return http.post(`/lystore/region/from/client/${orderClientId}`, formData, headers);
     },
-    create: async (statementsOrders: IStatementOrderBody): Promise<AxiosResponse> => {
+    create: async (statementsOrders: IStatementOrderBody): Promise<HttpResponse> => {
         const {formData, headers} = getOrderData(statementsOrders);
         return http.post(`/lystore/region/orders/`, formData, headers);
     },
-    update(statementsOrders: IStatementOrderBody , orderId: number): Promise<AxiosResponse> {
+    update(statementsOrders: IStatementOrderBody , orderId: number): Promise<HttpResponse> {
         const {formData, headers} = getOrderData(statementsOrders);
         return http.put(`/lystore/region/order/${orderId}`, formData, headers);
     }

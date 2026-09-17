@@ -1,4 +1,4 @@
-import http from "axios";
+import { http } from 'entcore-toolkit';
 import {idiom as lang, moment, notify} from "entcore";
 import {Mix, Selectable, Selection} from "entcore-toolkit";
 import {Utils} from "./Utils";

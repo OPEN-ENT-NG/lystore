@@ -1,5 +1,5 @@
 import {ng} from 'entcore';
-import http, {AxiosPromise} from 'axios';
+import { http, HttpPromise } from 'entcore-toolkit';
 import {BcOptions, IBCOptions} from "../../model/parameter/bc-options.model";
 import {ExportChoices} from "../../model/parameter/export-choices.model";
 import {LystoreOptions} from "../../model/parameter/lystore-options.model";
@@ -16,7 +16,7 @@ export interface ParameterSettingService {
 
     saveExportChoices(exportChoices: ExportChoices): Promise<void>;
 
-    saveBcForm(bcOptions: BcOptions):   Promise<AxiosPromise>;
+    saveBcForm(bcOptions: BcOptions):   Promise<HttpPromise>;
 
     saveHasOperationsAndInstructions(hasOperationsAndInstructions: boolean): Promise<void>;
 }
@@ -49,7 +49,7 @@ export const parameterSettingService: ParameterSettingService = {
     saveExportChoices(exportChoices: ExportChoices): Promise<void> {
         return Promise.resolve();
     },
-    saveBcForm : async (bcOptions: BcOptions):  Promise<AxiosPromise> =>
+    saveBcForm : async (bcOptions: BcOptions):  Promise<HttpPromise> =>
          http.put(`/lystore/parameter/bc/options`,bcOptions)
     ,
     saveHasOperationsAndInstructions(hasOperationsAndInstructions: boolean): Promise<void> {

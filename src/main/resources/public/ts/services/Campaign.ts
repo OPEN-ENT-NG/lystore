@@ -1,14 +1,14 @@
 import {moment, ng} from "entcore";
-import http, {AxiosPromise} from "axios";
+import { http, HttpPromise } from 'entcore-toolkit';
 import {Campaign} from "../model";
 
 export interface CampaignService {
-    updateAccessibility(campaign: Campaign): Promise<AxiosPromise>;
+    updateAccessibility(campaign: Campaign): Promise<HttpPromise>;
 }
 
 
 export const campaignService: CampaignService = {
-    updateAccessibility: async (campaign: Campaign): Promise<AxiosPromise> => {
+    updateAccessibility: async (campaign: Campaign): Promise<HttpPromise> => {
         if (campaign.automatic_close) {
             if (campaign.checkIsOpen()) {
                 campaign.end_date = moment().toDate();

@@ -1,5 +1,5 @@
 import {IOrderClientResponse, OrdersClient} from "../../../model";
-import http, {AxiosResponse} from "axios";
+import { http, HttpResponse } from 'entcore-toolkit';
 import {ng} from "entcore";
 
 export interface OrderService {
@@ -9,7 +9,7 @@ export interface OrderService {
 export const orderService: OrderService = {
 
     sync(idCampaign: number, idStructure:string): Promise<OrdersClient>{
-        return http.get(`/lystore/orders/${idCampaign}/${idStructure}`).then((res: AxiosResponse) => {
+        return http.get(`/lystore/orders/${idCampaign}/${idStructure}`).then((res: HttpResponse) => {
             let OrderClientsResponse: IOrderClientResponse[] = res.data;
             return new OrdersClient().build(OrderClientsResponse);
         });

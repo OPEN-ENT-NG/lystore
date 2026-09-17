@@ -1,4 +1,4 @@
-import http from 'axios';
+import { http } from 'entcore-toolkit';
 import { notify } from 'entcore';
 import { Mix } from 'entcore-toolkit';
 

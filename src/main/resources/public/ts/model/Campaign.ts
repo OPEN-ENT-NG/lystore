@@ -1,4 +1,4 @@
-import http from 'axios';
+import { http } from 'entcore-toolkit';
 import {_, notify,moment,toasts} from 'entcore';
 import {Mix, Selectable, Selection} from 'entcore-toolkit';
 import {Purses, StructureGroup, Tags, Titles} from './index';

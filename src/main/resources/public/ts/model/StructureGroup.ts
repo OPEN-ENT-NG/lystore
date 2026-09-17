@@ -1,7 +1,7 @@
 import {Structure, Tag} from './index';
 import {Mix, Selectable, Selection} from 'entcore-toolkit';
 import {_, notify} from 'entcore';
-import http from 'axios';
+import { http } from 'entcore-toolkit';
 import {Structures} from './Structure';
 
 /**

@@ -1,6 +1,6 @@
 import {Eventer, Mix, Selectable, Selection} from "entcore-toolkit";
 import {Grade, Grades, ITitleResponse, Title, Titles} from './index';
-import http from "axios";
+import { http } from 'entcore-toolkit';
 import {_, notify} from "entcore";
 
 export interface IProjectResponse {

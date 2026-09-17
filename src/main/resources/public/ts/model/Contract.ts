@@ -1,6 +1,6 @@
 import {moment, notify} from 'entcore';
 import {Mix, Provider, Selectable, Selection} from 'entcore-toolkit';
-import http from 'axios';
+import { http } from 'entcore-toolkit';
 import {ContractType, IContractTypeResponse} from "./ContractType";
 
 export interface IContractResponse {

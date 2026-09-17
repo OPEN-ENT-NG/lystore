@@ -1,4 +1,4 @@
-import http from 'axios';
+import { http } from 'entcore-toolkit';
 import { notify } from 'entcore';
 import { Selection, Selectable, Provider } from 'entcore-toolkit';
 import { TAG_COLORS } from './index';
