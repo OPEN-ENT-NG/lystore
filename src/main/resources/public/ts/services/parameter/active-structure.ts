@@ -1,5 +1,5 @@
 import {ng} from 'entcore';
-import http, {AxiosResponse} from 'axios';
+import { http, HttpResponse } from 'entcore-toolkit';
 
 export interface StructureLystore {
     deployed: boolean;
@@ -21,7 +21,7 @@ export const activeStructureService: ActiveStructureService =  {
 
     getStructuresLystore: async (): Promise<Array<StructureLystore>> => {
         try {
-            const {data}: AxiosResponse = await http.get(`structures/lystore`);
+            const {data}: HttpResponse = await http.get(`structures/lystore`);
             return data;
         } catch (err) {
             throw err;

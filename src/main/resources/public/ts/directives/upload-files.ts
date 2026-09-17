@@ -1,5 +1,5 @@
 import {_, ng} from 'entcore';
-import http from 'axios';
+import { http } from 'entcore-toolkit';
 import {Utils} from "../model";
 
 export const uploadFiles = ng.directive("uploadFiles", function () {

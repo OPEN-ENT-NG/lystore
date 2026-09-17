@@ -1,7 +1,7 @@
 import {Tag, Utils} from './index';
 import {_, notify} from 'entcore';
 import {Eventer, Mix, Selectable, Selection} from 'entcore-toolkit';
-import http from 'axios';
+import { http } from 'entcore-toolkit';
 
 export class Equipment implements Selectable {
     id?: number;
@@ -186,7 +186,6 @@ export interface Equipments {
     eventer: Eventer;
     page: number;
     _loading: boolean;
-    all: Equipment[];
     page_count: number;
 
     sort: {

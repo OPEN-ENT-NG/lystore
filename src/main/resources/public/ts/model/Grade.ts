@@ -1,5 +1,5 @@
 import {Mix, Selectable, Selection} from 'entcore-toolkit';
-import http from "axios";
+import { http } from 'entcore-toolkit';
 import {Title} from "./Title";
 
 export interface Grade {

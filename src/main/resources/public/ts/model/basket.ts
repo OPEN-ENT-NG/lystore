@@ -1,7 +1,7 @@
 import {Mix, Selectable, Selection} from 'entcore-toolkit';
 // @ts-ignore
 import {_, notify} from 'entcore';
-import http from 'axios';
+import { http } from 'entcore-toolkit';
 import {Equipment, EquipmentOption, Structure, Utils} from './index';
 import * as ts from "typescript/lib/tsserverlibrary";
 import convertCompilerOptions = ts.server.convertCompilerOptions;

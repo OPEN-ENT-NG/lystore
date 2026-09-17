@@ -1,10 +1,10 @@
 import {ng, notify} from "entcore";
 import {IPurseStructureResponse, Purse, PurseImporter, Purses} from "../../../model";
-import http, {AxiosPromise, AxiosResponse} from "axios";
+import { http, HttpPromise, HttpResponse } from 'entcore-toolkit';
 
 
 export interface PurseService {
-    save(purse: Purse): AxiosPromise;
+    save(purse: Purse): HttpPromise;
 
     sync(idCampaign: number) :Promise<Purses>;
 
@@ -15,12 +15,12 @@ export interface PurseService {
 
 export const purseService: PurseService = {
 
-    save(purse: Purse): AxiosPromise {
+    save(purse: Purse): HttpPromise {
         return http.put(`/lystore/purse/${purse.id}`, purse.toJson());
     },
 
     sync(idCampaign: number): Promise<Purses> {
-        return http.get(`/lystore/campaign/${idCampaign}/purses/list`).then((res: AxiosResponse) => {
+        return http.get(`/lystore/campaign/${idCampaign}/purses/list`).then((res: HttpResponse) => {
             let PurseStructureResponses: IPurseStructureResponse[] = res.data;
             return new Purses(idCampaign).build(PurseStructureResponses);
         }).catch(e => {
@@ -30,7 +30,7 @@ export const purseService: PurseService = {
         });
     },
     check(idCampaign: number, purses: Purses): Promise<void> {
-       return http.get(`/lystore/campaign/${idCampaign}/purse/check`).then((res: AxiosResponse) => {
+       return http.get(`/lystore/campaign/${idCampaign}/purse/check`).then((res: HttpResponse) => {
             if (res.status === 201) {
                 purses.all.map(purse => {
                     purse.substraction = 0.00;

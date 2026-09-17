@@ -1,5 +1,5 @@
 import { _, notify } from 'entcore';
-import http from 'axios';
+import { http } from 'entcore-toolkit';
 import { Mix, Selectable, Selection } from 'entcore-toolkit';
 
 export class Agent implements Selectable {

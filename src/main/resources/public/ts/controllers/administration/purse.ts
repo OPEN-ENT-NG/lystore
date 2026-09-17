@@ -14,7 +14,7 @@ import {Mix} from 'entcore-toolkit';
 import {IScope} from "angular";
 import {PurseService, TitleService} from "../../services/app/admin";
 import service = workspace.v2.service;
-import {AxiosError, AxiosResponse} from "axios";
+import {HttpError, HttpResponse} from "entcore-toolkit";
 import any = jasmine.any;
 
 declare let window: any;
@@ -116,14 +116,14 @@ class Controller implements IViewModel {
 
 
     validPurse = async (): Promise<void>  => {
-        await this.purseService.save(this.purse).then( async (res :AxiosResponse) =>{
+        await this.purseService.save(this.purse).then( async (res :HttpResponse) =>{
             if(res.status === 202){
                 this.isNegativePurse = true;
             }  else {
             this.lightbox.open = false;
              this.campaign.purses = await this.purseService.sync(this.campaign.id);
         }
-        }).catch((e:AxiosResponse)=>{
+        }).catch((e:HttpResponse)=>{
             console.log(e)
             notify.error('lystore.purse.update.err');
         })
@@ -146,7 +146,7 @@ class Controller implements IViewModel {
                     importer.files = [];
                     Utils.safeApply(this.$scope);
                     toasts.confirm("lystore.purse.import.confirm")
-                }).catch((e:AxiosError  )=>{
+                }).catch((e:HttpError  )=>{
                     importer.message = (e.response.data as {error: string}).error;
                     Utils.safeApply(this.$scope);
             });

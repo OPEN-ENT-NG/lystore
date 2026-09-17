@@ -1,4 +1,4 @@
-import http from 'axios';
+import { http } from 'entcore-toolkit';
 import { Selectable, Selection, Mix } from 'entcore-toolkit';
 
 export interface IContractTypeResponse {
