@@ -1,6 +1,6 @@
 {
   "name": "Lystore",
-  "version": "3.2.2-dev.1",
+  "version": "3.2-develop-axios.0",
   "description": "ENT Core application to create Lystore",
   "main": "gulpfile.js",
   "scripts": {
@@ -27,7 +27,7 @@
   "dependencies": {
     "awesome-typescript-loader": "3.2.1",
     "core-js": "2.4.1",
-    "entcore": "dev",
+    "entcore": "develop-axios",
     "entcore-toolkit": "2.0.0-dev.3",
     "gulp": "3.9.1",
     "gulp-clean": "^0.3.2",
